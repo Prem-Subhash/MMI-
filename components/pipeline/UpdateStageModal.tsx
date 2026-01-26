@@ -10,6 +10,13 @@ type Props = {
   onSuccess: () => void
 }
 
+type FieldConfig = {
+  label: string
+  type: string
+  required?: boolean
+  options?: string[]
+}
+
 export default function UpdateStageModal({
   leadId,
   pipelineId,
@@ -17,10 +24,12 @@ export default function UpdateStageModal({
   onSuccess,
 }: Props) {
   const [stages, setStages] = useState<any[]>([])
-  const [selectedStageId, setSelectedStageId] = useState<string>('')
-  const [mandatoryFields, setMandatoryFields] = useState<Record<string, boolean>>({})
-  const [formData, setFormData] = useState<Record<string, string>>({})
+  const [selectedStageId, setSelectedStageId] = useState('')
+  const [mandatoryFields, setMandatoryFields] =
+    useState<Record<string, FieldConfig>>({})
+  const [formData, setFormData] = useState<Record<string, any>>({})
   const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   /* ================= LOAD STAGES ================= */
   useEffect(() => {
@@ -51,42 +60,144 @@ export default function UpdateStageModal({
     setLoading(false)
   }
 
-  /* ================= VALIDATION ================= */
-  function validate() {
+  /* ================= SAFE CLIENT-SIDE VALIDATION ================= */
+  function validateClientSide() {
     for (const key in mandatoryFields) {
-      if (mandatoryFields[key] && !formData[key]) {
-        alert(`Please fill ${key.replaceAll('_', ' ')}`)
+      const cfg = mandatoryFields[key]
+      const value = formData[key]
+
+      if (
+        cfg.required &&
+        (value === undefined ||
+          value === null ||
+          value === '')
+      ) {
+        alert(`Please fill "${cfg.label}"`)
         return false
       }
     }
     return true
   }
 
-  /* ================= SAVE ================= */
+  /* ================= FIELD RENDERER ================= */
+  function renderField(fieldKey: string, config: FieldConfig) {
+    const value = formData[fieldKey] ?? ''
+
+    switch (config.type) {
+      case 'date':
+        return (
+          <input
+            type="date"
+            className="w-full border p-2"
+            value={value}
+            onChange={e =>
+              setFormData({ ...formData, [fieldKey]: e.target.value })
+            }
+          />
+        )
+
+      case 'boolean':
+        return (
+          <select
+            className="w-full border p-2"
+            value={value}
+            onChange={e =>
+              setFormData({ ...formData, [fieldKey]: e.target.value })
+            }
+          >
+            <option value="">Select</option>
+            <option value="yes">Yes</option>
+            <option value="no">No</option>
+          </select>
+        )
+
+      case 'dropdown':
+        return (
+          <select
+            className="w-full border p-2"
+            value={value}
+            onChange={e =>
+              setFormData({ ...formData, [fieldKey]: e.target.value })
+            }
+          >
+            <option value="">Select</option>
+            {config.options?.map(opt => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </select>
+        )
+
+      case 'number':
+        return (
+          <input
+            type="number"
+            className="w-full border p-2"
+            value={value}
+            onChange={e =>
+              setFormData({
+                ...formData,
+                [fieldKey]: e.target.value === ''
+                  ? ''
+                  : Number(e.target.value),
+              })
+            }
+          />
+        )
+
+      case 'textarea':
+        return (
+          <textarea
+            className="w-full border p-2"
+            rows={3}
+            value={value}
+            onChange={e =>
+              setFormData({ ...formData, [fieldKey]: e.target.value })
+            }
+          />
+        )
+
+      default:
+        return (
+          <input
+            type="text"
+            className="w-full border p-2"
+            value={value}
+            onChange={e =>
+              setFormData({ ...formData, [fieldKey]: e.target.value })
+            }
+          />
+        )
+    }
+  }
+
+  /* ================= SAVE (BACKEND IS FINAL AUTHORITY) ================= */
   async function handleSave() {
     if (!selectedStageId) {
       alert('Please select a status')
       return
     }
 
-    if (!validate()) return
+    if (!validateClientSide()) return
 
-    /**
-     * IMPORTANT:
-     * - stage_metadata must ALWAYS be a full JSON object
-     * - Never spread dynamic fields directly into table columns
-     */
-    const { error } = await supabase
-      .from('temp_leads_basics')
-      .update({
-        current_stage_id: selectedStageId,
-        stage_metadata: formData, // ✅ CORRECT JSON STORAGE
-      })
-      .eq('id', leadId)
+    setSaving(true)
 
-    if (error) {
-      console.error(error)
-      alert('Failed to update stage')
+    const res = await fetch('/api/update-stage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        leadId,
+        stageId: selectedStageId,
+        formData,
+      }),
+    })
+
+    const result = await res.json()
+    setSaving(false)
+
+    if (!res.ok) {
+      alert(result.error || 'Status update validation failed')
       return
     }
 
@@ -112,7 +223,7 @@ export default function UpdateStageModal({
               const stage = stages.find(s => s.id === stageId)
 
               setMandatoryFields(stage?.mandatory_fields || {})
-              setFormData({}) // reset metadata for new stage
+              setFormData({})
             }}
           >
             <option value="">Select new status</option>
@@ -124,18 +235,15 @@ export default function UpdateStageModal({
           </select>
         )}
 
-        {Object.keys(mandatoryFields).map(field => (
-          <div key={field}>
-            <label className="block text-sm font-medium">
-              {field.replaceAll('_', ' ')}
+        {/* ================= DYNAMIC FIELDS ================= */}
+        {Object.entries(mandatoryFields).map(([key, config]) => (
+          <div key={key} className="mt-3">
+            <label className="block text-sm font-medium mb-1">
+              {config.label}
+              {config.required && ' *'}
             </label>
-            <input
-              className="w-full border p-2"
-              value={formData[field] || ''}
-              onChange={(e) =>
-                setFormData({ ...formData, [field]: e.target.value })
-              }
-            />
+
+            {renderField(key, config)}
           </div>
         ))}
 
@@ -145,9 +253,10 @@ export default function UpdateStageModal({
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-green-600 text-white rounded"
+            disabled={saving}
+            className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-60"
           >
-            Save Status
+            {saving ? 'Saving...' : 'Save Status'}
           </button>
         </div>
       </div>
