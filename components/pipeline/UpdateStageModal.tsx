@@ -83,12 +83,14 @@ export default function UpdateStageModal({
   function renderField(fieldKey: string, config: FieldConfig) {
     const value = formData[fieldKey] ?? ''
 
+    const inputClass = "w-full border border-gray-200 rounded p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+
     switch (config.type) {
       case 'date':
         return (
           <input
             type="date"
-            className="w-full border p-2"
+            className={inputClass}
             value={value}
             onChange={e =>
               setFormData({ ...formData, [fieldKey]: e.target.value })
@@ -99,7 +101,7 @@ export default function UpdateStageModal({
       case 'boolean':
         return (
           <select
-            className="w-full border p-2"
+            className={inputClass}
             value={value}
             onChange={e =>
               setFormData({ ...formData, [fieldKey]: e.target.value })
@@ -114,7 +116,7 @@ export default function UpdateStageModal({
       case 'dropdown':
         return (
           <select
-            className="w-full border p-2"
+            className={inputClass}
             value={value}
             onChange={e =>
               setFormData({ ...formData, [fieldKey]: e.target.value })
@@ -133,7 +135,7 @@ export default function UpdateStageModal({
         return (
           <input
             type="number"
-            className="w-full border p-2"
+            className={inputClass}
             value={value}
             onChange={e =>
               setFormData({
@@ -149,7 +151,7 @@ export default function UpdateStageModal({
       case 'textarea':
         return (
           <textarea
-            className="w-full border p-2"
+            className={inputClass}
             rows={3}
             value={value}
             onChange={e =>
@@ -162,7 +164,7 @@ export default function UpdateStageModal({
         return (
           <input
             type="text"
-            className="w-full border p-2"
+            className={inputClass}
             value={value}
             onChange={e =>
               setFormData({ ...formData, [fieldKey]: e.target.value })
@@ -206,15 +208,15 @@ export default function UpdateStageModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded w-full max-w-lg space-y-4">
-        <h2 className="text-lg font-semibold">Update Status</h2>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white p-8 rounded-xl w-full max-w-xl shadow-xl">
+        <h2 className="text-xl font-bold mb-6 text-gray-900">Update Status</h2>
 
         {loading ? (
-          <p>Loading stages...</p>
+          <p className="text-gray-500">Loading stages...</p>
         ) : (
           <select
-            className="w-full border p-2"
+            className="w-full border border-gray-200 rounded p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent bg-white"
             value={selectedStageId}
             onChange={(e) => {
               const stageId = e.target.value
@@ -236,25 +238,39 @@ export default function UpdateStageModal({
         )}
 
         {/* ================= DYNAMIC FIELDS ================= */}
-        {Object.entries(mandatoryFields).map(([key, config]) => (
-          <div key={key} className="mt-3">
-            <label className="block text-sm font-medium mb-1">
-              {config.label}
-              {config.required && ' *'}
-            </label>
+        {Object.entries(mandatoryFields).length > 0 && (
+          <div className="space-y-4 mt-4">
+            {Object.entries(mandatoryFields)
+              .sort(([, a], [, b]) => {
+                const isNotesA = a.label.toLowerCase().includes('notes')
+                const isNotesB = b.label.toLowerCase().includes('notes')
+                if (isNotesA && !isNotesB) return 1
+                if (!isNotesA && isNotesB) return -1
+                return 0
+              })
+              .map(([key, config]) => (
+                <div key={key}>
+                  <label className="block text-sm font-semibold mb-2 text-gray-700">
+                    {config.label}
+                  </label>
 
-            {renderField(key, config)}
+                  {renderField(key, config)}
+                </div>
+              ))}
           </div>
-        ))}
+        )}
 
-        <div className="flex justify-end gap-3 pt-4">
-          <button onClick={onClose} className="px-4 py-2 border rounded">
+        <div className="flex justify-end gap-3 mt-8">
+          <button 
+            onClick={onClose} 
+            className="px-6 py-2.5 border border-gray-200 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+          >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-2 bg-green-600 text-white rounded disabled:opacity-60"
+            className="px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
           >
             {saving ? 'Saving...' : 'Save Status'}
           </button>

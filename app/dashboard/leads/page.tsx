@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { Eye, Send } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 
 /* ================= TYPES ================= */
@@ -195,19 +196,23 @@ export default function MyLeadsPage() {
                     </td>
 
                     {/* ACTIONS */}
-                    <td className="px-4 py-3 space-x-3">
+                    <td className="px-4 py-3 flex items-center gap-3">
                       <Link
                         href={`/dashboard/leads/${lead.id}`}
-                        className="text-blue-600 hover:underline font-medium"
+                        className="text-blue-600 hover:underline font-medium flex items-center gap-1"
+                        title="View Lead"
                       >
+                        <Eye className="w-4 h-4" />
                         View
                       </Link>
 
                       {stage === 'Quoting in Progress' && (
                         <Link
                           href={`/dashboard/leads/send-form?id=${lead.id}`}
-                          className="text-green-600 hover:underline font-medium"
+                          className="text-green-600 hover:underline font-medium flex items-center gap-1"
+                          title="Send Initial Email"
                         >
+                          <Send className="w-4 h-4" />
                           Send Initial Email
                         </Link>
                       )}
