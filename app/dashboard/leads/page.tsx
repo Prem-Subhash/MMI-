@@ -136,10 +136,9 @@ export default function MyLeadsPage() {
               key={filter.label}
               onClick={() => applyFilter(filter.value)}
               className={`px-4 py-2 rounded-full text-sm font-medium border
-                ${
-                  isActive
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                ${isActive
+                  ? 'bg-[#1A9887] text-white border-[#1A9887]'
+                  : 'bg-white text-gray-600 hover:bg-gray-100'
                 }
               `}
             >
@@ -157,7 +156,7 @@ export default function MyLeadsPage() {
       ) : (
         <div className="overflow-x-auto bg-white border rounded-xl shadow-sm">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-gray-700">
+            <thead className="bg-[#1A9887] text-white">
               <tr>
                 <th className="px-4 py-3 text-left">Client Name</th>
                 <th className="px-4 py-3 text-left">Phone</th>
@@ -230,14 +229,14 @@ function StageBadge({ stage }: { stage: string }) {
     stage === 'Quoting in Progress'
       ? 'bg-yellow-100 text-yellow-800'
       : stage === 'Quote Has Been Emailed'
-      ? 'bg-blue-100 text-blue-800'
-      : stage === 'Consent Letter Sent'
-      ? 'bg-purple-100 text-purple-800'
-      : stage === 'Completed'
-      ? 'bg-green-100 text-green-800'
-      : stage === 'Did Not Bind'
-      ? 'bg-red-100 text-red-800'
-      : 'bg-gray-100 text-gray-800'
+        ? 'bg-blue-100 text-blue-800'
+        : stage === 'Consent Letter Sent'
+          ? 'bg-purple-100 text-purple-800'
+          : stage === 'Completed'
+            ? 'bg-green-100 text-green-800'
+            : stage === 'Did Not Bind'
+              ? 'bg-red-100 text-red-800'
+              : 'bg-gray-100 text-gray-800'
 
   return (
     <span className={`px-2 py-1 rounded-full text-xs font-semibold ${color}`}>
