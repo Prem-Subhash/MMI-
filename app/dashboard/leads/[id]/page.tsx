@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 
@@ -171,18 +172,27 @@ export default function LeadReviewPage() {
 
             {/* ACTIONS */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
-              <button
-                onClick={() => {
-                  if (!lead.pipeline_id) {
-                    alert('Pipeline not assigned to this lead')
-                    return
-                  }
-                  setShowUpdateModal(true)
-                }}
-                className="px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow transition"
-              >
-                Update Status
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => router.back()}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2"
+                >
+                  <ArrowLeft size={18} />
+                  Back
+                </button>
+                <button
+                  onClick={() => {
+                    if (!lead.pipeline_id) {
+                      alert('Pipeline not assigned to this lead')
+                      return
+                    }
+                    setShowUpdateModal(true)
+                  }}
+                  className="px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow transition"
+                >
+                  Update Status
+                </button>
+              </div>
 
               <div className="flex items-center gap-3 px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg border text-sm font-medium">
                 <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
@@ -240,18 +250,27 @@ export default function LeadReviewPage() {
             </div>
           </div>
 
-          <button
-            onClick={() => {
-              if (!lead.pipeline_id) {
-                alert('Pipeline not assigned to this lead')
-                return
-              }
-              setShowUpdateModal(true)
-            }}
-            className="px-5 py-2 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow"
-          >
-            Update Status
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => router.back()}
+              className="px-5 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2"
+            >
+              <ArrowLeft size={18} />
+              Back
+            </button>
+            <button
+              onClick={() => {
+                if (!lead.pipeline_id) {
+                  alert('Pipeline not assigned to this lead')
+                  return
+                }
+                setShowUpdateModal(true)
+              }}
+              className="px-5 py-2 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow"
+            >
+              Update Status
+            </button>
+          </div>
 
           <div>
             <h2 className="text-lg font-semibold mb-3">Submitted Form Data</h2>
