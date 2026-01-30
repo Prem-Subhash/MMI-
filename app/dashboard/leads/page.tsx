@@ -115,7 +115,7 @@ export default function MyLeadsPage() {
     <div className="p-8">
       {/* HEADER */}
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold">My Leads</h1>
+        <h1 className="text-2xl font-semibold">Personal Pipeline</h1>
 
         <Link
           href="/dashboard/leads/new"

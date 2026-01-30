@@ -36,7 +36,7 @@ export default function Sidebar() {
                 <Link href="/dashboard/leads" className="w-full">
                     <SidebarIcon
                         icon={<LayoutGrid size={28} />}
-                        label="Leads"
+                        label="Personal Pipeline"
                         active={isActive('/dashboard/leads')}
                         expanded={isHovered}
                     />
