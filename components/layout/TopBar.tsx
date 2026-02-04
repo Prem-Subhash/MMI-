@@ -9,23 +9,7 @@ export default function TopBar() {
     const [profileOpen, setProfileOpen] = useState(false)
 
     return (
-        <header className="h-24 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center justify-between px-6 shadow-md relative z-40">
-            <div className="flex-shrink-0">
-                <img
-                    src="/Moonstarlogo.jpeg"
-                    alt="Moonstar Logo"
-                    className="h-20 w-48 rounded-lg object-contain bg-white shadow-sm"
-                />
-            </div>
-
-            <div className="flex-1 flex justify-center px-8">
-                <input
-                    type="text"
-                    placeholder="Search clients, policies, or IDs..."
-                    className="w-full max-w-2xl rounded-xl px-6 py-3 text-base bg-white shadow-lg focus:outline-none focus:ring-2 focus:ring-white/40"
-                />
-            </div>
-
+        <header className="h-24 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center justify-end px-6 shadow-md relative z-40">
             <div className="flex items-center gap-6 text-white flex-shrink-0">
                 <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
                     <Bell size={28} />
