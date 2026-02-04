@@ -1,13 +1,17 @@
 'use client'
 
-import { useState } from 'react'
-import { LayoutGrid, Activity, Settings } from 'lucide-react'
+import { LayoutGrid, Settings, GitBranch } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useEffect } from 'react'
 
-export default function Sidebar() {
+interface SidebarProps {
+    setIsHovered: (hovered: boolean) => void
+    isHovered: boolean
+}
+
+export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
     const pathname = usePathname()
-    const [isHovered, setIsHovered] = useState(false)
 
     // Helper to check if a link is active.
     const isActive = (path: string) => {
@@ -18,12 +22,15 @@ export default function Sidebar() {
 
     return (
         <aside
-            className={`fixed left-0 top-0 bottom-0 z-50 bg-gradient-to-b from-[#10B889] to-[#2E5C85] text-white flex flex-col shadow-xl transition-all duration-300 ease-in-out ${isHovered ? 'w-[280px] items-start' : 'w-[110px] items-center'
-                }`}
+            className={`
+                fixed left-0 top-24 bottom-0 z-30 bg-gradient-to-b from-[#10B889] to-[#2E5C85] text-white flex flex-col shadow-xl 
+                transition-all duration-300 ease-in-out
+                ${isHovered ? 'w-[260px] items-start' : 'w-[110px] items-center'}
+            `}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <nav className="flex-1 flex flex-col gap-4 mt-24 w-full px-3">
+            <nav className="flex-1 flex flex-col gap-4 mt-8 w-full px-3">
                 <Link href="/dashboard" className="w-full">
                     <SidebarIcon
                         icon={<LayoutGrid size={28} />}
@@ -35,18 +42,9 @@ export default function Sidebar() {
 
                 <Link href="/dashboard/leads" className="w-full">
                     <SidebarIcon
-                        icon={<LayoutGrid size={28} />}
-                        label="Leads"
+                        icon={<GitBranch size={28} />}
+                        label="Personal Pipeline"
                         active={isActive('/dashboard/leads')}
-                        expanded={isHovered}
-                    />
-                </Link>
-
-                <Link href="/dashboard/settings" className="w-full">
-                    <SidebarIcon
-                        icon={<Settings size={28} />}
-                        label="Settings"
-                        active={isActive('/dashboard/settings')}
                         expanded={isHovered}
                     />
                 </Link>
@@ -76,8 +74,8 @@ function SidebarIcon({
                     : 'flex-col items-center justify-center h-[84px] w-[84px] gap-2 mx-auto'
                 }
                 ${active
-                    ? 'bg-white text-[#10B889]'
-                    : 'text-white/80 hover:bg-white/10 hover:text-white'
+                    ? 'bg-white text-[#10B889] shadow-lg'
+                    : 'text-white/80 hover:bg-white/10 hover:text-white hover:shadow-md'
                 }
             `}
         >
@@ -85,7 +83,7 @@ function SidebarIcon({
             <span
                 className={`
                     font-semibold tracking-wide transition-all duration-300 whitespace-nowrap
-                    ${expanded ? 'text-base' : 'text-xs'}
+                    ${expanded ? 'text-base opacity-100' : 'text-[0px] opacity-0 overflow-hidden'}
                 `}
             >
                 {label}
