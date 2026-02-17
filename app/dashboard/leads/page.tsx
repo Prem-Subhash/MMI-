@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
+import { Search } from 'lucide-react'
 
 /* ================= TYPES ================= */
 
@@ -40,6 +41,7 @@ export default function MyLeadsPage() {
 
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
 
   /* ================= LOAD LEADS ================= */
 
@@ -112,6 +114,12 @@ export default function MyLeadsPage() {
 
   /* ================= UI ================= */
 
+  const filteredLeads = leads.filter(lead => 
+    lead.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    lead.phone?.includes(searchTerm)
+  )
+
   return (
     <div className="p-8">
       {/* HEADER */}
@@ -125,6 +133,24 @@ export default function MyLeadsPage() {
           + New Lead
         </Link>
       </div>
+
+      {/* SEARCH BAR */}
+      {/* SEARCH BAR */}
+      <section className="bg-white p-4 rounded-xl shadow-sm border-2 border-emerald-500 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="relative max-w-lg w-full">
+          {/* Removed Icon for debugging */}
+          <input
+            type="text"
+            placeholder="Search client, email, or phone... (Updated)"
+            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <div className="text-sm text-gray-500 font-medium whitespace-nowrap">
+           {filteredLeads.length} Lead{filteredLeads.length !== 1 && 's'} Found
+        </div>
+      </section>
 
       {/* FILTER TABS */}
       <div className="flex gap-3 mb-6 flex-wrap">
@@ -173,7 +199,7 @@ export default function MyLeadsPage() {
             </thead>
 
             <tbody>
-              {leads.map(lead => {
+              {filteredLeads.map(lead => {
                 const stage = lead.current_stage?.stage_name ?? '—'
 
                 return (
