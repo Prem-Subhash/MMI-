@@ -26,24 +26,7 @@ You will also need a **Supabase** project set up.
 
 ## ⚙️ Environment Variables
 
-Create a `.env.local` file in the root directory and configure the following variables. You can refer to `.env.example` if available.
 
-```bash
-# ================= SUPABASE =================
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-
-# ================= SMTP (Email Configuration) =================
-# Example using Ethereal for development
-SMTP_HOST=smtp.ethereal.email
-SMTP_PORT=587
-SMTP_USER=your_smtp_user
-SMTP_PASS=your_smtp_password
-EMAIL_FROM="Innovative Insurance <sender@example.com>"
-
-# ================= APP =================
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 > **Note:** The `SUPABASE_SERVICE_ROLE_KEY` is for server-side operations that require bypassing Row Level Security (RLS). **Never expose this key on the client-side.**
