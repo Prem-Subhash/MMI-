@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 
 type Props = {
   leadId: string
+  // IMPORTANT: We need pipelineId to know which fields to show
   pipelineId: string
   onClose: () => void
   onSuccess: () => void
@@ -17,8 +18,10 @@ type FieldConfig = {
   options?: string[]
 }
 
-// Hardcoded field definitions to match user requirements
-const STAGE_FIELDS: Record<string, Record<string, FieldConfig>> = {
+// ==========================================
+// PERSONAL LINES FIELDS
+// ==========================================
+const PERSONAL_LINES_FIELDS: Record<string, Record<string, FieldConfig>> = {
   'Quoting in Progress': {
     ezlynx_updated: { label: 'Have you updated the client’s profile in EZLynx?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
@@ -32,7 +35,7 @@ const STAGE_FIELDS: Record<string, Record<string, FieldConfig>> = {
     paid_for_renewal: { label: 'Is the policy paid for the renewal term?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
-  'Quote Has been Emailed': {
+  'Quote Has Been Emailed': {
     follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
     quote_finalized: { label: 'Have you finalized the quote?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     carrier_quote_sent: { label: 'Which carrier quote are you sending?', type: 'text', required: true },
@@ -57,7 +60,96 @@ const STAGE_FIELDS: Record<string, Record<string, FieldConfig>> = {
   },
   'Cancelled': {
     cancellation_reason: { label: 'Why did the client cancel the renewal term?', type: 'text', required: true },
-    x_date: { label: 'X-date (Automatically added – 60 days prior)', type: 'date', required: false }, // Logic should handle pre-filling
+    // x_date: { label: 'X-date (Automatically added – 60 days prior)', type: 'date', required: false },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  }
+}
+
+// ==========================================
+// COMMERCIAL LINES FIELDS
+// ==========================================
+const COMMERCIAL_LINES_FIELDS: Record<string, Record<string, FieldConfig>> = {
+  'Quoting in Progress': {
+    target_completion_date: { label: 'Target Completion Date', type: 'date', required: true },
+    documents_saved_filecenter: { label: 'Have you saved documents in FileCenter?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    required_documents_received: { label: 'Have you received all required information or documents from client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Quote Has Been Emailed': {
+    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
+    finalized_quote: { label: 'Have you finalized the quote?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    carrier_name: { label: 'Which carrier quote are you sending?', type: 'text', required: true },
+    quoted_premium: { label: 'What is the quoted premium?', type: 'number', required: true },
+    agency_fees: { label: 'Agency Fees', type: 'number', required: true }, // Not explicitly requested in text but needed for consistency
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Consent Letter Sent': {
+    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
+    payment_method: { label: 'What is the payment method?', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
+    payment_frequency: { label: 'What is the payment frequency?', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Completed': {
+    policy_number: { label: 'Policy Number', type: 'text', required: true },
+    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
+    expected_commission: { label: 'Expected Commission', type: 'number', required: true },
+    agency_fees: { label: 'Agency Fees', type: 'number', required: true },
+    policy_docs_saved: { label: 'Policy documents saved in EZLynx & File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    docs_sent_to_client: { label: 'Have you sent the policy documents to client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Did Not Bind': {
+    // X-date is auto-calculated, so we don't need a field here for it unless we want to override it. 
+    // The requirement says "Automatically added", usually implying backend calc.
+    reason_not_bound: { label: 'Reason Not Bound', type: 'text', required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  }
+}
+
+
+// ==========================================
+// COMMERCIAL RENEWAL FIELDS
+// ==========================================
+const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
+  'Quoting in Progress': {
+    business_profile_updated_ezlynx: { label: 'Have you updated the business profile in EZLynx?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Same Declaration Emailed': {
+    quoted_multiple_carriers: { label: 'Did you quote in multiple carriers?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    autopay_enabled: { label: 'Is the current policy set up on autopay?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    agency_fee: { label: 'Agency Fee', type: 'number', required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Completed (Same)': {
+    policy_paid: { label: 'Is the policy paid for the renewal term?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Quote Has Been Emailed': {
+    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
+    finalized_quote: { label: 'Have you finalized the quote?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    carrier_name: { label: 'Which carrier quote are you sending?', type: 'text', required: true },
+    quoted_premium: { label: 'What is the quoted premium?', type: 'number', required: true },
+    agency_fee: { label: 'Agency Fee', type: 'number', required: true },
+    savings_amount: { label: 'Savings Amount', type: 'number', required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Consent Letter Sent': {
+    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
+    payment_method: { label: 'What is the payment method?', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
+    payment_frequency: { label: 'What is the payment frequency?', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Completed (Switch)': {
+    policy_number: { label: 'New Policy Number', type: 'text', required: true },
+    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
+    expected_commission: { label: 'Expected Commission', type: 'number', required: true },
+    policy_docs_saved: { label: 'Policy documents saved in EZLynx & File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    docs_sent_to_client: { label: 'Have you sent the policy documents to client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    cancelled_previous_carrier: { label: 'Did you cancel the renewal term in previous carrier?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Cancelled': {
     notes: { label: 'Notes/Details', type: 'textarea' }
   }
 }
@@ -76,6 +168,11 @@ export default function UpdateStageModal({
   const [loading, setLoading] = useState(false)
   const [saving, setSaving] = useState(false)
 
+  // Identify if we are in Commercial Lines based on pipeline name/category?
+  // We can just query pipeline details or check if the stage name matches a key in Commercial Fields.
+  // Ideally, we load the pipeline info.
+  const [pipelineType, setPipelineType] = useState<'Personal' | 'Commercial' | 'CommercialRenewal' | 'Unknown'>('Unknown')
+
   /* ================= LOAD STAGES ================= */
   useEffect(() => {
     if (!pipelineId) {
@@ -88,20 +185,35 @@ export default function UpdateStageModal({
   async function loadStages() {
     setLoading(true)
 
-    const { data, error } = await supabase
-      .from('pipeline_stages')
-      .select('*')
-      .eq('pipeline_id', pipelineId)
-      .order('stage_order')
+    // Parallel fetch: Pipeline Details + Stages
+    const [pipelineRes, stagesRes] = await Promise.all([
+      supabase.from('pipelines').select('name, category').eq('id', pipelineId).single(),
+      supabase.from('pipeline_stages').select('*').eq('pipeline_id', pipelineId).order('stage_order')
+    ])
 
-    if (error) {
-      console.error(error)
+    if (pipelineRes.error) {
+      console.error('Pipeline fetch error', pipelineRes.error)
+    } else {
+      const name = pipelineRes.data?.name || ''
+      const category = pipelineRes.data?.category || ''
+
+      if (name.includes('Commercial') && name.includes('Renewal')) {
+        setPipelineType('CommercialRenewal')
+      } else if (name.includes('Commercial') || category.includes('Commercial')) {
+        setPipelineType('Commercial')
+      } else {
+        setPipelineType('Personal')
+      }
+    }
+
+    if (stagesRes.error) {
+      console.error(stagesRes.error)
       alert('Failed to load pipeline stages')
       setLoading(false)
       return
     }
 
-    setStages(data || [])
+    setStages(stagesRes.data || [])
     setLoading(false)
   }
 
@@ -128,14 +240,12 @@ export default function UpdateStageModal({
 
     switch (config.type) {
       case 'date': {
-        const today = new Date().toISOString().split('T')[0]
-
+        // const today = new Date().toISOString().split('T')[0]
         return (
           <input
             type="date"
             className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700"
             value={value}
-            // min={today}
             onChange={(e) =>
               setFormData({ ...formData, [fieldKey]: e.target.value })
             }
@@ -191,8 +301,8 @@ export default function UpdateStageModal({
               ))}
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-               <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
           </div>
@@ -243,8 +353,14 @@ export default function UpdateStageModal({
             formData.email_sent === 'yes'
               ? true
               : formData.email_sent === 'no'
-              ? false
-              : formData.email_sent,
+                ? false
+                : formData.email_sent,
+          // Normalize boolean dropdowns to actual booleans for Commercial logic
+          documents_saved_filecenter: formData.documents_saved_filecenter === 'Yes',
+          required_documents_received: formData.required_documents_received === 'Yes',
+          finalized_quote: formData.finalized_quote === 'Yes',
+          policy_docs_saved: formData.policy_docs_saved === 'Yes',
+          docs_sent_to_client: formData.docs_sent_to_client === 'Yes'
         },
       }),
     })
@@ -258,6 +374,8 @@ export default function UpdateStageModal({
       return
     }
 
+    // Success
+    alert('Pipeline stage updated successfully!')
     onSuccess()
     onClose()
   }
@@ -281,35 +399,44 @@ export default function UpdateStageModal({
                   setSelectedStageId(stageId)
 
                   const stage = stages.find((s) => s.id === stageId)
-                  
+
                   if (!stage) {
                     setMandatoryFields({})
                     setFormData({})
                     return
                   }
 
+                  // Pick correct config map
+                  let configMap = PERSONAL_LINES_FIELDS
+                  if (pipelineType === 'CommercialRenewal') {
+                    configMap = COMMERCIAL_RENEWAL_FIELDS
+                  } else if (pipelineType === 'Commercial') {
+                    configMap = COMMERCIAL_LINES_FIELDS
+                  }
+
                   // Normalize name for lookup
                   const normalizedName = stage.stage_name.trim()
-                  
-                  // Try exact match or match from STAGE_FIELDS keys
-                  const matchedKey = Object.keys(STAGE_FIELDS).find(
+
+                  // Try exact match or match from FIELDS keys
+                  // Note: Keys in configMap are Case Sensitive usually, but let's be safe
+                  const matchedKey = Object.keys(configMap).find(
                     key => key.toLowerCase() === normalizedName.toLowerCase()
                   )
 
                   let fields: Record<string, FieldConfig> = {}
 
                   if (matchedKey) {
-                    fields = STAGE_FIELDS[matchedKey]
+                    fields = configMap[matchedKey]
                   } else if (Array.isArray(stage.mandatory_fields)) {
-                     // Fallback: Convert DB array to config to prevent empty rendering
-                     stage.mandatory_fields.forEach((f: string) => {
-                       fields[f] = { label: f, type: 'text', required: true }
-                     })
+                    // Fallback: Convert DB array to config to prevent empty rendering
+                    stage.mandatory_fields.forEach((f: string) => {
+                      fields[f] = { label: f, type: 'text', required: true }
+                    })
                   } else if (typeof stage.mandatory_fields === 'object' && stage.mandatory_fields !== null) {
-                      // If DB already has object config
-                      fields = stage.mandatory_fields
+                    // If DB already has object config
+                    fields = stage.mandatory_fields
                   }
-                  
+
                   setMandatoryFields(fields)
                   setFormData({})
                 }}
@@ -323,7 +450,7 @@ export default function UpdateStageModal({
               </select>
               <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
                 <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
             </div>

@@ -105,6 +105,9 @@ export default function MyLeadsPage() {
   /* ================= FILTER HANDLER ================= */
 
   const applyFilter = (stage: string | null) => {
+    // Check if the current filter is already selected to allow toggling off if needed, 
+    // or just push the new route. 
+    // Logic below matches original: direct push.
     if (!stage) {
       router.push('/dashboard/leads')
     } else {
@@ -112,13 +115,18 @@ export default function MyLeadsPage() {
     }
   }
 
+  // Client-side search filtering
+  const filteredLeads = leads.filter(lead => {
+    const term = searchTerm.toLowerCase()
+    return (
+      (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
+      (lead.email && lead.email.toLowerCase().includes(term)) ||
+      (lead.phone && lead.phone.includes(term))
+    )
+  })
+
   /* ================= UI ================= */
 
-  const filteredLeads = leads.filter(lead => 
-    lead.client_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lead.phone?.includes(searchTerm)
-  )
 
   return (
     <div className="p-8">
@@ -126,31 +134,15 @@ export default function MyLeadsPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold">My Leads</h1>
 
-        <Link
-          href="/dashboard/leads/new"
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium"
-        >
-          + New Lead
-        </Link>
+        <div className="flex gap-3">
+             <Link
+            href="/dashboard/leads/new"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            >
+            + New Lead
+            </Link>
+        </div>
       </div>
-
-      {/* SEARCH BAR */}
-      {/* SEARCH BAR */}
-      <section className="bg-white p-4 rounded-xl shadow-sm border-2 border-emerald-500 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="relative max-w-lg w-full">
-          {/* Removed Icon for debugging */}
-          <input
-            type="text"
-            placeholder="Search client, email, or phone... (Updated)"
-            className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <div className="text-sm text-gray-500 font-medium whitespace-nowrap">
-           {filteredLeads.length} Lead{filteredLeads.length !== 1 && 's'} Found
-        </div>
-      </section>
 
       {/* FILTER TABS */}
       <div className="flex gap-3 mb-6 flex-wrap">
@@ -163,11 +155,11 @@ export default function MyLeadsPage() {
             <button
               key={filter.label}
               onClick={() => applyFilter(filter.value)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border
+              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
                 ${
                   isActive
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-gray-600 hover:bg-gray-100'
+                    ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                    : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
                 }
               `}
             >
@@ -177,76 +169,100 @@ export default function MyLeadsPage() {
         })}
       </div>
 
-      {/* TABLE */}
-      {loading ? (
-        <p>Loading leads...</p>
-      ) : leads.length === 0 ? (
-        <p>No leads found.</p>
-      ) : (
-        <div className="overflow-x-auto bg-white border rounded-xl shadow-sm">
-          <table className="min-w-full text-sm">
-            <thead className="bg-gray-100 text-gray-700">
-              <tr>
-                <th className="px-4 py-3 text-left">Client Name</th>
-                <th className="px-4 py-3 text-left">Phone</th>
-                <th className="px-4 py-3 text-left">Email</th>
-                <th className="px-4 py-3 text-left">Category</th>
-                <th className="px-4 py-3 text-left">Flow</th>
-                <th className="px-4 py-3 text-left">Stage</th>
-                <th className="px-4 py-3 text-left">Created</th>
-                <th className="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredLeads.map(lead => {
-                const stage = lead.current_stage?.stage_name ?? '—'
-
-                return (
-                  <tr key={lead.id} className="border-t hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">
-                      {lead.client_name}
-                    </td>
-                    <td className="px-4 py-3">{lead.phone}</td>
-                    <td className="px-4 py-3">{lead.email}</td>
-                    <td className="px-4 py-3 capitalize">
-                      {lead.insurence_category}
-                    </td>
-                    <td className="px-4 py-3 capitalize">
-                      {lead.policy_flow}
-                    </td>
-                    <td className="px-4 py-3">
-                      <StageBadge stage={stage} />
-                    </td>
-                    <td className="px-4 py-3">
-                      {new Date(lead.created_at).toLocaleDateString()}
-                    </td>
-
-                    {/* ACTIONS */}
-                    <td className="px-4 py-3 space-x-3">
-                      <Link
-                        href={`/dashboard/leads/${lead.id}`}
-                        className="text-blue-600 hover:underline font-medium"
-                      >
-                        View
-                      </Link>
-
-                      {stage === 'Quoting in Progress' && (
-                        <Link
-                          href={`/dashboard/leads/send-form?id=${lead.id}`}
-                          className="text-green-600 hover:underline font-medium"
-                        >
-                          Send Initial Email
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+      {/* TABLE SECTION */}
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        {/* TOOLBAR */}
+        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="relative max-w-sm w-full">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <input
+                    type="text"
+                    placeholder="Search client, email, or phone..."
+                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                />
+            </div>
+            <div className="text-sm text-gray-500 font-medium whitespace-nowrap">
+                {filteredLeads.length} Lead{filteredLeads.length !== 1 && 's'} Found
+            </div>
         </div>
-      )}
+
+        {loading ? (
+            <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
+                <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <p>Loading leads...</p>
+            </div>
+        ) : filteredLeads.length === 0 ? (
+            <div className="p-12 text-center text-gray-500">
+                No leads found matching your criteria.
+            </div>
+        ) : (
+            <div className="overflow-x-auto">
+            <table className="min-w-full text-sm text-left">
+                <thead className="bg-gray-50 text-gray-600 uppercase text-xs border-b border-gray-100 tracking-wider">
+                <tr>
+                    <th className="px-6 py-4 font-semibold">Client Name</th>
+                    <th className="px-6 py-4 font-semibold">Phone</th>
+                    <th className="px-6 py-4 font-semibold">Email</th>
+                    <th className="px-6 py-4 font-semibold">Category</th>
+                    <th className="px-6 py-4 font-semibold">Flow</th>
+                    <th className="px-6 py-4 font-semibold">Stage</th>
+                    <th className="px-6 py-4 font-semibold">Created</th>
+                    <th className="px-6 py-4 font-semibold">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody className="divide-y divide-gray-100">
+                {filteredLeads.map(lead => {
+                    const stage = lead.current_stage?.stage_name ?? '—'
+
+                    return (
+                    <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
+                        <td className="px-6 py-4 font-medium text-gray-900">
+                        {lead.client_name}
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">{lead.phone}</td>
+                        <td className="px-6 py-4 text-gray-600">{lead.email}</td>
+                        <td className="px-6 py-4 capitalize text-gray-700">
+                        {lead.insurence_category}
+                        </td>
+                        <td className="px-6 py-4 capitalize text-gray-700">
+                        {lead.policy_flow}
+                        </td>
+                        <td className="px-6 py-4">
+                        <StageBadge stage={stage} />
+                        </td>
+                        <td className="px-6 py-4 text-gray-500">
+                        {new Date(lead.created_at).toLocaleDateString()}
+                        </td>
+
+                        {/* ACTIONS */}
+                        <td className="px-6 py-4 space-x-3">
+                        <Link
+                            href={`/dashboard/leads/${lead.id}`}
+                            className="text-blue-600 hover:text-blue-800 font-medium text-xs uppercase tracking-wide transition-colors"
+                        >
+                            View
+                        </Link>
+
+                        {stage === 'Quoting in Progress' && (
+                            <Link
+                            href={`/dashboard/leads/send-form?id=${lead.id}`}
+                            className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors"
+                            >
+                            Send Email
+                            </Link>
+                        )}
+                        </td>
+                    </tr>
+                    )
+                })}
+                </tbody>
+            </table>
+            </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -256,19 +272,19 @@ export default function MyLeadsPage() {
 function StageBadge({ stage }: { stage: string }) {
   const color =
     stage === 'Quoting in Progress'
-      ? 'bg-yellow-100 text-yellow-800'
+      ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
       : stage === 'Quote Has Been Emailed'
-      ? 'bg-blue-100 text-blue-800'
+      ? 'bg-blue-50 text-blue-700 border border-blue-200'
       : stage === 'Consent Letter Sent'
-      ? 'bg-purple-100 text-purple-800'
+      ? 'bg-purple-50 text-purple-700 border border-purple-200'
       : stage === 'Completed'
-      ? 'bg-green-100 text-green-800'
+      ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
       : stage === 'Did Not Bind'
-      ? 'bg-red-100 text-red-800'
-      : 'bg-gray-100 text-gray-800'
+      ? 'bg-red-50 text-red-700 border border-red-200'
+      : 'bg-gray-50 text-gray-700 border border-gray-200'
 
   return (
-    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${color}`}>
+    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
       {stage}
     </span>
   )

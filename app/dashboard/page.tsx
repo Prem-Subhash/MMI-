@@ -6,6 +6,7 @@ import {
   GitBranch,
   List,
   RefreshCw,
+  Briefcase,
 } from 'lucide-react'
 
 export default function DashboardPage() {
@@ -34,6 +35,12 @@ export default function DashboardPage() {
           title="Personal Renewal Pipeline"
           icon={<RefreshCw size={28} />}
           onClick={() => router.push('/dashboard/renewals')}
+        />
+
+        <ActionCard
+          title="Commercial Pipeline"
+          icon={<Briefcase size={28} />}
+          onClick={() => router.push('/dashboard/commercial')}
         />
 
         <ActionCard
