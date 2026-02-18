@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 
 import HomeInsuranceForm from '@/components/forms/HomeInsuranceForm'
 import AutoInsuranceForm from '@/components/forms/AutoInsuranceForm'
-import PrimaryApplicantForm from '@/components/forms/PrimaryApplicantForm' 
+import PrimaryApplicantForm from '@/components/forms/PrimaryApplicantForm'
 import CoApplicantForm from '@/components/forms/CoApplicantForm'
 
 export default function IntakeFormPage() {
@@ -118,6 +118,13 @@ export default function IntakeFormPage() {
       setError(error.message)
       return
     }
+
+    // Notify backend
+    await fetch('/api/notify-submission', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ intakeId, formType })
+    })
 
     setSubmitted(true)
   }

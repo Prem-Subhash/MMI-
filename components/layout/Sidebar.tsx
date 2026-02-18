@@ -1,8 +1,8 @@
 'use client'
 
-import { LayoutGrid, Settings, GitBranch, RefreshCw } from 'lucide-react'
+import { LayoutGrid, Settings, GitBranch, RefreshCw, Briefcase, FileText } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
 
 interface SidebarProps {
@@ -12,6 +12,7 @@ interface SidebarProps {
 
 export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
     const pathname = usePathname()
+    const searchParams = useSearchParams()
 
     // Helper to check if a link is active.
     const isActive = (path: string) => {
@@ -49,11 +50,38 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
                     />
                 </Link>
 
-                <Link href="/dashboard/renewals" className="w-full">
+                <Link href="/dashboard/renewals/personal" className="w-full">
                     <SidebarIcon
                         icon={<RefreshCw size={28} />}
                         label="Personal Line Renewal"
-                        active={isActive('/dashboard/renewals')}
+                        active={isActive('/dashboard/renewals/personal')}
+                        expanded={isHovered}
+                    />
+                </Link>
+
+                <Link href="/dashboard/renewals/commercial" className="w-full">
+                    <SidebarIcon
+                        icon={<RefreshCw size={28} />}
+                        label="Commercial Renewal"
+                        active={isActive('/dashboard/renewals/commercial')}
+                        expanded={isHovered}
+                    />
+                </Link>
+
+                <Link href="/dashboard/commercial" className="w-full">
+                    <SidebarIcon
+                        icon={<Briefcase size={28} />}
+                        label="Commercial"
+                        active={isActive('/dashboard/commercial')}
+                        expanded={isHovered}
+                    />
+                </Link>
+
+                <Link href="/dashboard/reports/monthly" className="w-full">
+                    <SidebarIcon
+                        icon={<FileText size={28} />}
+                        label="Monthly Reports"
+                        active={isActive('/dashboard/reports')}
                         expanded={isHovered}
                     />
                 </Link>

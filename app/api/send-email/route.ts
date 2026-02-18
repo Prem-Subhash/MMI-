@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import nodemailer from 'nodemailer'
+import { sendGraphEmail } from '@/lib/microsoftGraph'
 
 export async function POST(req: Request) {
   try {
@@ -62,27 +62,17 @@ export async function POST(req: Request) {
       .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
       .replace(/{{\s*form_link\s*}}/g, formLink)
 
-    /* ================= SMTP TRANSPORT ================= */
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    })
-
-    /* ================= SEND EMAIL ================= */
-    const info = await transporter.sendMail({
-      from: process.env.EMAIL_FROM,
-      to: lead.email,
-      subject: template.subject,
-      html: emailBody,
-    })
-
-    console.log('EMAIL SENT SUCCESSFULLY')
-    console.log('Email preview URL:', nodemailer.getTestMessageUrl(info))
+    /* ================= SEND EMAIL (MS GRAPH) ================= */
+    try {
+      await sendGraphEmail([lead.email], template.subject, emailBody)
+      console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API')
+    } catch (emailError: any) {
+      console.error('FAILED TO SEND EMAIL VIA GRAPH:', emailError)
+      return NextResponse.json(
+        { error: `Email send failed: ${emailError.message}` },
+        { status: 500 }
+      )
+    }
 
     /* ================= OPTIONAL EMAIL LOG ================= */
     const { error: emailLogError } = await supabaseServer
@@ -129,7 +119,7 @@ export async function POST(req: Request) {
     console.log('EMAIL ACTION RECORDED (STAGE NOT CHANGED)')
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Send email API error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
