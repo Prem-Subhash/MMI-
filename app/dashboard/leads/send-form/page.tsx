@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+
 import { supabase } from '@/lib/supabaseClient'
+import { ArrowLeft } from 'lucide-react'
 
 type EmailTemplate = {
   id: string
@@ -312,11 +313,11 @@ export default function SendFormPage() {
               </div>
             </div>
 
-            {/* ACTIONS */}
+            {/* ACTION BUTTONS */}
             <div className="flex gap-4">
               <button
                 onClick={() => router.back()}
-                className="px-8 bg-white border border-gray-200 text-gray-700 font-bold py-4 rounded-xl shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2"
+                className="w-1/3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
               >
                 <ArrowLeft size={20} />
                 Back
@@ -325,7 +326,7 @@ export default function SendFormPage() {
               <button
                 onClick={handleSend}
                 disabled={sending}
-                className="flex-1 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
+                className="w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
               >
                 {sending ? 'Sending…' : 'Send Initial Email'}
               </button>

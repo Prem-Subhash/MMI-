@@ -1,8 +1,10 @@
 'use client'
 
+import { YES_NO_OPTIONS } from './constants'
+
 type Props = {
   data: any
-  onChange: (field: string, value: any) => void
+  onChange: (value: any) => void
   disabled?: boolean
 }
 
@@ -11,208 +13,162 @@ export default function AutoInsuranceForm({
   onChange,
   disabled = false,
 }: Props) {
-  return (
-    <div className="bg-[#F1FFFB] border rounded-xl p-6 space-y-6">
+  const updateField = (field: string, value: any) => {
+    onChange({
+      ...data,
+      [field]: value,
+    })
+  }
 
-      {/* ---------- HEADER ---------- */}
-      <div className="flex items-center gap-3">
-        <div className="bg-teal-500 text-white p-2 rounded-lg">
-          🚗
-        </div>
+  return (
+    <div className="mb-10 border rounded">
+      {/* SECTION HEADER — MATCH PDF */}
+      <div className="bg-gray-200 px-4 py-2 font-semibold">
+        QUESTIONS FOR AUTO INSURANCE QUOTE
+      </div>
+
+      {/* SECTION BODY */}
+      <div className="p-4 space-y-4">
+        {/* CURRENT CARRIER */}
         <div>
-          <h2 className="text-lg font-semibold">
-            Auto Insurance Details
-          </h2>
-          <p className="text-sm text-gray-500">
-            Please provide the following details for your quote
-          </p>
+          <label className="block text-sm font-medium mb-1">
+            What is the name of your current carrier?
+          </label>
+          <input
+            type="text"
+            value={data.current_carrier || ''}
+            disabled={disabled}
+            onChange={e =>
+              updateField('current_carrier', e.target.value)
+            }
+            className="w-full border px-3 py-2 rounded"
+          />
+        </div>
+
+        {/* MONTHS WITH CARRIER */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            How long have you stayed with your current carrier? (in Months)
+          </label>
+          <input
+            type="number"
+            value={data.months_with_carrier || ''}
+            disabled={disabled}
+            onChange={e =>
+              updateField('months_with_carrier', e.target.value)
+            }
+            className="w-full border px-3 py-2 rounded"
+          />
+        </div>
+
+        {/* AUTO CLAIMS */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Have you had any auto loss claims in the last 5 years?
+          </label>
+          <select
+            value={data.claims_last_5_years || ''}
+            disabled={disabled}
+            onChange={e =>
+              updateField('claims_last_5_years', e.target.value)
+            }
+            className="w-full border px-3 py-2 rounded"
+          >
+            <option value="">Select</option>
+            {YES_NO_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* CLAIM COUNT (CONDITIONAL) */}
+        {data.claims_last_5_years === 'yes' && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              If yes, then how many?
+            </label>
+            <input
+              type="number"
+              value={data.claims_count || ''}
+              disabled={disabled}
+              onChange={e =>
+                updateField('claims_count', e.target.value)
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
+          </div>
+        )}
+
+        {/* VIOLATIONS */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Have you had any driving violations in the last 5 years?
+          </label>
+          <select
+            value={data.violations_last_5_years || ''}
+            disabled={disabled}
+            onChange={e =>
+              updateField(
+                'violations_last_5_years',
+                e.target.value
+              )
+            }
+            className="w-full border px-3 py-2 rounded"
+          >
+            <option value="">Select</option>
+            {YES_NO_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* VIOLATION COUNT (CONDITIONAL) */}
+        {data.violations_last_5_years === 'yes' && (
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              If yes, then how many?
+            </label>
+            <input
+              type="number"
+              value={data.violation_count || ''}
+              disabled={disabled}
+              onChange={e =>
+                updateField('violation_count', e.target.value)
+              }
+              className="w-full border px-3 py-2 rounded"
+            />
+          </div>
+        )}
+
+        {/* GOOD DRIVER DISCOUNT */}
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Does any driver qualify for Good Student or Defensive Driver discount?
+          </label>
+          <select
+            value={data.good_driver_discount || ''}
+            disabled={disabled}
+            onChange={e =>
+              updateField(
+                'good_driver_discount',
+                e.target.value
+              )
+            }
+            className="w-full border px-3 py-2 rounded"
+          >
+            <option value="">Select</option>
+            {YES_NO_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
-
-      {/* ---------- ROW 1 ---------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="Vehicle Make"
-          required
-          value={data.vehicle_make}
-          disabled={disabled}
-          onChange={v => onChange('vehicle_make', v)}
-        />
-
-        <Input
-          label="Vehicle Model"
-          required
-          value={data.vehicle_model}
-          disabled={disabled}
-          onChange={v => onChange('vehicle_model', v)}
-        />
-      </div>
-
-      {/* ---------- ROW 2 ---------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="Year"
-          required
-          value={data.vehicle_year}
-          disabled={disabled}
-          onChange={v => onChange('vehicle_year', v)}
-        />
-
-        <Input
-          label="VIN Number"
-          required
-          value={data.vin_number}
-          disabled={disabled}
-          onChange={v => onChange('vin_number', v)}
-        />
-      </div>
-
-      {/* ---------- ROW 3 ---------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Select
-          label="Usage Type"
-          required
-          disabled={disabled}
-          value={data.usage_type}
-          onChange={v => onChange('usage_type', v)}
-          options={[
-            'Personal',
-            'Commercial',
-            'Rideshare',
-          ]}
-        />
-
-        <Input
-          label="Primary Driver Name"
-          required
-          value={data.primary_driver_name}
-          disabled={disabled}
-          onChange={v => onChange('primary_driver_name', v)}
-        />
-      </div>
-
-      {/* ---------- ROW 4 ---------- */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="License Number"
-          required
-          value={data.license_number}
-          disabled={disabled}
-          onChange={v => onChange('license_number', v)}
-        />
-
-        <Select
-          label="Accident History (Past 5 Years)"
-          required
-          disabled={disabled}
-          value={data.accident_history}
-          onChange={v => onChange('accident_history', v)}
-          options={[
-            'None',
-            '1 Accident',
-            '2 Accidents',
-            'More than 2',
-          ]}
-        />
-      </div>
-
-      {/* ---------- DOCUMENT UPLOAD (UI ONLY) ---------- */}
-      <div>
-        <label className="block text-sm font-medium mb-2">
-          Document Upload
-        </label>
-
-        <label
-          className={`border-2 border-dashed rounded-lg p-6 text-center text-sm
-            ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white cursor-pointer'}
-          `}
-        >
-          <input
-            type="file"
-            disabled={disabled}
-            className="hidden"
-          />
-
-          <p className="font-medium text-teal-600">
-            Click to upload or drag and drop
-          </p>
-          <p className="text-xs mt-1 text-gray-500">
-            PDF, PNG, JPG (max 10MB)
-          </p>
-        </label>
-      </div>
-
-      {/* ---------- TERMS ---------- */}
-      <div className="flex items-center gap-2 text-sm">
-        <input type="checkbox" disabled={disabled} />
-        <span>
-          I agree to the{' '}
-          <span className="text-teal-600 underline cursor-pointer">
-            Terms & Conditions
-          </span>{' '}
-          and{' '}
-          <span className="text-teal-600 underline cursor-pointer">
-            Privacy Policy
-          </span>
-        </span>
-      </div>
-    </div>
-  )
-}
-
-/* ================= REUSABLE INPUT ================= */
-
-function Input({
-  label,
-  value,
-  onChange,
-  required,
-  disabled,
-}: any) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1">
-        {label} {required && '*'}
-      </label>
-      <input
-        value={value || ''}
-        disabled={disabled}
-        onChange={e => onChange(e.target.value)}
-        className="w-full border rounded-lg px-3 py-2 disabled:bg-gray-100"
-        placeholder={`Enter ${label.toLowerCase()}`}
-      />
-    </div>
-  )
-}
-
-/* ================= REUSABLE SELECT ================= */
-
-function Select({
-  label,
-  value,
-  onChange,
-  options,
-  required,
-  disabled,
-}: any) {
-  return (
-    <div>
-      <label className="block text-sm font-medium mb-1">
-        {label} {required && '*'}
-      </label>
-      <select
-        value={value || ''}
-        disabled={disabled}
-        onChange={e => onChange(e.target.value)}
-        className="w-full border rounded-lg px-3 py-2 disabled:bg-gray-100"
-      >
-        <option value="">Select {label}</option>
-        {options.map((opt: string) => (
-          <option key={opt} value={opt}>
-            {opt}
-          </option>
-        ))}
-      </select>
     </div>
   )
 }

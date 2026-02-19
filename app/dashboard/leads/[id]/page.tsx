@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
+import { ArrowLeft } from 'lucide-react'
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -175,9 +176,9 @@ export default function LeadReviewPage() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => router.back()}
-                  className="px-6 py-2.5 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2"
+                  className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2 font-medium"
                 >
-                  <ArrowLeft size={18} />
+                  <ArrowLeft size={16} />
                   Back
                 </button>
                 <button
@@ -253,9 +254,9 @@ export default function LeadReviewPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="px-5 py-2 border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2"
+              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2 font-medium"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft size={16} />
               Back
             </button>
             <button

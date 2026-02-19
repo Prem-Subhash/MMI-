@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import Footer from '@/components/layout/Footer'
 
 export default function HomePage() {
   const router = useRouter()
@@ -45,15 +46,19 @@ export default function HomePage() {
           Get Started
         </button>
       </section>
+
+      <Footer />
     </main>
   )
 }
 
 /* Styles */
 const container = {
-  height: '100vh',
+  minHeight: '100vh',
   position: 'relative' as const,
-  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column' as const,
+  overflowX: 'hidden' as const,
 }
 
 const overlay = {
@@ -64,8 +69,10 @@ const overlay = {
 }
 
 const content = {
-  height: '100%',
+  flex: 1,
   paddingLeft: '80px',
+  paddingTop: '100px',
+  paddingBottom: '100px',
   display: 'flex',
   flexDirection: 'column' as const,
   justifyContent: 'center',
