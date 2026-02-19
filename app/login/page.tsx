@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, EyeOff } from 'lucide-react'
+import Footer from '@/components/layout/Footer'
 
 /* ================= CAPTCHA GENERATOR ================= */
 const generateCaptcha = () => {
@@ -144,6 +145,8 @@ export default function LoginPage() {
 
         <p style={styles.forgot}>Forgot Password?</p>
       </div>
+
+      <Footer />
     </div>
   )
 }
@@ -152,12 +155,11 @@ export default function LoginPage() {
 
 const styles: any = {
   wrapper: {
-    height: '100vh',
+    minHeight: '100vh',
     width: '100%',
     position: 'relative',
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: 'column',
     fontFamily: 'Inter, sans-serif',
   },
 
@@ -171,6 +173,7 @@ const styles: any = {
     boxShadow: '0 8px 32px rgba(31,38,135,0.37)',
     border: '1px solid rgba(255,255,255,0.18)',
     zIndex: 1,
+    margin: 'auto', // Centers the card
   },
 
   title: {
