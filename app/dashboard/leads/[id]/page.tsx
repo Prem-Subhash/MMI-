@@ -71,18 +71,30 @@ export default function LeadReviewPage() {
     setError(null)
 
     try {
-      const { data: existingClient } = await supabase
+      // Improved check for existing client by both phone and email
+      const { data: phoneMatch } = await supabase
         .from('clients')
         .select('id')
-        .eq('email', lead.email)
+        .eq('phone', lead.phone)
         .maybeSingle()
 
-      let clientId = existingClient?.id
+      let emailMatch = null
+      if (lead.email) {
+        const { data } = await supabase
+          .from('clients')
+          .select('id')
+          .eq('email', lead.email)
+          .maybeSingle()
+        emailMatch = data
+      }
+
+      let clientId = phoneMatch?.id || emailMatch?.id
 
       if (!clientId) {
         const { data: client, error: clientError } = await supabase
           .from('clients')
           .insert({
+            client_name: lead.client_name, // Include client name if available
             phone: lead.phone,
             email: lead.email,
             assigned_csr: lead.assigned_csr,
