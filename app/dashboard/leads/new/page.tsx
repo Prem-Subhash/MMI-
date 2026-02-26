@@ -19,6 +19,7 @@ export default function NewLeadPage() {
   const [showToast, setShowToast] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
 
   const [form, setForm] = useState({
     client_name: '',
@@ -32,6 +33,71 @@ export default function NewLeadPage() {
     notes: '',
     send_email_to_client: false,
   })
+
+  /* ---------------- DUPLICATE CHECK (REAL-TIME) ---------------- */
+  useEffect(() => {
+    const checkDuplicates = async () => {
+      if (form.phone.length < 10 && !form.email) {
+        setExistingClient(null)
+        return
+      }
+      try {
+        let phoneData = null
+        let emailData = null
+
+        if (form.phone.length === 10) {
+          const { data } = await supabase
+            .from('clients')
+            .select('id, client_name, email')
+            .eq('phone', form.phone)
+            .maybeSingle()
+          phoneData = data
+        }
+
+        if (form.email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+          const { data } = await supabase
+            .from('clients')
+            .select('id, client_name, phone')
+            .eq('email', form.email)
+            .maybeSingle()
+          emailData = data
+        }
+
+        // Conflict: Phone and Email found but they belong to different people
+        if (phoneData && emailData && phoneData.id !== emailData.id) {
+          setError(`Data Mismatch: The phone number belongs to "${phoneData.client_name}" but the email belongs to "${emailData.client_name}".`)
+          setExistingClient(null)
+          return
+        }
+
+        // Clear error if it was a mismatch error
+        if (error?.includes('Data Mismatch')) {
+          setError(null)
+        }
+
+        const match = phoneData || emailData
+        if (match) {
+          const source = phoneData ? 'phone' : 'email'
+          setExistingClient({ ...match, source })
+          
+          // Auto-fill
+          setForm(prev => ({
+            ...prev,
+            client_name: prev.client_name || match.client_name || '',
+            phone: prev.phone || (match as any).phone || prev.phone,
+            email: prev.email || (match as any).email || prev.email
+          }))
+        } else {
+          setExistingClient(null)
+        }
+      } catch (e) {
+        console.error('Duplicate check error:', e)
+      }
+    }
+
+    const timer = setTimeout(checkDuplicates, 500)
+    return () => clearTimeout(timer)
+  }, [form.phone, form.email])
 
   /* ---------------- VALIDATION ---------------- */
   const isPhoneValid = /^\d{10}$/.test(form.phone)
@@ -55,17 +121,45 @@ export default function NewLeadPage() {
 
   /* ---------------- CLIENT HELPERS ---------------- */
   const getOrCreateClient = async () => {
-    const { data: existing } = await supabase
+    // 1. Check if phone is already in use
+    const { data: phoneMatch } = await supabase
       .from('clients')
-      .select('id')
+      .select('id, client_name, email')
       .eq('phone', form.phone)
-      .single()
+      .maybeSingle()
 
-    if (existing?.id) return existing.id
+    // 2. Check if email is already in use (if provided)
+    let emailMatch = null
+    if (form.email) {
+      const { data } = await supabase
+        .from('clients')
+        .select('id, client_name, phone')
+        .eq('email', form.email)
+        .maybeSingle()
+      emailMatch = data
+    }
 
+    // --- LOGIC ---
+    
+    // Conflict check: phone and email belong to different people
+    if (phoneMatch && emailMatch && phoneMatch.id !== emailMatch.id) {
+      throw new Error(`Duplicate Conflict: Phone belongs to "${phoneMatch.client_name}" but Email belongs to "${emailMatch.client_name}".`)
+    }
+
+    // Use existing if found by either (prioritizing phone)
+    const existing = phoneMatch || emailMatch
+    if (existing) {
+      return existing.id
+    }
+
+    // If none found, create NEW
     const { data, error } = await supabase
       .from('clients')
-      .insert({ phone: form.phone, email: form.email })
+      .insert({ 
+        phone: form.phone, 
+        email: form.email,
+        client_name: form.client_name 
+      })
       .select()
       .single()
 
@@ -97,7 +191,6 @@ export default function NewLeadPage() {
       !form.phone ||
       !form.request_type ||
       !form.insurence_category ||
-      !form.policy_flow ||
       !form.policy_type
     ) {
       setError('Please fill all mandatory fields')
@@ -228,8 +321,24 @@ export default function NewLeadPage() {
         <div className="p-8 space-y-6">
 
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 rounded">
-              {error}
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 rounded animate-in fade-in slide-in-from-left-2">
+              <p className="font-semibold flex items-center gap-2">
+                ⚠️ Error
+              </p>
+              <p className="text-sm">{error}</p>
+            </div>
+          )}
+
+          {existingClient && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
+              <p className="font-semibold flex items-center gap-2">
+                <Shield className="w-5 h-5 text-red-600" />
+                Existing Client Identified
+              </p>
+              <p className="text-sm mt-1">
+                This client is already registered to <strong>"{existingClient.client_name}"</strong>. 
+                Details have been auto-filled.
+              </p>
             </div>
           )}
 
@@ -244,10 +353,18 @@ export default function NewLeadPage() {
               disabled={isLocked}
               inputMode="numeric"
               maxLength={10}
-              error={form.phone.length > 0 && !isPhoneValid}
+              error={form.phone.length > 0 && !isPhoneValid ? "Enter valid mobile number" : undefined}
             />
 
-            <Input icon={<Mail />} name="email" value={form.email} onChange={handleChange} placeholder="Email" disabled={isLocked} />
+            <Input 
+              icon={<Mail />} 
+              name="email" 
+              value={form.email} 
+              onChange={handleChange} 
+              placeholder="Email" 
+              disabled={isLocked} 
+              error={form.email.length > 0 && !isEmailValid ? "Enter valid mail" : undefined}
+            />
             <Select name="request_type" value={form.request_type} onChange={handleChange} placeholder="Request Type *"
               options={[
                 { value: 'new_lead', label: 'New Lead' },
@@ -262,7 +379,7 @@ export default function NewLeadPage() {
                 { value: 'commercial', label: 'Commercial' },
               ]}
             />
-            <Select name="policy_flow" value={form.policy_flow} onChange={handleChange} placeholder="Policy Flow *"
+            <Select name="policy_flow" value={form.policy_flow} onChange={handleChange} placeholder="Policy Flow"
               options={[
                 { value: 'new', label: 'New' },
                 { value: 'renewal', label: 'Renewal' },
@@ -341,32 +458,39 @@ const Input = ({
   ...props
 }: {
   icon: React.ReactNode
-  error?: boolean
+  error?: string | boolean
 } & React.InputHTMLAttributes<HTMLInputElement>) => (
-  <div className="relative">
-    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
-      {icon}
+  <div className="flex flex-col gap-1 w-full">
+    <div className="relative">
+      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+        {icon}
+      </div>
+      <input
+        {...props}
+        className={`w-full pl-12 pr-4 py-3 rounded-xl border transition outline-none
+          ${error
+            ? 'border-red-500 focus:ring-2 focus:ring-red-200'
+            : 'border-gray-300 focus:ring-2 focus:ring-[#10B889]/20'
+          }`}
+      />
     </div>
-    <input
-      {...props}
-      className={`w-full pl-12 pr-4 py-3 rounded-xl border transition outline-none
-        ${error
-          ? 'border-red-500 focus:ring-2 focus:ring-red-200'
-          : 'border-gray-300 focus:ring-2 focus:ring-[#10B889]/20'
-        }`}
-    />
+    {typeof error === 'string' && error && (
+      <span className="text-red-500 text-[11px] font-medium ml-1 animate-in fade-in slide-in-from-top-1">
+        {error}
+      </span>
+    )}
   </div>
 )
 
 
 const Select = ({ options, placeholder, ...props }: any) => (
   <div className="relative">
-    <select {...props} className="w-full px-4 py-3 border rounded-xl">
+    <select {...props} className="w-full px-4 py-3 border rounded-xl appearance-none bg-white">
       <option value="">{placeholder}</option>
       {options.map((o: any) => (
         <option key={o.value} value={o.value}>{o.label}</option>
       ))}
     </select>
-    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
   </div>
 )
