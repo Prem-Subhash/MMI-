@@ -46,7 +46,7 @@ export default function DashboardPage() {
         <ActionCard
           title="Activity Log"
           icon={<List size={28} />}
-          onClick={() => alert('Activity log coming soon')}
+          onClick={() => router.push('/dashboard/activity-log')}
         />
       </div>
     </section>

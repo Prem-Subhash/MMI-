@@ -24,7 +24,10 @@ export default function TopBar() {
                  {/*  Search Bar Removed per request */}
 
                 <div className="flex items-center gap-6 text-white flex-shrink-0">
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <button 
+                        onClick={() => router.push('/dashboard/activity-log')}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    >
                         <Bell size={28} />
                     </button>
                     <div className="relative">
