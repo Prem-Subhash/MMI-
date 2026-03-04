@@ -106,13 +106,7 @@ export default function RenewalDetailPage() {
   return (
     <div className="p-8 max-w-5xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
-        <Link
-          href="/csr/renewals"
-          className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:border-emerald-500 hover:text-emerald-600 px-4 py-2 rounded-lg transition-all shadow-sm font-medium"
-        >
-          <ArrowLeft size={18} />
-          Back to Renewals
-        </Link>
+
         <div className="text-sm text-gray-400 font-mono">ID: {lead.id.slice(0, 8)}</div>
       </div>
 

@@ -79,7 +79,7 @@ export default function NewLeadPage() {
         if (match) {
           const source = phoneData ? 'phone' : 'email'
           setExistingClient({ ...match, source })
-
+          
           // Auto-fill
           setForm(prev => ({
             ...prev,
@@ -140,7 +140,7 @@ export default function NewLeadPage() {
     }
 
     // --- LOGIC ---
-
+    
     // Conflict check: phone and email belong to different people
     if (phoneMatch && emailMatch && phoneMatch.id !== emailMatch.id) {
       throw new Error(`Duplicate Conflict: Phone belongs to "${phoneMatch.client_name}" but Email belongs to "${emailMatch.client_name}".`)
@@ -155,10 +155,10 @@ export default function NewLeadPage() {
     // If none found, create NEW
     const { data, error } = await supabase
       .from('clients')
-      .insert({
-        phone: form.phone,
+      .insert({ 
+        phone: form.phone, 
         email: form.email,
-        client_name: form.client_name
+        client_name: form.client_name 
       })
       .select()
       .single()
@@ -258,6 +258,10 @@ export default function NewLeadPage() {
 
       /* ✅ SUCCESS UI */
       setShowToast(true)
+
+      /* ✅ SUCCESS UI */
+      setShowToast(true)
+
       setForm({
         client_name: '',
         phone: '',
@@ -332,7 +336,7 @@ export default function NewLeadPage() {
                 Existing Client Identified
               </p>
               <p className="text-sm mt-1">
-                This client is already registered to <strong>"{existingClient.client_name}"</strong>.
+                This client is already registered to <strong>"{existingClient.client_name}"</strong>. 
                 Details have been auto-filled.
               </p>
             </div>
@@ -352,13 +356,13 @@ export default function NewLeadPage() {
               error={form.phone.length > 0 && !isPhoneValid ? "Enter valid mobile number" : undefined}
             />
 
-            <Input
-              icon={<Mail />}
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              placeholder="Email"
-              disabled={isLocked}
+            <Input 
+              icon={<Mail />} 
+              name="email" 
+              value={form.email} 
+              onChange={handleChange} 
+              placeholder="Email" 
+              disabled={isLocked} 
               error={form.email.length > 0 && !isEmailValid ? "Enter valid mail" : undefined}
             />
             <Select name="request_type" value={form.request_type} onChange={handleChange} placeholder="Request Type *"

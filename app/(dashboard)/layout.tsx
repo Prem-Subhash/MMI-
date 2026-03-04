@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Sidebar from '@/components/layout/Sidebar'
 import TopBar from '@/components/layout/TopBar'
+import Footer from '@/components/layout/Footer'
 
 export default function DashboardLayout({
   children,
@@ -41,16 +42,19 @@ export default function DashboardLayout({
     <div className="flex min-h-screen bg-slate-100">
       <TopBar />
       <Sidebar isHovered={isSidebarHovered} setIsHovered={setIsSidebarHovered} />
-      
+
       {/* Main Content Wrapper */}
-      <div 
+      <div
         className={`
-            flex-1 flex flex-col pt-24 h-full transition-all duration-300 ease-in-out
+            flex-1 flex flex-col pt-24 transition-all duration-300 ease-in-out
             ${isSidebarHovered ? 'pl-[260px]' : 'pl-[110px]'}
         `}
       >
-        <main className="flex-1 overflow-y-auto w-full">
-          {children}
+        <main className="flex-1 w-full flex flex-col">
+          <div className="flex-1">
+            {children}
+          </div>
+          <Footer />
         </main>
       </div>
     </div>

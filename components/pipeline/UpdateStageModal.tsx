@@ -238,6 +238,8 @@ export default function UpdateStageModal({
   function renderField(fieldKey: string, config: FieldConfig) {
     const value = formData[fieldKey] ?? ''
 
+    const inputClass = "w-full border border-gray-200 rounded p-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+
     switch (config.type) {
       case 'date': {
         // const today = new Date().toISOString().split('T')[0]

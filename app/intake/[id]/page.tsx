@@ -8,6 +8,7 @@ import HomeInsuranceForm from '@/components/forms/HomeInsuranceForm'
 import AutoInsuranceForm from '@/components/forms/AutoInsuranceForm'
 import PrimaryApplicantForm from '@/components/forms/PrimaryApplicantForm'
 import CoApplicantForm from '@/components/forms/CoApplicantForm'
+import Footer from '@/components/layout/Footer'
 
 export default function IntakeFormPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -147,63 +148,66 @@ export default function IntakeFormPage() {
 
   /* ================= RENDER FORM ================= */
   return (
-    <div className="max-w-4xl mx-auto p-10">
-      <h1 className="text-2xl font-semibold mb-6">
-        Insurance Intake Form
-      </h1>
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="max-w-4xl mx-auto p-10 flex-1 w-full">
+        <h1 className="text-2xl font-semibold mb-6">
+          Insurance Intake Form
+        </h1>
 
-      {isPreview && (
-        <div className="mb-6 p-3 bg-yellow-100 border rounded text-sm">
-          🔍 Preview Mode — CSR only
-        </div>
-      )}
+        {isPreview && (
+          <div className="mb-6 p-3 bg-yellow-100 border rounded text-sm">
+            🔍 Preview Mode — CSR only
+          </div>
+        )}
 
-      {/* PDF ORDER – DO NOT CHANGE */}
-      <PrimaryApplicantForm
-        data={formData.primary_applicant}
-        onChange={val => updateSection('primary_applicant', val)}
-        disabled={isPreview}
-      />
-
-      <CoApplicantForm
-        data={formData.co_applicant}
-        onChange={val => updateSection('co_applicant', val)}
-        disabled={isPreview}
-      />
-
-      {(formType === 'home' || formType === 'home_auto') && (
-        <HomeInsuranceForm
-          data={formData.home}
-          onChange={val => updateSection('home', val)}
+        {/* PDF ORDER – DO NOT CHANGE */}
+        <PrimaryApplicantForm
+          data={formData.primary_applicant}
+          onChange={val => updateSection('primary_applicant', val)}
           disabled={isPreview}
         />
-      )}
 
-      {(formType === 'auto' || formType === 'home_auto') && (
-        <AutoInsuranceForm
-          data={formData.auto}
-          onChange={val => updateSection('auto', val)}
+        <CoApplicantForm
+          data={formData.co_applicant}
+          onChange={val => updateSection('co_applicant', val)}
           disabled={isPreview}
         />
-      )}
 
-      {!isPreview && (
-        <div className="mt-8 space-y-3">
-          <button
-            onClick={handleSave}
-            className="w-full bg-gray-600 text-white py-3 rounded"
-          >
-            Save & Continue Later
-          </button>
+        {(formType === 'home' || formType === 'home_auto') && (
+          <HomeInsuranceForm
+            data={formData.home}
+            onChange={val => updateSection('home', val)}
+            disabled={isPreview}
+          />
+        )}
 
-          <button
-            onClick={handleSubmit}
-            className="w-full bg-green-600 text-white py-3 rounded"
-          >
-            Submit Form
-          </button>
-        </div>
-      )}
+        {(formType === 'auto' || formType === 'home_auto') && (
+          <AutoInsuranceForm
+            data={formData.auto}
+            onChange={val => updateSection('auto', val)}
+            disabled={isPreview}
+          />
+        )}
+
+        {!isPreview && (
+          <div className="mt-8 space-y-3">
+            <button
+              onClick={handleSave}
+              className="w-full bg-gray-600 text-white py-3 rounded"
+            >
+              Save & Continue Later
+            </button>
+
+            <button
+              onClick={handleSubmit}
+              className="w-full bg-green-600 text-white py-3 rounded"
+            >
+              Submit Form
+            </button>
+          </div>
+        )}
+      </div>
+      <Footer />
     </div>
   )
 }

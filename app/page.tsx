@@ -1,10 +1,21 @@
 'use client'
 
 import Image from 'next/image'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Footer from '@/components/layout/Footer'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function HomePage() {
   const router = useRouter()
+
+  useEffect(() => {
+    // If user lands on home page, ensure they are logged out
+    const clearSession = async () => {
+      await supabase.auth.signOut()
+    }
+    clearSession()
+  }, [])
 
   return (
     <main style={container}>
@@ -45,15 +56,19 @@ export default function HomePage() {
           Get Started
         </button>
       </section>
+
+      <Footer />
     </main>
   )
 }
 
 /* Styles */
 const container = {
-  height: '100vh',
+  minHeight: '100vh',
   position: 'relative' as const,
-  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column' as const,
+  overflowX: 'hidden' as const,
 }
 
 const overlay = {
@@ -64,8 +79,10 @@ const overlay = {
 }
 
 const content = {
-  height: '100%',
+  flex: 1,
   paddingLeft: '80px',
+  paddingTop: '100px',
+  paddingBottom: '100px',
   display: 'flex',
   flexDirection: 'column' as const,
   justifyContent: 'center',
@@ -92,7 +109,7 @@ const button = {
   width: '160px',
   padding: '14px',
   fontSize: '16px',
-  backgroundColor: '#e50914',
+  backgroundColor: '#E07A5F',
   color: '#fff',
   border: 'none',
   borderRadius: '6px',

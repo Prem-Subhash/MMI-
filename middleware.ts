@@ -36,8 +36,24 @@ export async function middleware(request: NextRequest) {
         return response
     }
 
+    // Legacy Route Redirection
+    if (pathname === '/dashboard') {
+        if (!user) return NextResponse.redirect(new URL('/login', request.url))
+
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
+
+        if (profile?.role) {
+            return NextResponse.redirect(new URL(`/${profile.role}`, request.url))
+        }
+        return NextResponse.redirect(new URL('/unauthorized', request.url))
+    }
+
     // Role Route Protections
-    const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin']
+    const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin', '/dashboard']
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute) {

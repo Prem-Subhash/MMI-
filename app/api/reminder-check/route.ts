@@ -67,7 +67,7 @@ export async function GET(req: Request) {
 
                 /* ================= GENERATE LINK ================= */
                 // Try to find an intake form for this lead to send them the direct link
-                let targetLink = `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/leads/${lead.id}` // Default fallback
+                let targetLink = `${process.env.NEXT_PUBLIC_SITE_URL}/csr/leads/${lead.id}` // Default fallback
 
                 const { data: intake } = await supabaseServer
                     .from('temp_intake_forms')

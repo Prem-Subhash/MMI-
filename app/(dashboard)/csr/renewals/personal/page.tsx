@@ -155,7 +155,7 @@ function PersonalRenewalContent() {
 
                     <Link
                         href="/csr/renewals/personal/import"
-                        className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2.5 rounded-lg hover:bg-emerald-700 transition shadow-sm font-medium"
+                        className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
                     >
                         <Download size={18} />
                         Import CSV
@@ -189,7 +189,7 @@ function PersonalRenewalContent() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-600 uppercase text-xs tracking-wider">
+                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold">Client</th>
                                     <th className="px-6 py-4 font-semibold">Policy Type</th>

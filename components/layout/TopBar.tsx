@@ -3,15 +3,23 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell } from 'lucide-react'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function TopBar() {
     const router = useRouter()
     const [profileOpen, setProfileOpen] = useState(false)
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        router.replace('/login')
+    }
+
     return (
         <header className="fixed top-0 left-0 right-0 h-24 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex z-40 shadow-md">
             {/* Logo Container - Transparent */}
-            <div className="w-[260px] h-full flex items-center justify-center flex-shrink-0">
+            <div className="w-[260px] h-full flex items-center justify-center flex-shrink-0 cursor-pointer"
+                onClick={() => window.location.href = '/'}
+            >
                 <img
                     src="/logo.png"
                     alt="Moonstar Logo"
@@ -21,10 +29,13 @@ export default function TopBar() {
 
             {/* Right Side Content */}
             <div className="flex-1 flex items-center justify-end px-6">
-                 {/*  Search Bar Removed per request */}
+                {/*  Search Bar Removed per request */}
 
                 <div className="flex items-center gap-6 text-white flex-shrink-0">
-                    <button className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <button
+                        onClick={() => router.push('/csr')}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                    >
                         <Bell size={28} />
                     </button>
                     <div className="relative">
@@ -40,11 +51,11 @@ export default function TopBar() {
                         {profileOpen && (
                             <div className="absolute right-0 top-14 w-56 bg-white rounded-xl shadow-xl py-2 text-gray-800 z-50 border border-gray-100 flex flex-col ring-1 ring-black/5">
                                 <div className="px-5 py-3 border-b border-gray-100">
-                                    
+
                                     <p className="font-bold text-gray-900 text-lg">CSR-1</p>
                                 </div>
                                 <button
-                                    onClick={() => router.push('/login')}
+                                    onClick={handleLogout}
                                     className="m-2 px-4 py-2 bg-[#0FAFB6] hover:bg-[#0C8C92] text-white font-medium rounded-lg transition-colors text-left shadow-sm"
                                 >
                                     Logout
