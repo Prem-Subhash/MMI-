@@ -1,25 +1,93 @@
 'use client'
 
-import { LayoutGrid, Settings, GitBranch, RefreshCw, Briefcase, FileText } from 'lucide-react'
+import { LayoutGrid, Users, Settings, GitBranch, RefreshCw, Briefcase, FileText, PieChart, ListTodo, DollarSign, Activity } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname, useSearchParams } from 'next/navigation'
-import { useEffect } from 'react'
+import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabaseClient'
 
 interface SidebarProps {
     setIsHovered: (hovered: boolean) => void
     isHovered: boolean
 }
 
+interface MenuItem {
+    label: string
+    href: string
+    icon: React.ReactNode
+}
+
 export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
     const pathname = usePathname()
-    const searchParams = useSearchParams()
+    const [role, setRole] = useState<string | null>(null)
+
+    useEffect(() => {
+        const fetchRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+
+                if (data?.role) {
+                    setRole(data.role)
+                }
+            }
+        }
+        fetchRole()
+    }, [])
 
     // Helper to check if a link is active.
     const isActive = (path: string) => {
-        if (path === '/dashboard' && pathname === '/dashboard') return true
-        if (path !== '/dashboard' && pathname.startsWith(path)) return true
+        if (pathname === path) return true
+        if (path !== '/' && path !== `/${role}` && pathname.startsWith(path)) return true
         return false
     }
+
+    const csrMenu: MenuItem[] = [
+        { label: 'Dashboard', href: '/csr', icon: <LayoutGrid size={28} /> },
+        { label: 'Leads', href: '/csr/leads', icon: <GitBranch size={28} /> },
+        { label: 'Personal Pipeline', href: '/csr/pipeline/personal', icon: <GitBranch size={28} /> },
+        { label: 'Personal Renewal', href: '/csr/renewals/personal', icon: <RefreshCw size={28} /> },
+        { label: 'Commercial Pipeline', href: '/csr/pipeline/commercial', icon: <Briefcase size={28} /> },
+        { label: 'Commercial Renewal', href: '/csr/renewals/commercial', icon: <RefreshCw size={28} /> },
+        { label: 'Reports', href: '/csr/reports', icon: <FileText size={28} /> },
+    ]
+
+    const adminMenu: MenuItem[] = [
+        { label: 'Dashboard', href: '/admin', icon: <LayoutGrid size={28} /> },
+        { label: 'All Leads', href: '/admin/leads', icon: <GitBranch size={28} /> },
+        { label: 'Lead Assignments', href: '/admin/assignments', icon: <ListTodo size={28} /> },
+        { label: 'Pipelines Monitor', href: '/admin/pipelines', icon: <Activity size={28} /> },
+        { label: 'CSR Performance', href: '/admin/csrs', icon: <Users size={28} /> },
+        { label: 'Reports', href: '/admin/reports', icon: <PieChart size={28} /> },
+    ]
+
+    const accountingMenu: MenuItem[] = [
+        { label: 'Dashboard', href: '/accounting', icon: <LayoutGrid size={28} /> },
+        { label: 'Financial Reports', href: '/accounting/reports', icon: <DollarSign size={28} /> },
+    ]
+
+    const superadminMenu: MenuItem[] = [
+        { label: 'Dashboard', href: '/superadmin', icon: <LayoutGrid size={28} /> },
+        { label: 'User Management', href: '/superadmin/users', icon: <Users size={28} /> },
+        { label: 'Pipeline Configuration', href: '/superadmin/pipelines', icon: <Settings size={28} /> },
+        { label: 'System Settings', href: '/superadmin/settings', icon: <Settings size={28} /> },
+    ]
+
+    const getMenuForRole = () => {
+        switch (role) {
+            case 'csr': return csrMenu
+            case 'admin': return adminMenu
+            case 'accounting': return accountingMenu
+            case 'superadmin': return superadminMenu
+            default: return [] // Return empty or loading state while role fetches
+        }
+    }
+
+    const currentMenu = getMenuForRole()
 
     return (
         <aside
@@ -31,60 +99,17 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            <nav className="flex-1 flex flex-col gap-4 mt-8 w-full px-3">
-                <Link href="/dashboard" className="w-full">
-                    <SidebarIcon
-                        icon={<LayoutGrid size={28} />}
-                        label="Dashboard"
-                        active={isActive('/dashboard')}
-                        expanded={isHovered}
-                    />
-                </Link>
-
-                <Link href="/dashboard/leads" className="w-full">
-                    <SidebarIcon
-                        icon={<GitBranch size={28} />}
-                        label="Personal Pipeline"
-                        active={isActive('/dashboard/leads')}
-                        expanded={isHovered}
-                    />
-                </Link>
-
-                <Link href="/dashboard/renewals/personal" className="w-full">
-                    <SidebarIcon
-                        icon={<RefreshCw size={28} />}
-                        label="Personal Line Renewal"
-                        active={isActive('/dashboard/renewals/personal')}
-                        expanded={isHovered}
-                    />
-                </Link>
-
-                <Link href="/dashboard/renewals/commercial" className="w-full">
-                    <SidebarIcon
-                        icon={<RefreshCw size={28} />}
-                        label="Commercial Renewal"
-                        active={isActive('/dashboard/renewals/commercial')}
-                        expanded={isHovered}
-                    />
-                </Link>
-
-                <Link href="/dashboard/commercial" className="w-full">
-                    <SidebarIcon
-                        icon={<Briefcase size={28} />}
-                        label="Commercial"
-                        active={isActive('/dashboard/commercial')}
-                        expanded={isHovered}
-                    />
-                </Link>
-
-                <Link href="/dashboard/reports/monthly" className="w-full">
-                    <SidebarIcon
-                        icon={<FileText size={28} />}
-                        label="Monthly Reports"
-                        active={isActive('/dashboard/reports')}
-                        expanded={isHovered}
-                    />
-                </Link>
+            <nav className="flex-1 flex flex-col gap-4 mt-4 w-full px-3 overflow-y-auto pb-8">
+                {currentMenu.map((item, index) => (
+                    <Link key={index} href={item.href} className="w-full">
+                        <SidebarIcon
+                            icon={item.icon}
+                            label={item.label}
+                            active={isActive(item.href)}
+                            expanded={isHovered}
+                        />
+                    </Link>
+                ))}
             </nav>
         </aside>
     )

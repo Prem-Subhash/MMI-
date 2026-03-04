@@ -1,12 +1,16 @@
-import { createClient } from '@supabase/supabase-js'
+import { createBrowserClient } from '@supabase/ssr'
 
 /* -------------------------------------------------
-   SUPABASE CLIENT (NO CHANGE)
+   SUPABASE CLIENT (ADDED SSR)
 ------------------------------------------------- */
-export const supabase = createClient(
+export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
+
+export const createClient = () => {
+  return supabase;
+}
 
 /* -------------------------------------------------
    PIPELINE HELPERS (PHASE 2)

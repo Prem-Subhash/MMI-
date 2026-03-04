@@ -51,21 +51,46 @@ export default function LoginPage() {
 
     setLoading(true)
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data: { session }, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
+    if (signInError || !session) {
+      setError(signInError?.message || 'Invalid credentials')
+      setCaptcha(generateCaptcha())
+      setCaptchaInput('')
+      setLoading(false)
+      return
+    }
+
+    // Role Fetching Logic
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', session.user.id)
+      .single()
+
     setLoading(false)
 
-    if (error) {
-      setError(error.message)
+    if (profileError || !profile?.role) {
+      setError('Role information missing or inaccessible.')
+      await supabase.auth.signOut()
       setCaptcha(generateCaptcha())
       setCaptchaInput('')
       return
     }
 
-    router.push('/dashboard')
+    const roleRoutes: Record<string, string> = {
+      csr: '/csr',
+      admin: '/admin',
+      accounting: '/accounting',
+      superadmin: '/superadmin',
+    }
+
+    const destination = roleRoutes[profile.role] || '/unauthorized'
+    router.push(destination)
+    router.refresh()
   }
 
   return (

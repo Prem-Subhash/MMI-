@@ -1,8 +1,23 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
+import { z } from 'zod'
 import ExcelJS from 'exceljs'
-// import PDFDocument from 'pdfkit' // We'll handle this dynamically or use a different approach if needed, but pdfkit is standard for node.
+import { TransformStream } from 'node:stream/web'
+
+// 1. Zod Input Validation
+const ReportSchema = z.object({
+    month: z.string().optional(), // Support legacy month filter YYYY-MM
+    start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format YYYY-MM-DD required").optional(),
+    end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format YYYY-MM-DD required").optional(),
+    policy_flow: z.enum(['new', 'renewal', 'all', '']).optional(),
+    insurence_category: z.enum(['personal', 'commercial', 'all', '']).optional(),
+    assigned_csr: z.string().uuid().optional().or(z.literal('')),
+    customer_name: z.string().optional(),
+    page: z.number().min(1).default(1),
+    limit: z.number().min(10).max(100).default(50),
+    exportType: z.enum(['json', 'excel', 'pdf']).default('json')
+})
 
 export async function POST(request: Request) {
     const cookieStore = cookies()
@@ -19,7 +34,7 @@ export async function POST(request: Request) {
         }
     )
 
-    // 1. Auth Check
+    // Auth Check
     const {
         data: { session },
     } = await supabase.auth.getSession()
@@ -30,132 +45,131 @@ export async function POST(request: Request) {
 
     const user = session.user
     const body = await request.json()
-    const {
-        month,
-        policy_type,
-        insurence_category,
-        customer_name,
-        assigned_csr,
-        policy_flow,
-        exportType // 'json', 'excel', 'pdf'
-    } = body
+    const parseResult = ReportSchema.safeParse(body)
 
-    // 2. RBAC: Get User Role
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role, manager_id')
-        .eq('id', user.id)
-        .single()
-
-    if (profileError || !profile) {
-        // Fallback if no profile: treat as agent (strict)
-        console.error('Profile not found', profileError)
-        return NextResponse.json({ error: 'Profile not found. Contact admin.' }, { status: 403 })
+    if (!parseResult.success) {
+        return NextResponse.json({ error: parseResult.error.flatten() }, { status: 400 })
     }
 
-    const role = profile.role
+    let { month, start_date, end_date, policy_flow, insurence_category, assigned_csr, customer_name, page, limit, exportType } = parseResult.data
 
-    // 3. Build Query
+    // 2. Date Parsing
+    // Determine start/end dynamically based on month or custom range
+    if (month && !start_date && !end_date) {
+        start_date = `${month}-01`
+        const [y, m] = month.split('-')
+        const date = new Date(parseInt(y), parseInt(m), 0)
+        end_date = date.toISOString().split('T')[0]
+    }
+
+    if (!start_date || !end_date) {
+        return NextResponse.json({ error: 'Valid date range (month or start_date/end_date) is required.' }, { status: 400 });
+    }
+
+    if (new Date(start_date) > new Date(end_date)) {
+        return NextResponse.json({ error: 'start_date cannot be after end_date' }, { status: 400 });
+    }
+
+    const safeFlow = policy_flow === 'all' ? null : policy_flow
+    const safeCategory = insurence_category === 'all' ? null : insurence_category
+
+    // 3. Fetch KPI Summary (RPC handles RLS securely)
+    const { data: summaryData, error: summaryError } = await supabase.rpc('get_report_summary', {
+        p_start_date: start_date,
+        p_end_date: end_date,
+        p_flow: safeFlow || null,
+        p_category: safeCategory || null,
+        p_csr: assigned_csr || null
+    })
+
+    if (summaryError) {
+        console.error('Summary Error:', summaryError)
+        return NextResponse.json({ error: 'Failed to generate KPI summary' }, { status: 500 })
+    }
+
+    // 4. Base Query Builder (RLS handles visibility natively)
     let query = supabase
         .from('temp_leads_basics')
         .select(`
-      id,
-      client_name,
-      policy_type,
-      renewal_date,
-      created_at,
-      carrier,
-      total_premium,
-      policy_number,
-      policy_flow,
-      insurence_category,
-      assigned_csr,
-      assigned_csr_profile:profiles!assigned_csr (full_name)
-    `)
+            id,
+            client_name,
+            policy_type,
+            effective_date,
+            created_at,
+            carrier,
+            total_premium,
+            policy_number,
+            policy_flow,
+            insurence_category,
+            assigned_csr,
+            assigned_csr_profile:profiles!assigned_csr (full_name)
+        `, { count: 'exact' })
+        .gte('effective_date', start_date)
+        .lte('effective_date', end_date)
 
-    // 4. Apply Filters
-    if (month) {
-        // month is YYYY-MM
-        const startDate = `${month}-01`
-        const [y, m] = month.split('-')
-        // Calculate end date
-        const date = new Date(parseInt(y), parseInt(m), 0) // last day of month
-        const endDate = date.toISOString().split('T')[0]
-
-        // Filter by created_at for new business, renewal_date for renewals?
-        // Requirement says: "policy_buying_date (month range)"
-        // We'll use created_at for 'new' and renewal_date for 'renewal' OR just use a generic date field if we had one.
-        // For now, let's assume we filter on created_at for ALL, or split logic.
-        // Actually, usually reports are based on "Effective Date". We don't have effective date explicitly, maybe renewal_date?
-        // Let's use logic: if policy_flow = renewal -> use renewal_date. If new -> use created_at (or we should add effective_date).
-        // Given the constraints, let's filter based on policy_flow if specific, or general.
-        // Simplified: "policy_buying_date" requested. Let's assume we use `renewal_date` for everything for now as primary date, 
-        // or `created_at` if renewal_date is null.
-        // A better approach for a report:
-        // .or(`renewal_date.gte.${startDate},created_at.gte.${startDate}`) -- too complex.
-        // Let's stick to: if renewal_date exists, use it.
-
-        // User requirement: "policy_buying_date (month range)"
-        // We don't have this column. We'll use `renewal_date` for now as primary metric for "when business happens".
-        query = query.gte('renewal_date', startDate).lte('renewal_date', endDate)
-    }
-
-    if (policy_type) query = query.eq('policy_type', policy_type)
-    if (insurence_category) query = query.eq('insurence_category', insurence_category)
-    if (policy_flow) query = query.eq('policy_flow', policy_flow)
+    if (safeFlow) query = query.eq('policy_flow', safeFlow)
+    if (safeCategory) query = query.eq('insurence_category', safeCategory)
+    if (assigned_csr) query = query.eq('assigned_csr', assigned_csr)
     if (customer_name) query = query.ilike('client_name', `%${customer_name}%`)
 
-    // 5. Apply RBAC Filters (Server-side Enforcement)
-    if (role === 'admin') {
-        // No extra filter. Can filter by specific CSR if requested.
-        if (assigned_csr) query = query.eq('assigned_csr', assigned_csr)
-    } else if (role === 'manager') {
-        // Show self + team
-        // Get team members
-        const { data: team } = await supabase
-            .from('profiles')
-            .select('id')
-            .or(`manager_id.eq.${user.id},id.eq.${user.id}`)
+    // Order by date explicitly 
+    query = query.order('effective_date', { ascending: false })
 
-        const teamIds = team?.map(t => t.id) || [user.id]
+    // JSON Preview (Paginated)
+    if (exportType === 'json') {
+        const from = (page - 1) * limit
+        const to = from + limit - 1
+        query = query.range(from, to)
 
-        if (assigned_csr) {
-            // If filtering by specific CSR, ensure they are in team
-            if (!teamIds.includes(assigned_csr)) {
-                return NextResponse.json({ error: 'Access denied to this CSR data' }, { status: 403 })
-            }
-            query = query.eq('assigned_csr', assigned_csr)
-        } else {
-            query = query.in('assigned_csr', teamIds)
+        const { data, count, error } = await query
+
+        if (error) {
+            return NextResponse.json({ error: error.message }, { status: 500 })
         }
-    } else {
-        // Agent: Only see own
-        if (assigned_csr && assigned_csr !== user.id) {
-            return NextResponse.json({ error: 'Access denied' }, { status: 403 })
-        }
-        query = query.eq('assigned_csr', user.id)
+
+        return NextResponse.json({
+            summary: summaryData,
+            data,
+            pagination: { total: count, page, limit }
+        })
     }
 
+    // 5. Handle Export (Unpaginated stream logic)
+    // NOTE: For 50,000+ records, this shouldn't execute via the Edge/Serverless function.
+    // Recommended: Send this request to an Inngest worker which fetches, builds to S3, and emails link.
     const { data, error } = await query
 
     if (error) {
         return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // 6. Handle Export
     if (exportType === 'excel') {
         const workbook = new ExcelJS.Workbook()
-        const worksheet = workbook.addWorksheet('Monthly Report')
 
+        // Setup Summary Sheet
+        const summarySheet = workbook.addWorksheet('KPI Summary')
+        summarySheet.columns = [{ width: 30 }, { width: 20 }]
+        summarySheet.addRow(['Metric', 'Value'])
+        summarySheet.getRow(1).font = { bold: true }
+        summarySheet.addRow(['Total Policies', summaryData?.total_policies || 0])
+        summarySheet.addRow(['Total Premium', `$${(summaryData?.total_premium || 0).toLocaleString()}`])
+        summarySheet.addRow(['New Business Premium', `$${(summaryData?.new_business_premium || 0).toLocaleString()}`])
+        summarySheet.addRow(['Renewal Premium', `$${(summaryData?.renewal_premium || 0).toLocaleString()}`])
+        summarySheet.addRow(['Personal Lines', summaryData?.personal_line_count || 0])
+        summarySheet.addRow(['Commercial Lines', summaryData?.commercial_line_count || 0])
+
+        // Setup Data Sheet
+        const worksheet = workbook.addWorksheet('Raw Data')
         worksheet.columns = [
-            { header: 'Client Name', key: 'client_name', width: 20 },
-            { header: 'Policy Type', key: 'policy_type', width: 20 },
+            { header: 'Client Name', key: 'client_name', width: 25 },
+            { header: 'Type', key: 'policy_type', width: 20 },
             { header: 'Category', key: 'insurence_category', width: 15 },
-            { header: 'Flow', key: 'policy_flow', width: 10 },
+            { header: 'Flow', key: 'policy_flow', width: 15 },
             { header: 'Premium', key: 'total_premium', width: 15 },
-            { header: 'CSR', key: 'csr', width: 20 },
-            { header: 'Date', key: 'date', width: 15 },
+            { header: 'CSR', key: 'csr', width: 25 },
+            { header: 'Effective Date', key: 'effective_date', width: 15 },
         ]
+        worksheet.getRow(1).font = { bold: true }
 
         data?.forEach((row: any) => {
             worksheet.addRow({
@@ -165,112 +179,91 @@ export async function POST(request: Request) {
                 policy_flow: row.policy_flow,
                 total_premium: row.total_premium,
                 csr: row.assigned_csr_profile?.full_name || row.assigned_csr,
-                date: row.renewal_date || row.created_at
+                effective_date: row.effective_date
             })
         })
+
+        // Final Totals Row
+        worksheet.addRow({})
+        const finalRow = worksheet.addRow({ client_name: 'TOTALS', total_premium: summaryData?.total_premium || 0 })
+        finalRow.font = { bold: true }
 
         const buffer = await workbook.xlsx.writeBuffer()
 
         return new Response(buffer, {
             headers: {
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                'Content-Disposition': `attachment; filename="Monthly_Report_${month || 'All'}.xlsx"`
+                'Content-Disposition': `attachment; filename="Enterprise_Report_${start_date}_to_${end_date}.xlsx"`
             }
         })
     }
 
     if (exportType === 'pdf') {
         const { default: PDFDocument } = await import('pdfkit')
-
-        // Create a new PDF document
         const doc = new PDFDocument({ margin: 30, size: 'A4' })
 
-        // Stream appropriate headers
         const headers = new Headers()
         headers.set('Content-Type', 'application/pdf')
-        headers.set('Content-Disposition', `attachment; filename="Monthly_Report_${month || 'All'}.pdf"`)
+        headers.set('Content-Disposition', `attachment; filename="Enterprise_Report_${start_date}_to_${end_date}.pdf"`)
 
-        // Create a TransformStream to pipe the PDF into
-        const { readable, writable } = new TransformStream()
+        const { readable, writable } = new globalThis.TransformStream()
         const writer = writable.getWriter()
 
         doc.pipe({
             write: (chunk: any) => writer.write(chunk),
             end: () => writer.close(),
-            on: (event: string, listener: any) => { },
-            once: (event: string, listener: any) => { },
-            emit: (event: string, ...args: any[]) => true,
+            on: () => { }, once: () => { }, emit: () => true,
         } as any)
 
-        // --- PDF CONTENT ---
+        // Title and KPI Summary
+        doc.fontSize(18).font('Helvetica-Bold').text(`Enterprise Report`, { align: 'center' })
+        doc.fontSize(10).font('Helvetica').text(`Period: ${start_date} to ${end_date}`, { align: 'center' })
+        doc.moveDown(2)
 
-        // Title
-        doc.fontSize(20).text(`Monthly Report: ${month || 'All Time'}`, { align: 'center' })
-        doc.moveDown()
+        doc.fontSize(12).font('Helvetica-Bold').text('KPI Summary')
+        doc.fontSize(10).font('Helvetica')
+        doc.text(`Total Policies: ${summaryData?.total_policies || 0}`)
+        doc.text(`Total Premium: $${(summaryData?.total_premium || 0).toLocaleString()}`)
+        doc.text(`New Business: $${(summaryData?.new_business_premium || 0).toLocaleString()} | Renewal: $${(summaryData?.renewal_premium || 0).toLocaleString()}`)
+        doc.moveDown(2)
 
-        // Filter Summary
-        doc.fontSize(10).text(`Generated by: ${user.email}`)
-        doc.text(`Date: ${new Date().toLocaleDateString()}`)
-        doc.moveDown()
-
-        // Table Header
-        const tableTop = 150
-        const colX = {
-            client: 30,
-            type: 150,
-            premium: 280,
-            csr: 380,
-            date: 480
+        // Proper Header Drawer
+        const drawHeader = (startY: number) => {
+            doc.font('Helvetica-Bold').fontSize(9)
+            doc.text('Client', 30, startY)
+            doc.text('Type', 160, startY)
+            doc.text('Flow', 250, startY)
+            doc.text('Premium', 320, startY)
+            doc.text('CSR', 400, startY)
+            doc.text('Date', 500, startY)
+            doc.moveTo(30, startY + 12).lineTo(570, startY + 12).stroke()
+            return startY + 20
         }
 
-        doc.font('Helvetica-Bold')
-        doc.text('Client', colX.client, tableTop)
-        doc.text('Type', colX.type, tableTop)
-        doc.text('Premium', colX.premium, tableTop)
-        doc.text('CSR', colX.csr, tableTop)
-        doc.text('Date', colX.date, tableTop)
-
-        doc.moveTo(30, tableTop + 15).lineTo(570, tableTop + 15).stroke()
-
-        // Table Rows
-        let y = tableTop + 25
-        doc.font('Helvetica').fontSize(9)
-
-        let totalPremium = 0
+        let y = drawHeader(doc.y)
+        doc.font('Helvetica').fontSize(8)
 
         data?.forEach((row: any) => {
-            // Page Break if needed
+            // Safe Page breaks
             if (y > 750) {
                 doc.addPage()
-                y = 50
-                // Re-draw header? simplified for now
+                y = drawHeader(30)
+                doc.font('Helvetica').fontSize(8)
             }
 
             const premium = row.total_premium || 0
-            totalPremium += premium
-
-            doc.text(row.client_name?.substring(0, 20) || '-', colX.client, y)
-            doc.text(row.policy_type?.substring(0, 20) || '-', colX.type, y)
-            doc.text(`$${premium.toLocaleString()}`, colX.premium, y)
-            doc.text(row.assigned_csr_profile?.full_name?.substring(0, 15) || row.assigned_csr?.substring(0, 8) || '-', colX.csr, y)
-            doc.text(row.renewal_date || row.created_at?.split('T')[0] || '-', colX.date, y)
-
-            y += 20
+            doc.text(row.client_name?.substring(0, 20) || '-', 30, y)
+            doc.text(row.policy_type?.substring(0, 15) || '-', 160, y)
+            doc.text(row.policy_flow || '-', 250, y)
+            doc.text(`$${premium.toLocaleString()}`, 320, y)
+            doc.text(row.assigned_csr_profile?.full_name?.substring(0, 15) || '-', 400, y)
+            doc.text(row.effective_date || '-', 500, y)
+            y += 18
         })
 
-        doc.moveDown()
-        doc.moveTo(30, y).lineTo(570, y).stroke()
-        y += 10
-
-        // Total
-        doc.font('Helvetica-Bold').fontSize(12)
-        doc.text(`Total Premium: $${totalPremium.toLocaleString()}`, colX.premium - 20, y)
-
-        // End PDF
         doc.end()
-
         return new Response(readable, { headers })
     }
 
-    return NextResponse.json(data)
+    return NextResponse.json({ error: 'Invalid export type' }, { status: 400 })
 }
