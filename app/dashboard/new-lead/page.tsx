@@ -191,7 +191,6 @@ export default function NewLeadPage() {
       !form.phone ||
       !form.request_type ||
       !form.insurence_category ||
-      !form.policy_flow ||
       !form.policy_type
     ) {
       setError('Please fill all mandatory fields')
@@ -331,14 +330,14 @@ export default function NewLeadPage() {
           )}
 
           {existingClient && (
-            <div className="bg-emerald-50 border-l-4 border-emerald-500 p-4 text-emerald-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
               <p className="font-semibold flex items-center gap-2">
-                <Shield className="w-5 h-5 text-emerald-600" />
+                <Shield className="w-5 h-5 text-red-600" />
                 Existing Client Identified
               </p>
               <p className="text-sm mt-1">
-                We've found a match for <strong>{existingClient.source === 'phone' ? 'phone' : 'email'}</strong>. 
-                Details for <strong>"{existingClient.client_name}"</strong> have been auto-filled.
+                This client is already registered to <strong>"{existingClient.client_name}"</strong>. 
+                Details have been auto-filled.
               </p>
             </div>
           )}
@@ -380,7 +379,7 @@ export default function NewLeadPage() {
                 { value: 'commercial', label: 'Commercial' },
               ]}
             />
-            <Select name="policy_flow" value={form.policy_flow} onChange={handleChange} placeholder="Policy Flow *"
+            <Select name="policy_flow" value={form.policy_flow} onChange={handleChange} placeholder="Policy Flow"
               options={[
                 { value: 'new', label: 'New' },
                 { value: 'renewal', label: 'Renewal' },
@@ -486,12 +485,12 @@ const Input = ({
 
 const Select = ({ options, placeholder, ...props }: any) => (
   <div className="relative">
-    <select {...props} className="w-full px-4 py-3 border rounded-xl">
+    <select {...props} className="w-full px-4 py-3 border rounded-xl appearance-none bg-white">
       <option value="">{placeholder}</option>
       {options.map((o: any) => (
         <option key={o.value} value={o.value}>{o.label}</option>
       ))}
     </select>
-    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
   </div>
 )

@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutGrid, Settings, GitBranch, RefreshCw, Briefcase, FileText } from 'lucide-react'
+import { LayoutGrid, Settings, GitBranch, RefreshCw, Briefcase, FileText, List } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
@@ -82,6 +82,15 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
                         icon={<FileText size={28} />}
                         label="Monthly Reports"
                         active={isActive('/dashboard/reports')}
+                        expanded={isHovered}
+                    />
+                </Link>
+
+                <Link href="/dashboard/activity-log" className="w-full">
+                    <SidebarIcon
+                        icon={<List size={28} />}
+                        label="Activity Log"
+                        active={isActive('/dashboard/activity-log')}
                         expanded={isHovered}
                     />
                 </Link>

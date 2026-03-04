@@ -22,7 +22,7 @@ export default function DashboardPage() {
         <ActionCard
           title="New Client"
           icon={<UserPlus size={28} />}
-          onClick={() => router.push('/dashboard/leads/new')}
+          onClick={() => router.push('/dashboard/new-lead')}
         />
 
         <ActionCard
@@ -46,7 +46,7 @@ export default function DashboardPage() {
         <ActionCard
           title="Activity Log"
           icon={<List size={28} />}
-          onClick={() => alert('Activity log coming soon')}
+          onClick={() => router.push('/dashboard/activity-log')}
         />
       </div>
     </section>
@@ -69,8 +69,8 @@ function ActionCard({
         group
         cursor-pointer rounded-2xl p-8 flex items-center gap-5
         shadow-md transition-all duration-300
-        bg-white text-gray-800 hover:bg-[#5C8F3E] hover:text-white
-        border-2 border-[#5C8F3E]
+        bg-white text-gray-800 hover:bg-brand-dark hover:text-white
+        border-2 border-brand-dark
         hover:scale-[1.05] hover:shadow-xl
       `}
     >

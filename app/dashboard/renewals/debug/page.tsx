@@ -56,7 +56,7 @@ export default function DebugRenewalsPage() {
             <h2 className="font-bold mb-2">Latest 20 Records (temp_leads_basics)</h2>
             <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300">
-                    <thead className="bg-gray-200">
+                    <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                         <tr>
                             <th className="border p-2 text-left">Client</th>
                             <th className="border p-2 text-left">Renewal Date</th>
