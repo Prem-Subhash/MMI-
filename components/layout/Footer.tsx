@@ -1,106 +1,61 @@
-import React from 'react';
-import Link from 'next/link';
-import { Mail, Phone, MapPin, Building, ShieldCheck } from 'lucide-react';
+'use client'
 
-export default function Footer() {
-  return (
-    <footer className="bg-gradient-to-r from-teal-500 via-teal-600 to-blue-600 text-white mt-auto">
-      <div className="max-w-7xl mx-auto px-6 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          
-          {/* Section 1: Company Info */}
-          <div className="flex flex-col gap-4">
-            <div>
-              <h2 className="text-xl font-bold bg-white/10 inline-block px-3 py-1 rounded-lg backdrop-blur-sm">
-                Moonstar Mortgage
-              </h2>
-              <p className="text-teal-50 text-sm mt-3 leading-relaxed">
-                Trusted mortgage solutions built on <br className="hidden md:block" />
-                transparency, speed, and reliability.
-              </p>
-            </div>
-            
-            <div className="flex flex-col gap-2 mt-2">
-               <div className="flex items-start gap-3 text-sm text-teal-50 hover:text-white transition-colors">
-                 <MapPin size={18} className="shrink-0 mt-0.5" />
-                 <span>953 N Plum Grove Rd, Unit B,<br/>Schaumburg, IL 60173</span>
-               </div>
-            </div>
-          </div>
+import React from 'react'
+import { Facebook, Instagram, Twitter, MessageCircle, Send } from 'lucide-react'
 
-          {/* Section 2: Contact & Licensing */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-base font-semibold border-b border-teal-400/30 pb-2 w-fit">
-              Contact & Licensing
-            </h3>
-            
-            <div className="flex flex-col gap-3 text-sm">
-              <div className="flex items-center gap-3 text-teal-50 hover:text-white transition-colors group">
-                <Phone size={16} className="group-hover:scale-110 transition-transform" />
-                <div className="flex flex-col gap-0.5">
-                    <a href="tel:8472787220" className="hover:underline">(847) 278-7220</a>
-                    <a href="tel:8472787221" className="hover:underline">(847) 278-7221</a>
+const Footer = () => {
+    const currentYear = new Date().getFullYear()
+
+    return (
+        <footer className="w-full mt-auto">
+            <div className="bg-[#123E52] px-8 md:px-16 py-3 text-white overflow-hidden shadow-2xl">
+                {/* Main Row */}
+                <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4 mb-3">
+
+                    {/* Help Section */}
+                    <div>
+                        <h3 className="text-sm font-bold tracking-tight">
+                            We're always here to help you...
+                        </h3>
+                    </div>
+
+                    {/* Hotline Section */}
+                    <div className="flex items-center gap-2">
+                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Hotline:</p>
+                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (800) MOONSTAR</p>
+                    </div>
+
+                    {/* Email Section */}
+                    <div className="flex items-center gap-2">
+                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Email:</p>
+                        <p className="text-xs font-bold tracking-wide text-white">support@moonstarmortgage.com</p>
+                    </div>
+
+                    {/* Social Section */}
+                    <div className="flex items-center gap-4">
+                        <p className="text-white text-[10px] font-bold uppercase tracking-wider hidden sm:block">Connect with us</p>
+                        <div className="flex gap-4 text-white/90">
+                            <Facebook size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                            <Instagram size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                            <MessageCircle size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                            <Send size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                            <Twitter size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                        </div>
+                    </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-3 text-teal-50 hover:text-white transition-colors group">
-                <Mail size={16} className="group-hover:scale-110 transition-transform" />
-                <a href="mailto:info@moonstarmortgage.com" className="hover:underline">info@moonstarmortgage.com</a>
-              </div>
-              
-              <div className="flex flex-col gap-1 mt-2 text-xs text-teal-100 bg-black/10 p-3 rounded-lg">
-                <div className="flex items-center gap-2">
-                    <Building size={14} />
-                    <span>NMLS: #217352</span>
+                {/* Divider */}
+                <div className="max-w-[1600px] mx-auto h-[1px] bg-white/5 mb-2"></div>
+
+                {/* Copyright Row */}
+                <div className="max-w-[1600px] mx-auto flex justify-center text-center">
+                    <p className="text-white/30 text-[9px] font-medium tracking-wide">
+                        © {currentYear} Moonstar Mortgage Inc. | Powered by Moonstar Tech
+                    </p>
                 </div>
-                <div className="flex items-center gap-2">
-                    <ShieldCheck size={14} />
-                    <span>Illinois License: MB.6759487</span>
-                </div>
-              </div>
             </div>
-          </div>
-
-          {/* Section 3: Quick Links & Legal */}
-          <div className="flex flex-col gap-4">
-             <h3 className="text-base font-semibold border-b border-teal-400/30 pb-2 w-fit">
-              Quick Links
-            </h3>
-            <ul className="flex flex-col gap-2 text-sm text-teal-50">
-                <li>
-                    <Link href="#" className="hover:text-white hover:underline transition-all flex items-center gap-2">
-                        <span>›</span> Privacy Policy
-                    </Link>
-                </li>
-                <li>
-                    <Link href="#" className="hover:text-white hover:underline transition-all flex items-center gap-2">
-                        <span>›</span> Licensing Information
-                    </Link>
-                </li>
-                <li>
-                    <a 
-                        href="https://www.nmlsconsumeraccess.org" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="hover:text-white hover:underline transition-all flex items-center gap-2"
-                    >
-                        <span>›</span> NMLS Consumer Access ↗
-                    </a>
-                </li>
-            </ul>
-
-            <div className="mt-auto pt-4 md:pt-0">
-                 <p className="text-xs text-teal-200">
-                    © 2026 Moonstar Mortgage. All rights reserved.
-                </p>
-                <p className="text-[10px] text-teal-300/80 mt-1">
-                    Illinois Residential Mortgage Licensee MB.6759487
-                </p>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </footer>
-  );
+        </footer>
+    )
 }
+
+export default Footer
