@@ -208,6 +208,7 @@ export default function MyLeadsPage() {
                   <th className="px-6 py-4 font-semibold">Flow</th>
                   <th className="px-6 py-4 font-semibold">Stage</th>
                   <th className="px-6 py-4 font-semibold">Created</th>
+                  <th className="px-6 py-4 font-semibold text-center">View</th>
                   <th className="px-6 py-4 font-semibold">Actions</th>
                 </tr>
               </thead>
@@ -236,8 +237,8 @@ export default function MyLeadsPage() {
                         {new Date(lead.created_at).toLocaleDateString()}
                       </td>
 
-                      {/* ACTIONS */}
-                      <td className="px-6 py-4 flex items-center gap-3">
+                      {/* VIEW */}
+                      <td className="px-6 py-4 text-center">
                         <Link
                           href={`/csr/leads/${lead.id}`}
                           className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
@@ -245,7 +246,10 @@ export default function MyLeadsPage() {
                         >
                           <Eye size={18} />
                         </Link>
+                      </td>
 
+                      {/* ACTIONS */}
+                      <td className="px-6 py-4">
                         {stage === 'Quoting in Progress' && (
                           <Link
                             href={`/csr/leads/send-form?id=${lead.id}`}

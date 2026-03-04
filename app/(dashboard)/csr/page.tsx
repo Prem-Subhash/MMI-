@@ -34,19 +34,25 @@ export default function DashboardPage() {
         <ActionCard
           title="Personal Renewal Pipeline"
           icon={<RefreshCw size={28} />}
-          onClick={() => router.push('/csr/renewals')}
+          onClick={() => router.push('/csr/renewals/personal')}
         />
 
         <ActionCard
           title="Commercial Pipeline"
           icon={<Briefcase size={28} />}
-          onClick={() => router.push('/csr/commercial')}
+          onClick={() => router.push('/csr/pipeline/commercial')}
+        />
+
+        <ActionCard
+          title="Commercial Renewal Pipeline"
+          icon={<RefreshCw size={28} />}
+          onClick={() => router.push('/csr/renewals/commercial')}
         />
 
         <ActionCard
           title="Activity Log"
           icon={<List size={28} />}
-          onClick={() => router.push('/csr/reports')}
+          onClick={() => router.push('/csr/activity-log')}
         />
       </div>
     </section>

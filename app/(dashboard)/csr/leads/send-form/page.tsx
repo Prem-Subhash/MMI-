@@ -67,7 +67,18 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-      setTemplates(templateData || [])
+      
+      // Filter out duplicate templates by name
+      const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
+        const x = acc.find(item => item.name === current.name);
+        if (!x) {
+          return acc.concat([current]);
+        } else {
+          return acc;
+        }
+      }, []);
+      
+      setTemplates(uniqueTemplates)
       setLoading(false)
     }
 

@@ -48,8 +48,7 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
 
     const csrMenu: MenuItem[] = [
         { label: 'Dashboard', href: '/csr', icon: <LayoutGrid size={28} /> },
-        { label: 'Leads', href: '/csr/leads', icon: <GitBranch size={28} /> },
-        { label: 'Personal Pipeline', href: '/csr/pipeline/personal', icon: <GitBranch size={28} /> },
+        { label: 'Personal Pipeline', href: '/csr/leads', icon: <GitBranch size={28} /> },
         { label: 'Personal Renewal', href: '/csr/renewals/personal', icon: <RefreshCw size={28} /> },
         { label: 'Commercial Pipeline', href: '/csr/pipeline/commercial', icon: <Briefcase size={28} /> },
         { label: 'Commercial Renewal', href: '/csr/renewals/commercial', icon: <RefreshCw size={28} /> },
