@@ -224,7 +224,7 @@ export default function CommercialRenewalImportPage() {
                             </label>
                         </div>
 
-                        {rows.length > 0 && !message && (
+                        {rows.length > 0 && message?.type !== 'success' && (
                             <button
                                 onClick={handleImport}
                                 disabled={loading}
