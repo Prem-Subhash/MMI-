@@ -22,7 +22,7 @@ export default function DashboardPage() {
         <ActionCard
           title="New Client"
           icon={<UserPlus size={28} />}
-          onClick={() => router.push('/dashboard/leads/new')}
+          onClick={() => router.push('/dashboard/new-lead')}
         />
 
         <ActionCard

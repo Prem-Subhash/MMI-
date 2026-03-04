@@ -35,6 +35,16 @@ export default function LoginPage() {
   /* 🔄 Generate captcha on page load */
   useEffect(() => {
     setCaptcha(generateCaptcha())
+    
+    // Ensure we are signed out if we are on the login page
+    // This allows users who navigate back to the login page to see the form
+    const clearSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        await supabase.auth.signOut()
+      }
+    }
+    clearSession()
   }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -69,7 +79,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    router.replace('/dashboard')
   }
 
   return (

@@ -136,7 +136,7 @@ export default function MyLeadsPage() {
 
         <div className="flex gap-3">
              <Link
-            href="/dashboard/leads/new"
+             href="/dashboard/new-lead"
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
             >
             + New Lead

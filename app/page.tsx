@@ -1,11 +1,21 @@
 'use client'
 
 import Image from 'next/image'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Footer from '@/components/layout/Footer'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function HomePage() {
   const router = useRouter()
+
+  useEffect(() => {
+    // If user lands on home page, ensure they are logged out
+    const clearSession = async () => {
+      await supabase.auth.signOut()
+    }
+    clearSession()
+  }, [])
 
   return (
     <main style={container}>
