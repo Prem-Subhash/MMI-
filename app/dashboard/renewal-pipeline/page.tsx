@@ -117,7 +117,7 @@ export default function RenewalPipelinePage() {
             {/* TABLE */}
             <div className="overflow-x-auto bg-white border rounded-xl shadow-sm">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-[#1A9887] text-white">
+                    <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                         <tr>
                             <th className="px-4 py-3 text-left">Client Name</th>
                             <th className="px-4 py-3 text-left">Policy Type</th>

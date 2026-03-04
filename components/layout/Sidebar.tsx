@@ -43,11 +43,7 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
 
                 <Link href="/dashboard/leads" className="w-full">
                     <SidebarIcon
-<<<<<<< HEAD
-                        icon={<LayoutGrid size={28} />}
-=======
                         icon={<GitBranch size={28} />}
->>>>>>> eb522b9b09c7f66e033f3530aa726324f87c946f
                         label="Personal Pipeline"
                         active={isActive('/dashboard/leads')}
                         expanded={isHovered}

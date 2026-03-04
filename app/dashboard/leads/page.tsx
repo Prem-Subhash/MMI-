@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, Send } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
-import { Search } from 'lucide-react'
+import { Eye, Send, Search } from 'lucide-react'
 
 /* ================= TYPES ================= */
 
@@ -138,7 +137,7 @@ export default function MyLeadsPage() {
         <div className="flex gap-3">
           <Link
             href="/dashboard/leads/new"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
           >
             + New Lead
           </Link>
@@ -158,7 +157,7 @@ export default function MyLeadsPage() {
               onClick={() => applyFilter(filter.value)}
               className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
                 ${isActive
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+                  ? 'bg-brand text-white border-brand shadow-sm'
                   : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
                 }
               `}
@@ -200,7 +199,7 @@ export default function MyLeadsPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm text-left">
-              <thead className="bg-gray-50 text-gray-600 uppercase text-xs border-b border-gray-100 tracking-wider">
+              <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Client Name</th>
                   <th className="px-6 py-4 font-semibold">Phone</th>
@@ -238,12 +237,13 @@ export default function MyLeadsPage() {
                       </td>
 
                       {/* ACTIONS */}
-                      <td className="px-6 py-4 space-x-3">
+                      <td className="px-6 py-4 flex items-center gap-3">
                         <Link
                           href={`/dashboard/leads/${lead.id}`}
-                          className="text-blue-600 hover:text-blue-800 font-medium text-xs uppercase tracking-wide transition-colors"
+                          className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
+                          title="View Lead Details"
                         >
-                          View
+                          <Eye size={18} />
                         </Link>
 
                         {stage === 'Quoting in Progress' && (

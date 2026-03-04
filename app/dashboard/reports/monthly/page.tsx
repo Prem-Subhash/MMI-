@@ -123,7 +123,7 @@ export default function MonthlyReportPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
                     {/* Month */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
                             Month
                         </label>
                         <input
@@ -136,7 +136,7 @@ export default function MonthlyReportPage() {
 
                     {/* Category */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
                             Category
                         </label>
                         <select
@@ -152,7 +152,7 @@ export default function MonthlyReportPage() {
 
                     {/* Policy Type */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
                             Policy Type
                         </label>
                         <select
@@ -170,7 +170,7 @@ export default function MonthlyReportPage() {
 
                     {/* Flow */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
                             Flow
                         </label>
                         <select
@@ -186,7 +186,7 @@ export default function MonthlyReportPage() {
 
                     {/* CSR */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
                             CSR
                         </label>
                         <select
@@ -203,7 +203,7 @@ export default function MonthlyReportPage() {
 
                     {/* Search */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
                             Client Name
                         </label>
                         <input
@@ -219,7 +219,7 @@ export default function MonthlyReportPage() {
                 <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
                     <button
                         onClick={loadReport}
-                        className="bg-blue-600 text-white px-8 py-2.5 rounded-lg hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md font-medium flex items-center gap-2"
+                        className="bg-brand-dark text-white px-8 py-2.5 rounded-lg hover:bg-[#B55D44] transition-colors shadow-sm hover:shadow-md font-medium flex items-center gap-2"
                     >
                         <FileText size={18} /> Generate Report
                     </button>
@@ -252,7 +252,7 @@ export default function MonthlyReportPage() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gray-50/50 text-gray-600 uppercase text-xs tracking-wider font-semibold border-b border-gray-200/60">
+                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider font-semibold border-b border-gray-200/60">
                                 <tr>
                                     <th className="px-6 py-4">Client</th>
                                     <th className="px-6 py-4">Type</th>

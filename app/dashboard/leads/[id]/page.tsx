@@ -5,7 +5,6 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
-import { ArrowLeft } from 'lucide-react'
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */

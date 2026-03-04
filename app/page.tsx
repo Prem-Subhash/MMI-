@@ -99,7 +99,7 @@ const button = {
   width: '160px',
   padding: '14px',
   fontSize: '16px',
-  backgroundColor: '#e50914',
+  backgroundColor: '#E07A5F',
   color: '#fff',
   border: 'none',
   borderRadius: '6px',
