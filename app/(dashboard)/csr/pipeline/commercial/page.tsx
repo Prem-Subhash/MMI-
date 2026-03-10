@@ -108,9 +108,9 @@ export default function CommercialLinesPage() {
 
     const applyFilter = (stage: string | null) => {
         if (!stage) {
-            router.push('/csr/commercial')
+            router.push('/csr/pipeline/commercial')
         } else {
-            router.push(`/csr/commercial?stage=${encodeURIComponent(stage)}`)
+            router.push(`/csr/pipeline/commercial?stage=${encodeURIComponent(stage)}`)
         }
     }
 
