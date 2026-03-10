@@ -65,7 +65,26 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-      setTemplates(templateData || [])
+      
+      // Filter out duplicate templates, remove Personal prefix, and exclude Umbrella
+      const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
+        // Skip Umbrella templates
+        if (current.name.toLowerCase().includes('umbrella')) {
+          return acc;
+        }
+
+        // Remove "Personal " prefix
+        const cleanName = current.name.replace(/^Personal\s+/i, '');
+        
+        const x = acc.find(item => item.name === cleanName);
+        if (!x) {
+          return acc.concat([{ ...current, name: cleanName }]);
+        } else {
+          return acc;
+        }
+      }, []);
+
+      setTemplates(uniqueTemplates)
       setLoading(false)
     }
 
@@ -154,7 +173,7 @@ export default function SendFormPage() {
       return
     }
 
-    router.push('/csr/leads')
+    router.push(lead.insurence_category === 'commercial' ? '/csr/pipeline/commercial' : '/csr/pipeline/personal')
   }
 
   /* ================= UI STATES ================= */

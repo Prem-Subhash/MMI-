@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import {
   User,
@@ -21,12 +22,15 @@ export default function NewLeadPage() {
   const [error, setError] = useState<string | null>(null)
   const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
 
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') || ''
+
   const [form, setForm] = useState({
     client_name: '',
     phone: '',
     email: '',
     request_type: '',
-    insurence_category: '',
+    insurence_category: initialCategory,
     policy_flow: '',
     policy_type: '',
     referral: '',
@@ -310,7 +314,9 @@ export default function NewLeadPage() {
       <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border overflow-hidden">
 
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] p-8 text-white">
-          <h1 className="text-3xl font-bold">Add New Personal Line Lead</h1>
+          <h1 className="text-3xl font-bold">
+            Add New {form.insurence_category ? (form.insurence_category === 'personal' ? 'Personal' : 'Commercial') : ''} Line Lead
+          </h1>
           <p className="opacity-80 mt-1">Enter client details to create a new lead</p>
         </div>
 
@@ -392,7 +398,6 @@ export default function NewLeadPage() {
                   { value: 'commercial_auto', label: 'Commercial Auto' },
                   { value: 'bop', label: 'Business Owners Policy (BOP)' },
                   { value: 'commercial_property', label: 'Commercial Property' },
-                  { value: 'umbrella', label: 'Umbrella' },
                   { value: 'professional_liability', label: 'Professional Liability' },
                   { value: 'other', label: 'Other' }
                 ]
@@ -402,8 +407,7 @@ export default function NewLeadPage() {
                   { value: 'home_auto', label: 'Home + Auto' },
                   { value: 'condo', label: 'Condo' },
                   { value: 'landlord', label: 'Landlord Home/Condo' },
-                  { value: 'motorcycle', label: 'Motorcycle' },
-                  { value: 'umbrella', label: 'Umbrella' }
+                  { value: 'motorcycle', label: 'Motorcycle' }
                 ]
             }
           />

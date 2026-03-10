@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Clock, User, ChevronRight } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
@@ -11,6 +11,25 @@ export default function TopBar() {
     const [notificationsOpen, setNotificationsOpen] = useState(false)
     const [userProfile, setUserProfile] = useState<{ full_name: string | null; email: string | null } | null>(null)
     const [notifications, setNotifications] = useState<any[]>([])
+
+    const profileRef = useRef<HTMLDivElement>(null)
+    const notificationsRef = useRef<HTMLDivElement>(null)
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+                setProfileOpen(false)
+            }
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+                setNotificationsOpen(false)
+            }
+        }
+
+        document.addEventListener('mousedown', handleClickOutside)
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside)
+        }
+    }, [])
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -85,7 +104,7 @@ export default function TopBar() {
             <div className="flex-1 flex items-center justify-end px-6">
                 <div className="flex items-center gap-6 text-white flex-shrink-0">
                     {/* Notification Bell */}
-                    <div className="relative">
+                    <div className="relative" ref={notificationsRef}>
                         <button
                             onClick={() => {
                                 setNotificationsOpen(!notificationsOpen)
@@ -161,7 +180,7 @@ export default function TopBar() {
                     </div>
 
                     {/* Profile Dropdown */}
-                    <div className="relative">
+                    <div className="relative" ref={profileRef}>
                         <div
                             className={`flex items-center gap-3 cursor-pointer p-1 rounded-lg transition-all ${profileOpen ? 'bg-white/20 ring-2 ring-white/50' : 'hover:bg-white/10'}`}
                             onClick={() => {
