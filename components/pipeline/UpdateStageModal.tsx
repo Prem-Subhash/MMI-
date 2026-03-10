@@ -19,9 +19,45 @@ type FieldConfig = {
 }
 
 // ==========================================
-// PERSONAL LINES FIELDS
+// PERSONAL LINES (NEW BUSINESS) FIELDS
 // ==========================================
-const PERSONAL_LINES_FIELDS: Record<string, Record<string, FieldConfig>> = {
+const PERSONAL_NEW_BUSINESS_FIELDS: Record<string, Record<string, FieldConfig>> = {
+  'Quoting in Progress': {
+    target_completion_date: { label: 'Target Completion Date', type: 'date', required: true },
+    info_received: { label: 'Received all required information/documents?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    docs_saved: { label: 'Saved all client documents in File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Quote Has Been Emailed': {
+    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
+    carrier_name: { label: 'Carrier Name', type: 'text', required: true },
+    quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Consent Letter Sent': {
+    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
+    payment_method: { label: 'Payment Method', type: 'dropdown', options: ['Credit Card', 'ACH', 'Escrow'], required: true },
+    payment_frequency: { label: 'Payment Frequency', type: 'dropdown', options: ['Monthly', 'Quarterly', 'Annual'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Completed': {
+    policy_number: { label: 'Policy Number', type: 'text', required: true },
+    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
+    expected_commission: { label: 'Expected Commission', type: 'number', required: true },
+    docs_saved: { label: 'Saved documents in EZLynx and File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    policy_docs_sent: { label: 'Policy documents sent to client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    notes: { label: 'Notes/Details', type: 'textarea' }
+  },
+  'Did Not Bind': {
+    renewal_date: { label: 'Renewal Date', type: 'date', required: true },
+    reason_not_bound: { label: 'Reason Not Bound', type: 'textarea', required: true }
+  }
+}
+
+// ==========================================
+// PERSONAL LINES RENEWAL FIELDS
+// ==========================================
+const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
   'Quoting in Progress': {
     ezlynx_updated: { label: 'Have you updated the client’s profile in EZLynx?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
@@ -171,7 +207,7 @@ export default function UpdateStageModal({
   // Identify if we are in Commercial Lines based on pipeline name/category?
   // We can just query pipeline details or check if the stage name matches a key in Commercial Fields.
   // Ideally, we load the pipeline info.
-  const [pipelineType, setPipelineType] = useState<'Personal' | 'Commercial' | 'CommercialRenewal' | 'Unknown'>('Unknown')
+  const [pipelineType, setPipelineType] = useState<'PersonalNewBusiness' | 'PersonalRenewal' | 'Commercial' | 'CommercialRenewal' | 'Unknown'>('Unknown')
 
   /* ================= LOAD STAGES ================= */
   useEffect(() => {
@@ -201,8 +237,10 @@ export default function UpdateStageModal({
         setPipelineType('CommercialRenewal')
       } else if (name.includes('Commercial') || category.includes('Commercial')) {
         setPipelineType('Commercial')
+      } else if (name.includes('Renewal')) {
+        setPipelineType('PersonalRenewal')
       } else {
-        setPipelineType('Personal')
+        setPipelineType('PersonalNewBusiness')
       }
     }
 
@@ -362,7 +400,11 @@ export default function UpdateStageModal({
           required_documents_received: formData.required_documents_received === 'Yes',
           finalized_quote: formData.finalized_quote === 'Yes',
           policy_docs_saved: formData.policy_docs_saved === 'Yes',
-          docs_sent_to_client: formData.docs_sent_to_client === 'Yes'
+          docs_sent_to_client: formData.docs_sent_to_client === 'Yes',
+          // Normalizing new booleans for Personal New Business logic
+          docs_saved: formData.docs_saved === 'Yes',
+          info_received: formData.info_received === 'Yes',
+          policy_docs_sent: formData.policy_docs_sent === 'Yes'
         },
       }),
     })
@@ -404,8 +446,8 @@ export default function UpdateStageModal({
 
         {loading ? (
           <div className="py-12 text-center text-gray-500 flex flex-col items-center gap-3">
-             <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-             <p className="font-medium">Loading pipeline stages...</p>
+            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <p className="font-medium">Loading pipeline stages...</p>
           </div>
         ) : (
           <div>
@@ -427,11 +469,13 @@ export default function UpdateStageModal({
                   }
 
                   // Pick correct config map
-                  let configMap = PERSONAL_LINES_FIELDS
+                  let configMap = PERSONAL_NEW_BUSINESS_FIELDS
                   if (pipelineType === 'CommercialRenewal') {
                     configMap = COMMERCIAL_RENEWAL_FIELDS
                   } else if (pipelineType === 'Commercial') {
                     configMap = COMMERCIAL_LINES_FIELDS
+                  } else if (pipelineType === 'PersonalRenewal') {
+                    configMap = PERSONAL_RENEWAL_FIELDS
                   }
 
                   // Normalize name for lookup
@@ -477,10 +521,10 @@ export default function UpdateStageModal({
         {/* ================= DYNAMIC FIELDS ================= */}
         <div className="space-y-5">
           {Object.entries(mandatoryFields).map(([key, config]) => {
-            const isNo = config.type === 'dropdown' && 
-                         config.options?.includes('Yes') && 
-                         config.options?.includes('No') && 
-                         formData[key] === 'No';
+            const isNo = config.type === 'dropdown' &&
+              config.options?.includes('Yes') &&
+              config.options?.includes('No') &&
+              formData[key] === 'No';
 
             // Custom error message logic
             let errorText = "You should do it first then you have to move to the next";
@@ -500,16 +544,16 @@ export default function UpdateStageModal({
                   {renderField(key, config)}
                 </div>
                 {isNo && (
-                   <div className="mt-2 flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded-lg border border-red-100 animate-pulse">
-                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <line x1="12" y1="8" x2="12" y2="12" />
-                        <line x1="12" y1="16" x2="12.01" y2="16" />
-                     </svg>
-                     <p className="text-xs font-bold leading-tight">
-                        {errorText}
-                     </p>
-                   </div>
+                  <div className="mt-2 flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded-lg border border-red-100 animate-pulse">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    <p className="text-xs font-bold leading-tight">
+                      {errorText}
+                    </p>
+                  </div>
                 )}
               </div>
             );
@@ -527,8 +571,8 @@ export default function UpdateStageModal({
             onClick={handleSave}
             disabled={saving || isBlockedByNo}
             className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center gap-2
-              ${saving || isBlockedByNo 
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
+              ${saving || isBlockedByNo
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
               }
             `}
