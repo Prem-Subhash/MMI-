@@ -4,9 +4,9 @@ import { sendGraphEmail } from '@/lib/microsoftGraph'
 
 export async function POST(req: Request) {
   try {
-    const { leadId, templateId, formType, intakeId } = await req.json()
+    const { leadId, templateId, formType, intakeId, customSubject, customBody } = await req.json()
 
-    console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId })
+    console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId, hasCustom: !!customBody })
 
     if (!leadId || !templateId || !formType || !intakeId) {
       return NextResponse.json(
@@ -30,41 +30,47 @@ export async function POST(req: Request) {
       )
     }
 
-    /* ================= FETCH EMAIL TEMPLATE ================= */
-    const { data: template, error: templateError } = await supabaseServer
-      .from('email_templates')
-      .select('id, subject, body')
-      .eq('id', templateId)
-      .eq('is_active', true)
-      .single()
+    /* ================= FETCH EMAIL TEMPLATE & PREPARE BODY ================= */
+    let finalSubject = customSubject || ''
+    let finalBody = customBody || ''
 
-    if (templateError || !template) {
-      console.error('TEMPLATE FETCH ERROR:', templateError)
-      return NextResponse.json(
-        { error: 'Email template not found or inactive' },
-        { status: 404 }
-      )
+    if (!finalBody || !finalSubject) {
+      const { data: template, error: templateError } = await supabaseServer
+        .from('email_templates')
+        .select('id, subject, body')
+        .eq('id', templateId)
+        .eq('is_active', true)
+        .single()
+
+      if (templateError || !template) {
+        console.error('TEMPLATE FETCH ERROR:', templateError)
+        return NextResponse.json(
+          { error: 'Email template not found or inactive' },
+          { status: 404 }
+        )
+      }
+
+      /* ================= GENERATE FORM LINK ================= */
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+      if (!baseUrl) {
+        return NextResponse.json(
+          { error: 'NEXT_PUBLIC_SITE_URL not configured' },
+          { status: 500 }
+        )
+      }
+
+      const formLink = `${baseUrl}/intake/${intakeId}?type=${formType}`
+
+      /* ================= PREPARE EMAIL BODY ================= */
+      finalSubject = finalSubject || template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+      finalBody = template.body
+        .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+        .replace(/{{\s*form_link\s*}}/g, formLink)
     }
-
-    /* ================= GENERATE FORM LINK ================= */
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-    if (!baseUrl) {
-      return NextResponse.json(
-        { error: 'NEXT_PUBLIC_SITE_URL not configured' },
-        { status: 500 }
-      )
-    }
-
-    const formLink = `${baseUrl}/intake/${intakeId}?type=${formType}`
-
-    /* ================= PREPARE EMAIL BODY ================= */
-    const emailBody = template.body
-      .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
-      .replace(/{{\s*form_link\s*}}/g, formLink)
 
     /* ================= SEND EMAIL (MS GRAPH) ================= */
     try {
-      await sendGraphEmail([lead.email], template.subject, emailBody, lead.id, 'initial_email')
+      await sendGraphEmail([lead.email], finalSubject, finalBody, lead.id, 'initial_email')
       console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API')
     } catch (emailError: any) {
       console.error('FAILED TO SEND EMAIL VIA GRAPH:', emailError)

@@ -1,0 +1,542 @@
+{
+  "clients": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "phone": {
+        "format": "text",
+        "type": "string"
+      },
+      "email": {
+        "format": "text",
+        "type": "string"
+      },
+      "assigned_csr": {
+        "description": "Note:\nThis is a Foreign Key to `csrs.id`.<fk table='csrs' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      },
+      "client_name": {
+        "default": "",
+        "format": "text",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "csrs": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "format": "text",
+        "type": "string"
+      },
+      "email": {
+        "format": "text",
+        "type": "string"
+      },
+      "role": {
+        "default": "ADMINORCSR",
+        "format": "text",
+        "type": "string"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "profiles": {
+    "properties": {
+      "id": {
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "full_name": {
+        "format": "text",
+        "type": "string"
+      },
+      "email": {
+        "format": "text",
+        "type": "string"
+      },
+      "role": {
+        "default": "agent",
+        "format": "text",
+        "type": "string"
+      },
+      "manager_id": {
+        "description": "Note:\nThis is a Foreign Key to `profiles.id`.<fk table='profiles' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp with time zone",
+        "type": "string"
+      },
+      "updated_at": {
+        "default": "now()",
+        "format": "timestamp with time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "temp_leads_basics": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "phone": {
+        "format": "text",
+        "type": "string"
+      },
+      "email": {
+        "format": "text",
+        "type": "string"
+      },
+      "insurence_category": {
+        "format": "text",
+        "type": "string"
+      },
+      "policy_type": {
+        "format": "text",
+        "type": "string"
+      },
+      "assigned_csr": {
+        "default": "auth.uid()",
+        "description": "Note:\nThis is a Foreign Key to `csrs.id`.<fk table='csrs' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      },
+      "policy_flow": {
+        "format": "text",
+        "type": "string"
+      },
+      "client_name": {
+        "format": "text",
+        "type": "string"
+      },
+      "form_submitted_at": {
+        "format": "timestamp with time zone",
+        "type": "string"
+      },
+      "pipeline_id": {
+        "description": "Note:\nThis is a Foreign Key to `pipelines.id`.<fk table='pipelines' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "current_stage_id": {
+        "default": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+        "description": "Note:\nThis is a Foreign Key to `pipeline_stages.id`.<fk table='pipeline_stages' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "follow_up_date": {
+        "format": "date",
+        "type": "string"
+      },
+      "x_date": {
+        "format": "date",
+        "type": "string"
+      },
+      "received_date": {
+        "format": "date",
+        "type": "string"
+      },
+      "request_type": {
+        "format": "text",
+        "type": "string"
+      },
+      "effective_date": {
+        "format": "date",
+        "type": "string"
+      },
+      "referral": {
+        "format": "text",
+        "type": "string"
+      },
+      "notes": {
+        "format": "text",
+        "type": "string"
+      },
+      "send_email": {
+        "default": false,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "stage_metadata": {
+        "format": "jsonb"
+      },
+      "client_id": {
+        "description": "Note:\nThis is a Foreign Key to `clients.id`.<fk table='clients' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "renewal_date": {
+        "format": "date",
+        "type": "string"
+      },
+      "carrier": {
+        "format": "text",
+        "type": "string"
+      },
+      "policy_number": {
+        "format": "text",
+        "type": "string"
+      },
+      "current_premium": {
+        "format": "numeric",
+        "type": "number"
+      },
+      "renewal_premium": {
+        "format": "numeric",
+        "type": "number"
+      },
+      "reminder_sent": {
+        "default": false,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "business_name": {
+        "format": "text",
+        "type": "string"
+      },
+      "date_received": {
+        "default": "now()",
+        "format": "timestamp with time zone",
+        "type": "string"
+      },
+      "send_email_to_client": {
+        "default": false,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "total_premium": {
+        "format": "numeric",
+        "type": "number"
+      }
+    },
+    "description": ""
+  },
+  "temp_intake_forms": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "lead_id": {
+        "description": "Note:\nThis is a Foreign Key to `temp_leads_basics.id`.<fk table='temp_leads_basics' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "form_data": {
+        "format": "json"
+      },
+      "status": {
+        "default": "sent",
+        "format": "text",
+        "type": "string"
+      },
+      "submitted_at": {
+        "format": "timestamp without time zone",
+        "type": "string"
+      },
+      "reviewed_by": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "reviewed_at": {
+        "format": "timestamp without time zone",
+        "type": "string"
+      },
+      "form_type": {
+        "format": "text",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "client_insurance_details": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "client_id": {
+        "description": "Note:\nThis is a Foreign Key to `clients.id`.<fk table='clients' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "insurance_category": {
+        "format": "text",
+        "type": "string"
+      },
+      "policy_type": {
+        "format": "text",
+        "type": "string"
+      },
+      "full_data": {
+        "format": "json"
+      },
+      "verified_by": {
+        "description": "Note:\nThis is a Foreign Key to `csrs.id`.<fk table='csrs' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "verified_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "pipelines": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "format": "text",
+        "type": "string"
+      },
+      "category": {
+        "format": "text",
+        "type": "string"
+      },
+      "is_renewal": {
+        "default": false,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "pipeline_stages": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "pipeline_id": {
+        "description": "Note:\nThis is a Foreign Key to `pipelines.id`.<fk table='pipelines' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "stage_name": {
+        "format": "text",
+        "type": "string"
+      },
+      "stage_order": {
+        "format": "integer",
+        "type": "integer"
+      },
+      "mandatory_fields": {
+        "format": "jsonb"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "email_templates": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "name": {
+        "format": "text",
+        "type": "string"
+      },
+      "subject": {
+        "format": "text",
+        "type": "string"
+      },
+      "body": {
+        "format": "text",
+        "type": "string"
+      },
+      "insurance_category": {
+        "format": "text",
+        "type": "string"
+      },
+      "policy_type": {
+        "format": "text",
+        "type": "string"
+      },
+      "policy_flow": {
+        "format": "text",
+        "type": "string"
+      },
+      "is_active": {
+        "default": true,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "email_logs": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "lead_id": {
+        "format": "uuid",
+        "type": "string"
+      },
+      "email_type": {
+        "format": "text",
+        "type": "string"
+      },
+      "recipient": {
+        "format": "text",
+        "type": "string"
+      },
+      "status": {
+        "format": "text",
+        "type": "string"
+      },
+      "error_message": {
+        "format": "text",
+        "type": "string"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "uploaded_documents": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "intake_form_id": {
+        "description": "Note:\nThis is a Foreign Key to `temp_intake_forms.id`.<fk table='temp_intake_forms' column='id'/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "file_name": {
+        "format": "text",
+        "type": "string"
+      },
+      "file_path": {
+        "format": "text",
+        "type": "string"
+      },
+      "file_type": {
+        "format": "text",
+        "type": "string"
+      },
+      "uploaded_at": {
+        "default": "now()",
+        "format": "timestamp without time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  },
+  "form_templates": {
+    "properties": {
+      "id": {
+        "default": "gen_random_uuid()",
+        "description": "Note:\nThis is a Primary Key.<pk/>",
+        "format": "uuid",
+        "type": "string"
+      },
+      "form_name": {
+        "format": "text",
+        "type": "string"
+      },
+      "insurance_category": {
+        "format": "text",
+        "type": "string"
+      },
+      "fields": {
+        "format": "jsonb"
+      },
+      "is_active": {
+        "default": true,
+        "format": "boolean",
+        "type": "boolean"
+      },
+      "version": {
+        "default": 1,
+        "format": "integer",
+        "type": "integer"
+      },
+      "created_at": {
+        "default": "now()",
+        "format": "timestamp with time zone",
+        "type": "string"
+      },
+      "updated_at": {
+        "default": "now()",
+        "format": "timestamp with time zone",
+        "type": "string"
+      }
+    },
+    "description": ""
+  }
+}

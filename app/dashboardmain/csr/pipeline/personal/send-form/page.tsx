@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-
 import { supabase } from '@/lib/supabaseClient'
-import { ArrowLeft } from 'lucide-react'
 
 type EmailTemplate = {
   id: string
@@ -22,6 +20,8 @@ export default function SendFormPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [templateId, setTemplateId] = useState('')
   const [formType, setFormType] = useState('')
+  const [customSubject, setCustomSubject] = useState('')
+  const [customBody, setCustomBody] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -67,18 +67,7 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-
-      // Filter out duplicate templates by name
-      const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
-        const x = acc.find(item => item.name === current.name);
-        if (!x) {
-          return acc.concat([current]);
-        } else {
-          return acc;
-        }
-      }, []);
-
-      setTemplates(uniqueTemplates)
+      setTemplates(templateData || [])
       setLoading(false)
     }
 
@@ -116,6 +105,36 @@ export default function SendFormPage() {
     return data.id
   }
 
+  /* ================= PREPARE CUSTOM EMAIL ================= */
+  useEffect(() => {
+    const prepareEmail = async () => {
+      if (!templateId || !formType || !lead) {
+        setCustomSubject('')
+        setCustomBody('')
+        return
+      }
+
+      const template = templates.find((t) => t.id === templateId)
+      if (!template) return
+
+      const intakeId = await ensureIntakeForm()
+      if (!intakeId) return
+
+      const formLink = `${window.location.origin}/intake/${intakeId}?type=${formType}`
+
+      const replacedSubject = template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+      const replacedBody = template.body
+        .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+        .replace(/{{\s*form_link\s*}}/g, formLink)
+
+      setCustomSubject(replacedSubject)
+      setCustomBody(replacedBody)
+    }
+
+    prepareEmail()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId, formType, lead])
+
   /* ================= PREVIEW ================= */
   const handlePreview = async () => {
     if (!formType) {
@@ -126,7 +145,7 @@ export default function SendFormPage() {
     const id = await ensureIntakeForm()
     if (!id) return
 
-    window.open(`/csr/intake/${id}?preview=true`, '_blank')
+    window.open(`/intake/${id}?preview=true`, '_blank')
   }
 
   /* ================= SEND EMAIL ================= */
@@ -158,6 +177,8 @@ export default function SendFormPage() {
         templateId,
         formType,
         intakeId,
+        customSubject,
+        customBody,
       }),
     })
 
@@ -327,24 +348,37 @@ export default function SendFormPage() {
               </div>
             </div>
 
-            {/* ACTION BUTTONS */}
-            <div className="flex gap-4">
-              <button
-                onClick={() => router.back()}
-                className="w-1/3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
-              >
-                <ArrowLeft size={20} />
-                Back
-              </button>
+            {templateId && formType && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Email Subject</label>
+                  <input
+                    type="text"
+                    value={customSubject}
+                    onChange={(e) => setCustomSubject(e.target.value)}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Email Body</label>
+                  <textarea
+                    value={customBody}
+                    onChange={(e) => setCustomBody(e.target.value)}
+                    rows={8}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]"
+                  />
+                </div>
+              </div>
+            )}
 
-              <button
-                onClick={handleSend}
-                disabled={sending}
-                className="w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
-              >
-                {sending ? 'Sending…' : 'Send Initial Email'}
-              </button>
-            </div>
+            {/* ACTION BUTTONS */}
+            <button
+              onClick={handleSend}
+              disabled={sending}
+              className="w-full bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
+            >
+              {sending ? 'Sending…' : 'Send Initial Email'}
+            </button>
           </div>
         </div>
       </div>
