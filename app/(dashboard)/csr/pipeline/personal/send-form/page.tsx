@@ -144,16 +144,19 @@ export default function SendFormPage() {
         leadId,
         templateId,
         formType,
+        intakeId,
       }),
     })
 
-    if (!res.ok) {
-      const result = await res.json()
-      setError(result?.error || 'Failed to send email')
+    const result = await res.json()
+
+    if (!res.ok || !result.success) {
+      setError(result?.error || result?.message || 'Email failed to send. Please try again.')
       setSending(false)
       return
     }
 
+    alert(result.message || 'Email sent successfully to the client.')
     router.push('/csr/leads')
   }
 

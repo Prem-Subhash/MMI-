@@ -107,7 +107,9 @@ export default function PersonalRenewalImportPage() {
 
         const { error } = await supabase
             .from('temp_leads_basics')
-            .insert(payload)
+            .upsert(payload, {
+                onConflict: 'policy_number,renewal_date'
+            })
 
         if (error) {
             setMessage({ text: `Import failed: ${error.message}`, type: 'error' })
@@ -184,8 +186,8 @@ export default function PersonalRenewalImportPage() {
                                 htmlFor="file-upload"
                                 className={`
                                     flex flex-col items-center justify-center p-12 border-2 border-dashed rounded-[24px] cursor-pointer transition-all
-                                    ${fileName 
-                                        ? 'bg-emerald-50/20 border-emerald-200 text-emerald-900' 
+                                    ${fileName
+                                        ? 'bg-emerald-50/20 border-emerald-200 text-emerald-900'
                                         : 'bg-gray-50/50 border-gray-200 hover:border-brand/40 hover:bg-brand/5 text-gray-500'}
                                 `}
                             >
@@ -217,13 +219,13 @@ export default function PersonalRenewalImportPage() {
                         {message && (
                             <div className={`
                                 p-6 rounded-2xl flex items-start gap-4 border animate-in slide-in-from-top-4
-                                ${message.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 
-                                  message.type === 'error' ? 'bg-red-50 border-red-100 text-red-800' : 
-                                  'bg-blue-50 border-blue-100 text-blue-800'}
+                                ${message.type === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-800' :
+                                    message.type === 'error' ? 'bg-red-50 border-red-100 text-red-800' :
+                                        'bg-blue-50 border-blue-100 text-blue-800'}
                             `}>
-                                {message.type === 'success' ? <CheckCircle2 className="shrink-0 text-emerald-500" /> : 
-                                 message.type === 'error' ? <AlertCircle className="shrink-0 text-red-500" /> : 
-                                 <Info className="shrink-0 text-blue-500" />}
+                                {message.type === 'success' ? <CheckCircle2 className="shrink-0 text-emerald-500" /> :
+                                    message.type === 'error' ? <AlertCircle className="shrink-0 text-red-500" /> :
+                                        <Info className="shrink-0 text-blue-500" />}
                                 <div>
                                     <p className="text-sm font-bold uppercase tracking-wider mb-1 leading-none">{message.type}</p>
                                     <p className="text-sm font-medium opacity-90 leading-relaxed">{message.text}</p>

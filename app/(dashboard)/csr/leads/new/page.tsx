@@ -387,13 +387,23 @@ export default function NewLeadPage() {
             options={
               form.insurence_category === 'commercial'
                 ? [
-                  { value: 'general_liability', label: 'General Liability' },
-                  { value: 'workers_comp', label: 'Workers Compensation' },
-                  { value: 'commercial_auto', label: 'Commercial Auto' },
+                  { value: 'workers_comp', label: 'Workers Comp' },
                   { value: 'bop', label: 'Business Owners Policy (BOP)' },
+                  { value: 'commercial_auto', label: 'Commercial Auto' },
+                  { value: 'commercial_package', label: 'Commercial Package' },
+                  { value: 'umbrella', label: 'Umbrella (Excess Liability)' },
+                  { value: 'general_liability', label: 'General Liability' },
+                  { value: 'flood', label: 'Flood' },
+                  { value: 'builders_risk', label: 'Builders Risk' },
+                  { value: 'lessor_risk', label: 'Lessor Risk' },
+                  { value: 'surety_bond', label: 'Surety Bond' },
+                  { value: 'inland_marine', label: 'Inland Marine' },
+                  { value: 'employment_practices_liability', label: 'Employment Practices Liability' },
+                  { value: 'cyber_liability', label: 'Cyber Liability' },
+                  { value: 'professional_liability', label: 'Errors & Omissions / Professional Liability' },
+                  { value: 'liquor_liability', label: 'Liquor Liability' },
+                  { value: 'crime_fidelity_bond', label: 'Crime Fidelity Bond' },
                   { value: 'commercial_property', label: 'Commercial Property' },
-                  { value: 'umbrella', label: 'Umbrella' },
-                  { value: 'professional_liability', label: 'Professional Liability' },
                   { value: 'other', label: 'Other' }
                 ]
                 : [

@@ -89,7 +89,7 @@ export async function GET(req: Request) {
         `
 
                 /* ================= SEND EMAIL ================= */
-                await sendGraphEmail(recipients, subject, body)
+                await sendGraphEmail(recipients, subject, body, lead.id, 'reminder_email')
 
                 /* ================= UPDATE LEAD (Race Condition Safe) ================= */
                 // Only update if it is still false.
@@ -109,16 +109,6 @@ export async function GET(req: Request) {
                     errorCount++
                     continue
                 }
-
-                /* ================= LOG EMAIL ================= */
-                // We log even if race condition happened, to be safe, or we can skip. 
-                // Since we sent the email, we should log it.
-                await supabaseServer.from('email_logs').insert({
-                    lead_id: lead.id,
-                    to_email: recipients.join(', '),
-                    subject: subject,
-                    status: 'sent',
-                })
 
                 sentCount++
 

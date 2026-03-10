@@ -73,7 +73,7 @@ export default function CommercialLinesPage() {
         `)
                 .eq('assigned_csr', user.id)
                 .eq('insurence_category', 'commercial') // Filter for Commercial Lines
-                // .eq('policy_flow', 'new') // commercial lines is 'New Business' usually
+                .eq('policy_flow', 'new') // commercial lines is 'New Business' usually
                 .order('created_at', { ascending: false })
 
             /* ✅ FIXED FILTER */

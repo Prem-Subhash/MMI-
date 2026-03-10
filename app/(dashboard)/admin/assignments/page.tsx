@@ -77,18 +77,23 @@ export default function AdminAssignmentsPage() {
     }
 
     const handleAssignCSR = async (leadId: string, newCsrId: string) => {
+        console.log("Assigning CSR", newCsrId, "to lead", leadId)
         setUpdatingParams(prev => ({ ...prev, [leadId]: true }))
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('temp_leads_basics')
             .update({ assigned_csr: newCsrId === 'unassigned' ? null : newCsrId })
             .eq('id', leadId)
+            .select()
 
-        if (!error) {
+        console.log("Update Data Result:", data)
+        if (error) {
+            console.error("Update SQL Error:", error)
+            alert('Failed to update assignment: ' + error.message)
+        } else {
+            console.log("Update successful, setting local state.")
             // Update local state instantly
             setLeads(prev => prev.map(lead => lead.id === leadId ? { ...lead, assigned_csr: newCsrId === 'unassigned' ? null : newCsrId } : lead))
-        } else {
-            alert('Failed to update assignment: ' + error.message)
         }
 
         setUpdatingParams(prev => ({ ...prev, [leadId]: false }))

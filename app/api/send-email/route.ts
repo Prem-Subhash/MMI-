@@ -4,11 +4,11 @@ import { sendGraphEmail } from '@/lib/microsoftGraph'
 
 export async function POST(req: Request) {
   try {
-    const { leadId, templateId, formType } = await req.json()
+    const { leadId, templateId, formType, intakeId } = await req.json()
 
-    console.log('SEND EMAIL API HIT:', { leadId, templateId, formType })
+    console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId })
 
-    if (!leadId || !templateId || !formType) {
+    if (!leadId || !templateId || !formType || !intakeId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const formLink = `${baseUrl}/intake/${leadId}?type=${formType}`
+    const formLink = `${baseUrl}/intake/${intakeId}?type=${formType}`
 
     /* ================= PREPARE EMAIL BODY ================= */
     const emailBody = template.body
@@ -64,30 +64,17 @@ export async function POST(req: Request) {
 
     /* ================= SEND EMAIL (MS GRAPH) ================= */
     try {
-      await sendGraphEmail([lead.email], template.subject, emailBody)
+      await sendGraphEmail([lead.email], template.subject, emailBody, lead.id, 'initial_email')
       console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API')
     } catch (emailError: any) {
       console.error('FAILED TO SEND EMAIL VIA GRAPH:', emailError)
       return NextResponse.json(
-        { error: `Email send failed: ${emailError.message}` },
+        { success: false, message: 'Failed to send email', error: `Email send failed: ${emailError.message}` },
         { status: 500 }
       )
     }
 
-    /* ================= OPTIONAL EMAIL LOG ================= */
-    const { error: emailLogError } = await supabaseServer
-      .from('email_logs')
-      .insert({
-        lead_id: lead.id,
-        template_id: template.id,
-        to_email: lead.email,
-        subject: template.subject,
-        status: 'sent',
-      })
 
-    if (emailLogError) {
-      console.warn('EMAIL LOG INSERT SKIPPED:', emailLogError.message)
-    }
 
     /* ================= SET FOLLOW-UP DATE (+48 HOURS) ================= */
     const followUpDate = new Date()
@@ -103,6 +90,7 @@ export async function POST(req: Request) {
     const { error: updateError } = await supabaseServer
       .from('temp_leads_basics')
       .update({
+        send_email: true,
         stage_metadata: updatedStageMetadata,
         follow_up_date: followUpDate.toISOString(),
       })
@@ -118,7 +106,7 @@ export async function POST(req: Request) {
 
     console.log('EMAIL ACTION RECORDED (STAGE NOT CHANGED)')
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, message: 'Email sent successfully' })
   } catch (error: any) {
     console.error('Send email API error:', error)
     return NextResponse.json(

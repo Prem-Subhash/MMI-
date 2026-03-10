@@ -1,74 +1,295 @@
-import { createServer } from '@/lib/supabaseServer'
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { supabase } from '@/lib/supabaseClient'
+import { Eye, Search } from 'lucide-react'
 
-export default async function AdminLeadsPage() {
-    const supabase = await createServer()
+/* ================= TYPES ================= */
 
-    // Fetch all leads (Admin has access to everything)
-    const { data: leads, error } = await supabase
-        .from('temp_leads_basics')
-        .select(`
-      id,
-      client_name,
-      email,
-      phone,
-      policy_type,
-      assigned_csr,
-      created_at,
-      profiles:assigned_csr ( full_name )
-    `)
-        .order('created_at', { ascending: false })
-        .limit(50)
+type Lead = {
+    id: string
+    client_name: string
+    phone: string
+    email: string
+    insurence_category: string
+    policy_flow: string
+    created_at: string
+    current_stage: {
+        stage_name: string
+    } | null
+    csrs: {
+        name: string
+    } | null
+}
+
+/* ================= FILTERS ================= */
+
+const STAGE_FILTERS = [
+    { label: 'All', value: null },
+    { label: 'Quoting in Progress', value: 'Quoting in Progress' },
+    { label: 'Quote has been Emailed', value: 'Quote Has Been Emailed' },
+    { label: 'Consent Letter Sent', value: 'Consent Letter Sent' },
+    { label: 'Completed', value: 'Completed' },
+    { label: 'Did not bind', value: 'Did Not Bind' },
+]
+
+/* ================= PAGE ================= */
+
+export default function AdminLeadsPage() {
+    const searchParams = useSearchParams()
+    const router = useRouter()
+    const stageFilter = searchParams.get('stage')
+
+    const [leads, setLeads] = useState<Lead[]>([])
+    const [loading, setLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
+
+    /* ================= LOAD LEADS ================= */
+
+    useEffect(() => {
+        const loadLeads = async () => {
+            setLoading(true)
+
+            let query = supabase
+                .from('temp_leads_basics')
+                .select(`
+          id,
+          client_name,
+          phone,
+          email,
+          insurence_category,
+          policy_flow,
+          created_at,
+          current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
+            stage_name
+          ),
+          csrs!temp_leads_basics_assigned_csr_fkey (
+            name
+          )
+        `)
+                .order('created_at', { ascending: false })
+
+            if (stageFilter) {
+                query = query.eq('current_stage.stage_name', stageFilter)
+            }
+
+            const { data, error } = await query
+
+            if (error) {
+                console.error(error)
+                setLeads([])
+            } else {
+                const formatted = (data as any[]).map(row => ({
+                    ...row,
+                    current_stage: Array.isArray(row.current_stage)
+                        ? row.current_stage[0] ?? null
+                        : row.current_stage ?? null,
+                    csrs: Array.isArray(row.csrs)
+                        ? row.csrs[0] ?? null
+                        : row.csrs ?? null,
+                }))
+
+                setLeads(formatted)
+            }
+
+            setLoading(false)
+        }
+
+        loadLeads()
+    }, [stageFilter])
+
+    /* ================= FILTER HANDLER ================= */
+
+    const applyFilter = (stage: string | null) => {
+        if (!stage) {
+            router.push('/admin/leads')
+        } else {
+            router.push(`/admin/leads?stage=${encodeURIComponent(stage)}`)
+        }
+    }
+
+    // Client-side search filtering
+    const filteredLeads = leads.filter(lead => {
+        const term = searchTerm.toLowerCase()
+        return (
+            (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
+            (lead.email && lead.email.toLowerCase().includes(term)) ||
+            (lead.phone && lead.phone.includes(term)) ||
+            (lead.csrs && lead.csrs.name && lead.csrs.name.toLowerCase().includes(term))
+        )
+    })
+
+    /* ================= UI ================= */
 
     return (
         <div className="p-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+            {/* HEADER */}
+            <div className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-800">All Leads</h1>
                     <p className="text-gray-600">View and monitor all leads across the CRM.</p>
                 </div>
-                <Link href="/admin">
-                    <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
-                        Back to Dashboard
-                    </button>
-                </Link>
+
+                <div className="flex gap-3">
+                    <Link
+                        href="/admin/leads/new"
+                        className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors flex items-center"
+                    >
+                        + New Lead
+                    </Link>
+                    <Link href="/admin">
+                        <button className="h-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                            Back to Dashboard
+                        </button>
+                    </Link>
+                </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Client Name</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Email</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Policy Type</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Assigned CSR</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Created</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {(leads || []).map((lead: any) => (
-                            <tr key={lead.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                                <td className="p-4 text-gray-800 font-medium">{lead.client_name}</td>
-                                <td className="p-4 text-gray-600 text-sm">{lead.email}</td>
-                                <td className="p-4 text-gray-600 text-sm capitalize">{lead.policy_type}</td>
-                                <td className="p-4 text-gray-600 text-sm">
-                                    {lead.profiles?.full_name || <span className="text-amber-600 font-medium">Unassigned</span>}
-                                </td>
-                                <td className="p-4 text-gray-500 text-sm">
-                                    {new Date(lead.created_at).toLocaleDateString()}
-                                </td>
-                            </tr>
-                        ))}
-                        {(!leads || leads.length === 0) && (
-                            <tr>
-                                <td colSpan={5} className="p-8 text-center text-gray-500">
-                                    No leads found.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
+            {/* FILTER TABS */}
+            <div className="flex gap-3 mb-6 flex-wrap">
+                {STAGE_FILTERS.map(filter => {
+                    const isActive =
+                        (!filter.value && !stageFilter) ||
+                        filter.value === stageFilter
+
+                    return (
+                        <button
+                            key={filter.label}
+                            onClick={() => applyFilter(filter.value)}
+                            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
+                ${isActive
+                                    ? 'bg-brand text-white border-brand shadow-sm'
+                                    : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
+                                }
+              `}
+                        >
+                            {filter.label}
+                        </button>
+                    )
+                })}
+            </div>
+
+            {/* TABLE SECTION */}
+            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                {/* TOOLBAR */}
+                <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="relative max-w-sm w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search client, email, phone, or CSR..."
+                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="text-sm text-gray-500 font-medium whitespace-nowrap">
+                        {filteredLeads.length} Lead{filteredLeads.length !== 1 && 's'} Found
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
+                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <p>Loading leads...</p>
+                    </div>
+                ) : filteredLeads.length === 0 ? (
+                    <div className="p-12 text-center text-gray-500">
+                        No leads found matching your criteria.
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm text-left">
+                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
+                                <tr>
+                                    <th className="px-6 py-4 font-semibold">Client Name</th>
+                                    <th className="px-6 py-4 font-semibold">Phone</th>
+                                    <th className="px-6 py-4 font-semibold">Email</th>
+                                    <th className="px-6 py-4 font-semibold">Category</th>
+                                    <th className="px-6 py-4 font-semibold">Flow</th>
+                                    <th className="px-6 py-4 font-semibold">Stage</th>
+                                    <th className="px-6 py-4 font-semibold">Assigned CSR</th>
+                                    <th className="px-6 py-4 font-semibold">Created</th>
+                                    <th className="px-6 py-4 font-semibold text-center">View</th>
+                                </tr>
+                            </thead>
+
+                            <tbody className="divide-y divide-gray-100">
+                                {filteredLeads.map(lead => {
+                                    const stage = lead.current_stage?.stage_name ?? '—'
+
+                                    return (
+                                        <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
+                                            <td className="px-6 py-4 font-medium text-gray-900">
+                                                {lead.client_name}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600">{lead.phone}</td>
+                                            <td className="px-6 py-4 text-gray-600">{lead.email}</td>
+                                            <td className="px-6 py-4 capitalize text-gray-700">
+                                                {lead.insurence_category}
+                                            </td>
+                                            <td className="px-6 py-4 capitalize text-gray-700">
+                                                {lead.policy_flow}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <StageBadge stage={stage} />
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                {lead.csrs?.name ? (
+                                                    <span className="font-semibold text-gray-700 text-sm">
+                                                        {lead.csrs.name}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-500">
+                                                {new Date(lead.created_at).toLocaleDateString()}
+                                            </td>
+
+                                            {/* VIEW */}
+                                            <td className="px-6 py-4 text-center">
+                                                <Link
+                                                    href={`/csr/leads/${lead.id}`}
+                                                    className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
+                                                    title="View Lead Details"
+                                                >
+                                                    <Eye size={18} />
+                                                </Link>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
+    )
+}
+
+/* ================= STAGE BADGE ================= */
+
+function StageBadge({ stage }: { stage: string }) {
+    const color =
+        stage === 'Quoting in Progress'
+            ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+            : stage === 'Quote Has Been Emailed'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                : stage === 'Consent Letter Sent'
+                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                    : stage === 'Completed'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : stage === 'Did Not Bind'
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : 'bg-gray-50 text-gray-700 border border-gray-200'
+
+    return (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+            {stage}
+        </span>
     )
 }

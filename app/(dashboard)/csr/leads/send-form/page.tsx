@@ -67,7 +67,7 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-      
+
       // Filter out duplicate templates by name
       const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
         const x = acc.find(item => item.name === current.name);
@@ -77,7 +77,7 @@ export default function SendFormPage() {
           return acc;
         }
       }, []);
-      
+
       setTemplates(uniqueTemplates)
       setLoading(false)
     }
@@ -157,16 +157,19 @@ export default function SendFormPage() {
         leadId,
         templateId,
         formType,
+        intakeId,
       }),
     })
 
-    if (!res.ok) {
-      const result = await res.json()
-      setError(result?.error || 'Failed to send email')
+    const result = await res.json()
+
+    if (!res.ok || !result.success) {
+      setError(result?.error || result?.message || 'Email failed to send. Please try again.')
       setSending(false)
       return
     }
 
+    alert(result.message || 'Email sent successfully to the client.')
     router.push('/csr/leads')
   }
 
