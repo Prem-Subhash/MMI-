@@ -382,19 +382,37 @@ export default function UpdateStageModal({
     onClose()
   }
 
+  // Check if any Yes/No field is selected as 'No'
+  const isBlockedByNo = Object.entries(mandatoryFields).some(([key, config]) => {
+    return (
+      config.type === 'dropdown' &&
+      config.options?.includes('Yes') &&
+      config.options?.includes('No') &&
+      formData[key] === 'No'
+    )
+  })
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold">Update Status</h2>
+      <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-xl font-bold text-gray-800">Update Status</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
 
         {loading ? (
-          <div className="py-4 text-center text-gray-500">Loading pipeline stages...</div>
+          <div className="py-12 text-center text-gray-500 flex flex-col items-center gap-3">
+             <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+             <p className="font-medium">Loading pipeline stages...</p>
+          </div>
         ) : (
           <div>
-            <label className="block text-gray-700 font-medium mb-2">New Status</label>
+            <label className="block text-gray-700 font-semibold mb-2 text-sm uppercase tracking-wide">New Status</label>
             <div className="relative">
               <select
-                className="w-full border border-emerald-500 rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 text-gray-900 font-medium appearance-none bg-white cursor-pointer"
+                className="w-full border-2 border-emerald-500 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 text-gray-900 font-bold appearance-none bg-white cursor-pointer transition-all shadow-sm"
                 value={selectedStageId}
                 onChange={(e) => {
                   const stageId = e.target.value
@@ -420,7 +438,6 @@ export default function UpdateStageModal({
                   const normalizedName = stage.stage_name.trim()
 
                   // Try exact match or match from FIELDS keys
-                  // Note: Keys in configMap are Case Sensitive usually, but let's be safe
                   const matchedKey = Object.keys(configMap).find(
                     key => key.toLowerCase() === normalizedName.toLowerCase()
                   )
@@ -430,12 +447,10 @@ export default function UpdateStageModal({
                   if (matchedKey) {
                     fields = configMap[matchedKey]
                   } else if (Array.isArray(stage.mandatory_fields)) {
-                    // Fallback: Convert DB array to config to prevent empty rendering
                     stage.mandatory_fields.forEach((f: string) => {
                       fields[f] = { label: f, type: 'text', required: true }
                     })
                   } else if (typeof stage.mandatory_fields === 'object' && stage.mandatory_fields !== null) {
-                    // If DB already has object config
                     fields = stage.mandatory_fields
                   }
 
@@ -450,9 +465,9 @@ export default function UpdateStageModal({
                   </option>
                 ))}
               </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-                <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-600">
+                <svg width="14" height="10" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 1.5L6 6.5L11 1.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
             </div>
@@ -460,29 +475,72 @@ export default function UpdateStageModal({
         )}
 
         {/* ================= DYNAMIC FIELDS ================= */}
-        {Object.entries(mandatoryFields).map(([key, config]) => (
-          <div key={key}>
-            <label className="block text-gray-700 font-medium mb-1.5">
-              {config.label}
-              {config.required && <span className="text-red-500 ml-0.5">*</span>}
-            </label>
-            {renderField(key, config)}
-          </div>
-        ))}
+        <div className="space-y-5">
+          {Object.entries(mandatoryFields).map(([key, config]) => {
+            const isNo = config.type === 'dropdown' && 
+                         config.options?.includes('Yes') && 
+                         config.options?.includes('No') && 
+                         formData[key] === 'No';
 
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-2">
+            // Custom error message logic
+            let errorText = "You should do it first then you have to move to the next";
+            if (key.includes('ezlynx')) {
+              errorText = "you have to updated the client’s profile in EZLynx";
+            } else if (key.includes('finalized') || key.includes('finalize')) {
+              errorText = "you have to finialize the quote";
+            }
+
+            return (
+              <div key={key} className="animate-in fade-in slide-in-from-top-2 duration-300">
+                <label className="block text-gray-700 font-semibold mb-2 text-sm">
+                  {config.label}
+                  {config.required && <span className="text-red-500 ml-1">*</span>}
+                </label>
+                <div className={isNo ? 'ring-2 ring-red-500 rounded-xl transition-all' : ''}>
+                  {renderField(key, config)}
+                </div>
+                {isNo && (
+                   <div className="mt-2 flex items-center gap-2 text-red-600 bg-red-50 p-2 rounded-lg border border-red-100 animate-pulse">
+                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                     </svg>
+                     <p className="text-xs font-bold leading-tight">
+                        {errorText}
+                     </p>
+                   </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-4">
           <button
             onClick={onClose}
-            className="px-5 py-2.5 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            className="px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            disabled={saving}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium shadow-sm transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={saving || isBlockedByNo}
+            className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+              ${saving || isBlockedByNo 
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none' 
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
+              }
+            `}
           >
-            {saving ? 'Saving...' : 'Save Status'}
+            {saving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Saving...
+              </>
+            ) : (
+              'Save Status'
+            )}
           </button>
         </div>
       </div>
