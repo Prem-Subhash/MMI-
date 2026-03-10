@@ -148,61 +148,99 @@ export default function IntakeFormPage() {
 
   /* ================= RENDER FORM ================= */
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <div className="max-w-4xl mx-auto p-10 flex-1 w-full">
-        <h1 className="text-2xl font-semibold mb-6">
-          Insurance Intake Form
-        </h1>
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e2e8f0] via-[#cbd5e1] to-[#94a3b8] font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
+      <div className="max-w-3xl mx-auto px-6 py-16 flex-1 w-full">
+        {/* CENTERED BRAND LOGO */}
+        <div className="flex flex-col items-center mb-16 text-center">
+          <div className="relative w-full max-w-[280px] animate-in fade-in slide-in-from-top-4 duration-1000">
+             <img 
+               src="/innovative_logo_-removebg-preview.png"
+               alt="Innovative Insurance Solutions" 
+               className="w-full h-auto object-contain mx-auto"
+             />
+          </div>
+        </div>
 
         {isPreview && (
-          <div className="mb-6 p-3 bg-yellow-100 border rounded text-sm">
-            🔍 Preview Mode — CSR only
+          <div className="mb-12 p-6 bg-amber-50/50 border border-amber-200/50 rounded-[2rem] text-amber-950 text-sm flex items-center gap-5 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="bg-amber-100 p-3 rounded-full">
+              <span className="text-2xl">🔍</span>
+            </div>
+            <div>
+              <p className="font-extrabold text-lg tracking-tight uppercase">Admin Preview</p>
+              <p className="text-amber-900/80 font-medium">This is exactly what the client will see.</p>
+            </div>
           </div>
         )}
 
-        {/* PDF ORDER – DO NOT CHANGE */}
-        <PrimaryApplicantForm
-          data={formData.primary_applicant}
-          onChange={val => updateSection('primary_applicant', val)}
-          disabled={isPreview}
-        />
+        {/* UNIFIED FORM CONTAINER - COLOR SYNCED */}
+        <div className="space-y-12">
+          {/* PDF ORDER – DO NOT CHANGE */}
+          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_40px_100px_rgba(15,23,42,0.15)] border border-white/60 overflow-hidden">
+            {/* BRAND ACCENT BAR */}
+            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rose-700 via-rose-600 to-slate-900 z-10" />
+            
+            <div className="divide-y divide-slate-100/80">
+              <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
+                <PrimaryApplicantForm
+                  data={formData.primary_applicant}
+                  onChange={val => updateSection('primary_applicant', val)}
+                  disabled={isPreview}
+                />
+              </div>
 
-        <CoApplicantForm
-          data={formData.co_applicant}
-          onChange={val => updateSection('co_applicant', val)}
-          disabled={isPreview}
-        />
+              <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
+                <CoApplicantForm
+                  data={formData.co_applicant}
+                  onChange={val => updateSection('co_applicant', val)}
+                  disabled={isPreview}
+                />
+              </div>
 
-        {(formType === 'home' || formType === 'home_auto') && (
-          <HomeInsuranceForm
-            data={formData.home}
-            onChange={val => updateSection('home', val)}
-            disabled={isPreview}
-          />
-        )}
+              {(formType === 'home' || formType === 'home_auto') && (
+                <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
+                  <HomeInsuranceForm
+                    data={formData.home}
+                    onChange={val => updateSection('home', val)}
+                    disabled={isPreview}
+                  />
+                </div>
+              )}
 
-        {(formType === 'auto' || formType === 'home_auto') && (
-          <AutoInsuranceForm
-            data={formData.auto}
-            onChange={val => updateSection('auto', val)}
-            disabled={isPreview}
-          />
-        )}
+              {(formType === 'auto' || formType === 'home_auto') && (
+                <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
+                  <AutoInsuranceForm
+                    data={formData.auto}
+                    onChange={val => updateSection('auto', val)}
+                    disabled={isPreview}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {!isPreview && (
-          <div className="mt-8 space-y-3">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 pb-32">
             <button
               onClick={handleSave}
-              className="w-full bg-gray-600 text-white py-3 rounded"
+              className="group relative overflow-hidden bg-slate-100 border-2 border-transparent text-slate-900 py-5 px-10 rounded-[2rem] font-black transition-all hover:bg-slate-200 active:scale-[0.98] shadow-sm tracking-tight"
             >
-              Save & Continue Later
+              <span className="relative z-10 flex items-center justify-center gap-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Save Progress
+              </span>
             </button>
 
             <button
               onClick={handleSubmit}
-              className="w-full bg-green-600 text-white py-3 rounded"
+              style={{ backgroundColor: '#CF1C45' }}
+              className="group relative overflow-hidden text-white py-5 px-10 rounded-[2rem] font-black transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_20px_40px_rgba(207,28,69,0.3)] hover:shadow-[0_25px_50px_rgba(207,28,69,0.4)] tracking-tight"
             >
-              Submit Form
+               <span className="relative z-10 flex items-center justify-center gap-3 text-2xl">
+                Submit Form
+                <svg className="transition-transform group-hover:translate-x-1" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </span>
             </button>
           </div>
         )}

@@ -22,23 +22,23 @@ const Footer = () => {
                     {/* Hotline Section */}
                     <div className="flex items-center gap-2">
                         <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Hotline:</p>
-                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (800) MOONSTAR</p>
+                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (800) INNOVATIVE</p>
                     </div>
 
                     {/* Email Section */}
                     <div className="flex items-center gap-2">
                         <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Email:</p>
-                        <p className="text-xs font-bold tracking-wide text-white">support@moonstarmortgage.com</p>
+                        <p className="text-xs font-bold tracking-wide text-white">support@innovativeinsurance.com</p>
                     </div>
 
                     {/* Social Section */}
                     <div className="flex items-center gap-4">
                         <p className="text-white text-[10px] font-bold uppercase tracking-wider hidden sm:block">Connect with us</p>
                         <div className="flex gap-4 text-white/90">
-                            <Facebook size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
-                            <Instagram size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
-                            <MessageCircle size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
-                            <Send size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                            <Facebook size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
+                            <Instagram size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
+                            <MessageCircle size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
+                            <Send size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
                             <Twitter size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
                         </div>
                     </div>
@@ -50,7 +50,7 @@ const Footer = () => {
                 {/* Copyright Row */}
                 <div className="max-w-[1600px] mx-auto flex justify-center text-center">
                     <p className="text-white/30 text-[9px] font-medium tracking-wide">
-                        © {currentYear} Moonstar Mortgage Inc. | Powered by Moonstar Tech
+                        © {currentYear} Innovative Insurance Solutions | Powered by Innovative Tech
                     </p>
                 </div>
             </div>
