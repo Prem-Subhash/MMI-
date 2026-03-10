@@ -138,7 +138,7 @@ export default function CommercialLinesPage() {
 
                 <div className="flex gap-3">
                     <Link
-                        href="/csr/leads/new"
+                        href="/csr/leads/new?category=commercial"
                         className="bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
                     >
                         + New Lead
