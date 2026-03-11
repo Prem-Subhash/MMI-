@@ -72,9 +72,17 @@ export default function SendFormPage() {
 
       // Filter out duplicate templates by name
       const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
-        const x = acc.find(item => item.name === current.name);
+        // Skip Umbrella templates
+        if (current.name.toLowerCase().includes('umbrella')) {
+          return acc;
+        }
+
+        // Remove "Personal " prefix
+        const cleanName = current.name.replace(/^Personal\s+/i, '');
+        
+        const x = acc.find(item => item.name === cleanName);
         if (!x) {
-          return acc.concat([current]);
+          return acc.concat([{ ...current, name: cleanName }]);
         } else {
           return acc;
         }

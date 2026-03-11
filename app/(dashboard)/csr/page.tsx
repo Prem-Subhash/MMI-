@@ -28,7 +28,7 @@ export default function DashboardPage() {
         <ActionCard
           title="Personal Pipeline"
           icon={<GitBranch size={28} />}
-          onClick={() => router.push('/csr/leads')}
+          onClick={() => router.push('/csr/pipeline/personal')}
         />
 
         <ActionCard
