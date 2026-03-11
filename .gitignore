@@ -22,6 +22,8 @@ out/
 *_dump.json
 *_output.json
 debug_*.json
+/scripts
+/data
 
 # OS files
 .DS_Store
