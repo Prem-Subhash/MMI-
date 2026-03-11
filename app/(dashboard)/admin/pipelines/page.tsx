@@ -1,8 +1,8 @@
-import { createServer } from '@/lib/supabaseServer'
+import { supabaseServer as supabase } from '@/lib/supabaseServer'
 import Link from 'next/link'
+import PipelineClient from './PipelineClient'
 
 export default async function AdminPipelinesPage() {
-    const supabase = await createServer()
 
     // 1. Fetch Pipelines
     const { data: pipelines } = await supabase
@@ -16,10 +16,32 @@ export default async function AdminPipelinesPage() {
         .select('id, pipeline_id, stage_name, stage_order')
         .order('stage_order', { ascending: true })
 
-    // 3. Fetch Leads to count them
-    const { data: leads } = await supabase
+    // 3. Fetch all Admin leads fields directly on server to bypass RLS limits
+    const { data: leads, error: leadsError } = await supabase
         .from('temp_leads_basics')
-        .select('current_stage_id')
+        .select(`
+            id,
+            client_name,
+            phone,
+            email,
+            insurence_category,
+            policy_flow,
+            pipeline_id,
+            current_stage_id,
+            created_at,
+            assigned_csr,
+            current_stage:pipeline_stages (
+                stage_name
+            ),
+            csrs (
+              name
+            )
+        `)
+        .order('created_at', { ascending: false })
+
+    if (leadsError) {
+        console.error("FATAL: Error fetching temp_leads_basics:", leadsError)
+    }
 
     // Count leads per stage
     const stageCounts: Record<string, number> = {}
@@ -31,6 +53,13 @@ export default async function AdminPipelinesPage() {
         })
     }
 
+    console.log("PIPELINES FETCHED:", pipelines?.length)
+    console.log("LEADS FETCHED:", leads?.length)
+    if (leads && leads.length > 0) {
+        console.log("FIRST LEAD PIPELINE ID:", leads[0].pipeline_id)
+        console.log("FIRST PIPELINE ID:", pipelines?.[0]?.id)
+    }
+
     // Define the specific display order requested
     const targetPipelines = [
         'Personal Lines Pipeline',
@@ -40,89 +69,12 @@ export default async function AdminPipelinesPage() {
     ]
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Pipeline Monitoring</h1>
-                    <p className="text-gray-600">Overview of pipeline stages and current lead distribution separated by pipeline.</p>
-                </div>
-                <Link href="/admin">
-                    <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
-                        Back
-                    </button>
-                </Link>
-            </div>
-
-            <div className="flex flex-col gap-12">
-                {targetPipelines.map((targetName) => {
-                    const p = pipelines?.find((pipe: any) => pipe.name === targetName)
-
-                    if (!p) return null // If the database is missing this pipeline, skip gracefully
-
-                    const pStages = stages?.filter((s: any) => s.pipeline_id === p.id) || []
-
-                    return (
-                        <div key={p.id}>
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">{p.name}</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {pStages.length > 0 ? pStages.map((stage: any) => {
-                                    const count = stageCounts[stage.id] || 0
-
-                                    return (
-                                        <div key={stage.id} className="bg-white rounded-xl shadow-sm border p-6 flex flex-col justify-between h-32 hover:border-emerald-400 transition">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider line-clamp-2">
-                                                    {stage.stage_name}
-                                                </h3>
-                                            </div>
-                                            <div className="flex items-end justify-between">
-                                                <span className="text-3xl font-bold text-gray-800">{count}</span>
-                                                <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-1 rounded">
-                                                    Stage {stage.stage_order}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )
-                                }) : (
-                                    <p className="text-gray-400 text-sm">No stages mapped to this pipeline yet.</p>
-                                )}
-                            </div>
-                        </div>
-                    )
-                })}
-
-                {/* Fallback for any unmatched pipelines in the database */}
-                {pipelines?.filter((p: any) => !targetPipelines.includes(p.name)).map((p: any) => {
-                    const pStages = stages?.filter((s: any) => s.pipeline_id === p.id) || []
-                    if (pStages.length === 0) return null
-
-                    return (
-                        <div key={p.id} className="opacity-75">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">{p.name} (Other)</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                {pStages.map((stage: any) => {
-                                    const count = stageCounts[stage.id] || 0
-                                    return (
-                                        <div key={stage.id} className="bg-gray-50 rounded-xl shadow-sm border p-6 flex flex-col justify-between h-32">
-                                            <div className="flex justify-between items-start">
-                                                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider line-clamp-2">
-                                                    {stage.stage_name}
-                                                </h3>
-                                            </div>
-                                            <div className="flex items-end justify-between">
-                                                <span className="text-3xl font-bold text-gray-800">{count}</span>
-                                                <span className="text-xs text-gray-400 font-medium bg-gray-200 px-2 py-1 rounded">
-                                                    Stage {stage.stage_order}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    )
-                                })}
-                            </div>
-                        </div>
-                    )
-                })}
-            </div>
-        </div>
+        <PipelineClient
+            pipelines={pipelines}
+            stages={stages}
+            stageCounts={stageCounts}
+            targetPipelines={targetPipelines}
+            initialLeads={leads || []}
+        />
     )
 }

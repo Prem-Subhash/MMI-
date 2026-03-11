@@ -1,0 +1,135 @@
+{
+  "stages": [
+    {
+      "id": "6f8475b2-202a-4d6d-b6d6-09bfa49ac8a0",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Cancelled"
+    },
+    {
+      "id": "1ef50d4e-0b8b-4443-97e0-5ed02f3c1529",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Quote Has Been Emailed"
+    },
+    {
+      "id": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+      "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "stage_name": "Quoting in Progress"
+    },
+    {
+      "id": "3cbb3043-63ee-4754-8dce-2e4692a12770",
+      "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "stage_name": "Quote Has Been Emailed"
+    },
+    {
+      "id": "60cc4ffe-f492-45dd-9ba7-ec1df24afb78",
+      "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "stage_name": "Consent Letter Sent"
+    },
+    {
+      "id": "e5adeb3b-e32c-4376-9e58-f2048ff3372e",
+      "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "stage_name": "Completed"
+    },
+    {
+      "id": "52c63bb6-0afa-4c3c-8d72-9fb155ef6ee7",
+      "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "stage_name": "Did Not Bind"
+    },
+    {
+      "id": "6e42db37-be4c-431e-bb33-e19bb8f6b966",
+      "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "stage_name": "New Lead"
+    },
+    {
+      "id": "01698128-cf06-46b2-8e63-1cb9937f6f33",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Quoting in Progress"
+    },
+    {
+      "id": "d7d05b3f-8e57-488a-8e62-c6e3e79b9a22",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Same Declaration Emailed"
+    },
+    {
+      "id": "9ddbd35a-10a8-4599-b7ae-0cbd96134d1c",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Completed (Same)"
+    },
+    {
+      "id": "848449fa-f23e-4c13-852d-9eeefcbe458a",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Quote Has been Emailed"
+    },
+    {
+      "id": "6fabc95c-c709-45e2-8873-15a280720f6f",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Consent Letter Sent"
+    },
+    {
+      "id": "de5c64e7-d6f2-438f-b886-87b83d80d01a",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Completed (Switch)"
+    },
+    {
+      "id": "d605668c-50ee-40f4-90a1-d579256d4b19",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "stage_name": "Cancelled"
+    },
+    {
+      "id": "f161637e-b25b-4f95-b7e9-9b9ad51e523f",
+      "pipeline_id": "930d64f7-d10a-4305-9036-67892a6075d3",
+      "stage_name": "Quoting in Progress"
+    },
+    {
+      "id": "e103ee9a-6527-4320-941d-820f8b723336",
+      "pipeline_id": "930d64f7-d10a-4305-9036-67892a6075d3",
+      "stage_name": "Quote Has Been Emailed"
+    },
+    {
+      "id": "08ccbcc1-b0df-4657-8638-68322f052fe8",
+      "pipeline_id": "930d64f7-d10a-4305-9036-67892a6075d3",
+      "stage_name": "Consent Letter Sent"
+    },
+    {
+      "id": "4d976c88-e88a-4fb3-af39-a15d02ae7415",
+      "pipeline_id": "930d64f7-d10a-4305-9036-67892a6075d3",
+      "stage_name": "Completed"
+    },
+    {
+      "id": "b7c53410-964a-4444-9277-9cc61c0191f8",
+      "pipeline_id": "930d64f7-d10a-4305-9036-67892a6075d3",
+      "stage_name": "Did Not Bind"
+    },
+    {
+      "id": "596a18dc-3fee-4210-a06a-33e0008887fb",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Quoting in Progress"
+    },
+    {
+      "id": "3c7d450f-c039-4229-bac4-da2b3eef2e92",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Same Declaration Emailed"
+    },
+    {
+      "id": "c14d9129-d31e-4f97-a609-f4273c3d9024",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Completed (Same)"
+    },
+    {
+      "id": "9ae3c342-cde0-4751-b952-1a6fa7be6c78",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Quote Has Been Emailed"
+    },
+    {
+      "id": "896be994-4dbc-42d9-af2b-e1a36cd79ccb",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Consent Letter Sent"
+    },
+    {
+      "id": "21b25412-1b15-4341-98b7-1e42d992870d",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "stage_name": "Completed (Switch)"
+    }
+  ],
+  "leads": null
+}

@@ -1,0 +1,3669 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "",
+    "title": "standard public schema",
+    "version": "14.1"
+  },
+  "host": "welhzcasuabhqoccfxtu.supabase.co:443",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "produces": [
+    "application/json",
+    "application/vnd.pgrst.object+json;nulls=stripped",
+    "application/vnd.pgrst.object+json",
+    "text/csv"
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "produces": [
+          "application/openapi+json",
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "OpenAPI description (this document)",
+        "tags": [
+          "Introspection"
+        ]
+      }
+    },
+    "/email_logs": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.lead_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.email_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.recipient"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.error_message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/email_logs"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "email_logs"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.email_logs"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "email_logs"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.lead_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.email_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.recipient"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.error_message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "email_logs"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.lead_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.email_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.recipient"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.error_message"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_logs.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.email_logs"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "email_logs"
+        ]
+      }
+    },
+    "/uploaded_documents": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.intake_form_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_path"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.uploaded_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/uploaded_documents"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "uploaded_documents"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.uploaded_documents"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "uploaded_documents"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.intake_form_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_path"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.uploaded_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "uploaded_documents"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.intake_form_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_path"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.file_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.uploaded_documents.uploaded_at"
+          },
+          {
+            "$ref": "#/parameters/body.uploaded_documents"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "uploaded_documents"
+        ]
+      }
+    },
+    "/pipeline_stages": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.pipeline_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.stage_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.stage_order"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.mandatory_fields"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/pipeline_stages"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "pipeline_stages"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.pipeline_stages"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "pipeline_stages"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.pipeline_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.stage_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.stage_order"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.mandatory_fields"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "pipeline_stages"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.pipeline_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.stage_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.stage_order"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.mandatory_fields"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipeline_stages.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.pipeline_stages"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "pipeline_stages"
+        ]
+      }
+    },
+    "/clients": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.clients.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.assigned_csr"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.client_name"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/clients"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.clients"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.clients.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.assigned_csr"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.client_name"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.clients.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.assigned_csr"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.clients.client_name"
+          },
+          {
+            "$ref": "#/parameters/body.clients"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "clients"
+        ]
+      }
+    },
+    "/profiles": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.manager_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/profiles"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.profiles"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.manager_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.profiles.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.full_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.manager_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.profiles.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.profiles"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/pipelines": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.is_renewal"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/pipelines"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "pipelines"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.pipelines"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "pipelines"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.is_renewal"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "pipelines"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.is_renewal"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.pipelines.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.pipelines"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "pipelines"
+        ]
+      }
+    },
+    "/temp_intake_forms": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.lead_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.form_data"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.reviewed_by"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.reviewed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.form_type"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/temp_intake_forms"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "temp_intake_forms"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.temp_intake_forms"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "temp_intake_forms"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.lead_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.form_data"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.reviewed_by"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.reviewed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.form_type"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "temp_intake_forms"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.lead_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.form_data"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.status"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.reviewed_by"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.reviewed_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_intake_forms.form_type"
+          },
+          {
+            "$ref": "#/parameters/body.temp_intake_forms"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "temp_intake_forms"
+        ]
+      }
+    },
+    "/client_insurance_details": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.full_data"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.verified_by"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.verified_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/client_insurance_details"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "client_insurance_details"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.client_insurance_details"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "client_insurance_details"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.full_data"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.verified_by"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.verified_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "client_insurance_details"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.full_data"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.verified_by"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.client_insurance_details.verified_at"
+          },
+          {
+            "$ref": "#/parameters/body.client_insurance_details"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "client_insurance_details"
+        ]
+      }
+    },
+    "/form_templates": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.form_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.fields"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.version"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.updated_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/form_templates"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "form_templates"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.form_templates"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "form_templates"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.form_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.fields"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.version"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.updated_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "form_templates"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.form_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.fields"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.version"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.form_templates.updated_at"
+          },
+          {
+            "$ref": "#/parameters/body.form_templates"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "form_templates"
+        ]
+      }
+    },
+    "/temp_leads_basics": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.insurence_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.assigned_csr"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_flow"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.client_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.form_submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.pipeline_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.current_stage_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.follow_up_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.x_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.received_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.request_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.effective_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.referral"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.notes"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.send_email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.stage_metadata"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.renewal_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.carrier"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.current_premium"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.renewal_premium"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.reminder_sent"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.business_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.date_received"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.send_email_to_client"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.total_premium"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/temp_leads_basics"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "temp_leads_basics"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.temp_leads_basics"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "temp_leads_basics"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.insurence_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.assigned_csr"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_flow"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.client_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.form_submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.pipeline_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.current_stage_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.follow_up_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.x_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.received_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.request_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.effective_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.referral"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.notes"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.send_email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.stage_metadata"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.renewal_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.carrier"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.current_premium"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.renewal_premium"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.reminder_sent"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.business_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.date_received"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.send_email_to_client"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.total_premium"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "temp_leads_basics"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.phone"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.insurence_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.assigned_csr"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.created_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_flow"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.client_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.form_submitted_at"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.pipeline_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.current_stage_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.follow_up_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.x_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.received_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.request_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.effective_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.referral"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.notes"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.send_email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.stage_metadata"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.client_id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.renewal_date"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.carrier"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.policy_number"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.current_premium"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.renewal_premium"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.reminder_sent"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.business_name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.date_received"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.send_email_to_client"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.temp_leads_basics.total_premium"
+          },
+          {
+            "$ref": "#/parameters/body.temp_leads_basics"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "temp_leads_basics"
+        ]
+      }
+    },
+    "/email_templates": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.subject"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.body"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.policy_flow"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/email_templates"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "email_templates"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.email_templates"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "email_templates"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.subject"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.body"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.policy_flow"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "email_templates"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.subject"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.body"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.insurance_category"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.policy_type"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.policy_flow"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.is_active"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.email_templates.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.email_templates"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "email_templates"
+        ]
+      }
+    },
+    "/csrs": {
+      "get": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.csrs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.created_at"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/order"
+          },
+          {
+            "$ref": "#/parameters/range"
+          },
+          {
+            "$ref": "#/parameters/rangeUnit"
+          },
+          {
+            "$ref": "#/parameters/offset"
+          },
+          {
+            "$ref": "#/parameters/limit"
+          },
+          {
+            "$ref": "#/parameters/preferCount"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/csrs"
+              },
+              "type": "array"
+            }
+          },
+          "206": {
+            "description": "Partial Content"
+          }
+        },
+        "tags": [
+          "csrs"
+        ]
+      },
+      "post": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/body.csrs"
+          },
+          {
+            "$ref": "#/parameters/select"
+          },
+          {
+            "$ref": "#/parameters/preferPost"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        },
+        "tags": [
+          "csrs"
+        ]
+      },
+      "delete": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.csrs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.created_at"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "csrs"
+        ]
+      },
+      "patch": {
+        "parameters": [
+          {
+            "$ref": "#/parameters/rowFilter.csrs.id"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.name"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.email"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.role"
+          },
+          {
+            "$ref": "#/parameters/rowFilter.csrs.created_at"
+          },
+          {
+            "$ref": "#/parameters/body.csrs"
+          },
+          {
+            "$ref": "#/parameters/preferReturn"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          }
+        },
+        "tags": [
+          "csrs"
+        ]
+      }
+    },
+    "/rpc/get_report_summary": {
+      "post": {
+        "parameters": [
+          {
+            "in": "body",
+            "name": "args",
+            "required": true,
+            "schema": {
+              "properties": {
+                "p_category": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "p_csr": {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                "p_end_date": {
+                  "format": "date",
+                  "type": "string"
+                },
+                "p_flow": {
+                  "format": "text",
+                  "type": "string"
+                },
+                "p_start_date": {
+                  "format": "date",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "p_start_date",
+                "p_end_date"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "$ref": "#/parameters/preferParams"
+          }
+        ],
+        "produces": [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "tags": [
+          "(rpc) get_report_summary"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "email_logs": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "lead_id": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "email_type": {
+          "format": "text",
+          "type": "string"
+        },
+        "recipient": {
+          "format": "text",
+          "type": "string"
+        },
+        "status": {
+          "format": "text",
+          "type": "string"
+        },
+        "error_message": {
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "uploaded_documents": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "intake_form_id": {
+          "description": "Note:\nThis is a Foreign Key to `temp_intake_forms.id`.<fk table='temp_intake_forms' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "file_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "file_path": {
+          "format": "text",
+          "type": "string"
+        },
+        "file_type": {
+          "format": "text",
+          "type": "string"
+        },
+        "uploaded_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "pipeline_stages": {
+      "required": [
+        "id",
+        "stage_name",
+        "stage_order",
+        "mandatory_fields"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "pipeline_id": {
+          "description": "Note:\nThis is a Foreign Key to `pipelines.id`.<fk table='pipelines' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "stage_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "stage_order": {
+          "format": "integer",
+          "type": "integer"
+        },
+        "mandatory_fields": {
+          "format": "jsonb"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "clients": {
+      "required": [
+        "id",
+        "phone"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "phone": {
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "assigned_csr": {
+          "description": "Note:\nThis is a Foreign Key to `csrs.id`.<fk table='csrs' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "client_name": {
+          "default": "",
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "profiles": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "full_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "role": {
+          "default": "agent",
+          "format": "text",
+          "type": "string"
+        },
+        "manager_id": {
+          "description": "Note:\nThis is a Foreign Key to `profiles.id`.<fk table='profiles' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "pipelines": {
+      "required": [
+        "id",
+        "name",
+        "category"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "category": {
+          "format": "text",
+          "type": "string"
+        },
+        "is_renewal": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "temp_intake_forms": {
+      "required": [
+        "id",
+        "lead_id",
+        "form_type"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "lead_id": {
+          "description": "Note:\nThis is a Foreign Key to `temp_leads_basics.id`.<fk table='temp_leads_basics' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "form_data": {
+          "format": "json"
+        },
+        "status": {
+          "default": "sent",
+          "format": "text",
+          "type": "string"
+        },
+        "submitted_at": {
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "reviewed_by": {
+          "format": "uuid",
+          "type": "string"
+        },
+        "reviewed_at": {
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "form_type": {
+          "format": "text",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "client_insurance_details": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "client_id": {
+          "description": "Note:\nThis is a Foreign Key to `clients.id`.<fk table='clients' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "insurance_category": {
+          "format": "text",
+          "type": "string"
+        },
+        "policy_type": {
+          "format": "text",
+          "type": "string"
+        },
+        "full_data": {
+          "format": "json"
+        },
+        "verified_by": {
+          "description": "Note:\nThis is a Foreign Key to `csrs.id`.<fk table='csrs' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "verified_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "form_templates": {
+      "required": [
+        "id",
+        "form_name",
+        "insurance_category"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "form_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "insurance_category": {
+          "format": "text",
+          "type": "string"
+        },
+        "fields": {
+          "format": "jsonb"
+        },
+        "is_active": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "version": {
+          "default": 1,
+          "format": "integer",
+          "type": "integer"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "updated_at": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "temp_leads_basics": {
+      "required": [
+        "id",
+        "pipeline_id",
+        "current_stage_id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "phone": {
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "insurence_category": {
+          "format": "text",
+          "type": "string"
+        },
+        "policy_type": {
+          "format": "text",
+          "type": "string"
+        },
+        "assigned_csr": {
+          "default": "auth.uid()",
+          "description": "Note:\nThis is a Foreign Key to `csrs.id`.<fk table='csrs' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        },
+        "policy_flow": {
+          "format": "text",
+          "type": "string"
+        },
+        "client_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "form_submitted_at": {
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "pipeline_id": {
+          "description": "Note:\nThis is a Foreign Key to `pipelines.id`.<fk table='pipelines' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "current_stage_id": {
+          "default": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+          "description": "Note:\nThis is a Foreign Key to `pipeline_stages.id`.<fk table='pipeline_stages' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "follow_up_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "x_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "received_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "request_type": {
+          "format": "text",
+          "type": "string"
+        },
+        "effective_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "referral": {
+          "format": "text",
+          "type": "string"
+        },
+        "notes": {
+          "format": "text",
+          "type": "string"
+        },
+        "send_email": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "stage_metadata": {
+          "format": "jsonb"
+        },
+        "client_id": {
+          "description": "Note:\nThis is a Foreign Key to `clients.id`.<fk table='clients' column='id'/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "renewal_date": {
+          "format": "date",
+          "type": "string"
+        },
+        "carrier": {
+          "format": "text",
+          "type": "string"
+        },
+        "policy_number": {
+          "format": "text",
+          "type": "string"
+        },
+        "current_premium": {
+          "format": "numeric",
+          "type": "number"
+        },
+        "renewal_premium": {
+          "format": "numeric",
+          "type": "number"
+        },
+        "reminder_sent": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "business_name": {
+          "format": "text",
+          "type": "string"
+        },
+        "date_received": {
+          "default": "now()",
+          "format": "timestamp with time zone",
+          "type": "string"
+        },
+        "send_email_to_client": {
+          "default": false,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "total_premium": {
+          "format": "numeric",
+          "type": "number"
+        }
+      },
+      "type": "object"
+    },
+    "email_templates": {
+      "required": [
+        "id",
+        "name",
+        "subject",
+        "body",
+        "insurance_category",
+        "policy_type",
+        "policy_flow"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "subject": {
+          "format": "text",
+          "type": "string"
+        },
+        "body": {
+          "format": "text",
+          "type": "string"
+        },
+        "insurance_category": {
+          "format": "text",
+          "type": "string"
+        },
+        "policy_type": {
+          "format": "text",
+          "type": "string"
+        },
+        "policy_flow": {
+          "format": "text",
+          "type": "string"
+        },
+        "is_active": {
+          "default": true,
+          "format": "boolean",
+          "type": "boolean"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "csrs": {
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "default": "gen_random_uuid()",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "format": "uuid",
+          "type": "string"
+        },
+        "name": {
+          "format": "text",
+          "type": "string"
+        },
+        "email": {
+          "format": "text",
+          "type": "string"
+        },
+        "role": {
+          "default": "ADMINORCSR",
+          "format": "text",
+          "type": "string"
+        },
+        "created_at": {
+          "default": "now()",
+          "format": "timestamp without time zone",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "parameters": {
+    "preferParams": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "preferReturn": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferCount": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "count=none"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "preferPost": {
+      "name": "Prefer",
+      "description": "Preference",
+      "required": false,
+      "enum": [
+        "return=representation",
+        "return=minimal",
+        "return=none",
+        "resolution=ignore-duplicates",
+        "resolution=merge-duplicates"
+      ],
+      "in": "header",
+      "type": "string"
+    },
+    "select": {
+      "name": "select",
+      "description": "Filtering Columns",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "on_conflict": {
+      "name": "on_conflict",
+      "description": "On Conflict",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "order": {
+      "name": "order",
+      "description": "Ordering",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "range": {
+      "name": "Range",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "header",
+      "type": "string"
+    },
+    "rangeUnit": {
+      "name": "Range-Unit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "default": "items",
+      "in": "header",
+      "type": "string"
+    },
+    "offset": {
+      "name": "offset",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "limit": {
+      "name": "limit",
+      "description": "Limiting and Pagination",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.email_logs": {
+      "name": "email_logs",
+      "description": "email_logs",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/email_logs"
+      }
+    },
+    "rowFilter.email_logs.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_logs.lead_id": {
+      "name": "lead_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_logs.email_type": {
+      "name": "email_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_logs.recipient": {
+      "name": "recipient",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_logs.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_logs.error_message": {
+      "name": "error_message",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_logs.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.uploaded_documents": {
+      "name": "uploaded_documents",
+      "description": "uploaded_documents",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/uploaded_documents"
+      }
+    },
+    "rowFilter.uploaded_documents.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.uploaded_documents.intake_form_id": {
+      "name": "intake_form_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.uploaded_documents.file_name": {
+      "name": "file_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.uploaded_documents.file_path": {
+      "name": "file_path",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.uploaded_documents.file_type": {
+      "name": "file_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.uploaded_documents.uploaded_at": {
+      "name": "uploaded_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.pipeline_stages": {
+      "name": "pipeline_stages",
+      "description": "pipeline_stages",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/pipeline_stages"
+      }
+    },
+    "rowFilter.pipeline_stages.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipeline_stages.pipeline_id": {
+      "name": "pipeline_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipeline_stages.stage_name": {
+      "name": "stage_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipeline_stages.stage_order": {
+      "name": "stage_order",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipeline_stages.mandatory_fields": {
+      "name": "mandatory_fields",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipeline_stages.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.clients": {
+      "name": "clients",
+      "description": "clients",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/clients"
+      }
+    },
+    "rowFilter.clients.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.clients.phone": {
+      "name": "phone",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.clients.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.clients.assigned_csr": {
+      "name": "assigned_csr",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.clients.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.clients.client_name": {
+      "name": "client_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.profiles": {
+      "name": "profiles",
+      "description": "profiles",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/profiles"
+      }
+    },
+    "rowFilter.profiles.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.full_name": {
+      "name": "full_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.role": {
+      "name": "role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.manager_id": {
+      "name": "manager_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.profiles.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.pipelines": {
+      "name": "pipelines",
+      "description": "pipelines",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/pipelines"
+      }
+    },
+    "rowFilter.pipelines.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipelines.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipelines.category": {
+      "name": "category",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipelines.is_renewal": {
+      "name": "is_renewal",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.pipelines.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.temp_intake_forms": {
+      "name": "temp_intake_forms",
+      "description": "temp_intake_forms",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/temp_intake_forms"
+      }
+    },
+    "rowFilter.temp_intake_forms.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.lead_id": {
+      "name": "lead_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.form_data": {
+      "name": "form_data",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.status": {
+      "name": "status",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.submitted_at": {
+      "name": "submitted_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.reviewed_by": {
+      "name": "reviewed_by",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.reviewed_at": {
+      "name": "reviewed_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_intake_forms.form_type": {
+      "name": "form_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.client_insurance_details": {
+      "name": "client_insurance_details",
+      "description": "client_insurance_details",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/client_insurance_details"
+      }
+    },
+    "rowFilter.client_insurance_details.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.client_insurance_details.client_id": {
+      "name": "client_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.client_insurance_details.insurance_category": {
+      "name": "insurance_category",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.client_insurance_details.policy_type": {
+      "name": "policy_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.client_insurance_details.full_data": {
+      "name": "full_data",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.client_insurance_details.verified_by": {
+      "name": "verified_by",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.client_insurance_details.verified_at": {
+      "name": "verified_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.form_templates": {
+      "name": "form_templates",
+      "description": "form_templates",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/form_templates"
+      }
+    },
+    "rowFilter.form_templates.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.form_name": {
+      "name": "form_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.insurance_category": {
+      "name": "insurance_category",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.fields": {
+      "name": "fields",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.is_active": {
+      "name": "is_active",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.version": {
+      "name": "version",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.form_templates.updated_at": {
+      "name": "updated_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.temp_leads_basics": {
+      "name": "temp_leads_basics",
+      "description": "temp_leads_basics",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/temp_leads_basics"
+      }
+    },
+    "rowFilter.temp_leads_basics.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.phone": {
+      "name": "phone",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.insurence_category": {
+      "name": "insurence_category",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.policy_type": {
+      "name": "policy_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.assigned_csr": {
+      "name": "assigned_csr",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.policy_flow": {
+      "name": "policy_flow",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.client_name": {
+      "name": "client_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.form_submitted_at": {
+      "name": "form_submitted_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.pipeline_id": {
+      "name": "pipeline_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.current_stage_id": {
+      "name": "current_stage_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.follow_up_date": {
+      "name": "follow_up_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.x_date": {
+      "name": "x_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.received_date": {
+      "name": "received_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.request_type": {
+      "name": "request_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.effective_date": {
+      "name": "effective_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.referral": {
+      "name": "referral",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.notes": {
+      "name": "notes",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.send_email": {
+      "name": "send_email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.stage_metadata": {
+      "name": "stage_metadata",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.client_id": {
+      "name": "client_id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.renewal_date": {
+      "name": "renewal_date",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.carrier": {
+      "name": "carrier",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.policy_number": {
+      "name": "policy_number",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.current_premium": {
+      "name": "current_premium",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.renewal_premium": {
+      "name": "renewal_premium",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.reminder_sent": {
+      "name": "reminder_sent",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.business_name": {
+      "name": "business_name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.date_received": {
+      "name": "date_received",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.send_email_to_client": {
+      "name": "send_email_to_client",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.temp_leads_basics.total_premium": {
+      "name": "total_premium",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.email_templates": {
+      "name": "email_templates",
+      "description": "email_templates",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/email_templates"
+      }
+    },
+    "rowFilter.email_templates.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.subject": {
+      "name": "subject",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.body": {
+      "name": "body",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.insurance_category": {
+      "name": "insurance_category",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.policy_type": {
+      "name": "policy_type",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.policy_flow": {
+      "name": "policy_flow",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.is_active": {
+      "name": "is_active",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.email_templates.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "body.csrs": {
+      "name": "csrs",
+      "description": "csrs",
+      "required": false,
+      "in": "body",
+      "schema": {
+        "$ref": "#/definitions/csrs"
+      }
+    },
+    "rowFilter.csrs.id": {
+      "name": "id",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.csrs.name": {
+      "name": "name",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.csrs.email": {
+      "name": "email",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.csrs.role": {
+      "name": "role",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    },
+    "rowFilter.csrs.created_at": {
+      "name": "created_at",
+      "required": false,
+      "in": "query",
+      "type": "string"
+    }
+  },
+  "externalDocs": {
+    "description": "PostgREST Documentation",
+    "url": "https://postgrest.org/en/v14/references/api.html"
+  }
+}

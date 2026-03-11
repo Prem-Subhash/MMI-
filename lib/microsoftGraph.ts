@@ -28,42 +28,76 @@ export async function getAccessToken() {
     return data.access_token
 }
 
+import { supabaseServer } from '@/lib/supabaseServer'
+
 export async function sendGraphEmail(
     to: string[],
     subject: string,
-    body: string
+    body: string,
+    leadId?: string,
+    emailType?: string
 ) {
-    const token = await getAccessToken()
+    const recipientList = to.join(', ')
 
-    const sender = process.env.MICROSOFT_SENDER_EMAIL
+    try {
+        const token = await getAccessToken()
 
-    const response = await fetch(
-        `https://graph.microsoft.com/v1.0/users/${sender}/sendMail`,
-        {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                message: {
-                    subject,
-                    body: {
-                        contentType: "HTML",
-                        content: body,
-                    },
-                    toRecipients: to.map(email => ({
-                        emailAddress: { address: email },
-                    })),
+        const sender = process.env.MICROSOFT_SENDER_EMAIL
+
+        const response = await fetch(
+            `https://graph.microsoft.com/v1.0/users/${sender}/sendMail`,
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
                 },
-            }),
+                body: JSON.stringify({
+                    message: {
+                        subject,
+                        body: {
+                            contentType: "HTML",
+                            content: body,
+                        },
+                        toRecipients: to.map(email => ({
+                            emailAddress: { address: email },
+                        })),
+                    },
+                    saveToSentItems: true,
+                }),
+            }
+        )
+
+        if (!response.ok) {
+            const error = await response.text()
+            throw new Error(error)
         }
-    )
 
-    if (!response.ok) {
-        const error = await response.text()
-        throw new Error(error)
+        // Automatic logging capture internally triggered by server API parameters!
+        if (leadId && emailType) {
+            await supabaseServer
+                .from("email_logs")
+                .insert({
+                    lead_id: leadId,
+                    email_type: emailType,
+                    recipient: recipientList,
+                    status: "sent"
+                })
+        }
+
+        return true
+    } catch (error: any) {
+        if (leadId && emailType) {
+            await supabaseServer
+                .from("email_logs")
+                .insert({
+                    lead_id: leadId,
+                    email_type: emailType,
+                    recipient: recipientList,
+                    status: "failed",
+                    error_message: error.message || String(error)
+                })
+        }
+        throw error
     }
-
-    return true
 }

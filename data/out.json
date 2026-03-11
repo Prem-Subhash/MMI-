@@ -1,0 +1,52 @@
+{
+  "pipelines": [
+    {
+      "id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "name": "Commercial Lines Renewal Pipeline"
+    },
+    {
+      "id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "name": "Personal Lines Renewal"
+    },
+    {
+      "id": "930d64f7-d10a-4305-9036-67892a6075d3",
+      "name": "Commercial Lines Pipeline"
+    },
+    {
+      "id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+      "name": "Personal Lines"
+    }
+  ],
+  "leads": [
+    {
+      "id": "a8f9beaf-97a9-48ac-ba8e-792ab4cd14fc",
+      "client_name": "Client 3",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "current_stage_id": "01698128-cf06-46b2-8e63-1cb9937f6f33"
+    },
+    {
+      "id": "02ba70fc-e45a-46d6-ba27-f0ef75d584e4",
+      "client_name": "Client 4",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "current_stage_id": "01698128-cf06-46b2-8e63-1cb9937f6f33"
+    },
+    {
+      "id": "0ad559d2-0fd1-4091-a951-850f98f0f6e2",
+      "client_name": "Client 5",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "current_stage_id": "01698128-cf06-46b2-8e63-1cb9937f6f33"
+    },
+    {
+      "id": "d715581b-5408-43ce-a5e6-85dff71811f6",
+      "client_name": "Client 6",
+      "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+      "current_stage_id": "01698128-cf06-46b2-8e63-1cb9937f6f33"
+    },
+    {
+      "id": "440659ad-6490-48dc-b926-28f69fd4ec4a",
+      "client_name": "Client 55",
+      "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+      "current_stage_id": "596a18dc-3fee-4210-a06a-33e0008887fb"
+    }
+  ]
+}

@@ -67,7 +67,9 @@ export async function POST(req: Request) {
             await sendGraphEmail(
                 recipients,
                 "New Form Submitted",
-                `<p>Client has submitted the form (${formType}).</p>`
+                `<p>Client has submitted the form (${formType}).</p>`,
+                targetLeadId,
+                'intake_notification'
             )
             console.log('SUBMISSION NOTIFICATION SENT VIA GRAPH API')
         } catch (emailError: any) {

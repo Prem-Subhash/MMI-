@@ -22,6 +22,8 @@ export default function SendFormPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [templateId, setTemplateId] = useState('')
   const [formType, setFormType] = useState('')
+  const [customSubject, setCustomSubject] = useState('')
+  const [customBody, setCustomBody] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -67,8 +69,8 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-      
-      // Filter out duplicate templates by name, remove Personal prefix, and exclude Umbrella
+
+      // Filter out duplicate templates by name
       const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
         // Skip Umbrella templates
         if (current.name.toLowerCase().includes('umbrella')) {
@@ -85,7 +87,7 @@ export default function SendFormPage() {
           return acc;
         }
       }, []);
-      
+
       setTemplates(uniqueTemplates)
       setLoading(false)
     }
@@ -124,6 +126,36 @@ export default function SendFormPage() {
     return data.id
   }
 
+  /* ================= PREPARE CUSTOM EMAIL ================= */
+  useEffect(() => {
+    const prepareEmail = async () => {
+      if (!templateId || !formType || !lead) {
+        setCustomSubject('')
+        setCustomBody('')
+        return
+      }
+
+      const template = templates.find((t) => t.id === templateId)
+      if (!template) return
+
+      const intakeId = await ensureIntakeForm()
+      if (!intakeId) return
+
+      const formLink = `${window.location.origin}/intake/${intakeId}?type=${formType}`
+
+      const replacedSubject = template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+      const replacedBody = template.body
+        .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+        .replace(/{{\s*form_link\s*}}/g, formLink)
+
+      setCustomSubject(replacedSubject)
+      setCustomBody(replacedBody)
+    }
+
+    prepareEmail()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [templateId, formType, lead])
+
   /* ================= PREVIEW ================= */
   const handlePreview = async () => {
     if (!formType) {
@@ -134,7 +166,7 @@ export default function SendFormPage() {
     const id = await ensureIntakeForm()
     if (!id) return
 
-    window.open(`/csr/intake/${id}?preview=true`, '_blank')
+    window.open(`/intake/${id}?preview=true`, '_blank')
   }
 
   /* ================= SEND EMAIL ================= */
@@ -165,17 +197,22 @@ export default function SendFormPage() {
         leadId,
         templateId,
         formType,
+        intakeId,
+        customSubject,
+        customBody,
       }),
     })
 
-    if (!res.ok) {
-      const result = await res.json()
-      setError(result?.error || 'Failed to send email')
+    const result = await res.json()
+
+    if (!res.ok || !result.success) {
+      setError(result?.error || result?.message || 'Email failed to send. Please try again.')
       setSending(false)
       return
     }
 
-    router.push(lead.insurence_category === 'commercial' ? '/csr/pipeline/commercial' : '/csr/pipeline/personal')
+    alert(result.message || 'Email sent successfully to the client.')
+    router.push('/csr/leads')
   }
 
   /* ================= UI STATES ================= */
@@ -331,6 +368,29 @@ export default function SendFormPage() {
                 </div>
               </div>
             </div>
+
+            {templateId && formType && (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Email Subject</label>
+                  <input
+                    type="text"
+                    value={customSubject}
+                    onChange={(e) => setCustomSubject(e.target.value)}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-gray-700">Email Body</label>
+                  <textarea
+                    value={customBody}
+                    onChange={(e) => setCustomBody(e.target.value)}
+                    rows={8}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* ACTION BUTTONS */}
             <div className="flex gap-4">

@@ -1,0 +1,16 @@
+﻿TEST 1 - temp_leads_basics_assigned_csr_fkey: [
+  {
+    "id": "a8f9beaf-97a9-48ac-ba8e-792ab4cd14fc",
+    "csr1": {
+      "name": "Prem CSR"
+    }
+  }
+]
+TEST 2 - temp_leads_assigned_csr_fkey: [
+  {
+    "id": "a8f9beaf-97a9-48ac-ba8e-792ab4cd14fc",
+    "csr2": {
+      "name": "Prem CSR"
+    }
+  }
+]
