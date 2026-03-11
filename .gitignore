@@ -1,14 +1,15 @@
 ﻿# dependencies
 node_modules/
 
-# next.js build output
+# Next.js build
 .next/
+out/
 
-# env files
+# environment variables
 .env
 .env.local
-.env.production
 .env.development
+.env.production
 
 # logs
 npm-debug.log*
@@ -18,3 +19,16 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# temporary/debug files
+*.log
+*.dump
+*.tmp
+
+# testing outputs
+*_output.json
+*_dump.json
+debug_*
+
+# Vercel local settings
+.vercel
