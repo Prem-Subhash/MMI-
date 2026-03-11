@@ -71,9 +71,15 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
 
     const superadminMenu: MenuItem[] = [
         { label: 'Dashboard', href: '/superadmin', icon: <LayoutGrid size={28} /> },
-        { label: 'User Management', href: '/superadmin/users', icon: <Users size={28} /> },
-        { label: 'Pipeline Configuration', href: '/superadmin/pipelines', icon: <Settings size={28} /> },
-        { label: 'System Settings', href: '/superadmin/settings', icon: <Settings size={28} /> },
+        { label: 'Users', href: '/superadmin/users', icon: <Users size={28} /> },
+        { label: 'Roles', href: '/superadmin/roles', icon: <Users size={28} /> },
+        { label: 'Pipelines', href: '/superadmin/pipelines', icon: <Activity size={28} /> },
+        { label: 'Email Templates', href: '/superadmin/email-templates', icon: <FileText size={28} /> },
+        { label: 'Forms', href: '/superadmin/forms', icon: <ListTodo size={28} /> },
+        { label: 'Settings', href: '/superadmin/system-settings', icon: <Settings size={28} /> },
+        { label: 'Audit Logs', href: '/superadmin/audit-logs', icon: <Activity size={28} /> },
+        { label: 'Admin View', href: '/admin', icon: <PieChart size={28} /> },
+        { label: 'Accounting View', href: '/accounting', icon: <DollarSign size={28} /> },
     ]
 
     const getMenuForRole = () => {
