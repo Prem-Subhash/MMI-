@@ -25,9 +25,6 @@ function NewLeadContent() {
   const [error, setError] = useState<string | null>(null)
   const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
 
-  const searchParams = useSearchParams()
-  const initialCategory = searchParams.get('category') || ''
-
   const [form, setForm] = useState({
     client_name: '',
     phone: '',
