@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { useSearchParams } from 'next/navigation'
 import {
   User,
   Phone,
@@ -14,7 +14,10 @@ import {
   StickyNote,
 } from 'lucide-react'
 
-export default function NewLeadPage() {
+function NewLeadContent() {
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') || ''
+
   /* ---------------- STATE ---------------- */
   const [isLocked, setIsLocked] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -315,7 +318,7 @@ export default function NewLeadPage() {
 
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] p-8 text-white">
           <h1 className="text-3xl font-bold">
-            Add New {form.insurence_category ? (form.insurence_category === 'personal' ? 'Personal' : 'Commercial') : ''} Line Lead
+            {form.insurence_category === 'commercial' ? 'Add New Commercial Line Lead' : 'Add New Personal Line Lead'}
           </h1>
           <p className="opacity-80 mt-1">Enter client details to create a new lead</p>
         </div>
@@ -505,3 +508,11 @@ const Select = ({ options, placeholder, ...props }: any) => (
     <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
   </div>
 )
+
+export default function NewLeadPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#F4FBF8] py-10 px-4 flex justify-center items-center">Loading...</div>}>
+      <NewLeadContent />
+    </Suspense>
+  )
+}

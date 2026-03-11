@@ -1,0 +1,35 @@
+[
+  {
+    "id": "e7236027-7b60-4f39-8cf8-76c0db24e328",
+    "client_name": "rakesh",
+    "insurence_category": "commercial",
+    "policy_flow": "renewal",
+    "current_stage_id": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+    "assigned_csr": "3976ffd2-b369-40e3-981f-7cd9d1e60546",
+    "pipeline_stages": {
+      "stage_name": "Quoting in Progress"
+    }
+  },
+  {
+    "id": "a489a861-66fd-4b99-9934-b8dcffb64649",
+    "client_name": "subhash",
+    "insurence_category": "commercial",
+    "policy_flow": "renewal",
+    "current_stage_id": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+    "assigned_csr": "c3dbc8f3-660f-418f-989c-714495b2868a",
+    "pipeline_stages": {
+      "stage_name": "Quoting in Progress"
+    }
+  },
+  {
+    "id": "a5f1b7a9-ee29-4d8f-96d8-72c828ccd569",
+    "client_name": "subhash",
+    "insurence_category": "commercial",
+    "policy_flow": "new",
+    "current_stage_id": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+    "assigned_csr": "3976ffd2-b369-40e3-981f-7cd9d1e60546",
+    "pipeline_stages": {
+      "stage_name": "Quoting in Progress"
+    }
+  }
+]
