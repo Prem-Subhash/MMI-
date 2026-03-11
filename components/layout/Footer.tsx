@@ -8,9 +8,9 @@ const Footer = () => {
 
     return (
         <footer className="w-full mt-auto">
-            <div className="bg-[#123E52] px-8 md:px-16 py-3 text-white overflow-hidden shadow-2xl">
+            <div className="bg-[#123E52] px-4 sm:px-8 md:px-16 py-4 md:py-3 text-white overflow-hidden shadow-2xl">
                 {/* Main Row */}
-                <div className="max-w-[1600px] mx-auto flex flex-col lg:flex-row justify-between items-center gap-4 mb-3">
+                <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row flex-wrap justify-between items-center gap-4 mb-3">
 
                     {/* Help Section */}
                     <div>

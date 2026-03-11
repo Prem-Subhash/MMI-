@@ -24,11 +24,11 @@ export default async function AdminDashboard() {
     ]
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
-            <p className="text-gray-600 mb-8">Manage pipelines, review CSR performance, and assign incoming leads.</p>
+        <div className="p-4 sm:p-6 lg:p-8">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Admin Dashboard</h1>
+            <p className="text-gray-600 mb-8 max-w-2xl">Manage pipelines, review CSR performance, and assign incoming leads.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {stats.map((stat, i) => (
                     <Link key={i} href={stat.href}>
                         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:border-emerald-500 hover:shadow-lg transition-all cursor-pointer flex items-center gap-6 group">

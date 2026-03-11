@@ -125,18 +125,18 @@ export default function PersonalLinesPage() {
   /* ================= UI ================= */
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-semibold">Personal Lines Pipeline</h1>
+          <h1 className="text-xl md:text-2xl font-bold">Personal Lines Pipeline</h1>
           <p className="text-gray-500 text-sm mt-1">Manage new personal business leads</p>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full sm:w-auto">
           <Link
             href="/csr/leads/new?category=personal"
-            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="w-full sm:w-auto text-center bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
           >
             + New Lead
           </Link>

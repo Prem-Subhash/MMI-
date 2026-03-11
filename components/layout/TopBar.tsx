@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Clock, User, ChevronRight } from 'lucide-react'
+import { Bell, Clock, User, ChevronRight, Menu } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 
-export default function TopBar() {
+export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
     const router = useRouter()
     const [profileOpen, setProfileOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -89,14 +89,24 @@ export default function TopBar() {
 
     return (
         <header className="fixed top-0 left-0 right-0 h-24 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex z-40 shadow-md">
+            {/* Mobile Menu Button */}
+            <div className="flex lg:hidden items-center px-4">
+                <button 
+                    onClick={onMenuClick}
+                    className="p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
+                >
+                    <Menu size={32} />
+                </button>
+            </div>
+
             {/* Logo Container - Transparent */}
-            <div className="w-[260px] h-full flex items-center justify-center flex-shrink-0 cursor-pointer"
+            <div className="w-auto lg:w-[260px] h-full flex items-center justify-center lg:justify-center px-2 flex-shrink-0 cursor-pointer"
                 onClick={() => window.location.href = '/'}
             >
                 <img
                     src="/logo.png"
                     alt="Moonstar Logo"
-                    className="h-16 w-auto object-contain"
+                    className="h-12 lg:h-16 w-auto object-contain"
                 />
             </div>
 

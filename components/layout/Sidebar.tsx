@@ -9,6 +9,8 @@ import { supabase } from '@/lib/supabaseClient'
 interface SidebarProps {
     setIsHovered: (hovered: boolean) => void
     isHovered: boolean
+    isMobileOpen: boolean
+    setIsMobileOpen: (open: boolean) => void
 }
 
 interface MenuItem {
@@ -17,7 +19,7 @@ interface MenuItem {
     icon: React.ReactNode
 }
 
-export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
+export default function Sidebar({ setIsHovered, isHovered, isMobileOpen, setIsMobileOpen }: SidebarProps) {
     const pathname = usePathname()
     const [role, setRole] = useState<string | null>(null)
 
@@ -97,21 +99,27 @@ export default function Sidebar({ setIsHovered, isHovered }: SidebarProps) {
     return (
         <aside
             className={`
-                fixed left-0 top-24 bottom-0 z-30 bg-gradient-to-b from-[#10B889] to-[#2E5C85] text-white flex flex-col shadow-xl 
+                fixed left-0 top-24 bottom-0 z-[50] bg-gradient-to-b from-[#10B889] to-[#2E5C85] text-white flex flex-col shadow-xl 
                 transition-all duration-300 ease-in-out
-                ${isHovered ? 'w-[260px] items-start' : 'w-[110px] items-center'}
+                ${isMobileOpen ? 'translate-x-0 w-[280px]' : '-translate-x-full lg:translate-x-0'}
+                ${isHovered ? 'lg:w-[260px] items-start' : 'lg:w-[110px] items-center'}
             `}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
             <nav className="flex-1 flex flex-col gap-4 mt-4 w-full px-3 overflow-y-auto pb-8">
                 {currentMenu.map((item, index) => (
-                    <Link key={index} href={item.href} className="w-full">
+                    <Link 
+                        key={index} 
+                        href={item.href} 
+                        className="w-full"
+                        onClick={() => setIsMobileOpen(false)}
+                    >
                         <SidebarIcon
                             icon={item.icon}
                             label={item.label}
                             active={isActive(item.href)}
-                            expanded={isHovered}
+                            expanded={isHovered || isMobileOpen}
                         />
                     </Link>
                 ))}

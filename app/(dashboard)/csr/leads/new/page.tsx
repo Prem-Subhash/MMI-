@@ -302,7 +302,7 @@ function NewLeadContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F4FBF8] py-10 px-4 flex justify-center">
+    <div className="min-h-screen bg-[#F4FBF8] py-6 sm:py-10 px-4 flex justify-center">
 
       {showToast && (
         <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-4 rounded-xl shadow-xl">
@@ -313,14 +313,14 @@ function NewLeadContent() {
 
       <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border overflow-hidden">
 
-        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] p-8 text-white">
-          <h1 className="text-3xl font-bold">
+        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] p-6 md:p-8 text-white">
+          <h1 className="text-2xl md:text-3xl font-bold">
             {form.insurence_category === 'commercial' ? 'Add New Commercial Line Lead' : 'Add New Personal Line Lead'}
           </h1>
-          <p className="opacity-80 mt-1">Enter client details to create a new lead</p>
+          <p className="opacity-80 mt-1 text-sm md:text-base">Enter client details to create a new lead</p>
         </div>
 
-        <div className="p-8 space-y-6">
+        <div className="p-5 md:p-8 space-y-6">
 
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 rounded animate-in fade-in slide-in-from-left-2">
