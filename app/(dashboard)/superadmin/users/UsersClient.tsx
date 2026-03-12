@@ -99,117 +99,134 @@ export default function UsersClient() {
     }
 
     return (
-        <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
+        <div className="space-y-8">
+            {error && (
+                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3 animate-shake">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                    <p className="text-sm font-bold">{error}</p>
+                </div>
+            )}
 
             <div className="flex justify-end">
                 <button
                     onClick={() => setShowCreate(!showCreate)}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm
+                        ${showCreate ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-[#CF1C45] text-white hover:bg-[#b0183b]'}`}
                 >
                     <Plus size={18} />
-                    {showCreate ? 'Cancel Create' : 'Create New User'}
+                    {showCreate ? 'Cancel' : 'Create New User'}
                 </button>
             </div>
 
             {showCreate && (
-                <form onSubmit={handleCreateUser} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700">Full Name</label>
-                        <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="John Doe" />
+                <form onSubmit={handleCreateUser} className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 items-end animate-in fade-in slide-in-from-top-4 duration-300">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                        <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all" placeholder="John Doe" />
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700">Email</label>
-                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="john@example.com" />
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
+                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all" placeholder="john@example.com" />
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700">Password</label>
-                        <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="Min 6 chars" />
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
+                        <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all" placeholder="Min 6 chars" />
                     </div>
-                    <div className="flex flex-col gap-1">
-                        <label className="text-sm font-medium text-gray-700">Role</label>
-                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Role</label>
+                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all bg-white">
                             <option value="csr">CSR</option>
                             <option value="admin">Admin</option>
                             <option value="accounting">Accounting</option>
                             <option value="superadmin">Super Admin</option>
                         </select>
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition flex justify-center items-center h-[42px] font-medium disabled:opacity-50">
-                        {createLoading ? <Loader2 size={18} className="animate-spin" /> : 'Create User'}
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
+                        {createLoading ? <Loader2 size={20} className="animate-spin" /> : 'Create User'}
                     </button>
                 </form>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Name</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Email</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Role</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Created At</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan={5} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
-                        ) : users.map(user => (
-                            <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
-                                <td className="p-4 text-gray-800 font-medium">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
-                                            {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
-                                        </div>
-                                        {user.full_name || 'No Name'}
-                                    </div>
-                                </td>
-                                <td className="p-4 text-gray-600 text-sm">{user.email}</td>
-                                <td className="p-4 text-sm">
-                                    {editingUserId === user.id ? (
-                                        <select
-                                            value={editingRole}
-                                            onChange={e => setEditingRole(e.target.value)}
-                                            className="border rounded p-1 text-sm bg-white"
-                                        >
-                                            <option value="csr">csr</option>
-                                            <option value="admin">admin</option>
-                                            <option value="accounting">accounting</option>
-                                            <option value="superadmin">superadmin</option>
-                                        </select>
-                                    ) : (
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium uppercase tracking-wider
-                                            ${user.role === 'superadmin' ? 'bg-purple-100 text-purple-700' :
-                                                user.role === 'admin' ? 'bg-blue-100 text-blue-700' :
-                                                    user.role === 'accounting' ? 'bg-amber-100 text-amber-700' :
-                                                        'bg-emerald-100 text-emerald-700'}`}>
-                                            {user.role}
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="p-4 text-gray-500 text-sm">{new Date(user.created_at).toLocaleDateString()}</td>
-                                <td className="p-4 text-right flex justify-end gap-2">
-                                    {editingUserId === user.id ? (
-                                        <button onClick={() => handleUpdateRole(user.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded" title="Save Role">
-                                            <Save size={18} />
-                                        </button>
-                                    ) : (
-                                        <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition" title="Edit Role">
-                                            <Edit2 size={18} />
-                                        </button>
-                                    )}
-                                    <button onClick={() => handleDelete(user.id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition" title="Delete User">
-                                        <Trash2 size={18} />
-                                    </button>
-                                </td>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr className="bg-gray-50 border-b border-gray-200">
+                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Name</th>
+                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Email</th>
+                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Role</th>
+                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Created At</th>
+                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider text-right">Actions</th>
                             </tr>
-                        ))}
-                        {!loading && users.length === 0 && (
-                            <tr><td colSpan={5} className="p-8 text-center text-gray-500">No users found in the system.</td></tr>
-                        )}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="p-12 text-center text-gray-400">
+                                        <Loader2 className="animate-spin mx-auto text-[#CF1C45] mb-2" size={32} />
+                                        <p className="text-sm font-bold">Synchronizing users...</p>
+                                    </td>
+                                </tr>
+                            ) : users.map(user => (
+                                <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
+                                    <td className="p-4 text-gray-800 font-bold text-sm">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-9 h-9 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs ring-2 ring-indigo-50/50">
+                                                {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                                            </div>
+                                            {user.full_name || 'No Name'}
+                                        </div>
+                                    </td>
+                                    <td className="p-4 text-gray-600 text-xs font-medium">{user.email}</td>
+                                    <td className="p-4">
+                                        {editingUserId === user.id ? (
+                                            <select
+                                                value={editingRole}
+                                                onChange={e => setEditingRole(e.target.value)}
+                                                className="bg-white border border-gray-200 rounded-xl p-2 text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                            >
+                                                <option value="csr">csr</option>
+                                                <option value="admin">admin</option>
+                                                <option value="accounting">accounting</option>
+                                                <option value="superadmin">superadmin</option>
+                                            </select>
+                                        ) : (
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border
+                                                ${user.role === 'superadmin' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                    user.role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                        user.role === 'accounting' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                                            'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
+                                                {user.role}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="p-4 text-gray-400 text-[10px] font-mono">{new Date(user.created_at).toLocaleDateString()}</td>
+                                    <td className="p-4 text-right">
+                                        <div className="flex justify-end gap-1">
+                                            {editingUserId === user.id ? (
+                                                <button onClick={() => handleUpdateRole(user.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Save Role">
+                                                    <Save size={18} />
+                                                </button>
+                                            ) : (
+                                                <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Edit Role">
+                                                    <Edit2 size={18} />
+                                                </button>
+                                            )}
+                                            <button onClick={() => handleDelete(user.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete User">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                            {!loading && users.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} className="p-12 text-center text-gray-400 text-sm font-bold">No users found in the system.</td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )

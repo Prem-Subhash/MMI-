@@ -19,13 +19,14 @@ export default async function AccountingDashboard() {
     const { count: activePolicies } = await supabase.from('temp_leads_basics').select('*', { count: 'exact', head: true }).eq('status', 'Bound')
 
     return (
-        <div className="p-8 max-w-7xl mx-auto space-y-8">
-            <div>
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Accounting Dashboard</h1>
-                <p className="text-gray-600">Overview of financial metrics and recent transactions.</p>
-            </div>
+        <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
+            <div className="max-w-7xl mx-auto space-y-8">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Accounting Dashboard</h1>
+                    <p className="text-gray-600">Overview of financial metrics and recent transactions.</p>
+                </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard title="Total Premium" value="$1.2M" icon={<DollarSign size={24} className="text-emerald-600" />} color="bg-emerald-50" />
                 <MetricCard title="Active Policies" value={activePolicies?.toString() || '0'} icon={<FileText size={24} className="text-blue-600" />} color="bg-blue-50" />
                 <MetricCard title="Revenue Growth" value="+15%" icon={<TrendingUp size={24} className="text-purple-600" />} color="bg-purple-50" />
@@ -38,6 +39,7 @@ export default async function AccountingDashboard() {
                 <p>The core accounting module is currently being integrated with the billing system.</p>
             </div>
         </div>
+    </div>
     )
 }
 

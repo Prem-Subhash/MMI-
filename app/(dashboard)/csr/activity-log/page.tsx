@@ -71,7 +71,7 @@ export default function ActivityLogPage() {
   })
 
   return (
-    <div className="p-8 max-w-6xl mx-auto min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -82,8 +82,8 @@ export default function ActivityLogPage() {
             <ArrowLeft size={20} />
           </button>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Activity className="text-[#10B889]" size={32} />
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <Activity className="text-[#10B889]" size={28} />
               Activity Log
             </h1>
             <p className="text-gray-500 mt-1">Full history of lead statuses and pipeline movements.</p>

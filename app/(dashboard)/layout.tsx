@@ -55,16 +55,16 @@ export default function DashboardLayout({
         setIsMobileOpen={setIsMobileMenuOpen}
       />
 
-      {/* Main Content Wrapper */}
+      {/* Main Content Wrapper — offset matches TopBar height (h-16 mobile / h-24 desktop) */}
       <div
         className={`
-            flex-1 flex flex-col pt-24 transition-all duration-300 ease-in-out w-full
+            flex-1 flex flex-col pt-16 lg:pt-24 transition-all duration-300 ease-in-out w-full min-w-0
             ${isSidebarHovered ? 'lg:pl-[260px]' : 'lg:pl-[110px]'}
             pl-0
         `}
       >
-        <main className="flex-1 w-full flex flex-col max-w-[100vw]">
-          <div className="flex-1 px-4 sm:px-6 lg:px-8 py-6 w-full max-w-7xl mx-auto">
+        <main className="flex-1 w-full flex flex-col max-w-[100vw] min-w-0">
+          <div className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-7xl mx-auto min-w-0">
             {children}
           </div>
           <Footer />

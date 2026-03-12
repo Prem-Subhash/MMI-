@@ -220,199 +220,203 @@ export default function SendFormPage() {
 
   /* ================= UI ================= */
   return (
-    <div className="max-w-4xl mx-auto p-10">
-      {/* CARD CONTAINER */}
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-        {/* HEADER */}
-        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6">
-          <h1 className="text-2xl font-bold text-white">Send Initial Email</h1>
-          <p className="text-white/80 text-sm mt-1">
-            Configure and send the onboarding email to the client.
-          </p>
-        </div>
-
-        <div className="p-8 space-y-8">
-          {/* LEAD SUMMARY GRID */}
-          <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-            <h3 className="text-[#2E5C85] font-bold mb-4 text-sm uppercase tracking-wider">
-              Client Information
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase">
-                  Client Name
-                </p>
-                <p className="text-gray-900 font-medium">{lead.client_name}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase">
-                  Email
-                </p>
-                <p className="text-gray-900 font-medium" title={lead.email}>
-                  {lead.email}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase">
-                  Phone
-                </p>
-                <p className="text-gray-900 font-medium">{lead.phone}</p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase">
-                  Insurance Category
-                </p>
-                <p className="text-gray-900 font-medium capitalize">
-                  {lead.insurence_category}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase">
-                  Policy Type
-                </p>
-                <p className="text-gray-900 font-medium capitalize">
-                  {lead.policy_type}
-                </p>
-              </div>
-
-              <div>
-                <p className="text-xs text-gray-500 font-semibold uppercase">
-                  Policy Flow
-                </p>
-                <p className="text-gray-900 font-medium capitalize">
-                  {lead.policy_flow}
-                </p>
-              </div>
-            </div>
+    <div className="p-4 sm:p-6 lg:p-10 min-h-screen">
+      <div className="max-w-4xl mx-auto">
+        {/* CARD CONTAINER */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          {/* HEADER */}
+          <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-5 md:px-8 md:py-6">
+            <h1 className="text-xl md:text-2xl font-bold text-white">Send Initial Email</h1>
+            <p className="text-white/80 text-xs md:text-sm mt-1">
+              Configure and send the onboarding email to the client.
+            </p>
           </div>
 
-          {/* ERROR ALERT */}
-          {error && (
-            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded text-red-700 text-sm">
-              <p className="font-bold">Error</p>
-              <p>{error}</p>
-            </div>
-          )}
+          <div className="p-6 md:p-8 space-y-6 md:space-y-8">
+            {/* LEAD SUMMARY GRID */}
+            <div className="bg-gray-50 rounded-xl p-5 md:p-6 border border-gray-100">
+              <h3 className="text-[#2E5C85] font-bold mb-4 text-[10px] md:text-xs uppercase tracking-widest">
+                Client Information
+              </h3>
 
-          {/* ACTION FORM */}
-          <div className="space-y-6">
-            {/* PREVIEW BUTTON */}
-            <button
-              onClick={handlePreview}
-              className="w-full py-3 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-xl shadow transition-all flex items-center justify-center gap-2 group"
-            >
-              <span>Preview Form (CSR View)</span>
-              <span className="group-hover:translate-x-1 transition-transform">
-                →
-              </span>
-            </button>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* TEMPLATE SELECT */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Email Template
-                </label>
-
-                <div className="relative">
-                  <select
-                    value={templateId}
-                    onChange={e => setTemplateId(e.target.value)}
-                    className="w-full appearance-none border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889] focus:border-transparent transition-shadow"
-                  >
-                    <option value="">Select Email Template</option>
-                    {templates.map(t => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                    </svg>
-                  </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-8">
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                    Client Name
+                  </p>
+                  <p className="text-gray-900 font-bold text-sm md:text-base">{lead.client_name}</p>
                 </div>
-              </div>
 
-              {/* FORM TYPE SELECT */}
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">
-                  Form Type
-                </label>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                    Email
+                  </p>
+                  <p className="text-gray-900 font-bold text-sm md:text-base break-all" title={lead.email}>
+                    {lead.email}
+                  </p>
+                </div>
 
-                <div className="relative">
-                  <select
-                    value={formType}
-                    onChange={e => setFormType(e.target.value)}
-                    className="w-full appearance-none border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889] focus:border-transparent transition-shadow"
-                  >
-                    <option value="">Select Form Type</option>
-                    <option value="home">Home</option>
-                    <option value="auto">Auto</option>
-                    <option value="condo">Condo</option>
-                    <option value="landlord_home">Landlord Home</option>
-                  </select>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                    Phone
+                  </p>
+                  <p className="text-gray-900 font-bold text-sm md:text-base">{lead.phone}</p>
+                </div>
 
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
-                    <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                    </svg>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                    Insurance Category
+                  </p>
+                  <p className="text-gray-900 font-bold text-sm md:text-base capitalize">
+                    {lead.insurence_category}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                    Policy Type
+                  </p>
+                  <p className="text-gray-900 font-bold text-sm md:text-base capitalize">
+                    {lead.policy_type}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
+                    Policy Flow
+                  </p>
+                  <p className="text-gray-900 font-bold text-sm md:text-base capitalize">
+                    {lead.policy_flow}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {templateId && formType && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Email Subject</label>
-                  <input
-                    type="text"
-                    value={customSubject}
-                    onChange={(e) => setCustomSubject(e.target.value)}
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]"
-                  />
+            {/* ERROR ALERT */}
+            {error && (
+                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
+                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                    <p className="text-sm font-bold">{error}</p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Email Body</label>
-                  <textarea
-                    value={customBody}
-                    onChange={(e) => setCustomBody(e.target.value)}
-                    rows={8}
-                    className="w-full border border-gray-300 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]"
-                  />
-                </div>
-              </div>
             )}
 
-            {/* ACTION BUTTONS */}
-            <div className="flex gap-4">
+            {/* ACTION FORM */}
+            <div className="space-y-6">
+              {/* PREVIEW BUTTON */}
               <button
-                onClick={() => router.back()}
-                className="w-1/3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                onClick={handlePreview}
+                className="w-full py-4 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
               >
-                <ArrowLeft size={20} />
-                Back
+                <span>Preview Form (CSR View)</span>
+                <span className="group-hover:translate-x-1 transition-transform">
+                  →
+                </span>
               </button>
 
-              <button
-                onClick={handleSend}
-                disabled={sending}
-                className="w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
-              >
-                {sending ? 'Sending…' : 'Send Initial Email'}
-              </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* TEMPLATE SELECT */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                    Email Template
+                  </label>
+
+                  <div className="relative">
+                    <select
+                      value={templateId}
+                      onChange={e => setTemplateId(e.target.value)}
+                      className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium"
+                    >
+                      <option value="">Select Email Template</option>
+                      {templates.map(t => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FORM TYPE SELECT */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                    Form Type
+                  </label>
+
+                  <div className="relative">
+                    <select
+                      value={formType}
+                      onChange={e => setFormType(e.target.value)}
+                      className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium"
+                    >
+                      <option value="">Select Form Type</option>
+                      <option value="home">Home</option>
+                      <option value="auto">Auto</option>
+                      <option value="condo">Condo</option>
+                      <option value="landlord_home">Landlord Home</option>
+                    </select>
+
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {templateId && formType && (
+                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Subject</label>
+                    <input
+                      type="text"
+                      value={customSubject}
+                      onChange={(e) => setCustomSubject(e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] text-sm font-medium transition-all"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Body</label>
+                    <textarea
+                      value={customBody}
+                      onChange={(e) => setCustomBody(e.target.value)}
+                      rows={8}
+                      className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] text-sm font-medium transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* ACTION BUTTONS */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <button
+                  onClick={() => router.back()}
+                  className="w-full sm:w-1/3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                >
+                  <ArrowLeft size={20} />
+                  Back
+                </button>
+
+                <button
+                  onClick={handleSend}
+                  disabled={sending}
+                  className="w-full sm:w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
+                >
+                  {sending ? 'Sending…' : 'Send Initial Email'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  )
+}
   )
 }

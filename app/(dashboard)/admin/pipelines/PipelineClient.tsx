@@ -25,7 +25,6 @@ type Lead = {
 }
 
 export default function PipelineClient({ pipelines, stages, stageCounts, targetPipelines, initialLeads }: any) {
-    // 1. Organize pipelines according to requested target order
     const validTargetPipelines = targetPipelines
         .map((name: string) => pipelines?.find((p: any) => p.name === name))
         .filter(Boolean)
@@ -33,7 +32,6 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
     const otherPipelines = pipelines?.filter((p: any) => !targetPipelines.includes(p.name)) || []
     const displayPipelines = [...validTargetPipelines, ...otherPipelines]
 
-    // 2. State & Selections
     const [selectedPipeline, setSelectedPipeline] = useState(displayPipelines[0]?.id || '')
     const [stageFilter, setStageFilter] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
@@ -41,19 +39,15 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
     const currentPipeline = displayPipelines.find((p: any) => p.id === selectedPipeline)
     const currentStages = stages?.filter((s: any) => s.pipeline_id === selectedPipeline) || []
 
-    // 3. Reset stage filter when pipeline changes
     useEffect(() => {
         setStageFilter(null)
     }, [selectedPipeline])
 
-    // Debugging logs requested by user
     console.log("INITIAL LEADS RECEIVED:", initialLeads?.length || 0)
     console.log("SELECTED PIPELINE:", selectedPipeline)
 
-    // 4. In-Memory Filter (Replaces Client-Side Supabase Query)
     const pipelineLeads = (initialLeads || []).filter((lead: any) => lead.pipeline_id === selectedPipeline)
 
-    // Normalize relationship objects for consistency
     const normalizedLeads = pipelineLeads.map((row: any) => ({
         ...row,
         current_stage: row.current_stage ?? null,
@@ -64,7 +58,6 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
         ? normalizedLeads.filter((lead: any) => lead.current_stage?.stage_name === stageFilter)
         : normalizedLeads;
 
-    // 5. Client-Side Search
     const filteredLeads = stagedLeads.filter((lead: any) => {
         const term = searchTerm.toLowerCase()
         return (
@@ -78,21 +71,22 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
     /* ================= UI ================= */
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-8">
+        <div className="w-full max-w-7xl mx-auto">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Pipeline Monitoring</h1>
-                    <p className="text-gray-600">Overview of pipeline stages and current lead distribution separated by pipeline.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Pipeline Monitoring</h1>
+                    <p className="text-gray-600 text-sm mt-1">Overview of pipeline stages and current lead distribution separated by pipeline.</p>
                 </div>
-                <Link href="/admin">
-                    <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium">
+                <Link href="/admin" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium whitespace-nowrap">
                         Back to Dashboard
                     </button>
                 </Link>
             </div>
 
             {/* STEP 1: Pipeline Selection Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                 {displayPipelines.map((p: any) => {
                     const pStages = stages?.filter((s: any) => s.pipeline_id === p.id) || []
                     const totalLeads = pStages.reduce((sum: number, stage: any) => sum + (stageCounts[stage.id] || 0), 0)
@@ -102,16 +96,16 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                         <div
                             key={p.id}
                             onClick={() => setSelectedPipeline(p.id)}
-                            className={`cursor-pointer rounded-xl p-6 flex flex-col justify-between transition shadow-sm border
+                            className={`cursor-pointer rounded-xl p-4 sm:p-6 flex flex-col justify-between transition shadow-sm border touch-manipulation
                                 ${isSelected
-                                    ? 'border-brand bg-[#10B889]/5 ring-1 ring-brand shadow-md transform scale-[1.02]'
+                                    ? 'border-brand bg-[#10B889]/5 ring-1 ring-brand shadow-md'
                                     : 'bg-white hover:border-brand/40 hover:shadow-md'
                                 }`}
                         >
-                            <h3 className={`text-lg font-bold line-clamp-2 ${isSelected ? 'text-brand-dark' : 'text-gray-800'}`}>
+                            <h3 className={`text-base sm:text-lg font-bold line-clamp-2 ${isSelected ? 'text-brand-dark' : 'text-gray-800'}`}>
                                 {p.name}
                             </h3>
-                            <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                            <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
                                 <span className="text-sm font-medium text-gray-500">Total Leads</span>
                                 <span className={`text-xl font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-700'}`}>
                                     {totalLeads}
@@ -122,11 +116,11 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                 })}
             </div>
 
-            {/* STEP 2: Selected Pipeline Dashboard (Stage Tabs & Table) */}
+            {/* STEP 2: Selected Pipeline Dashboard */}
             {currentPipeline && (
-                <div className="mt-8">
+                <div className="mt-6">
                     {/* FILTER TABS */}
-                    <div className="flex gap-3 mb-6 flex-wrap">
+                    <div className="flex gap-2 mb-5 flex-wrap">
                         {[{ label: 'All', value: null }, ...currentStages.map((s: any) => ({ label: s.stage_name, value: s.stage_name }))].map((filter: any) => {
                             const isActive = filter.value === stageFilter
 
@@ -134,7 +128,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                                 <button
                                     key={filter.label}
                                     onClick={() => setStageFilter(filter.value)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
+                                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors touch-manipulation
                                         ${isActive
                                             ? 'bg-brand text-white border-brand shadow-sm'
                                             : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
@@ -150,13 +144,13 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                     {/* TABLE SECTION */}
                     <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                         {/* TOOLBAR */}
-                        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                            <div className="relative max-w-sm w-full">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div className="relative w-full sm:max-w-sm">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                                 <input
                                     type="text"
                                     placeholder="Search client, email, phone, or CSR..."
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
+                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
                                     value={searchTerm}
                                     onChange={e => setSearchTerm(e.target.value)}
                                 />
@@ -172,48 +166,48 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="min-w-full text-sm text-left">
+                                <table className="text-sm text-left min-w-[700px]">
                                     <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                         <tr>
-                                            <th className="px-6 py-4 font-semibold">Client Name</th>
-                                            <th className="px-6 py-4 font-semibold">Phone</th>
-                                            <th className="px-6 py-4 font-semibold">Email</th>
-                                            <th className="px-6 py-4 font-semibold">Category</th>
-                                            <th className="px-6 py-4 font-semibold">Flow</th>
-                                            <th className="px-6 py-4 font-semibold">Stage</th>
-                                            <th className="px-6 py-4 font-semibold">Assigned CSR</th>
-                                            <th className="px-6 py-4 font-semibold">Created</th>
-                                            <th className="px-6 py-4 font-semibold text-center">View</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Assigned CSR</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
                                         </tr>
                                     </thead>
 
                                     <tbody className="divide-y divide-gray-100">
-                                        {filteredLeads.map(lead => {
+                                        {filteredLeads.map((lead: Lead) => {
                                             const stage = lead.current_stage?.stage_name ?? '—'
 
                                             return (
                                                 <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                                                    <td className="px-6 py-4 font-medium text-gray-900">{lead.client_name}</td>
-                                                    <td className="px-6 py-4 text-gray-600">{lead.phone}</td>
-                                                    <td className="px-6 py-4 text-gray-600">{lead.email}</td>
-                                                    <td className="px-6 py-4 capitalize text-gray-700">{lead.insurence_category}</td>
-                                                    <td className="px-6 py-4 capitalize text-gray-700">{lead.policy_flow}</td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{lead.client_name}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
+                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">{lead.insurence_category}</td>
+                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">{lead.policy_flow}</td>
+                                                    <td className="px-4 sm:px-6 py-4">
                                                         <StageBadge stage={stage} />
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-4 sm:px-6 py-4">
                                                         {lead.csrs?.name ? (
-                                                            <span className="font-semibold text-gray-700 text-sm">
+                                                            <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
                                                                 {lead.csrs.name}
                                                             </span>
                                                         ) : (
                                                             <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-6 py-4 text-gray-500">
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
                                                         {new Date(lead.created_at).toLocaleDateString()}
                                                     </td>
-                                                    <td className="px-6 py-4 text-center">
+                                                    <td className="px-4 sm:px-6 py-4 text-center">
                                                         <Link
                                                             href={`/csr/leads/${lead.id}`}
                                                             className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
@@ -259,7 +253,7 @@ function StageBadge({ stage }: { stage: string }) {
                             : 'bg-gray-50 text-gray-700 border border-gray-200'
 
     return (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${color}`}>
             {stage}
         </span>
     )

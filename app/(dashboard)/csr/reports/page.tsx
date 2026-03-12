@@ -10,7 +10,7 @@ export default function MonthlyReportPage() {
 
     // Filters
     const [filters, setFilters] = useState({
-        month: new Date().toISOString().slice(0, 7), // YYYY-MM
+        month: new Date().toISOString().slice(0, 7),
         policy_type: '',
         insurence_category: '',
         policy_flow: '',
@@ -21,7 +21,6 @@ export default function MonthlyReportPage() {
     const [data, setData] = useState<any[]>([])
     const [csrs, setCsrs] = useState<any[]>([])
 
-    // Load CSRs for filter
     useEffect(() => {
         const loadCsrs = async () => {
             const { data } = await supabase.from('profiles').select('id, full_name, email')
@@ -30,7 +29,6 @@ export default function MonthlyReportPage() {
         loadCsrs()
     }, [])
 
-    // Load Report Data (JSON Preview)
     const loadReport = async () => {
         setLoading(true)
         try {
@@ -54,7 +52,6 @@ export default function MonthlyReportPage() {
         }
     }
 
-    // Handle Export
     const handleExport = async (type: 'excel' | 'pdf') => {
         setGenerating(type)
         try {
@@ -69,7 +66,6 @@ export default function MonthlyReportPage() {
                 throw new Error(json.error || 'Export failed')
             }
 
-            // Download
             const blob = await res.blob()
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
@@ -87,43 +83,45 @@ export default function MonthlyReportPage() {
     }
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto bg-gray-50/50 min-h-screen">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-screen">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Monthly Reporting</h1>
-                    <p className="text-gray-500 mt-1">Generate and export detailed performance reports</p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Monthly Reporting</h1>
+                    <p className="text-gray-500 mt-1 text-sm">Generate and export detailed performance reports</p>
                 </div>
-                <div className="flex gap-3">
+                {/* Export Buttons */}
+                <div className="flex flex-col xs:flex-row sm:flex-row gap-2 w-full sm:w-auto">
                     <button
                         onClick={() => handleExport('excel')}
                         disabled={!!generating}
-                        className="flex items-center gap-2 bg-white text-emerald-600 border border-emerald-200 px-4 py-2.5 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 disabled:opacity-50 shadow-sm transition-all font-medium"
+                        className="flex items-center justify-center gap-2 bg-white text-emerald-600 border border-emerald-200 px-4 py-2.5 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
-                        {generating === 'excel' ? 'Generating...' : <> <FileSpreadsheet size={18} /> Export Excel </>}
+                        {generating === 'excel' ? 'Generating...' : <><FileSpreadsheet size={16} /> Export Excel</>}
                     </button>
                     <button
                         onClick={() => handleExport('pdf')}
                         disabled={!!generating}
-                        className="flex items-center gap-2 bg-white text-rose-600 border border-rose-200 px-4 py-2.5 rounded-lg hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50 shadow-sm transition-all font-medium"
+                        className="flex items-center justify-center gap-2 bg-white text-rose-600 border border-rose-200 px-4 py-2.5 rounded-lg hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
-                        {generating === 'pdf' ? 'Generating...' : <> <FileText size={18} /> Export PDF </>}
+                        {generating === 'pdf' ? 'Generating...' : <><FileText size={16} /> Export PDF</>}
                     </button>
                 </div>
             </div>
 
             {/* Filter Panel */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-6 mb-8">
-                <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-4 sm:p-6 mb-6">
+                <div className="flex items-center gap-2 mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
                     <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                        <Filter size={20} />
+                        <Filter size={18} />
                     </div>
-                    <h2 className="text-lg font-semibold text-gray-800">Report Filters</h2>
+                    <h2 className="text-base sm:text-lg font-semibold text-gray-800">Report Filters</h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     {/* Month */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                             Month
                         </label>
                         <input
@@ -136,7 +134,7 @@ export default function MonthlyReportPage() {
 
                     {/* Category */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                             Category
                         </label>
                         <select
@@ -152,7 +150,7 @@ export default function MonthlyReportPage() {
 
                     {/* Policy Type */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                             Policy Type
                         </label>
                         <select
@@ -170,7 +168,7 @@ export default function MonthlyReportPage() {
 
                     {/* Flow */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                             Flow
                         </label>
                         <select
@@ -186,7 +184,7 @@ export default function MonthlyReportPage() {
 
                     {/* CSR */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                             CSR
                         </label>
                         <select
@@ -203,7 +201,7 @@ export default function MonthlyReportPage() {
 
                     {/* Search */}
                     <div className="flex flex-col gap-2">
-                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit mb-1">
+                        <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                             Client Name
                         </label>
                         <input
@@ -216,25 +214,25 @@ export default function MonthlyReportPage() {
                     </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
+                <div className="mt-6 pt-4 border-t border-gray-100 flex justify-end">
                     <button
                         onClick={loadReport}
-                        className="bg-brand-dark text-white px-8 py-2.5 rounded-lg hover:bg-[#B55D44] transition-colors shadow-sm hover:shadow-md font-medium flex items-center gap-2"
+                        className="bg-brand-dark text-white px-6 sm:px-8 py-2.5 rounded-lg hover:bg-[#B55D44] transition-colors shadow-sm hover:shadow-md font-medium flex items-center gap-2 text-sm w-full sm:w-auto justify-center"
                     >
-                        <FileText size={18} /> Generate Report
+                        <FileText size={16} /> Generate Report
                     </button>
                 </div>
             </div>
 
             {/* Results Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+                <div className="p-4 sm:p-6 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-gray-50/30">
                     <div className="flex items-center gap-3">
                         <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                            <FileSpreadsheet size={20} />
+                            <FileSpreadsheet size={18} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-gray-800">Report Preview</h2>
+                            <h2 className="text-base sm:text-lg font-semibold text-gray-800">Report Preview</h2>
                             <p className="text-xs text-gray-500 mt-0.5">Preview of the data based on current filters</p>
                         </div>
                     </div>
@@ -244,35 +242,35 @@ export default function MonthlyReportPage() {
                 </div>
 
                 {loading ? (
-                    <div className="p-20 text-center text-gray-500 flex flex-col items-center justify-center">
+                    <div className="p-16 text-center text-gray-500 flex flex-col items-center justify-center">
                         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
                         <p className="font-medium text-gray-600">Generating report preview...</p>
                         <p className="text-sm text-gray-400 mt-1">This may take a moment</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
+                        <table className="w-full text-sm text-left min-w-[640px]">
                             <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider font-semibold border-b border-gray-200/60">
                                 <tr>
-                                    <th className="px-6 py-4">Client</th>
-                                    <th className="px-6 py-4">Type</th>
-                                    <th className="px-6 py-4">Category</th>
-                                    <th className="px-6 py-4">Flow</th>
-                                    <th className="px-6 py-4">Premium</th>
-                                    <th className="px-6 py-4">CSR</th>
-                                    <th className="px-6 py-4">Date</th>
+                                    <th className="px-4 sm:px-6 py-4">Client</th>
+                                    <th className="px-4 sm:px-6 py-4">Type</th>
+                                    <th className="px-4 sm:px-6 py-4">Category</th>
+                                    <th className="px-4 sm:px-6 py-4">Flow</th>
+                                    <th className="px-4 sm:px-6 py-4">Premium</th>
+                                    <th className="px-4 sm:px-6 py-4">CSR</th>
+                                    <th className="px-4 sm:px-6 py-4">Date</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {data.length === 0 ? (
                                     <tr>
-                                        <td colSpan={7} className="px-6 py-20 text-center">
+                                        <td colSpan={7} className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center justify-center">
-                                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                                                    <Filter size={32} className="text-gray-300" />
+                                                <div className="w-14 h-14 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                                                    <Filter size={28} className="text-gray-300" />
                                                 </div>
-                                                <h3 className="text-lg font-semibold text-gray-900 mb-1">No Data Available</h3>
-                                                <p className="text-gray-500 text-sm max-w-sm mx-auto">
+                                                <h3 className="text-base font-semibold text-gray-900 mb-1">No Data Available</h3>
+                                                <p className="text-gray-500 text-sm max-w-xs mx-auto">
                                                     Adjust the filters above and click "Generate Report" to view results.
                                                 </p>
                                             </div>
@@ -280,19 +278,19 @@ export default function MonthlyReportPage() {
                                     </tr>
                                 ) : (data.map((row: any, index: number) => (
                                     <tr key={row.id} className="hover:bg-blue-50/30 transition-colors group">
-                                        <td className="px-6 py-4 font-medium text-gray-900">
+                                        <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                             {row.client_name}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded text-xs border border-gray-200 font-medium capitalize">
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded text-xs border border-gray-200 font-medium capitalize whitespace-nowrap">
                                                 {row.policy_type}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 capitalize text-gray-600">
+                                        <td className="px-4 sm:px-6 py-4 capitalize text-gray-600 whitespace-nowrap">
                                             {row.insurence_category}
                                         </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize whitespace-nowrap
                                                 ${row.policy_flow === 'new'
                                                     ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
                                                     : 'bg-amber-50 text-amber-700 border-amber-100'
@@ -301,20 +299,20 @@ export default function MonthlyReportPage() {
                                                 {row.policy_flow === 'new' ? 'New Business' : 'Renewal'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 font-semibold text-gray-900">
+                                        <td className="px-4 sm:px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
                                             ${(row.total_premium || 0).toLocaleString()}
                                         </td>
-                                        <td className="px-6 py-4 text-gray-600">
+                                        <td className="px-4 sm:px-6 py-4 text-gray-600">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-white">
+                                                <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-white flex-shrink-0">
                                                     {(row.assigned_csr_profile?.full_name || 'U')[0]}
                                                 </div>
-                                                <span className="text-sm">
+                                                <span className="text-sm whitespace-nowrap">
                                                     {row.assigned_csr_profile?.full_name || 'Unknown'}
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-gray-500 font-mono text-xs">
+                                        <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">
                                             {row.renewal_date || new Date(row.created_at).toLocaleDateString()}
                                         </td>
                                     </tr>

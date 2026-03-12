@@ -71,11 +71,11 @@ export default async function SuperAdminDashboard() {
     ]
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Super Admin Dashboard</h1>
-            <p className="text-gray-600 mb-8">Comprehensive overview of system metrics, users, and global configurations.</p>
+        <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2 tracking-tight">Super Admin Dashboard</h1>
+            <p className="text-gray-600 mb-8 max-w-2xl">Comprehensive overview of system metrics, users, and global configurations.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 md:gap-6 mb-12">
                 {stats.map((stat, i) => (
                     <Link key={i} href={stat.href}>
                         <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:border-indigo-500 hover:shadow-lg transition-all cursor-pointer flex flex-col items-center text-center gap-4 group h-full">
@@ -91,8 +91,8 @@ export default async function SuperAdminDashboard() {
                 ))}
             </div>
 
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {quickLinks.map((link, i) => (
                     <Link key={i} href={link.href}>
                         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex items-center gap-3 text-gray-700 hover:text-indigo-700 font-medium cursor-pointer">

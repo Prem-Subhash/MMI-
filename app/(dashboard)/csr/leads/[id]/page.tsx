@@ -146,8 +146,9 @@ export default function LeadReviewPage() {
   /* ================= NO FORM SUBMITTED ================= */
   if (!form) {
     return (
-      <div className="max-w-4xl mx-auto p-10">
-        <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
+      <div className="p-4 sm:p-6 lg:p-10">
+        <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
 
           {/* HEADER */}
           <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6">
@@ -223,13 +224,15 @@ export default function LeadReviewPage() {
             onSuccess={() => router.refresh()}
           />
         )}
+        </div>
       </div>
     )
   }
 
   /* ================= FORM SUBMITTED ================= */
   return (
-    <div className="max-w-4xl mx-auto p-10 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-10">
+      <div className="max-w-4xl mx-auto space-y-8">
 
       <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6">
@@ -310,6 +313,7 @@ export default function LeadReviewPage() {
           onSuccess={() => router.refresh()}
         />
       )}
+      </div>
     </div>
   )
 }

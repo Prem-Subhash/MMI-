@@ -6,8 +6,6 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
 
-/* ================= TYPES ================= */
-
 type Lead = {
   id: string
   client_name: string
@@ -21,8 +19,6 @@ type Lead = {
   } | null
 }
 
-/* ================= FILTERS ================= */
-
 const STAGE_FILTERS = [
   { label: 'All', value: null },
   { label: 'Quoting in Progress', value: 'Quoting in Progress' },
@@ -32,8 +28,6 @@ const STAGE_FILTERS = [
   { label: 'Did Not Bind', value: 'Did Not Bind' },
 ]
 
-/* ================= PAGE ================= */
-
 export default function PersonalLinesPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -42,8 +36,6 @@ export default function PersonalLinesPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-
-  /* ================= LOAD LEADS ================= */
 
   useEffect(() => {
     const loadLeads = async () => {
@@ -74,7 +66,6 @@ export default function PersonalLinesPage() {
         .eq('policy_flow', 'new')
         .order('created_at', { ascending: false })
 
-      /* ✅ FIXED FILTER */
       if (stageFilter) {
         query = query.eq('current_stage.stage_name', stageFilter)
       }
@@ -85,7 +76,6 @@ export default function PersonalLinesPage() {
         console.error(error)
         setLeads([])
       } else {
-        /* ✅ NORMALIZE JOIN RESULT */
         const formatted = (data as any[]).map(row => ({
           ...row,
           current_stage: Array.isArray(row.current_stage)
@@ -102,8 +92,6 @@ export default function PersonalLinesPage() {
     loadLeads()
   }, [stageFilter])
 
-  /* ================= FILTER HANDLER ================= */
-
   const applyFilter = (stage: string | null) => {
     if (!stage) {
       router.push('/csr/pipeline/personal')
@@ -112,7 +100,6 @@ export default function PersonalLinesPage() {
     }
   }
 
-  // Client-side search filtering
   const filteredLeads = leads.filter(lead => {
     const term = searchTerm.toLowerCase()
     return (
@@ -122,21 +109,19 @@ export default function PersonalLinesPage() {
     )
   })
 
-  /* ================= UI ================= */
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8">
+    <div className="w-full">
       {/* HEADER */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold">Personal Lines Pipeline</h1>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Personal Lines Pipeline</h1>
           <p className="text-gray-500 text-sm mt-1">Manage new personal business leads</p>
         </div>
 
         <div className="flex gap-3 w-full sm:w-auto">
           <Link
             href="/csr/leads/new?category=personal"
-            className="w-full sm:w-auto text-center bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+            className="w-full sm:w-auto text-center bg-brand hover:bg-brand-dark text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors whitespace-nowrap"
           >
             + New Lead
           </Link>
@@ -144,7 +129,7 @@ export default function PersonalLinesPage() {
       </div>
 
       {/* FILTER TABS */}
-      <div className="flex gap-3 mb-6 flex-wrap">
+      <div className="flex gap-2 mb-5 flex-wrap">
         {STAGE_FILTERS.map(filter => {
           const isActive =
             (!filter.value && !stageFilter) ||
@@ -154,7 +139,7 @@ export default function PersonalLinesPage() {
             <button
               key={filter.label}
               onClick={() => applyFilter(filter.value)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
+              className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors touch-manipulation
                 ${isActive
                   ? 'bg-brand text-white border-brand shadow-sm'
                   : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
@@ -170,13 +155,13 @@ export default function PersonalLinesPage() {
       {/* TABLE SECTION */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         {/* TOOLBAR */}
-        <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="relative max-w-sm w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+        <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="relative w-full sm:max-w-sm">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
             <input
               type="text"
               placeholder="Search client, email, or phone..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
+              className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
@@ -189,26 +174,26 @@ export default function PersonalLinesPage() {
         {loading ? (
           <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
             <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-            <p>Loading leads...</p>
+            <p className="text-sm">Loading leads...</p>
           </div>
         ) : filteredLeads.length === 0 ? (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-12 text-center text-gray-500 text-sm">
             No leads found matching your criteria.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left">
+            <table className="min-w-full text-sm text-left" style={{ minWidth: '700px' }}>
               <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr>
-                  <th className="px-6 py-4 font-semibold">Client Name</th>
-                  <th className="px-6 py-4 font-semibold">Phone</th>
-                  <th className="px-6 py-4 font-semibold">Email</th>
-                  <th className="px-6 py-4 font-semibold">Category</th>
-                  <th className="px-6 py-4 font-semibold">Flow</th>
-                  <th className="px-6 py-4 font-semibold">Stage</th>
-                  <th className="px-6 py-4 font-semibold">Created</th>
-                  <th className="px-6 py-4 font-semibold text-center">View</th>
-                  <th className="px-6 py-4 font-semibold">Actions</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Actions</th>
                 </tr>
               </thead>
 
@@ -218,26 +203,25 @@ export default function PersonalLinesPage() {
 
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                      <td className="px-6 py-4 font-medium text-gray-900">
+                      <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                         {lead.client_name}
                       </td>
-                      <td className="px-6 py-4 text-gray-600">{lead.phone}</td>
-                      <td className="px-6 py-4 text-gray-600">{lead.email}</td>
-                      <td className="px-6 py-4 capitalize text-gray-700">
+                      <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
+                      <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
+                      <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">
                         {lead.insurence_category}
                       </td>
-                      <td className="px-6 py-4 capitalize text-gray-700">
+                      <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">
                         {lead.policy_flow}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4">
                         <StageBadge stage={stage} />
                       </td>
-                      <td className="px-6 py-4 text-gray-500">
+                      <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
                         {new Date(lead.created_at).toLocaleDateString()}
                       </td>
 
-                      {/* VIEW */}
-                      <td className="px-6 py-4 text-center">
+                      <td className="px-4 sm:px-6 py-4 text-center">
                         <Link
                           href={`/csr/leads/${lead.id}`}
                           className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
@@ -247,12 +231,11 @@ export default function PersonalLinesPage() {
                         </Link>
                       </td>
 
-                      {/* ACTIONS */}
-                      <td className="px-6 py-4">
+                      <td className="px-4 sm:px-6 py-4">
                         {stage === 'Quoting in Progress' && (
                           <Link
                             href={`/csr/leads/send-form?id=${lead.id}`}
-                            className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors"
+                            className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
                           >
                             Send Email
                           </Link>
@@ -270,8 +253,6 @@ export default function PersonalLinesPage() {
   )
 }
 
-/* ================= STAGE BADGE ================= */
-
 function StageBadge({ stage }: { stage: string }) {
   const color =
     stage === 'Quoting in Progress'
@@ -287,7 +268,7 @@ function StageBadge({ stage }: { stage: string }) {
               : 'bg-gray-50 text-gray-700 border border-gray-200'
 
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${color}`}>
       {stage}
     </span>
   )
