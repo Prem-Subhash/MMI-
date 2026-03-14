@@ -24,33 +24,34 @@ type FieldConfig = {
 const PERSONAL_NEW_BUSINESS_FIELDS: Record<string, Record<string, FieldConfig>> = {
   'Quoting in Progress': {
     target_completion_date: { label: 'Target Completion Date', type: 'date', required: true },
-    info_received: { label: 'Received all required information/documents?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    docs_saved: { label: 'Saved all client documents in File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    docs_saved: { label: 'Have you saved all the client\'s documents in FileCenter?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    info_received: { label: 'Have you received all the required information or documents from client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Quote Has Been Emailed': {
     follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    carrier_name: { label: 'Carrier Name', type: 'text', required: true },
-    quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
+    finalized_quote: { label: 'Have you finalized the quote?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    carrier_quote_sent: { label: 'Which carrier quote are you sending?', type: 'text', required: true },
+    quoted_premium: { label: 'What is the quoted premium?', type: 'number', required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Consent Letter Sent': {
     follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    payment_method: { label: 'Payment Method', type: 'dropdown', options: ['Credit Card', 'ACH', 'Escrow'], required: true },
-    payment_frequency: { label: 'Payment Frequency', type: 'dropdown', options: ['Monthly', 'Quarterly', 'Annual'], required: true },
+    payment_method: { label: 'What is the payment method?', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
+    payment_frequency: { label: 'What is the payment frequency?', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed': {
     policy_number: { label: 'Policy Number', type: 'text', required: true },
     bound_premium: { label: 'Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Expected Commission', type: 'number', required: true },
-    docs_saved: { label: 'Saved documents in EZLynx and File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    policy_docs_sent: { label: 'Policy documents sent to client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    docs_saved: { label: 'Policy documents saved in EZLynx & File Center?', type: 'dropdown', options: ['Yes', 'No'], required: true },
+    policy_docs_sent: { label: 'Have you sent the policy documents to client?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Did Not Bind': {
-    renewal_date: { label: 'Renewal Date', type: 'date', required: true },
-    reason_not_bound: { label: 'Reason Not Bound', type: 'textarea', required: true }
+    // X-date is auto-calculated (60 days prior to Renewal Date) — no manual input needed
+    notes: { label: 'Notes/Details', type: 'textarea' }
   }
 }
 
@@ -526,13 +527,38 @@ export default function UpdateStageModal({
               config.options?.includes('No') &&
               formData[key] === 'No';
 
-            // Custom error message logic
-            let errorText = "You should do it first then you have to move to the next";
-            if (key.includes('ezlynx')) {
-              errorText = "you have to updated the client’s profile in EZLynx";
-            } else if (key.includes('finalized') || key.includes('finalize')) {
-              errorText = "you have to finialize the quote";
+            // Field-specific error messages for every Yes/No field across all pipeline types
+            const FIELD_ERROR_MESSAGES: Record<string, string> = {
+              // Personal New Business — Quoting in Progress
+              docs_saved:                    "Please save all client documents in FileCenter before moving to the next stage.",
+              info_received:                 "Please collect all required information and documents from the client before proceeding.",
+              // Personal New Business / All pipelines — Quote Has Been Emailed
+              finalized_quote:               "Please finalize the quote before moving to the next stage.",
+              quote_finalized:               "Please finalize the quote before moving to the next stage.",
+              // Personal New Business / All pipelines — Completed
+              policy_docs_sent:              "Please send the policy documents to the client before proceeding.",
+              docs_sent_to_client:           "Please send the policy documents to the client before proceeding.",
+              // Personal New Business / Commercial — Completed
+              docs_saved_ezlynx:             "Please save the policy documents in EZLynx & File Center before proceeding.",
+              policy_docs_saved:             "Please save the policy documents in EZLynx & File Center before proceeding.",
+              // Personal Renewal / Commercial Renewal — Quoting in Progress
+              ezlynx_updated:                "Please update the client's profile in EZLynx before moving to the next stage.",
+              business_profile_updated_ezlynx: "Please update the business profile in EZLynx before moving to the next stage.",
+              // Personal Renewal / Commercial Renewal — Same Declaration Emailed
+              quoted_multiple_carriers:      "Please quote in multiple carriers before moving to the next stage.",
+              autopay_setup:                 "Please ensure the current policy is set up on autopay before proceeding.",
+              autopay_enabled:               "Please ensure the current policy is set up on autopay before proceeding.",
+              // Personal Renewal / Commercial Renewal — Completed (Same)
+              paid_for_renewal:              "Please ensure the policy is paid for the renewal term before proceeding.",
+              policy_paid:                   "Please ensure the policy is paid for the renewal term before proceeding.",
+              // Personal Renewal / Commercial Renewal — Completed (Switch)
+              cancelled_prev_carrier:        "Please cancel the renewal term with the previous carrier before proceeding.",
+              cancelled_previous_carrier:    "Please cancel the renewal term with the previous carrier before proceeding.",
+              // Commercial — Quoting in Progress
+              documents_saved_filecenter:    "Please save all documents in FileCenter before moving to the next stage.",
+              required_documents_received:   "Please collect all required information and documents from the client before proceeding.",
             }
+            const errorText = FIELD_ERROR_MESSAGES[key] ?? `Please complete "${config.label}" before moving to the next stage.`
 
             return (
               <div key={key} className="animate-in fade-in slide-in-from-top-2 duration-300">
