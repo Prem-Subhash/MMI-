@@ -53,9 +53,12 @@ export default async function AdminCSRsPage() {
                                             {new Date(csr.created_at).toLocaleDateString()}
                                         </td>
                                         <td className="p-4 text-right">
-                                            <button className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                                            <Link
+                                                href={`/admin/csrs/${csr.id}`}
+                                                className="text-sm font-bold text-emerald-600 hover:text-emerald-800 hover:underline transition-colors"
+                                            >
                                                 View Workload
-                                            </button>
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))}
