@@ -313,7 +313,7 @@ export default function CSRWorkloadPage() {
           <AlertCircle size={48} className="text-red-400 mx-auto mb-3" />
           <p className="text-gray-700 font-semibold text-lg">CSR not found</p>
           <Link href="/admin/csrs" className="text-emerald-600 text-sm hover:underline mt-2 inline-block">
-            ← Back to CSR Management
+           <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg">  Back to CSR Management</button>
           </Link>
         </div>
       </div>
@@ -328,7 +328,8 @@ export default function CSRWorkloadPage() {
         href="/admin/csrs"
         className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 hover:text-emerald-600 transition-colors mb-4 sm:mb-5 font-medium"
       >
-        <ArrowLeft size={15} /> Back to CSR Management
+        <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg">
+           Back to CSR Management</button>
       </Link>
 
       {/* ── Header ── */}
@@ -504,7 +505,7 @@ export default function CSRWorkloadPage() {
 
             {/* ── Desktop table (≥ md) ── */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm text-left" style={{ minWidth: '700px' }}>
+              <table className="w-full text-sm text-left min-w-[700px]">
                 <thead>
                   <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white">
                     {['Client Name', 'Phone', 'Category', 'Flow', 'Stage', 'Date'].map((h) => (

@@ -103,13 +103,23 @@ export default function PipelinesClient() {
         <div className="space-y-6">
             {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-3">
+                {showCreate && (
+                    <button
+                        type="button"
+                        onClick={() => setShowCreate(false)}
+                        className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl hover:bg-red-700 transition-all font-bold shadow-sm text-sm"
+                    >
+                        Cancel
+                    </button>
+                )}
                 <button
-                    onClick={() => setShowCreate(!showCreate)}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
+                    type="button"
+                    onClick={() => setShowCreate(true)}
+                    className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-700 transition-all font-bold shadow-sm text-sm"
                 >
                     <Plus size={18} />
-                    {showCreate ? 'Cancel Create' : 'Create Pipeline'}
+                    Create Pipeline
                 </button>
             </div>
 
@@ -136,16 +146,16 @@ export default function PipelinesClient() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Pipeline Name</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Category</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Type</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right">Actions</th>
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                            <th className="p-4 font-semibold text-white text-sm">Pipeline Name</th>
+                            <th className="p-4 font-semibold text-white text-sm">Category</th>
+                            <th className="p-4 font-semibold text-white text-sm">Type</th>
+                            <th className="p-4 font-semibold text-white text-sm text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                         ) : pipelines.map(pipeline => (
                             <tr key={pipeline.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4 text-gray-800 font-medium">
@@ -176,12 +186,12 @@ export default function PipelinesClient() {
                                     ) : (
                                         <>
                                             <Link href={`/superadmin/pipelines/${pipeline.id}/stages`}>
-                                                <button className="flex items-center gap-1 text-sm text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded transition font-medium mr-2">
+                                                <button className="flex items-center gap-1 text-sm text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded transition font-medium mr-2">
                                                     Manage Stages <ChevronRight size={16} />
                                                 </button>
                                             </Link>
-                                            <button onClick={() => { setEditingId(pipeline.id); setEditForm({ name: pipeline.name, category: pipeline.category, is_renewal: pipeline.is_renewal }) }} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"><Edit2 size={16} /></button>
-                                            <button onClick={() => handleDelete(pipeline.id, pipeline.name)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
+                                            <button onClick={() => { setEditingId(pipeline.id); setEditForm({ name: pipeline.name, category: pipeline.category, is_renewal: pipeline.is_renewal }) }} className="p-2 text-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDelete(pipeline.id, pipeline.name)} className="p-2 text-red-600 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
                                         </>
                                     )}
                                 </td>

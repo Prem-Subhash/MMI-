@@ -125,7 +125,7 @@ export default function AdminAssignmentsPage() {
                     <p className="text-gray-500 mt-1 text-sm">Operational control panel for managing lead workloads.</p>
                 </div>
                 <Link href="/admin" className="w-full md:w-auto">
-                    <button className="w-full md:w-auto px-5 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 shadow-sm transition-all font-bold whitespace-nowrap">
+                    <button className="w-full md:w-auto px-5 py-2.5 bg-[#E07A5F] border border-gray-200 text-white rounded-lg hover:bg-[#E07A5F]/80 shadow-sm transition-all font-bold whitespace-nowrap">
                         Back to Dashboard
                     </button>
                 </Link>
@@ -195,7 +195,7 @@ export default function AdminAssignmentsPage() {
 
             {loading ? (
                 <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                     <p className="mt-4 text-gray-500 font-medium text-sm">Loading routing data...</p>
                 </div>
             ) : (
@@ -286,7 +286,7 @@ export default function AdminAssignmentsPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse min-w-[700px]">
                                     <thead>
-                                        <tr className="bg-gray-50/50 border-b border-gray-100 text-[10px] uppercase tracking-wider text-gray-500">
+                                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                             <th className="p-3 sm:p-4 font-bold">Client Name</th>
                                             <th className="p-3 sm:p-4 font-bold">Policy Type</th>
                                             <th className="p-3 sm:p-4 font-bold">Pipeline Region</th>

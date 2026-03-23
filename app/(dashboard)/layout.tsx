@@ -37,7 +37,7 @@ export default function DashboardLayout({
   if (checkingAuth) return null
 
   return (
-    <div className="flex min-h-screen bg-slate-100 overflow-x-hidden">
+    <div className="flex min-h-screen bg-slate-100">
       <TopBar onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
       
       {/* Sidebar Overlay for Mobile */}
@@ -63,8 +63,8 @@ export default function DashboardLayout({
             pl-0
         `}
       >
-        <main className="flex-1 w-full flex flex-col max-w-[100vw] min-w-0">
-          <div className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full max-w-7xl mx-auto min-w-0">
+        <main className="flex-1 w-full flex flex-col overflow-x-hidden min-w-0">
+          <div className="flex-1 px-3 sm:px-6 lg:px-8 py-4 sm:py-6 w-full min-w-0">
             {children}
           </div>
           <Footer />

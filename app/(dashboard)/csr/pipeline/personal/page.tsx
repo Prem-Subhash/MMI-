@@ -173,7 +173,7 @@ export default function PersonalLinesPage() {
 
         {loading ? (
           <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
-            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
             <p className="text-sm">Loading leads...</p>
           </div>
         ) : filteredLeads.length === 0 ? (

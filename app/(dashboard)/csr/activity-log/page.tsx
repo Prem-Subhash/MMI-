@@ -132,7 +132,7 @@ export default function ActivityLogPage() {
       <div className="space-y-4">
         {loading ? (
           <div className="p-20 text-center flex flex-col items-center">
-            <div className="w-10 h-10 border-4 border-brand-dark border-t-transparent rounded-full animate-spin mb-4" />
+            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
             <p className="text-gray-500 font-medium">Loading your activity history...</p>
           </div>
         ) : filteredLeads.length > 0 ? (

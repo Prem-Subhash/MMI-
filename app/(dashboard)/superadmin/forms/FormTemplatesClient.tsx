@@ -126,7 +126,7 @@ export default function FormTemplatesClient() {
             <div className="flex justify-end">
                 <button
                     onClick={() => setShowCreate(!showCreate)}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
+                    className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
                 >
                     <Plus size={18} />
                     {showCreate ? 'Cancel Create' : 'Build Form'}
@@ -161,15 +161,15 @@ export default function FormTemplatesClient() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm w-1/4">Name & Category</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm w-1/2">Schema Preview</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right w-1/4">Actions</th>
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                            <th className="p-4 font-semibold text-white text-sm w-1/4">Name & Category</th>
+                            <th className="p-4 font-semibold text-white text-sm w-1/2">Schema Preview</th>
+                            <th className="p-4 font-semibold text-white text-sm text-right w-1/4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={3} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                            <tr><td colSpan={3} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                         ) : templates.map(template => (
                             <tr key={template.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 {editingId === template.id ? (
@@ -202,8 +202,8 @@ export default function FormTemplatesClient() {
                                         </td>
                                         <td className="p-4 text-right align-top">
                                             <div className="flex justify-end gap-1">
-                                                <button onClick={() => startEdit(template)} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"><Edit2 size={16} /></button>
-                                                <button onClick={() => handleDelete(template.id, template.form_name)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
+                                                <button onClick={() => startEdit(template)} className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded transition"><Edit2 size={16} /></button>
+                                                <button onClick={() => handleDelete(template.id, template.form_name)} className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
                                             </div>
                                         </td>
                                     </>

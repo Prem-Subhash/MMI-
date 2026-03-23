@@ -71,7 +71,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
     /* ================= UI ================= */
 
     return (
-        <div className="w-full max-w-7xl mx-auto">
+        <div className="w-full">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
@@ -79,7 +79,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                     <p className="text-gray-600 text-sm mt-1">Overview of pipeline stages and current lead distribution separated by pipeline.</p>
                 </div>
                 <Link href="/admin" className="w-full sm:w-auto">
-                    <button className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium whitespace-nowrap">
+                    <button className="w-full sm:w-auto px-4 py-2 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition font-medium whitespace-nowrap">
                         Back to Dashboard
                     </button>
                 </Link>
@@ -166,7 +166,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="text-sm text-left min-w-[700px]">
+                                <table className="w-full text-sm text-left min-w-[700px]">
                                     <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                         <tr>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>

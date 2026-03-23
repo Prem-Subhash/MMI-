@@ -20,8 +20,8 @@ export default async function AdminCSRsPage() {
                         <p className="text-gray-600 mt-1">View all Customer Success Representatives in the system.</p>
                     </div>
                     <Link href="/admin" className="w-full md:w-auto">
-                        <button className="w-full px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-bold shadow-sm">
-                            Back
+                        <button className="w-full px-5 py-2.5 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition-all font-bold shadow-sm">
+                            Back to Dashboard
                         </button>
                     </Link>
                 </div>
@@ -30,11 +30,11 @@ export default async function AdminCSRsPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse min-w-[700px]">
                             <thead>
-                                <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="p-4 font-semibold text-gray-600 text-sm">CSR Name</th>
-                                    <th className="p-4 font-semibold text-gray-600 text-sm">Email Address</th>
-                                    <th className="p-4 font-semibold text-gray-600 text-sm">Joined Date</th>
-                                    <th className="p-4 font-semibold text-gray-600 text-sm text-right">Action</th>
+                                <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                                    <th className="p-4 font-semibold">CSR Name</th>
+                                    <th className="p-4 font-semibold">Email Address</th>
+                                    <th className="p-4 font-semibold">Joined Date</th>
+                                    <th className="p-4 font-semibold text-right">Action</th>
                                 </tr>
                             </thead>
                             <tbody>

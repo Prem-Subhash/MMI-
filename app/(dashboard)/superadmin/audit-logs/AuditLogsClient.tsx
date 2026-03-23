@@ -58,17 +58,17 @@ export default function AuditLogsClient() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200">
-                                <th className="p-4 font-semibold text-gray-600 text-sm w-48">Timestamp</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm w-48">User</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm w-48">Action</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm w-48">Entity / ID</th>
-                                <th className="p-4 font-semibold text-gray-600 text-sm">Metadata</th>
+                            <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                                <th className="p-4 font-semibold text-white text-sm w-48">Timestamp</th>
+                                <th className="p-4 font-semibold text-white text-sm w-48">User</th>
+                                <th className="p-4 font-semibold text-white text-sm w-48">Action</th>
+                                <th className="p-4 font-semibold text-white text-sm w-48">Entity / ID</th>
+                                <th className="p-4 font-semibold text-white text-sm">Metadata</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={5} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                                <tr><td colSpan={5} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                             ) : logs.map(log => (
                                 <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                     <td className="p-4 text-xs font-mono text-gray-500 align-top">
