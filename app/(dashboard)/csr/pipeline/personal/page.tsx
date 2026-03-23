@@ -182,7 +182,7 @@ export default function PersonalLinesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left" style={{ minWidth: '700px' }}>
+            <table className="min-w-full text-sm text-left">
               <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr>
                   <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>

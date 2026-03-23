@@ -189,7 +189,7 @@ function CommercialRenewalContent() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold">Client</th>
                                     <th className="px-6 py-4 font-semibold">Policy Type</th>
