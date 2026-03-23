@@ -186,7 +186,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                         ) : stages.map((stage, index) => (
                             <tr key={stage.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4">

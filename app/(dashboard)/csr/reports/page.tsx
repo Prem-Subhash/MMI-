@@ -243,7 +243,7 @@ export default function MonthlyReportPage() {
 
                 {loading ? (
                     <div className="p-16 text-center text-gray-500 flex flex-col items-center justify-center">
-                        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+                        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
                         <p className="font-medium text-gray-600">Generating report preview...</p>
                         <p className="text-sm text-gray-400 mt-1">This may take a moment</p>
                     </div>

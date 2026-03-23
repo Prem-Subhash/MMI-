@@ -111,7 +111,7 @@ export default function UsersClient() {
                 <button
                     onClick={() => setShowCreate(!showCreate)}
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm
-                        ${showCreate ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' : 'bg-[#CF1C45] text-white hover:bg-[#b0183b]'}`}
+                        ${showCreate ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
                 >
                     <Plus size={18} />
                     {showCreate ? 'Cancel' : 'Create New User'}
@@ -121,20 +121,20 @@ export default function UsersClient() {
             {showCreate && (
                 <form onSubmit={handleCreateUser} className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 items-end animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
-                        <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all" placeholder="John Doe" />
+                        <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Full Name</label>
+                        <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all" placeholder="John Doe" />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email</label>
-                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all" placeholder="john@example.com" />
+                        <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Email</label>
+                        <input required type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all" placeholder="john@example.com" />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Password</label>
-                        <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all" placeholder="Min 6 chars" />
+                        <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Password</label>
+                        <input required type="password" value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all" placeholder="Min 6 chars" />
                     </div>
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Role</label>
-                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#CF1C45]/20 focus:border-[#CF1C45] outline-none text-sm transition-all bg-white">
+                        <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Role</label>
+                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all">
                             <option value="csr">CSR</option>
                             <option value="admin">Admin</option>
                             <option value="accounting">Accounting</option>
@@ -151,19 +151,19 @@ export default function UsersClient() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
-                            <tr className="bg-gray-50 border-b border-gray-200">
-                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Name</th>
-                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Email</th>
-                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Role</th>
-                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider">Created At</th>
-                                <th className="p-4 font-bold text-gray-500 text-[10px] uppercase tracking-wider text-right">Actions</th>
+                            <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                                <th className="p-4 font-bold text-white text-[10px] uppercase tracking-wider">Name</th>
+                                <th className="p-4 font-bold text-white text-[10px] uppercase tracking-wider">Email</th>
+                                <th className="p-4 font-bold text-white text-[10px] uppercase tracking-wider">Role</th>
+                                <th className="p-4 font-bold text-white text-[10px] uppercase tracking-wider">Created At</th>
+                                <th className="p-4 font-bold text-white text-[10px] uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {loading ? (
                                 <tr>
                                     <td colSpan={5} className="p-12 text-center text-gray-400">
-                                        <Loader2 className="animate-spin mx-auto text-[#CF1C45] mb-2" size={32} />
+                                        <Loader2 className="animate-spin mx-auto text-emerald-500 mb-2" size={32} />
                                         <p className="text-sm font-bold">Synchronizing users...</p>
                                     </td>
                                 </tr>
@@ -208,11 +208,11 @@ export default function UsersClient() {
                                                     <Save size={18} />
                                                 </button>
                                             ) : (
-                                                <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all" title="Edit Role">
+                                                <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="p-2 text-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all" title="Edit Role">
                                                     <Edit2 size={18} />
                                                 </button>
                                             )}
-                                            <button onClick={() => handleDelete(user.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete User">
+                                            <button onClick={() => handleDelete(user.id)} className="p-2 text-red-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="Delete User">
                                                 <Trash2 size={18} />
                                             </button>
                                         </div>

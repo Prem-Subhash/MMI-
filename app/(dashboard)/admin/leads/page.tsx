@@ -122,12 +122,12 @@ export default function AdminLeadsPage() {
                 <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                     <Link
                         href="/admin/leads/new"
-                        className="bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center whitespace-nowrap"
+                        className="bg-[#10B889] hover:bg-[#10B889]/80 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center whitespace-nowrap"
                     >
                         + New Lead
                     </Link>
                     <Link href="/admin" className="w-full sm:w-auto">
-                        <button className="w-full px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-bold whitespace-nowrap">
+                        <button className="w-full px-5 py-2.5 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition-all font-bold whitespace-nowrap">
                             Back to Dashboard
                         </button>
                     </Link>
@@ -179,7 +179,7 @@ export default function AdminLeadsPage() {
 
                 {loading ? (
                     <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
-                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                         <p className="text-sm">Loading leads...</p>
                     </div>
                 ) : filteredLeads.length === 0 ? (
@@ -188,7 +188,7 @@ export default function AdminLeadsPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm text-left" style={{ minWidth: '800px' }}>
+                        <table className="w-full text-sm text-left min-w-[800px]">
                             <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
