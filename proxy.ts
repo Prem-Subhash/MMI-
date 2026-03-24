@@ -33,22 +33,6 @@ export async function proxy(request: NextRequest) {
         return response
     }
 
-    // Legacy Route Redirection
-    if (pathname === '/dashboard') {
-        if (!user) return NextResponse.redirect(new URL('/login', request.url))
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.role) {
-            return NextResponse.redirect(new URL(`/${profile.role}`, request.url))
-        }
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
-    }
-
     // Role Route Protections
     const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin', '/dashboard']
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
@@ -70,7 +54,6 @@ export async function proxy(request: NextRequest) {
             return NextResponse.redirect(new URL('/unauthorized', request.url))
         }
 
-        // Define acceptable boundaries context for role
         const accessMatrix: Record<string, string[]> = {
             csr: ['/csr'],
             admin: ['/admin', '/csr'],
@@ -79,8 +62,6 @@ export async function proxy(request: NextRequest) {
         }
 
         const validPaths = accessMatrix[role] || []
-
-        // Check specific path request matching
         const isAuthorized = validPaths.some((allowedRoute) => pathname.startsWith(allowedRoute))
 
         if (!isAuthorized) {
