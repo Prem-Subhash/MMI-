@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, FileJson } from 'lucide-react'
+import { Plus, Trash2, Edit2, Loader2, Save, FileJson, X } from 'lucide-react'
 
 type FormTemplate = {
     id: string
@@ -128,8 +128,8 @@ export default function FormTemplatesClient() {
                     onClick={() => setShowCreate(!showCreate)}
                     className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
                 >
-                    <Plus size={18} />
-                    {showCreate ? 'Cancel Create' : 'Build Form'}
+                    {showCreate ? <X size={18} /> : <Plus size={18} />}
+                    {showCreate ? 'x cancel' : 'Build Form'}
                 </button>
             </div>
 
@@ -181,7 +181,7 @@ export default function FormTemplatesClient() {
                                             </div>
                                             <textarea value={editForm.fieldsStr} onChange={e => setEditForm({ ...editForm, fieldsStr: e.target.value })} className="border p-2 rounded w-full outline-none font-mono text-xs h-32" placeholder="{}" />
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium">Cancel</button>
+                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> x</button>
                                                 <button onClick={() => handleUpdate(template.id)} className="px-4 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded font-medium"><Save size={16} /> Save JSON Schema</button>
                                             </div>
                                         </div>

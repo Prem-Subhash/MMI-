@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Save, Edit2, ShieldAlert } from 'lucide-react'
+import { Loader2, Save, Edit2, ShieldAlert, X } from 'lucide-react'
 
 type UserProfile = {
     id: string
@@ -119,8 +119,8 @@ export default function RolesClient() {
                                 <td className="p-4 text-right">
                                     {editingUserId === user.id ? (
                                         <div className="flex justify-end gap-2">
-                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">
-                                                Cancel
+                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium flex items-center gap-1">
+                                                <X size={14} /> x
                                             </button>
                                             <button onClick={() => handleUpdateRole(user.id, user.role)} className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-medium shadow-sm">
                                                 <Save size={16} /> Save

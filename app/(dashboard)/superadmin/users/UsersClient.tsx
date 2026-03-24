@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save } from 'lucide-react'
+import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react'
 
 type UserProfile = {
     id: string
@@ -113,8 +113,8 @@ export default function UsersClient() {
                     className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm
                         ${showCreate ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
                 >
-                    <Plus size={18} />
-                    {showCreate ? 'Cancel' : 'Create New User'}
+                    {showCreate ? <X size={18} /> : <Plus size={18} />}
+                    {showCreate ? 'x' : 'Create New User'}
                 </button>
             </div>
 

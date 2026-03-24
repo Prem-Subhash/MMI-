@@ -132,8 +132,8 @@ export default function EmailTemplatesClient() {
                     onClick={() => setShowCreate(!showCreate)}
                     className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
                 >
-                    <Plus size={18} />
-                    {showCreate ? 'Cancel Create' : 'Create Template'}
+                    {showCreate ? <X size={18} /> : <Plus size={18} />}
+                    {showCreate ? 'x cancel' : 'Create Template'}
                 </button>
             </div>
 
@@ -193,7 +193,7 @@ export default function EmailTemplatesClient() {
                                             </div>
                                             <textarea value={editForm.body} onChange={e => setEditForm({ ...editForm, body: e.target.value })} className="border p-2 rounded w-full outline-none h-24" placeholder="Body" />
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium">Cancel</button>
+                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> x</button>
                                                 <button onClick={() => handleUpdate(template.id)} className="px-4 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded font-medium"><Save size={16} /> Save Changes</button>
                                             </div>
                                         </div>
