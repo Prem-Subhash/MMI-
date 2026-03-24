@@ -20,7 +20,7 @@ const ReportSchema = z.object({
 })
 
 export async function POST(request: Request) {
-    const cookieStore = cookies()
+    const cookieStore = await cookies()
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,

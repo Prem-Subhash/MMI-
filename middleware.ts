@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     let response = NextResponse.next({
         request: { headers: request.headers },
     })
@@ -30,9 +30,6 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
     if (pathname.startsWith('/login')) {
-        // We removed the auto-redirect here to allow users to reach the login page
-        // and sign in as a different user if needed for testing. The explicit login
-        // action in `app/login/page.tsx` will handle the routing upon successful auth.
         return response
     }
 
@@ -61,7 +58,6 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        // Role interception via proxy querying `profiles` table to assign boundaries 
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
