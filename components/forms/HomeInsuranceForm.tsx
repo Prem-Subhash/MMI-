@@ -24,18 +24,18 @@ export default function HomeInsuranceForm({
   }
 
   return (
-    <div className="py-14 px-10 bg-transparent group/section transition-colors duration-500 hover:bg-white/30">
+    <div className="py-8 px-5 md:py-14 md:px-10 bg-transparent group/section transition-colors duration-500 hover:bg-white/30">
       {/* SECTION HEADER */}
-      <div className="flex flex-col mb-10">
-        <h3 className="text-2xl font-bold text-slate-900 tracking-tight">
+      <div className="flex flex-col mb-8 md:mb-10">
+        <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
           Home Insurance Details
         </h3>
         <p className="text-slate-500 text-sm font-medium">Specific details about your property coverage.</p>
       </div>
 
       {/* SECTION BODY */}
-      <div className="space-y-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-10">
+      <div className="space-y-8 md:space-y-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 md:gap-y-10">
           {/* CURRENT CARRIER */}
           <div className="md:col-span-2">
             <label className="block text-[0.95rem] font-bold text-slate-900 mb-3 ml-1">
@@ -47,7 +47,7 @@ export default function HomeInsuranceForm({
               value={data.current_carrier || ''}
               disabled={disabled}
               onChange={e => updateField('current_carrier', e.target.value)}
-              className="w-full bg-[#f0f2f5] border-transparent px-6 py-5 rounded-[1.25rem] transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none placeholder:text-slate-400 font-semibold text-slate-900 disabled:opacity-60 disabled:cursor-not-allowed text-lg"
+            className="w-full bg-[#f0f2f5] border-transparent px-5 py-4 md:px-6 md:py-5 rounded-[1rem] md:rounded-[1.25rem] transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none placeholder:text-slate-400 font-semibold text-slate-900 disabled:opacity-60 disabled:cursor-not-allowed text-base md:text-lg"
             />
           </div>
 
@@ -62,7 +62,7 @@ export default function HomeInsuranceForm({
               value={data.years_with_carrier || ''}
               disabled={disabled}
               onChange={e => updateField('years_with_carrier', e.target.value)}
-              className="w-full bg-[#f0f2f5] border-transparent px-6 py-5 rounded-[1.25rem] transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none placeholder:text-slate-400 font-semibold text-slate-900 disabled:opacity-60 disabled:cursor-not-allowed text-lg"
+            className="w-full bg-[#f0f2f5] border-transparent px-5 py-4 md:px-6 md:py-5 rounded-[1rem] md:rounded-[1.25rem] transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none placeholder:text-slate-400 font-semibold text-slate-900 disabled:opacity-60 disabled:cursor-not-allowed text-base md:text-lg"
             />
           </div>
 
@@ -77,7 +77,7 @@ export default function HomeInsuranceForm({
               value={data.roof_replaced_year || ''}
               disabled={disabled}
               onChange={e => updateField('roof_replaced_year', e.target.value)}
-              className="w-full bg-[#f0f2f5] border-transparent px-6 py-5 rounded-[1.25rem] transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none placeholder:text-slate-400 font-semibold text-slate-900 disabled:opacity-60 disabled:cursor-not-allowed text-lg"
+            className="w-full bg-[#f0f2f5] border-transparent px-5 py-4 md:px-6 md:py-5 rounded-[1rem] md:rounded-[1.25rem] transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none placeholder:text-slate-400 font-semibold text-slate-900 disabled:opacity-60 disabled:cursor-not-allowed text-base md:text-lg"
             />
           </div>
         </div>
@@ -161,7 +161,7 @@ export default function HomeInsuranceForm({
                     value={data.basement_type || ''}
                     disabled={disabled}
                     onChange={e => updateField('basement_type', e.target.value)}
-                    className="w-full bg-[#f0f2f5] border-transparent px-6 py-5 rounded-[1.25rem] appearance-none transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none font-semibold text-slate-900 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-lg"
+                   className="w-full bg-[#f0f2f5] border-transparent px-5 py-4 md:px-6 md:py-5 rounded-[1rem] md:rounded-[1.25rem] appearance-none transition-all focus:bg-[#edf2f7] focus:ring-2 focus:ring-blue-500/10 outline-none font-semibold text-slate-900 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed text-base md:text-lg"
                   >
                     <option value="">Select type</option>
                     {BASEMENT_TYPES.map(type => (

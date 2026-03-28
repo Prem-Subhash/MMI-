@@ -104,7 +104,8 @@ export default function RenewalDetailPage() {
   )
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
+    <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
+      <div className="max-w-5xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
 
         <div className="text-sm text-gray-400 font-mono">ID: {lead.id.slice(0, 8)}</div>
@@ -123,7 +124,7 @@ export default function RenewalDetailPage() {
 
           {/* CONTENT */}
           <div className="p-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="p-4 bg-gray-50 rounded-xl border">
                 <p className="text-sm text-gray-500">Carrier</p>
                 <p className="font-semibold text-gray-800">{lead.carrier || '—'}</p>
@@ -185,6 +186,7 @@ export default function RenewalDetailPage() {
           }}
         />
       )}
+      </div>
     </div>
   )
 }

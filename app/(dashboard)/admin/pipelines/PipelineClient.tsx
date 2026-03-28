@@ -24,15 +24,7 @@ type Lead = {
     } | null
 }
 
-export default function PipelineClient({
-    pipelines,
-    stages,
-    stageCounts,
-    targetPipelines,
-    initialLeads
-}: any) {
-
-    // Arrange pipelines
+export default function PipelineClient({ pipelines, stages, stageCounts, targetPipelines, initialLeads }: any) {
     const validTargetPipelines = targetPipelines
         .map((name: string) => pipelines?.find((p: any) => p.name === name))
         .filter(Boolean)
@@ -42,7 +34,6 @@ export default function PipelineClient({
 
     const displayPipelines = [...validTargetPipelines, ...otherPipelines]
 
-    // State
     const [selectedPipeline, setSelectedPipeline] = useState(displayPipelines[0]?.id || '')
     const [stageFilter, setStageFilter] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState('')
@@ -50,21 +41,24 @@ export default function PipelineClient({
     const currentPipeline = displayPipelines.find((p: any) => p.id === selectedPipeline)
     const currentStages = stages?.filter((s: any) => s.pipeline_id === selectedPipeline) || []
 
-    // Reset stage filter
     useEffect(() => {
         setStageFilter(null)
     }, [selectedPipeline])
 
-    // 🔥 FILTER LEADS FROM SERVER DATA
-    const pipelineLeads = (initialLeads || []).filter(
-        (lead: any) => lead.pipeline_id === selectedPipeline
-    )
+    console.log("INITIAL LEADS RECEIVED:", initialLeads?.length || 0)
+    console.log("SELECTED PIPELINE:", selectedPipeline)
+
+    const pipelineLeads = (initialLeads || []).filter((lead: any) => lead.pipeline_id === selectedPipeline)
+
+    const normalizedLeads = pipelineLeads.map((row: any) => ({
+        ...row,
+        current_stage: row.current_stage ?? null,
+        profiles: row.profiles ?? null,
+    }))
 
     const stagedLeads = stageFilter
-        ? pipelineLeads.filter(
-            (lead: any) => lead.current_stage?.stage_name === stageFilter
-        )
-        : pipelineLeads
+        ? normalizedLeads.filter((lead: any) => lead.current_stage?.stage_name === stageFilter)
+        : normalizedLeads;
 
     const filteredLeads = stagedLeads.filter((lead: any) => {
         const term = searchTerm.toLowerCase()
@@ -77,112 +71,193 @@ export default function PipelineClient({
     })
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-
-            {/* HEADER */}
-            <div className="flex justify-between items-center mb-8">
+        <div className="w-full">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">Pipeline Monitoring</h1>
-                    <p className="text-gray-600">
-                        Overview of pipeline stages and leads.
-                    </p>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Pipeline Monitoring</h1>
+                    <p className="text-gray-600 text-sm mt-1">Overview of pipeline stages and current lead distribution separated by pipeline.</p>
                 </div>
-                <Link href="/admin">
-                    <button className="px-4 py-2 bg-gray-100 rounded-lg">
-                        Back
+                <Link href="/admin" className="w-full sm:w-auto">
+                    <button className="w-full sm:w-auto px-4 py-2 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition font-medium whitespace-nowrap">
+                        Back to Dashboard
                     </button>
                 </Link>
             </div>
 
-            {/* PIPELINES */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            {/* STEP 1: Pipeline Selection Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
                 {displayPipelines.map((p: any) => {
                     const pStages = stages?.filter((s: any) => s.pipeline_id === p.id) || []
                     const totalLeads = pStages.reduce(
                         (sum: number, stage: any) => sum + (stageCounts[stage.id] || 0),
                         0
                     )
+                    const isSelected = p.id === selectedPipeline
 
                     return (
                         <div
                             key={p.id}
                             onClick={() => setSelectedPipeline(p.id)}
-                            className="cursor-pointer bg-white p-6 rounded-xl border hover:shadow"
+                            className={`cursor-pointer rounded-xl p-4 sm:p-6 flex flex-col justify-between transition shadow-sm border touch-manipulation
+                                ${isSelected
+                                    ? 'border-brand bg-[#10B889]/5 ring-1 ring-brand shadow-md'
+                                    : 'bg-white hover:border-brand/40 hover:shadow-md'
+                                }`}
                         >
-                            <h3 className="font-bold">{p.name}</h3>
-                            <p>Total Leads: {totalLeads}</p>
+                            <h3 className={`text-base sm:text-lg font-bold line-clamp-2 ${isSelected ? 'text-brand-dark' : 'text-gray-800'}`}>
+                                {p.name}
+                            </h3>
+                            <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
+                                <span className="text-sm font-medium text-gray-500">Total Leads</span>
+                                <span className={`text-xl font-bold ${isSelected ? 'text-brand-dark' : 'text-gray-700'}`}>
+                                    {totalLeads}
+                                </span>
+                            </div>
                         </div>
                     )
                 })}
             </div>
 
-            {/* FILTERS */}
+            {/* STEP 2: Selected Pipeline Dashboard */}
             {currentPipeline && (
-                <>
-                    <div className="flex gap-3 mb-6 flex-wrap">
-                        {[{ label: 'All', value: null },
-                        ...currentStages.map((s: any) => ({
-                            label: s.stage_name,
-                            value: s.stage_name
-                        }))].map((filter: any) => (
-                            <button
-                                key={filter.label}
-                                onClick={() => setStageFilter(filter.value)}
-                                className="px-4 py-2 border rounded-full"
-                            >
-                                {filter.label}
-                            </button>
-                        ))}
+                <div className="mt-6">
+                    {/* FILTER TABS */}
+                    <div className="flex gap-2 mb-5 flex-wrap">
+                        {[{ label: 'All', value: null }, ...currentStages.map((s: any) => ({ label: s.stage_name, value: s.stage_name }))].map((filter: any) => {
+                            const isActive = filter.value === stageFilter
+
+                            return (
+                                <button
+                                    key={filter.label}
+                                    onClick={() => setStageFilter(filter.value)}
+                                    className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors touch-manipulation
+                                        ${isActive
+                                            ? 'bg-brand text-white border-brand shadow-sm'
+                                            : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
+                                        }
+                                    `}
+                                >
+                                    {filter.label}
+                                </button>
+                            )
+                        })}
                     </div>
 
-                    {/* SEARCH */}
-                    <div className="mb-4">
-                        <input
-                            type="text"
-                            placeholder="Search..."
-                            className="border p-2 w-full max-w-sm"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
+                    {/* TABLE SECTION */}
+                    <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+                        {/* TOOLBAR */}
+                        <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div className="relative w-full sm:max-w-sm">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                                <input
+                                    type="text"
+                                    placeholder="Search client, email, phone, or CSR..."
+                                    className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
+                                    value={searchTerm}
+                                    onChange={e => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <div className="text-sm text-gray-500 font-medium whitespace-nowrap">
+                                {filteredLeads.length} Lead{filteredLeads.length !== 1 && 's'} Found
+                            </div>
+                        </div>
 
-                    {/* TABLE */}
-                    {filteredLeads.length === 0 ? (
-                        <p>No leads found</p>
-                    ) : (
-                        <table className="w-full border">
-                            <thead>
-                                <tr className="bg-gray-100">
-                                    <th>Name</th>
-                                    <th>Phone</th>
-                                    <th>Email</th>
-                                    <th>Stage</th>
-                                    <th>CSR</th>
-                                    <th>View</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredLeads.map((lead: Lead) => (
-                                    <tr key={lead.id}>
-                                        <td>{lead.client_name}</td>
-                                        <td>{lead.phone}</td>
-                                        <td>{lead.email}</td>
-                                        <td>{lead.current_stage?.stage_name}</td>
-                                        <td>
-                                            {lead.profiles?.full_name || 'Unassigned'}
-                                        </td>
-                                        <td>
-                                            <Link href={`/csr/leads/${lead.id}`}>
-                                                <Eye size={16} />
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                </>
+                        {filteredLeads.length === 0 ? (
+                            <div className="p-12 text-center text-gray-500">
+                                No leads found in this stage.
+                            </div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left min-w-[700px]">
+                                    <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
+                                        <tr>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Assigned CSR</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody className="divide-y divide-gray-100">
+                                        {filteredLeads.map((lead: Lead) => {
+                                            const stage = lead.current_stage?.stage_name ?? '—'
+
+                                            return (
+                                                <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
+                                                    <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{lead.client_name}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
+                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">{lead.insurence_category}</td>
+                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">{lead.policy_flow}</td>
+                                                    <td className="px-4 sm:px-6 py-4">
+                                                        <StageBadge stage={stage} />
+                                                    </td>
+                                                    <td className="px-4 sm:px-6 py-4">
+                                                        {lead.profiles?.full_name ? (
+                                                            <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
+                                                                {lead.profiles.full_name}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
+                                                        {new Date(lead.created_at).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-4 sm:px-6 py-4 text-center">
+                                                        <Link
+                                                            href={`/csr/leads/${lead.id}`}
+                                                            className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
+                                                            title="View Lead Details"
+                                                        >
+                                                            <Eye size={18} />
+                                                        </Link>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {!currentPipeline && displayPipelines.length === 0 && (
+                <div className="text-center py-20 text-gray-500">
+                    No pipelines available in the system.
+                </div>
             )}
         </div>
+    )
+}
+
+/* ================= STAGE BADGE ================= */
+
+function StageBadge({ stage }: { stage: string }) {
+    const color =
+        stage === 'Quoting in Progress'
+            ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+            : stage === 'Quote Has Been Emailed' || stage === 'Quote has been emailed'
+                ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                : stage === 'Consent Letter Sent'
+                    ? 'bg-purple-50 text-purple-700 border border-purple-200'
+                    : stage === 'Completed'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : stage === 'Did Not Bind'
+                            ? 'bg-red-50 text-red-700 border border-red-200'
+                            : 'bg-gray-50 text-gray-700 border border-gray-200'
+
+    return (
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${color}`}>
+            {stage}
+        </span>
     )
 }

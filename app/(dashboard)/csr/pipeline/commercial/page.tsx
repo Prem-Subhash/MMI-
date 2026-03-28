@@ -134,18 +134,18 @@ export default function CommercialLinesPage() {
     /* ================= UI ================= */
 
     return (
-        <div className="p-8">
+        <div className="w-full">
             {/* HEADER */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-5 gap-4">
                 <div>
-                    <h1 className="text-2xl font-semibold">Commercial Lines Pipeline</h1>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-800">Commercial Lines Pipeline</h1>
                     <p className="text-gray-500 text-sm mt-1">Manage new commercial business leads</p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-3 w-full sm:w-auto">
                     <Link
                         href="/csr/leads/new?category=commercial"
-                        className="bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+                        className="w-full sm:w-auto bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center whitespace-nowrap"
                     >
                         + New Lead
                     </Link>
@@ -153,7 +153,7 @@ export default function CommercialLinesPage() {
             </div>
 
             {/* FILTER TABS */}
-            <div className="flex gap-3 mb-6 flex-wrap">
+            <div className="flex gap-2 mb-5 flex-wrap">
                 {STAGE_FILTERS.map(filter => {
                     const isActive =
                         (!filter.value && !stageFilter) ||
@@ -163,7 +163,7 @@ export default function CommercialLinesPage() {
                         <button
                             key={filter.label}
                             onClick={() => applyFilter(filter.value)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors
+                            className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium border transition-colors touch-manipulation
                 ${isActive
                                     ? 'bg-brand-dark text-white border-brand-dark shadow-sm'
                                     : 'bg-white text-gray-600 hover:bg-gray-50 border-gray-200'
@@ -179,13 +179,13 @@ export default function CommercialLinesPage() {
             {/* TABLE SECTION */}
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
                 {/* TOOLBAR */}
-                <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="relative max-w-sm w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="relative w-full sm:max-w-sm">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <input
                             type="text"
                             placeholder="Search business, client, email..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
+                            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm transition-shadow"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
@@ -197,7 +197,7 @@ export default function CommercialLinesPage() {
 
                 {loading ? (
                     <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
-                        <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
                         <p>Loading leads...</p>
                     </div>
                 ) : filteredLeads.length === 0 ? (
@@ -206,17 +206,17 @@ export default function CommercialLinesPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm text-left">
+                        <table className="min-w-full text-sm text-left" >
                             <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr>
-                                    <th className="px-6 py-4 font-semibold">Business / Client</th>
-                                    <th className="px-6 py-4 font-semibold">Phone</th>
-                                    <th className="px-6 py-4 font-semibold">Email</th>
-                                    <th className="px-6 py-4 font-semibold">Category</th>
-                                    <th className="px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-6 py-4 font-semibold">Created</th>
-                                    <th className="px-6 py-4 font-semibold text-center">View</th>
-                                    <th className="px-6 py-4 font-semibold">Actions</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Business / Client</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Actions</th>
                                 </tr>
                             </thead>
 
@@ -226,26 +226,26 @@ export default function CommercialLinesPage() {
 
                                     return (
                                         <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-6 py-4 font-medium">
+                                            <td className="px-4 sm:px-6 py-4 font-medium">
                                                 <div className="flex flex-col">
-                                                    <span className="text-gray-900 font-semibold">{lead.business_name || lead.client_name}</span>
+                                                    <span className="text-gray-900 font-semibold whitespace-nowrap">{lead.business_name || lead.client_name}</span>
                                                     {lead.business_name && <span className="text-xs text-gray-500">{lead.client_name}</span>}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-gray-600">{lead.phone}</td>
-                                            <td className="px-6 py-4 text-gray-600">{lead.email}</td>
-                                            <td className="px-6 py-4 capitalize text-gray-700">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
+                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">
                                                 {lead.insurence_category}
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 sm:px-6 py-4">
                                                 <StageBadge stage={stage} />
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
                                                 {new Date(lead.created_at).toLocaleDateString()}
                                             </td>
 
                                             {/* VIEW */}
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-4 sm:px-6 py-4 text-center">
                                                 <Link
                                                     href={`/csr/leads/${lead.id}`}
                                                     className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
@@ -256,11 +256,11 @@ export default function CommercialLinesPage() {
                                             </td>
 
                                             {/* ACTIONS */}
-                                            <td className="px-6 py-4">
+                                            <td className="px-4 sm:px-6 py-4">
                                                 {stage === 'Quoting in Progress' && (
                                                     <Link
                                                         href={`/csr/leads/send-form?id=${lead.id}&type=commercial`}
-                                                        className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors"
+                                                        className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
                                                     >
                                                         Send Email
                                                     </Link>

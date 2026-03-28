@@ -130,10 +130,10 @@ export default function EmailTemplatesClient() {
             <div className="flex justify-end">
                 <button
                     onClick={() => setShowCreate(!showCreate)}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
+                    className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
                 >
-                    <Plus size={18} />
-                    {showCreate ? 'Cancel Create' : 'Create Template'}
+                    {showCreate ? <X size={18} /> : <Plus size={18} />}
+                    {showCreate ? 'x cancel' : 'Create Template'}
                 </button>
             </div>
 
@@ -170,16 +170,16 @@ export default function EmailTemplatesClient() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Status</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Name & Details</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Subject & Body Preview</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right">Actions</th>
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                            <th className="p-4 font-semibold text-white text-sm">Status</th>
+                            <th className="p-4 font-semibold text-white text-sm">Name & Details</th>
+                            <th className="p-4 font-semibold text-white text-sm">Subject & Body Preview</th>
+                            <th className="p-4 font-semibold text-white text-sm text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                         ) : templates.map(template => (
                             <tr key={template.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 {editingId === template.id ? (
@@ -193,7 +193,7 @@ export default function EmailTemplatesClient() {
                                             </div>
                                             <textarea value={editForm.body} onChange={e => setEditForm({ ...editForm, body: e.target.value })} className="border p-2 rounded w-full outline-none h-24" placeholder="Body" />
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium">Cancel</button>
+                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> x</button>
                                                 <button onClick={() => handleUpdate(template.id)} className="px-4 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded font-medium"><Save size={16} /> Save Changes</button>
                                             </div>
                                         </div>
@@ -218,8 +218,8 @@ export default function EmailTemplatesClient() {
                                         </td>
                                         <td className="p-4 text-right align-top w-24">
                                             <div className="flex justify-end gap-1">
-                                                <button onClick={() => startEdit(template)} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"><Edit2 size={16} /></button>
-                                                <button onClick={() => handleDelete(template.id, template.name)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
+                                                <button onClick={() => startEdit(template)} className="p-2 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded transition"><Edit2 size={16} /></button>
+                                                <button onClick={() => handleDelete(template.id, template.name)} className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
                                             </div>
                                         </td>
                                     </>

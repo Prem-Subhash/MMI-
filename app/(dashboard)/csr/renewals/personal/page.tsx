@@ -33,7 +33,7 @@ export default function PersonalRenewalPage() {
 function PersonalRenewalContent() {
     const [renewals, setRenewals] = useState<Renewal[]>([])
     const [loading, setLoading] = useState(true)
-    const [monthFilter, setMonthFilter] = useState<string>(new Date().toISOString().slice(0, 7)) // Default to current month YYYY-MM
+    const [monthFilter, setMonthFilter] = useState<string>(new Date().toISOString().slice(0, 7))
     const [searchTerm, setSearchTerm] = useState('')
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
@@ -71,7 +71,6 @@ function PersonalRenewalContent() {
                 .eq('assigned_csr', user.id)
                 .order('renewal_date', { ascending: true })
 
-            // Apply Month Filter
             if (monthFilter) {
                 const startOfMonth = `${monthFilter}-01`
                 const [year, month] = monthFilter.split('-')
@@ -105,7 +104,6 @@ function PersonalRenewalContent() {
         load()
     }, [monthFilter])
 
-    // Simple client-side search filtering
     const filteredRenewals = renewals.filter(r => {
         const term = searchTerm.toLowerCase()
         return (
@@ -117,35 +115,38 @@ function PersonalRenewalContent() {
     })
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto">
+        <div className="w-full max-w-[1600px] mx-auto min-h-screen">
             {errorMsg && (
-                <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
                     <strong>Error Loading Renewals:</strong> {errorMsg}
                     <br />
-                    <span className="text-sm">Check console for details. This might be due to a missing foreign key relationship.</span>
+                    <span>Check console for details.</span>
                 </div>
             )}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
                         Personal Lines Renewals
                     </h1>
-                    <p className="text-gray-500 mt-1">Manage and track your upcoming policy renewals</p>
+                    <p className="text-gray-500 mt-1 text-sm">Manage and track upcoming policy renewals</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="relative group flex items-center">
-                        <Calendar className="absolute left-3 z-10 text-gray-400 group-focus-within:text-emerald-600 transition-colors" size={18} />
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+                    {/* Month Picker */}
+                    <div className="relative group flex items-center w-full sm:w-auto">
+                        <Calendar className="absolute left-3 z-10 text-gray-400 group-focus-within:text-emerald-600 transition-colors" size={16} />
                         <input
                             type="month"
                             value={monthFilter}
                             onChange={(e) => setMonthFilter(e.target.value)}
-                            className="pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none shadow-sm text-gray-700 cursor-pointer"
+                            className="w-full pl-10 pr-8 py-2.5 border border-emerald-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-emerald-500 shadow-sm text-gray-700 text-sm cursor-pointer"
                         />
                         {monthFilter && (
                             <button
                                 onClick={() => setMonthFilter('')}
-                                className="absolute right-3 text-gray-400 hover:text-gray-600 p-1"
+                                className="absolute right-3 text-gray-400 hover:text-gray-600 p-0.5 text-lg leading-none"
                                 title="Clear filter"
                             >
                                 ×
@@ -155,28 +156,29 @@ function PersonalRenewalContent() {
 
                     <Link
                         href="/csr/renewals/personal/import"
-                        className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+                        className="bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
                     >
-                        <Download size={18} />
+                        <Download size={16} />
                         Import CSV
                     </Link>
                 </div>
             </div>
 
+            {/* Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Toolbar */}
-                <div className="p-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                    <div className="relative max-w-sm w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="relative w-full sm:max-w-sm">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                         <input
                             type="text"
                             placeholder="Search client, policy ID, or carrier..."
-                            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
+                            className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="text-sm text-gray-500 font-medium">
+                    <div className="text-sm text-gray-500 font-medium whitespace-nowrap">
                         {filteredRenewals.length} Renewal{filteredRenewals.length !== 1 && 's'} Found
                     </div>
                 </div>
@@ -184,71 +186,69 @@ function PersonalRenewalContent() {
                 {loading ? (
                     <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
                         <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <p>Loading renewals...</p>
+                        <p className="text-sm">Loading renewals...</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
+                        <table className="w-full text-sm text-left" style={{ minWidth: '900px' }}>
                             <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                                 <tr>
-                                    <th className="px-6 py-4 font-semibold">Client</th>
-                                    <th className="px-6 py-4 font-semibold">Policy Type</th>
-                                    <th className="px-6 py-4 font-semibold">Policy ID</th>
-                                    <th className="px-6 py-4 font-semibold">Renewal Date</th>
-                                    <th className="px-6 py-4 font-semibold">Carrier</th>
-                                    <th className="px-6 py-4 font-semibold">Premium</th>
-                                    <th className="px-6 py-4 font-semibold">Referral</th>
-                                    <th className="px-6 py-4 font-semibold max-w-[200px]">Notes</th>
-                                    <th className="px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-6 py-4 font-semibold text-right">Action</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Client</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Policy Type</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Policy ID</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Renewal Date</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Carrier</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Premium</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Referral</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Notes</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-right">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody className="divide-y divide-gray-100">
                                 {filteredRenewals.length === 0 ? (
                                     <tr>
-                                        <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
+                                        <td colSpan={10} className="px-6 py-12 text-center text-gray-500 text-sm">
                                             No renewals found for the selected month or search criteria.
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredRenewals.map(r => (
                                         <tr key={r.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                            <td className="px-4 sm:px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
                                                 {r['business_name'] || r.client_name}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="capitalize px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <span className="capitalize px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200 whitespace-nowrap">
                                                     {r.policy_type}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500 text-sm">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 text-sm whitespace-nowrap">
                                                 {r.policy_number || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
                                                 {new Date(r.renewal_date).toLocaleDateString()}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700">{r.carrier || '—'}</td>
-                                            <td className="px-6 py-4 text-gray-900 font-semibold">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 whitespace-nowrap">{r.carrier || '—'}</td>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-900 font-semibold whitespace-nowrap">
                                                 {r.current_premium ? `$${r.current_premium.toLocaleString()}` : '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-600">
-                                                {r.referral || '—'}
-                                            </td>
-                                            <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate" title={r.notes || ''}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600">{r.referral || '—'}</td>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 max-w-[160px] truncate" title={r.notes || ''}>
                                                 {r.notes || '—'}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                            ${!r.pipeline_stage ? 'bg-gray-100 text-gray-800 border-gray-200' : 'bg-blue-50 text-blue-700 border-blue-100'}
-                        `}>
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border whitespace-nowrap
+                                                    ${!r.pipeline_stage ? 'bg-gray-100 text-gray-800 border-gray-200' : 'bg-blue-50 text-blue-700 border-blue-100'}`
+                                                }>
                                                     {r.pipeline_stage?.stage_name || 'New'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-4 sm:px-6 py-4 text-right">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
-                                                    className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                                                    className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 whitespace-nowrap"
                                                 >
                                                     Manage
                                                 </Link>

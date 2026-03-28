@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Save, Edit2, ShieldAlert } from 'lucide-react'
+import { Loader2, Save, Edit2, ShieldAlert, X } from 'lucide-react'
 
 type UserProfile = {
     id: string
@@ -70,16 +70,16 @@ export default function RolesClient() {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm">User</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Email</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Current Role</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right">Update Access</th>
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                            <th className="p-4 font-semibold text-white text-sm">User</th>
+                            <th className="p-4 font-semibold text-white text-sm">Email</th>
+                            <th className="p-4 font-semibold text-white text-sm">Current Role</th>
+                            <th className="p-4 font-semibold text-white text-sm text-right">Update Access</th>
                         </tr>
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                         ) : users.map(user => (
                             <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4 text-gray-800 font-medium">
@@ -112,22 +112,22 @@ export default function RolesClient() {
                                                             'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
                                                 {user.role}
                                             </span>
-                                            {user.role === 'superadmin' && <span title="Full System Access"><ShieldAlert size={14} className="text-purple-600" /></span>}
+                                            {user.role === 'superadmin' && <ShieldAlert size={14} className="text-purple-600" />}
                                         </div>
                                     )}
                                 </td>
                                 <td className="p-4 text-right">
                                     {editingUserId === user.id ? (
                                         <div className="flex justify-end gap-2">
-                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium">
-                                                Cancel
+                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium flex items-center gap-1">
+                                                <X size={14} /> x
                                             </button>
                                             <button onClick={() => handleUpdateRole(user.id, user.role)} className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-medium shadow-sm">
                                                 <Save size={16} /> Save
                                             </button>
                                         </div>
                                     ) : (
-                                        <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="flex items-center justify-end gap-1 ml-auto px-3 py-1.5 text-sm text-indigo-600 font-medium hover:bg-indigo-50 rounded-lg transition">
+                                        <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="flex items-center justify-end gap-1 ml-auto px-3 py-1.5 text-sm text-emerald-600 font-medium hover:bg-emerald-50 rounded-lg transition">
                                             <Edit2 size={16} /> Edit Role
                                         </button>
                                     )}

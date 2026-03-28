@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     let response = NextResponse.next({
         request: { headers: request.headers },
     })
@@ -30,26 +30,7 @@ export async function middleware(request: NextRequest) {
     const pathname = request.nextUrl.pathname
 
     if (pathname.startsWith('/login')) {
-        // We removed the auto-redirect here to allow users to reach the login page
-        // and sign in as a different user if needed for testing. The explicit login
-        // action in `app/login/page.tsx` will handle the routing upon successful auth.
         return response
-    }
-
-    // Legacy Route Redirection
-    if (pathname === '/dashboard') {
-        if (!user) return NextResponse.redirect(new URL('/login', request.url))
-
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        if (profile?.role) {
-            return NextResponse.redirect(new URL(`/${profile.role}`, request.url))
-        }
-        return NextResponse.redirect(new URL('/unauthorized', request.url))
     }
 
     // Role Route Protections
@@ -61,7 +42,6 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        // Role interception via proxy querying `profiles` table to assign boundaries 
         const { data: profile } = await supabase
             .from('profiles')
             .select('role')
@@ -74,7 +54,6 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/unauthorized', request.url))
         }
 
-        // Define acceptable boundaries context for role
         const accessMatrix: Record<string, string[]> = {
             csr: ['/csr'],
             admin: ['/admin', '/csr'],
@@ -83,8 +62,6 @@ export async function middleware(request: NextRequest) {
         }
 
         const validPaths = accessMatrix[role] || []
-
-        // Check specific path request matching
         const isAuthorized = validPaths.some((allowedRoute) => pathname.startsWith(allowedRoute))
 
         if (!isAuthorized) {
@@ -101,3 +78,5 @@ export const config = {
         '/((?!_next/static|_next/image|favicon.ico|login\\/bg\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
+
+export { proxy as middleware}

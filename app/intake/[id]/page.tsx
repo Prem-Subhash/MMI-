@@ -164,10 +164,10 @@ export default function IntakeFormPage() {
   /* ================= RENDER FORM ================= */
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e2e8f0] via-[#cbd5e1] to-[#94a3b8] font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      <div className="max-w-3xl mx-auto px-6 py-16 flex-1 w-full">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 md:py-16 flex-1 w-full">
         {/* CENTERED BRAND LOGO */}
-        <div className="flex flex-col items-center mb-16 text-center">
-          <div className="relative w-full max-w-[280px] animate-in fade-in slide-in-from-top-4 duration-1000">
+        <div className="flex flex-col items-center mb-10 md:mb-16 text-center">
+          <div className="relative w-full max-w-[200px] md:max-w-[280px] animate-in fade-in slide-in-from-top-4 duration-1000">
              <img 
                src="/innovative_logo_-removebg-preview.png"
                alt="Innovative Insurance Solutions" 
@@ -191,7 +191,7 @@ export default function IntakeFormPage() {
         {/* UNIFIED FORM CONTAINER - COLOR SYNCED */}
         <div className="space-y-12">
           {/* PDF ORDER – DO NOT CHANGE */}
-          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_40px_100px_rgba(15,23,42,0.15)] border border-white/60 overflow-hidden">
+          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-[0_40px_100px_rgba(15,23,42,0.15)] border border-white/60 overflow-hidden">
             {/* BRAND ACCENT BAR */}
             <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rose-700 via-rose-600 to-slate-900 z-10" />
             
@@ -301,10 +301,10 @@ export default function IntakeFormPage() {
         </div>
 
         {!isPreview && (
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-8 pb-32">
+          <div className="mt-10 md:mt-16 flex flex-col sm:grid sm:grid-cols-2 gap-4 md:gap-8 pb-32">
             <button
               onClick={handleSave}
-              className="group relative overflow-hidden bg-slate-100 border-2 border-transparent text-slate-900 py-5 px-10 rounded-[2rem] font-black transition-all hover:bg-slate-200 active:scale-[0.98] shadow-sm tracking-tight"
+              className="group relative overflow-hidden bg-slate-100 border-2 border-transparent text-slate-900 py-4 md:py-5 px-6 md:px-10 rounded-[1.5rem] md:rounded-[2rem] font-black transition-all hover:bg-slate-200 active:scale-[0.98] shadow-sm tracking-tight order-2 sm:order-1"
             >
               <span className="relative z-10 flex items-center justify-center gap-3">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
@@ -315,9 +315,9 @@ export default function IntakeFormPage() {
             <button
               onClick={handleSubmit}
               style={{ backgroundColor: '#CF1C45' }}
-              className="group relative overflow-hidden text-white py-5 px-10 rounded-[2rem] font-black transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_20px_40px_rgba(207,28,69,0.3)] hover:shadow-[0_25px_50px_rgba(207,28,69,0.4)] tracking-tight"
+              className="group relative overflow-hidden text-white py-4 md:py-5 px-6 md:px-10 rounded-[1.5rem] md:rounded-[2rem] font-black transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_15px_30px_rgba(207,28,69,0.3)] hover:shadow-[0_20px_40px_rgba(207,28,69,0.4)] tracking-tight order-1 sm:order-2"
             >
-               <span className="relative z-10 flex items-center justify-center gap-3 text-2xl">
+               <span className="relative z-10 flex items-center justify-center gap-3 text-xl md:text-2xl">
                 Submit Form
                 <svg className="transition-transform group-hover:translate-x-1" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </span>

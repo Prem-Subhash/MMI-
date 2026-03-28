@@ -133,14 +133,14 @@ function CommercialRenewalContent() {
                     <p className="text-gray-500 mt-1">Manage and track your upcoming policy renewals</p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                     <div className="relative group flex items-center">
                         <Calendar className="absolute left-3 z-10 text-gray-400 group-focus-within:text-emerald-600 transition-colors" size={18} />
                         <input
                             type="month"
                             value={monthFilter}
                             onChange={(e) => setMonthFilter(e.target.value)}
-                            className="pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none shadow-sm text-gray-700 cursor-pointer"
+                            className="w-full pl-10 pr-8 py-2.5 border border-emerald-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-emerald-500 shadow-sm text-gray-700 cursor-pointer"
                         />
                         {monthFilter && (
                             <button
@@ -155,7 +155,7 @@ function CommercialRenewalContent() {
 
                     <Link
                         href="/csr/renewals/commercial/import"
-                        className="bg-brand-dark hover:bg-orange-800 text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors"
+                        className="w-full sm:w-auto bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center whitespace-nowrap"
                     >
                         <Download size={18} />
                         Import CSV
@@ -189,7 +189,7 @@ function CommercialRenewalContent() {
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left">
-                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold">Client</th>
                                     <th className="px-6 py-4 font-semibold">Policy Type</th>

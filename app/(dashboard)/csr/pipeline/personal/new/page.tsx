@@ -279,7 +279,6 @@ export default function NewLeadPage() {
                   { value: 'commercial_auto', label: 'Commercial Auto' },
                   { value: 'bop', label: 'Business Owners Policy (BOP)' },
                   { value: 'commercial_property', label: 'Commercial Property' },
-                  { value: 'umbrella', label: 'Umbrella' },
                   { value: 'professional_liability', label: 'Professional Liability' },
                   { value: 'other', label: 'Other' }
                 ]
@@ -289,8 +288,7 @@ export default function NewLeadPage() {
                   { value: 'home_auto', label: 'Home + Auto' },
                   { value: 'condo', label: 'Condo' },
                   { value: 'landlord', label: 'Landlord Home/Condo' },
-                  { value: 'motorcycle', label: 'Motorcycle' },
-                  { value: 'umbrella', label: 'Umbrella' }
+                  { value: 'motorcycle', label: 'Motorcycle' }
                 ]
             }
           />

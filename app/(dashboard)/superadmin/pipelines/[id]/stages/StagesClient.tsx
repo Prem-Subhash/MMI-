@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, ArrowUp, ArrowDown } from 'lucide-react'
+import { Plus, Trash2, Edit2, Loader2, Save, ArrowUp, ArrowDown, X } from 'lucide-react'
 
 type Stage = {
     id: string
@@ -153,8 +153,8 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                     onClick={() => setShowCreate(!showCreate)}
                     className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
                 >
-                    <Plus size={18} />
-                    {showCreate ? 'Cancel Create' : 'Add Stage'}
+                    {showCreate ? <X size={18} /> : <Plus size={18} />}
+                    {showCreate ? 'x' : 'Add Stage'}
                 </button>
             </div>
 
@@ -186,7 +186,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-indigo-500" /></td></tr>
+                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
                         ) : stages.map((stage, index) => (
                             <tr key={stage.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4">
@@ -220,7 +220,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                                     {editingId === stage.id ? (
                                         <>
                                             <button onClick={() => handleUpdate(stage.id)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded" title="Save"><Save size={16} /></button>
-                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium">Cancel</button>
+                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> x</button>
                                         </>
                                     ) : (
                                         <>

@@ -13,7 +13,7 @@
     "dotenv": "^17.3.1",
     "exceljs": "^4.4.0",
     "lucide-react": "^0.562.0",
-    "next": "^14.2.35",
+    "next": "^16.2.1",
     "papaparse": "^5.5.3",
     "pdfkit": "^0.17.2",
     "react": "18.2.0",
