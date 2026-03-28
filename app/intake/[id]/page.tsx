@@ -3,7 +3,18 @@
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { motion } from 'framer-motion'
+import { 
+  Save, 
+  UploadCloud, 
+  ChevronRight, 
+  CheckCircle2, 
+  Loader2, 
+  MousePointer2,
+  FileText
+} from 'lucide-react'
 
+import { FormHeader, FormContainer, SectionCard, Button } from '@/components/ui/IntakeUI'
 import HomeInsuranceForm from '@/components/forms/HomeInsuranceForm'
 import AutoInsuranceForm from '@/components/forms/AutoInsuranceForm'
 import PrimaryApplicantForm from '@/components/forms/PrimaryApplicantForm'
@@ -26,8 +37,6 @@ export default function IntakeFormPage() {
     co_applicant: {},
     home: {},
     auto: {},
-    vehicles: [],
-    additional_applicants: []
   })
   const [loading, setLoading] = useState(true)
   const [submitted, setSubmitted] = useState(false)
@@ -56,12 +65,6 @@ export default function IntakeFormPage() {
         return
       }
 
-      if (!data.form_type) {
-        setError('Form type not assigned')
-        setLoading(false)
-        return
-      }
-
       setFormType(data.form_type)
       setLeadId(data.lead_id)
       setFormData({
@@ -69,8 +72,6 @@ export default function IntakeFormPage() {
         co_applicant: {},
         home: {},
         auto: {},
-        vehicles: [],
-        additional_applicants: [],
         ...(data.form_data || {})
       })
 
@@ -101,7 +102,7 @@ export default function IntakeFormPage() {
       })
       .eq('id', intakeId)
 
-    alert('Progress saved. You can continue later.')
+    alert('Progress saved.')
   }
 
   /* ================= SUBMIT (FINAL) ================= */
@@ -124,7 +125,6 @@ export default function IntakeFormPage() {
       return
     }
 
-    // UPDATE LEAD SYNC
     if (leadId) {
       await supabase
         .from('temp_leads_basics')
@@ -135,7 +135,6 @@ export default function IntakeFormPage() {
         .eq('id', leadId)
     }
 
-    // Notify backend
     await fetch('/api/notify-submission', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -146,185 +145,203 @@ export default function IntakeFormPage() {
   }
 
   /* ================= UI STATES ================= */
-  if (loading) return <div className="p-10">Loading...</div>
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
+        <p className="mt-4 text-gray-500 font-medium tracking-tight">Syncing application...</p>
+      </div>
+    )
+  }
 
   if (error) {
-    return <div className="p-10 text-red-600 font-medium">{error}</div>
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 font-sans">
+        <div className="p-12 bg-white rounded-[32px] shadow-2xl shadow-black/5 max-w-md text-center border border-gray-100">
+          <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Loader2 className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">{error}</h2>
+          <p className="text-gray-500 font-medium tracking-tight leading-relaxed">The link you followed may be invalid or expired. Please contact support.</p>
+        </div>
+      </div>
+    )
   }
 
   if (submitted) {
     return (
-      <div className="p-10 text-center">
-        <h2 className="text-2xl font-semibold">Thank you!</h2>
-        <p className="mt-2">Your form has been submitted successfully.</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 font-sans">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white p-16 rounded-[48px] shadow-2xl shadow-black/5 text-center max-w-xl border border-gray-100"
+        >
+          <div className="w-24 h-24 bg-red-50 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-inner">
+            <CheckCircle2 size={48} />
+          </div>
+          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">Submission Received</h2>
+          <p className="text-gray-500 text-lg mb-0 leading-relaxed font-medium">Thank you for your trust. Our underwriting team has received your details and will process your quote within 24 hours.</p>
+        </motion.div>
       </div>
     )
   }
 
   /* ================= RENDER FORM ================= */
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[#e2e8f0] via-[#cbd5e1] to-[#94a3b8] font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 md:py-16 flex-1 w-full">
-        {/* CENTERED BRAND LOGO */}
-        <div className="flex flex-col items-center mb-10 md:mb-16 text-center">
-          <div className="relative w-full max-w-[200px] md:max-w-[280px] animate-in fade-in slide-in-from-top-4 duration-1000">
-             <img 
-               src="/innovative_logo_-removebg-preview.png"
-               alt="Innovative Insurance Solutions" 
-               className="w-full h-auto object-contain mx-auto"
-             />
-          </div>
-        </div>
+    <div className="min-h-screen flex flex-col bg-gray-50 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden">
+      <FormHeader 
+        title="Insurance Application" 
+        subtitle="Secure intake portal for Innovative Insurance Solutions"
+        logoSrc="/innovative_logo_-removebg-preview.png"
+      />
 
-        {isPreview && (
-          <div className="mb-12 p-6 bg-amber-50/50 border border-amber-200/50 rounded-[2rem] text-amber-950 text-sm flex items-center gap-5 backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="bg-amber-100 p-3 rounded-full">
-              <span className="text-2xl">🔍</span>
-            </div>
-            <div>
-              <p className="font-extrabold text-lg tracking-tight uppercase">Admin Preview</p>
-              <p className="text-amber-900/80 font-medium">This is exactly what the client will see.</p>
-            </div>
-          </div>
-        )}
+      <FormContainer>
+        <div className="space-y-4">
+          <PrimaryApplicantForm
+            data={formData.primary_applicant}
+            onChange={val => updateSection('primary_applicant', val)}
+            disabled={isPreview}
+          />
 
-        {/* UNIFIED FORM CONTAINER - COLOR SYNCED */}
-        <div className="space-y-12">
-          {/* PDF ORDER – DO NOT CHANGE */}
-          <div className="relative bg-white/90 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-[0_40px_100px_rgba(15,23,42,0.15)] border border-white/60 overflow-hidden">
-            {/* BRAND ACCENT BAR */}
-            <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-rose-700 via-rose-600 to-slate-900 z-10" />
-            
-            <div className="divide-y divide-slate-100/80">
-              <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
-                <PrimaryApplicantForm
-                  data={formData.primary_applicant}
-                  onChange={val => updateSection('primary_applicant', val)}
-                  disabled={isPreview}
-                />
-              </div>
+          <CoApplicantForm
+            data={formData.co_applicant}
+            onChange={val => updateSection('co_applicant', val)}
+            disabled={isPreview}
+          />
 
-              <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
-                <CoApplicantForm
-                  data={formData.co_applicant}
-                  onChange={val => updateSection('co_applicant', val)}
-                  disabled={isPreview}
-                />
-              </div>
+          {(formType === 'home' || formType === 'home_auto') && (
+            <HomeInsuranceForm
+              data={formData.home}
+              onChange={val => updateSection('home', val)}
+              disabled={isPreview}
+            />
+          )}
 
-              {(formType === 'home' || formType === 'home_auto') && (
-                <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
-                  <HomeInsuranceForm
-                    data={formData.home}
-                    onChange={val => updateSection('home', val)}
-                    disabled={isPreview}
-                  />
-                </div>
-              )}
+          {(formType === 'auto' || formType === 'home_auto') && (
+            <AutoInsuranceForm
+              data={formData.auto}
+              onChange={val => updateSection('auto', val)}
+              disabled={isPreview}
+            />
+          )}
 
-              {(formType === 'auto' || formType === 'home_auto') && (
-                <div className="form-section relative hover:bg-rose-50/10 transition-colors duration-500">
-                  <AutoInsuranceForm
-                    data={formData.auto}
-                    onChange={val => updateSection('auto', val)}
-                    disabled={isPreview}
-                  />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* FILE UPLOAD SECTION */}
+          {/* DOCUMENT SECTION */}
           {!isPreview && (
-            <div className="relative bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-sm border border-slate-200/60 p-8">
-              <h3 className="text-xl font-bold text-slate-800 mb-4">Attach Documents</h3>
-              <p className="text-slate-500 text-sm mb-6">Upload any requested files (PDF, JPG, PNG). Max 10MB per file.</p>
-              
-              <div className="flex flex-col gap-4">
-                <input 
-                  type="file" 
-                  multiple 
-                  accept=".pdf,image/jpeg,image/png,.doc,.docx"
-                  onChange={async (e) => {
-                    const files = e.target.files;
-                    if (!files || files.length === 0 || !intakeId) return;
-                    
-                    setUploadingFiles(true);
-                    
-                    for (let i = 0; i < files.length; i++) {
-                      const file = files[i];
-                      const formData = new FormData();
-                      formData.append('file', file);
-                      formData.append('intakeFormId', intakeId);
-                      if (leadId) formData.append('leadId', leadId);
-
-                      try {
-                        const res = await fetch('/api/upload-document', {
-                          method: 'POST',
-                          body: formData
-                        });
-                        const data = await res.json();
-                        if (data.success) {
-                          setUploadedFiles(prev => [...prev, data.document]);
-                        } else {
-                          alert(`Failed to upload ${file.name}: ${data.error}`);
-                        }
-                      } catch (err) {
-                        alert(`Error uploading ${file.name}`);
+            <SectionCard
+              icon={<UploadCloud size={32} strokeWidth={2.5} />}
+              title="Identity & Proof"
+              subtitle="Securely upload required documentation"
+              isLast={true}
+            >
+              <div className="space-y-8">
+                <label className="group relative block w-full">
+                  <input 
+                    type="file" 
+                    multiple 
+                    className="hidden"
+                    accept=".pdf,image/jpeg,image/png,.doc,.docx"
+                    onChange={async (e) => {
+                      const files = e.target.files;
+                      if (!files || files.length === 0 || !intakeId) return;
+                      setUploadingFiles(true);
+                      for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        const formDataFile = new FormData();
+                        formDataFile.append('file', file);
+                        formDataFile.append('intakeFormId', intakeId);
+                        if (leadId) formDataFile.append('leadId', leadId);
+                        try {
+                          const res = await fetch('/api/upload-document', { method: 'POST', body: formDataFile });
+                          const data = await res.json();
+                          if (data.success) setUploadedFiles(prev => [...prev, data.document]);
+                        } catch (err) { console.error(err); }
                       }
-                    }
-                    
-                    setUploadingFiles(false);
-                    // Clear input
-                    e.target.value = '';
-                  }}
-                  disabled={uploadingFiles}
-                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer border border-dashed border-slate-300 rounded-2xl p-4 bg-slate-50/50"
-                />
+                      setUploadingFiles(false);
+                      e.target.value = '';
+                    }}
+                    disabled={uploadingFiles}
+                  />
+                  <div className="border-2 border-dashed border-gray-100 rounded-[32px] p-16 transition-all group-hover:bg-gray-50 group-hover:border-red-200 cursor-pointer text-center bg-gray-50/30">
+                    <div className="w-20 h-20 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform text-gray-400 group-hover:text-red-500">
+                      <UploadCloud size={36} />
+                    </div>
+                    <p className="text-gray-900 font-black text-2xl tracking-tight mb-2">Drop documents here</p>
+                    <p className="text-gray-500 text-base font-bold tracking-tight">PDF, JPG, PNG up to 10MB per file</p>
+                  </div>
+                </label>
                 
-                {uploadingFiles && <p className="text-sm text-blue-600 font-medium animate-pulse">Uploading files...</p>}
+                {uploadingFiles && (
+                  <div className="flex items-center gap-4 text-red-600 font-bold bg-red-50 p-6 rounded-2xl border border-red-100 animate-pulse">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    Encrypting and moving to secure storage...
+                  </div>
+                )}
                 
                 {uploadedFiles.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <p className="font-semibold text-sm text-slate-700">Uploaded Files:</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {uploadedFiles.map((doc, idx) => (
-                      <div key={idx} className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                        {doc.file_name}
-                      </div>
+                      <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        key={idx} 
+                        className="flex items-center justify-between gap-4 text-gray-700 bg-white px-6 py-5 rounded-2xl border border-gray-100 shadow-sm"
+                      >
+                        <div className="flex items-center gap-4 truncate">
+                          <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
+                             <FileText size={20} />
+                          </div>
+                          <span className="truncate font-bold tracking-tight text-lg">{doc.file_name}</span>
+                        </div>
+                        <CheckCircle2 size={24} className="text-emerald-500" strokeWidth={3} />
+                      </motion.div>
                     ))}
                   </div>
                 )}
               </div>
+            </SectionCard>
+          )}
+
+          {/* ACTION FOOTER */}
+          {!isPreview && (
+            <div className="mt-20 pt-16 border-t border-gray-100 flex flex-col sm:flex-row items-center gap-8">
+              <Button
+                variant="secondary"
+                onClick={handleSave}
+                className="w-full sm:w-auto"
+              >
+                <span className="flex items-center gap-2">
+                   <Save size={24} />
+                   Save as Draft
+                </span>
+              </Button>
+
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={handleSubmit}
+                className="w-full sm:flex-1"
+              >
+                <span className="flex items-center gap-3">
+                  Confirm Application
+                  <ChevronRight size={32} />
+                </span>
+              </Button>
             </div>
           )}
         </div>
+      </FormContainer>
 
-        {!isPreview && (
-          <div className="mt-10 md:mt-16 flex flex-col sm:grid sm:grid-cols-2 gap-4 md:gap-8 pb-32">
-            <button
-              onClick={handleSave}
-              className="group relative overflow-hidden bg-slate-100 border-2 border-transparent text-slate-900 py-4 md:py-5 px-6 md:px-10 rounded-[1.5rem] md:rounded-[2rem] font-black transition-all hover:bg-slate-200 active:scale-[0.98] shadow-sm tracking-tight order-2 sm:order-1"
-            >
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                Save Progress
-              </span>
-            </button>
-
-            <button
-              onClick={handleSubmit}
-              style={{ backgroundColor: '#CF1C45' }}
-              className="group relative overflow-hidden text-white py-4 md:py-5 px-6 md:px-10 rounded-[1.5rem] md:rounded-[2rem] font-black transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_15px_30px_rgba(207,28,69,0.3)] hover:shadow-[0_20px_40px_rgba(207,28,69,0.4)] tracking-tight order-1 sm:order-2"
-            >
-               <span className="relative z-10 flex items-center justify-center gap-3 text-xl md:text-2xl">
-                Submit Form
-                <svg className="transition-transform group-hover:translate-x-1" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-              </span>
-            </button>
+      {isPreview && (
+        <div className="fixed bottom-10 right-10 z-50 p-6 bg-white border border-gray-100 rounded-[32px] shadow-[0_24px_64px_rgba(0,0,0,0.12)] flex items-center gap-5 max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-700">
+          <div className="bg-red-50 p-4 rounded-2xl text-red-600">
+             <MousePointer2 size={28} />
           </div>
-        )}
-      </div>
+          <div>
+            <p className="font-extrabold text-gray-900 text-xl tracking-tight">Interactive Preview</p>
+            <p className="text-gray-500 font-bold tracking-tight text-sm">You are viewing the client experience. Interaction is enabled but submission is halted.</p>
+          </div>
+        </div>
+      )}
       <Footer />
     </div>
   )
