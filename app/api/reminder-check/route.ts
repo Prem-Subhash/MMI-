@@ -14,6 +14,7 @@ export async function GET(req: Request) {
             .select('id, client_name, email, assigned_csr, stage_metadata')
             .lte('follow_up_date', now)
             .eq('reminder_sent', false)
+            .is('form_submitted_at', null)
             .contains('stage_metadata', { email_sent: true })
 
         if (fetchError) {

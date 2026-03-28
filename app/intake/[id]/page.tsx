@@ -20,6 +20,7 @@ export default function IntakeFormPage() {
 
   /* ================= STATE ================= */
   const [formType, setFormType] = useState<string | null>(null)
+  const [leadId, setLeadId] = useState<string | null>(null)
   const [formData, setFormData] = useState<any>({
     primary_applicant: {},
     co_applicant: {},
@@ -31,6 +32,8 @@ export default function IntakeFormPage() {
   const [loading, setLoading] = useState(true)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [uploadingFiles, setUploadingFiles] = useState(false)
+  const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
 
   /* ================= LOAD INTAKE FORM ================= */
   useEffect(() => {
@@ -60,6 +63,7 @@ export default function IntakeFormPage() {
       }
 
       setFormType(data.form_type)
+      setLeadId(data.lead_id)
       setFormData({
         primary_applicant: {},
         co_applicant: {},
@@ -118,6 +122,17 @@ export default function IntakeFormPage() {
     if (error) {
       setError(error.message)
       return
+    }
+
+    // UPDATE LEAD SYNC
+    if (leadId) {
+      await supabase
+        .from('temp_leads_basics')
+        .update({
+          form_submitted_at: new Date().toISOString(),
+          follow_up_date: null
+        })
+        .eq('id', leadId)
     }
 
     // Notify backend
@@ -218,6 +233,71 @@ export default function IntakeFormPage() {
               )}
             </div>
           </div>
+
+          {/* FILE UPLOAD SECTION */}
+          {!isPreview && (
+            <div className="relative bg-white/90 backdrop-blur-2xl rounded-[2.5rem] shadow-sm border border-slate-200/60 p-8">
+              <h3 className="text-xl font-bold text-slate-800 mb-4">Attach Documents</h3>
+              <p className="text-slate-500 text-sm mb-6">Upload any requested files (PDF, JPG, PNG). Max 10MB per file.</p>
+              
+              <div className="flex flex-col gap-4">
+                <input 
+                  type="file" 
+                  multiple 
+                  accept=".pdf,image/jpeg,image/png,.doc,.docx"
+                  onChange={async (e) => {
+                    const files = e.target.files;
+                    if (!files || files.length === 0 || !intakeId) return;
+                    
+                    setUploadingFiles(true);
+                    
+                    for (let i = 0; i < files.length; i++) {
+                      const file = files[i];
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      formData.append('intakeFormId', intakeId);
+                      if (leadId) formData.append('leadId', leadId);
+
+                      try {
+                        const res = await fetch('/api/upload-document', {
+                          method: 'POST',
+                          body: formData
+                        });
+                        const data = await res.json();
+                        if (data.success) {
+                          setUploadedFiles(prev => [...prev, data.document]);
+                        } else {
+                          alert(`Failed to upload ${file.name}: ${data.error}`);
+                        }
+                      } catch (err) {
+                        alert(`Error uploading ${file.name}`);
+                      }
+                    }
+                    
+                    setUploadingFiles(false);
+                    // Clear input
+                    e.target.value = '';
+                  }}
+                  disabled={uploadingFiles}
+                  className="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer border border-dashed border-slate-300 rounded-2xl p-4 bg-slate-50/50"
+                />
+                
+                {uploadingFiles && <p className="text-sm text-blue-600 font-medium animate-pulse">Uploading files...</p>}
+                
+                {uploadedFiles.length > 0 && (
+                  <div className="mt-4 space-y-2">
+                    <p className="font-semibold text-sm text-slate-700">Uploaded Files:</p>
+                    {uploadedFiles.map((doc, idx) => (
+                      <div key={idx} className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                        {doc.file_name}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {!isPreview && (

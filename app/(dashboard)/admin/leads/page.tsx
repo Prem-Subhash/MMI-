@@ -19,8 +19,8 @@ type Lead = {
     current_stage: {
         stage_name: string
     } | null
-    csrs: {
-        name: string
+    profiles: {
+        full_name: string
     } | null
 }
 
@@ -45,6 +45,11 @@ export default function AdminLeadsPage() {
     const [leads, setLeads] = useState<Lead[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
+    const [page, setPage] = useState(0)
+
+    useEffect(() => {
+        setPage(0)
+    }, [stageFilter])
 
     /* ================= LOAD LEADS ================= */
 
@@ -65,11 +70,12 @@ export default function AdminLeadsPage() {
           current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
             stage_name
           ),
-          csrs!temp_leads_basics_assigned_csr_fkey (
-            name
+          profiles (
+            full_name
           )
         `)
                 .order('created_at', { ascending: false })
+                .range(page * 50, (page + 1) * 50 - 1)
 
             if (stageFilter) {
                 query = query.eq('current_stage.stage_name', stageFilter)
@@ -86,9 +92,9 @@ export default function AdminLeadsPage() {
                     current_stage: Array.isArray(row.current_stage)
                         ? row.current_stage[0] ?? null
                         : row.current_stage ?? null,
-                    csrs: Array.isArray(row.csrs)
-                        ? row.csrs[0] ?? null
-                        : row.csrs ?? null,
+                    profiles: Array.isArray(row.profiles)
+                        ? row.profiles[0] ?? null
+                        : row.profiles ?? null,
                 }))
 
                 setLeads(formatted)
@@ -98,7 +104,7 @@ export default function AdminLeadsPage() {
         }
 
         loadLeads()
-    }, [stageFilter])
+    }, [stageFilter, page])
 
     /* ================= FILTER HANDLER ================= */
 
@@ -117,7 +123,7 @@ export default function AdminLeadsPage() {
             (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
             (lead.email && lead.email.toLowerCase().includes(term)) ||
             (lead.phone && lead.phone.includes(term)) ||
-            (lead.csrs && lead.csrs.name && lead.csrs.name.toLowerCase().includes(term))
+            (lead.profiles && lead.profiles.full_name && lead.profiles.full_name.toLowerCase().includes(term))
         )
     })
 
@@ -237,9 +243,9 @@ export default function AdminLeadsPage() {
                                                 <StageBadge stage={stage} />
                                             </td>
                                             <td className="px-6 py-4">
-                                                {lead.csrs?.name ? (
+                                                {lead.profiles?.full_name ? (
                                                     <span className="font-semibold text-gray-700 text-sm">
-                                                        {lead.csrs.name}
+                                                        {lead.profiles.full_name}
                                                     </span>
                                                 ) : (
                                                     <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
@@ -266,6 +272,27 @@ export default function AdminLeadsPage() {
                         </table>
                     </div>
                 )}
+
+                {/* PAGINATION CONTROLS */}
+                <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <button
+                        onClick={() => setPage(p => Math.max(0, p - 1))}
+                        disabled={page === 0 || loading}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-sm text-gray-500">
+                        Page {page + 1}
+                    </span>
+                    <button
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={leads.length < 50 || loading}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     )

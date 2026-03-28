@@ -112,7 +112,7 @@ export default function RolesClient() {
                                                             'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
                                                 {user.role}
                                             </span>
-                                            {user.role === 'superadmin' && <ShieldAlert size={14} className="text-purple-600" title="Full System Access" />}
+                                            {user.role === 'superadmin' && <span title="Full System Access"><ShieldAlert size={14} className="text-purple-600" /></span>}
                                         </div>
                                     )}
                                 </td>

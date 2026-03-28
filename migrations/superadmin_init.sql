@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS system_settings (
 -- Phase 15: Audit Logging System
 CREATE TABLE IF NOT EXISTS audit_logs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID,
+    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
     action TEXT,
     entity TEXT,
     entity_id UUID,

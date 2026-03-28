@@ -43,6 +43,11 @@ export default function CommercialLinesPage() {
     const [leads, setLeads] = useState<Lead[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
+    const [page, setPage] = useState(0)
+
+    useEffect(() => {
+        setPage(0)
+    }, [stageFilter])
 
     /* ================= LOAD LEADS ================= */
 
@@ -75,6 +80,7 @@ export default function CommercialLinesPage() {
                 .eq('insurence_category', 'commercial') // Filter for Commercial Lines
                 .eq('policy_flow', 'new') // commercial lines is 'New Business' usually
                 .order('created_at', { ascending: false })
+                .range(page * 50, (page + 1) * 50 - 1)
 
             /* ✅ FIXED FILTER */
             if (stageFilter) {
@@ -102,7 +108,7 @@ export default function CommercialLinesPage() {
         }
 
         loadLeads()
-    }, [stageFilter])
+    }, [stageFilter, page])
 
     /* ================= FILTER HANDLER ================= */
 
@@ -267,6 +273,27 @@ export default function CommercialLinesPage() {
                         </table>
                     </div>
                 )}
+
+                {/* PAGINATION CONTROLS */}
+                <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <button
+                        onClick={() => setPage(p => Math.max(0, p - 1))}
+                        disabled={page === 0 || loading}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-sm text-gray-500">
+                        Page {page + 1}
+                    </span>
+                    <button
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={leads.length < 50 || loading}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     )

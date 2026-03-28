@@ -1,19 +1,29 @@
 ﻿# dependencies
 node_modules/
 
-# next.js build output
+# next build
 .next/
+out/
+.tsbuildinfo
 
-# env files
+# environment variables
 .env
 .env.local
-.env.production
 .env.development
+.env.production
+
+# vercel
+.vercel
 
 # logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+*.log
+
+# debug json files
+*_dump.json
+*_output.json
+debug_*.json
+/scripts
+/data
 
 # OS files
 .DS_Store
