@@ -95,14 +95,14 @@ export default function MonthlyReportPage() {
                     <button
                         onClick={() => handleExport('excel')}
                         disabled={!!generating}
-                        className="flex items-center justify-center gap-2 bg-white text-emerald-600 border border-emerald-200 px-4 py-2.5 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
+                        className="flex items-center justify-center gap-2 bg-emerald-600 text-white border border-emerald-200 px-4 py-2.5 rounded-lg hover:bg-emerald-50 hover:border-emerald-300 disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
                         {generating === 'excel' ? 'Generating...' : <><FileSpreadsheet size={16} /> Export Excel</>}
                     </button>
                     <button
                         onClick={() => handleExport('pdf')}
                         disabled={!!generating}
-                        className="flex items-center justify-center gap-2 bg-white text-rose-600 border border-rose-200 px-4 py-2.5 rounded-lg hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
+                        className="flex items-center justify-center gap-2 bg-rose-600 text-white border border-rose-200 px-4 py-2.5 rounded-lg hover:bg-rose-50 hover:border-rose-300 disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
                         {generating === 'pdf' ? 'Generating...' : <><FileText size={16} /> Export PDF</>}
                     </button>
