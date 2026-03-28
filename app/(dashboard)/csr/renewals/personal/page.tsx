@@ -141,7 +141,7 @@ function PersonalRenewalContent() {
                             type="month"
                             value={monthFilter}
                             onChange={(e) => setMonthFilter(e.target.value)}
-                            className="w-full pl-10 pr-8 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none shadow-sm text-gray-700 text-sm cursor-pointer"
+                            className="w-full pl-10 pr-8 py-2.5 border border-emerald-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-emerald-500 shadow-sm text-gray-700 text-sm cursor-pointer"
                         />
                         {monthFilter && (
                             <button
