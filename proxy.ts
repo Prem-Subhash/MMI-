@@ -78,3 +78,5 @@ export const config = {
         '/((?!_next/static|_next/image|favicon.ico|login\\/bg\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
+
+export { proxy as middleware}
