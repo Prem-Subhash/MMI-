@@ -7,6 +7,7 @@ type Props = {
   leadId: string
   // IMPORTANT: We need pipelineId to know which fields to show
   pipelineId: string
+  currentStageId?: string
   onClose: () => void
   onSuccess: () => void
 }
@@ -194,11 +195,12 @@ const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
 export default function UpdateStageModal({
   leadId,
   pipelineId,
+  currentStageId,
   onClose,
   onSuccess,
 }: Props) {
   const [stages, setStages] = useState<any[]>([])
-  const [selectedStageId, setSelectedStageId] = useState('')
+  const [selectedStageId, setSelectedStageId] = useState(currentStageId || '')
   const [mandatoryFields, setMandatoryFields] =
     useState<Record<string, FieldConfig>>({})
   const [formData, setFormData] = useState<Record<string, any>>({})
@@ -254,6 +256,57 @@ export default function UpdateStageModal({
 
     setStages(stagesRes.data || [])
     setLoading(false)
+
+    // Automatically load fields if we have a currentStageId
+    if (currentStageId && stagesRes.data) {
+      const stage = stagesRes.data.find((s: any) => s.id === currentStageId)
+      if (stage) {
+        // This is a bit of a hack—we need the pipelineType which is set async.
+        // But pipelineType is derived from pipelineRes which we just got.
+        const name = pipelineRes.data?.name || ''
+        const category = pipelineRes.data?.category || ''
+        let pType = 'PersonalNewBusiness'
+        if (name.includes('Commercial') && name.includes('Renewal')) pType = 'CommercialRenewal'
+        else if (name.includes('Commercial') || category.includes('Commercial')) pType = 'Commercial'
+        else if (name.includes('Renewal')) pType = 'PersonalRenewal'
+
+        updateMandatoryFields(stage, pType)
+      }
+    }
+  }
+
+  function updateMandatoryFields(stage: any, pType: string) {
+    // Pick correct config map
+    let configMap = PERSONAL_NEW_BUSINESS_FIELDS
+    if (pType === 'CommercialRenewal') {
+      configMap = COMMERCIAL_RENEWAL_FIELDS
+    } else if (pType === 'Commercial') {
+      configMap = COMMERCIAL_LINES_FIELDS
+    } else if (pType === 'PersonalRenewal') {
+      configMap = PERSONAL_RENEWAL_FIELDS
+    }
+
+    // Normalize name for lookup
+    const normalizedName = stage.stage_name.trim()
+
+    // Try exact match or match from FIELDS keys
+    const matchedKey = Object.keys(configMap).find(
+      key => key.toLowerCase() === normalizedName.toLowerCase()
+    )
+
+    let fields: Record<string, FieldConfig> = {}
+
+    if (matchedKey) {
+      fields = configMap[matchedKey]
+    } else if (Array.isArray(stage.mandatory_fields)) {
+      stage.mandatory_fields.forEach((f: string) => {
+        fields[f] = { label: f, type: 'text', required: true }
+      })
+    } else if (typeof stage.mandatory_fields === 'object' && stage.mandatory_fields !== null) {
+      fields = stage.mandatory_fields
+    }
+
+    setMandatoryFields(fields)
   }
 
   /* ================= CLIENT VALIDATION ================= */
@@ -469,37 +522,7 @@ export default function UpdateStageModal({
                     return
                   }
 
-                  // Pick correct config map
-                  let configMap = PERSONAL_NEW_BUSINESS_FIELDS
-                  if (pipelineType === 'CommercialRenewal') {
-                    configMap = COMMERCIAL_RENEWAL_FIELDS
-                  } else if (pipelineType === 'Commercial') {
-                    configMap = COMMERCIAL_LINES_FIELDS
-                  } else if (pipelineType === 'PersonalRenewal') {
-                    configMap = PERSONAL_RENEWAL_FIELDS
-                  }
-
-                  // Normalize name for lookup
-                  const normalizedName = stage.stage_name.trim()
-
-                  // Try exact match or match from FIELDS keys
-                  const matchedKey = Object.keys(configMap).find(
-                    key => key.toLowerCase() === normalizedName.toLowerCase()
-                  )
-
-                  let fields: Record<string, FieldConfig> = {}
-
-                  if (matchedKey) {
-                    fields = configMap[matchedKey]
-                  } else if (Array.isArray(stage.mandatory_fields)) {
-                    stage.mandatory_fields.forEach((f: string) => {
-                      fields[f] = { label: f, type: 'text', required: true }
-                    })
-                  } else if (typeof stage.mandatory_fields === 'object' && stage.mandatory_fields !== null) {
-                    fields = stage.mandatory_fields
-                  }
-
-                  setMandatoryFields(fields)
+                  updateMandatoryFields(stage, pipelineType)
                   setFormData({})
                 }}
               >

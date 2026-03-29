@@ -216,6 +216,7 @@ export async function POST(req: Request) {
     /* ================= UPDATE LEAD ================= */
     const updatePayload: any = {
       current_stage_id: stageId,
+      current_stage: stage.stage_name,
       stage_metadata: mergedMetadata,
     }
 

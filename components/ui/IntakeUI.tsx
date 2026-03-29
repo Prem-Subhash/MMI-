@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { LucideIcon, ChevronDown } from 'lucide-react'
+import { type LucideIcon, ChevronDown } from 'lucide-react'
 
 /* ================= TYPES ================= */
 
@@ -130,42 +130,47 @@ export const Input: React.FC<InputProps> = ({ label, icon: Icon, className = '',
 
 /* ================= 5. SELECT ================= */
 
-export const Select: React.FC<SelectProps> = ({ label, icon: Icon, options, className = '', id, placeholder, ...props }) => (
-  <div className="space-y-2.5 w-full group">
-    <label htmlFor={id} className="block text-sm font-bold text-gray-700 ml-1 transition-colors group-hover:text-gray-900">
-      {label}
-    </label>
-    <div className="relative isolate">
-      {Icon && (
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none group-focus-within:text-red-500 transition-colors">
-          <Icon size={20} strokeWidth={2.5} />
+export const Select: React.FC<SelectProps> = ({ label, icon: Icon, options, className = '', id, placeholder, ...props }) => {
+  // Remove placeholder from select element props as it is not a valid HTML attribute
+  const { placeholder: _ignored, ...selectProps } = props as any
+
+  return (
+    <div className="space-y-2.5 w-full group">
+      <label htmlFor={id} className="block text-sm font-bold text-gray-700 ml-1 transition-colors group-hover:text-gray-900">
+        {label}
+      </label>
+      <div className="relative isolate">
+        {Icon && (
+          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10 pointer-events-none group-focus-within:text-red-500 transition-colors">
+            <Icon size={20} strokeWidth={2.5} />
+          </div>
+        )}
+        <select
+          id={id}
+          className={`
+            w-full bg-white border border-gray-200 rounded-2xl py-4 pr-12 appearance-none outline-none transition-all
+            ${Icon ? 'pl-12' : 'pl-5'}
+            focus:border-red-300 focus:ring-4 focus:ring-red-50 focus:shadow-[0_0_20px_rgba(220,38,38,0.05)]
+            font-semibold text-gray-900 text-lg cursor-pointer
+            disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
+            ${className}
+          `}
+          {...selectProps}
+        >
+          {placeholder && <option value="" disabled>{placeholder}</option>}
+          {options.map((opt) => {
+            const val = typeof opt === 'string' ? opt : opt.value
+            const lab = typeof opt === 'string' ? opt : opt.label
+            return <option key={val} value={val}>{lab}</option>
+          })}
+        </select>
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-all duration-300 group-focus-within:rotate-180">
+          <ChevronDown size={20} strokeWidth={2.5} />
         </div>
-      )}
-      <select
-        id={id}
-        className={`
-          w-full bg-white border border-gray-200 rounded-2xl py-4 pr-12 appearance-none outline-none transition-all
-          ${Icon ? 'pl-12' : 'pl-5'}
-          focus:border-red-300 focus:ring-4 focus:ring-red-50 focus:shadow-[0_0_20px_rgba(220,38,38,0.05)]
-          font-semibold text-gray-900 text-lg cursor-pointer
-          disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed
-          ${className}
-        `}
-        {...props}
-      >
-        {placeholder && <option value="" disabled>{placeholder}</option>}
-        {options.map((opt) => {
-          const val = typeof opt === 'string' ? opt : opt.value
-          const lab = typeof opt === 'string' ? opt : opt.label
-          return <option key={val} value={val}>{lab}</option>
-        })}
-      </select>
-      <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-all duration-300 group-focus-within:rotate-180">
-        <ChevronDown size={20} strokeWidth={2.5} />
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 /* ================= 6. BUTTON ================= */
 
@@ -193,8 +198,30 @@ export const Button: React.FC<ButtonProps> = ({ variant = 'primary', size = 'md'
 
 /* ================= 7. FIELD GRID ================= */
 
-export const FieldGrid: React.FC<FieldGridProps> = ({ columns = 2, gap = 8, children }) => (
-  <div className={`grid grid-cols-1 md:grid-cols-${columns} gap-${gap}`}>
-    {children}
-  </div>
-)
+export const FieldGrid: React.FC<FieldGridProps> = ({ columns = 2, gap = 8, children }) => {
+  // Tailwind doesn't support dynamic class generation via template literals for grid columns
+  const columnMap: Record<number, string> = {
+    1: 'md:grid-cols-1',
+    2: 'md:grid-cols-2',
+    3: 'md:grid-cols-3',
+    4: 'md:grid-cols-4'
+  }
+
+  const gapMap: Record<number, string> = {
+    2: 'gap-2',
+    4: 'gap-4',
+    6: 'gap-6',
+    8: 'gap-8',
+    10: 'gap-10',
+    12: 'gap-12'
+  }
+
+  const gridColsClass = columnMap[columns] || 'md:grid-cols-2'
+  const gapClass = gapMap[gap] || 'gap-8'
+
+  return (
+    <div className={`grid grid-cols-1 ${gridColsClass} ${gapClass}`}>
+      {children}
+    </div>
+  )
+}
