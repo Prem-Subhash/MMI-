@@ -64,7 +64,7 @@ export default function AdditionalApplicantsForm({
             {/* NAME */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Name:
+                Name
               </label>
               <input
                 type="text"
@@ -84,7 +84,7 @@ export default function AdditionalApplicantsForm({
             {/* EDUCATION */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Education:
+                Education
               </label>
               <select
                 value={applicant.education || ''}
@@ -110,7 +110,7 @@ export default function AdditionalApplicantsForm({
             {/* JOB / PROFESSION */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                Job / Profession:
+                Current Profession
               </label>
               <input
                 type="text"
