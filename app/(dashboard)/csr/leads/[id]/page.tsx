@@ -319,6 +319,7 @@ export default function LeadReviewPage() {
           <UpdateStageModal
             leadId={lead.id}
             pipelineId={lead.pipeline_id}
+            currentStageId={lead.current_stage_id}
             onClose={() => setShowUpdateModal(false)}
             onSuccess={() => router.refresh()}
           />

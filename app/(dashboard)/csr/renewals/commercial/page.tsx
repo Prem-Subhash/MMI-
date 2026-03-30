@@ -35,7 +35,12 @@ function CommercialRenewalContent() {
     const [loading, setLoading] = useState(true)
     const [monthFilter, setMonthFilter] = useState<string>(new Date().toISOString().slice(0, 7)) // Default to current month YYYY-MM
     const [searchTerm, setSearchTerm] = useState('')
+    const [page, setPage] = useState(0)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+    useEffect(() => {
+        setPage(0)
+    }, [monthFilter])
 
     useEffect(() => {
         const load = async () => {
@@ -70,6 +75,7 @@ function CommercialRenewalContent() {
                 .eq('insurence_category', 'commercial')
                 .eq('assigned_csr', user.id)
                 .order('renewal_date', { ascending: true })
+                .range(page * 10, (page + 1) * 10 - 1)
 
             // Apply Month Filter
             if (monthFilter) {
@@ -103,7 +109,7 @@ function CommercialRenewalContent() {
         }
 
         load()
-    }, [monthFilter])
+    }, [monthFilter, page])
 
     // Simple client-side search filtering
     const filteredRenewals = renewals.filter(r => {
@@ -260,6 +266,27 @@ function CommercialRenewalContent() {
                         </table>
                     </div>
                 )}
+
+                {/* PAGINATION CONTROLS */}
+                <div className="p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <button
+                        onClick={() => setPage(p => Math.max(0, p - 1))}
+                        disabled={page === 0 || loading}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-sm text-gray-500 font-medium">
+                        Page {page + 1}
+                    </span>
+                    <button
+                        onClick={() => setPage(p => p + 1)}
+                        disabled={renewals.length < 10 || loading}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
     )
