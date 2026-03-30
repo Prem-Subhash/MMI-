@@ -7,11 +7,13 @@ import { TransformStream } from 'node:stream/web'
 
 // 1. Zod Input Validation
 const ReportSchema = z.object({
-    month: z.string().optional(), // Support legacy month filter YYYY-MM
+    month: z.string().optional(),
     start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format YYYY-MM-DD required").optional(),
     end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format YYYY-MM-DD required").optional(),
+    date_type: z.enum(['effective', 'expiration']).default('effective'),
     policy_flow: z.enum(['new', 'renewal', 'all', '']).optional(),
     insurence_category: z.enum(['personal', 'commercial', 'all', '']).optional(),
+    line_of_businesses: z.array(z.string()).optional(),
     assigned_csr: z.string().uuid().optional().or(z.literal('')),
     customer_name: z.string().optional(),
     page: z.number().min(1).default(1),
@@ -43,7 +45,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = session.user
     const body = await request.json()
     const parseResult = ReportSchema.safeParse(body)
 
@@ -51,43 +52,39 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: parseResult.error.flatten() }, { status: 400 })
     }
 
-    let { month, start_date, end_date, policy_flow, insurence_category, assigned_csr, customer_name, page, limit, exportType } = parseResult.data
+    let { month, start_date, end_date, date_type, policy_flow, insurence_category, line_of_businesses, assigned_csr, customer_name, page, limit, exportType } = parseResult.data
 
     // 2. Date Parsing
-    // Determine start/end dynamically based on month or custom range
     if (month && !start_date && !end_date) {
         start_date = `${month}-01`
         const [y, m] = month.split('-')
-        const date = new Date(parseInt(y), parseInt(m), 0)
-        end_date = date.toISOString().split('T')[0]
+        const firstDayNextMonth = new Date(parseInt(y), parseInt(m), 1)
+        const lastDay = new Date(firstDayNextMonth.getTime() - 86400000)
+        end_date = lastDay.toISOString().split('T')[0]
     }
 
     if (!start_date || !end_date) {
         return NextResponse.json({ error: 'Valid date range (month or start_date/end_date) is required.' }, { status: 400 });
     }
 
-    if (new Date(start_date) > new Date(end_date)) {
-        return NextResponse.json({ error: 'start_date cannot be after end_date' }, { status: 400 });
-    }
+    const safeFlow = policy_flow === 'all' || policy_flow === '' ? null : policy_flow
+    const safeCategory = insurence_category === 'all' || insurence_category === '' ? null : insurence_category
+    const dateField = date_type === 'expiration' ? 'renewal_date' : 'effective_date'
 
-    const safeFlow = policy_flow === 'all' ? null : policy_flow
-    const safeCategory = insurence_category === 'all' ? null : insurence_category
-
-    // 3. Fetch KPI Summary (RPC handles RLS securely)
+    // 3. Fetch KPI Summary (Note: RPC currently doesn't support date_type or LOBs, but we'll still call it for baseline)
     const { data: summaryData, error: summaryError } = await supabase.rpc('get_report_summary', {
         p_start_date: start_date,
         p_end_date: end_date,
-        p_flow: safeFlow || null,
-        p_category: safeCategory || null,
+        p_flow: safeFlow,
+        p_category: safeCategory,
         p_csr: assigned_csr || null
     })
 
     if (summaryError) {
         console.error('Summary Error:', summaryError)
-        return NextResponse.json({ error: 'Failed to generate KPI summary' }, { status: 500 })
     }
 
-    // 4. Base Query Builder (RLS handles visibility natively)
+    // 4. Base Query Builder
     let query = supabase
         .from('temp_leads_basics')
         .select(`
@@ -95,6 +92,7 @@ export async function POST(request: Request) {
             client_name,
             policy_type,
             effective_date,
+            renewal_date,
             created_at,
             carrier,
             total_premium,
@@ -104,16 +102,19 @@ export async function POST(request: Request) {
             assigned_csr,
             assigned_csr_profile:profiles!assigned_csr (full_name)
         `, { count: 'exact' })
-        .gte('effective_date', start_date)
-        .lte('effective_date', end_date)
+        .gte(dateField, start_date)
+        .lte(dateField, end_date)
 
     if (safeFlow) query = query.eq('policy_flow', safeFlow)
     if (safeCategory) query = query.eq('insurence_category', safeCategory)
+    if (line_of_businesses && line_of_businesses.length > 0) {
+        query = query.in('policy_type', line_of_businesses)
+    }
     if (assigned_csr) query = query.eq('assigned_csr', assigned_csr)
     if (customer_name) query = query.ilike('client_name', `%${customer_name}%`)
 
-    // Order by date explicitly 
-    query = query.order('effective_date', { ascending: false })
+    // Order by the same date field we are filtering on
+    query = query.order(dateField, { ascending: false })
 
     // JSON Preview (Paginated)
     if (exportType === 'json') {
@@ -160,6 +161,9 @@ export async function POST(request: Request) {
 
         // Setup Data Sheet
         const worksheet = workbook.addWorksheet('Raw Data')
+        const dateHeader = date_type === 'expiration' ? 'Renewal Date' : 'Effective Date'
+        const dateKey = date_type === 'expiration' ? 'renewal_date' : 'effective_date'
+
         worksheet.columns = [
             { header: 'Client Name', key: 'client_name', width: 25 },
             { header: 'Type', key: 'policy_type', width: 20 },
@@ -167,7 +171,7 @@ export async function POST(request: Request) {
             { header: 'Flow', key: 'policy_flow', width: 15 },
             { header: 'Premium', key: 'total_premium', width: 15 },
             { header: 'CSR', key: 'csr', width: 25 },
-            { header: 'Effective Date', key: 'effective_date', width: 15 },
+            { header: dateHeader, key: dateKey, width: 15 },
         ]
         worksheet.getRow(1).font = { bold: true }
 
@@ -179,7 +183,7 @@ export async function POST(request: Request) {
                 policy_flow: row.policy_flow,
                 total_premium: row.total_premium,
                 csr: row.assigned_csr_profile?.full_name || row.assigned_csr,
-                effective_date: row.effective_date
+                [dateKey]: row[dateKey] || row.effective_date
             })
         })
 
@@ -216,8 +220,9 @@ export async function POST(request: Request) {
         } as any)
 
         // Title and KPI Summary
+        const dateLabel = date_type === 'expiration' ? 'Renewal Date' : 'Effective Date'
         doc.fontSize(18).font('Helvetica-Bold').text(`Enterprise Report`, { align: 'center' })
-        doc.fontSize(10).font('Helvetica').text(`Period: ${start_date} to ${end_date}`, { align: 'center' })
+        doc.fontSize(10).font('Helvetica').text(`Period: ${start_date} to ${end_date} (${dateLabel})`, { align: 'center' })
         doc.moveDown(2)
 
         doc.fontSize(12).font('Helvetica-Bold').text('KPI Summary')
@@ -232,10 +237,10 @@ export async function POST(request: Request) {
             doc.font('Helvetica-Bold').fontSize(9)
             doc.text('Client', 30, startY)
             doc.text('Type', 160, startY)
-            doc.text('Flow', 250, startY)
-            doc.text('Premium', 320, startY)
+            doc.text('Flow', 240, startY)
+            doc.text('Premium', 310, startY)
             doc.text('CSR', 400, startY)
-            doc.text('Date', 500, startY)
+            doc.text(dateLabel, 500, startY)
             doc.moveTo(30, startY + 12).lineTo(570, startY + 12).stroke()
             return startY + 20
         }
@@ -252,12 +257,14 @@ export async function POST(request: Request) {
             }
 
             const premium = row.total_premium || 0
+            const rowDate = date_type === 'expiration' ? (row.renewal_date || row.effective_date) : row.effective_date
+            
             doc.text(row.client_name?.substring(0, 20) || '-', 30, y)
             doc.text(row.policy_type?.substring(0, 15) || '-', 160, y)
-            doc.text(row.policy_flow || '-', 250, y)
-            doc.text(`$${premium.toLocaleString()}`, 320, y)
+            doc.text(row.policy_flow || '-', 240, y)
+            doc.text(`$${premium.toLocaleString()}`, 310, y)
             doc.text(row.assigned_csr_profile?.full_name?.substring(0, 15) || '-', 400, y)
-            doc.text(row.effective_date || '-', 500, y)
+            doc.text(rowDate || '-', 500, y)
             y += 18
         })
 

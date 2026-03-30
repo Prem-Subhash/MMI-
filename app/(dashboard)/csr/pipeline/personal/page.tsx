@@ -65,7 +65,7 @@ export default function PersonalLinesPage() {
         .eq('insurence_category', 'personal')
         .eq('policy_flow', 'new')
         .order('created_at', { ascending: false })
-        .range(page * 50, (page + 1) * 50 - 1)
+        .range(page * 10, (page + 1) * 10 - 1)
 
       if (stageFilter) {
         query = query.eq('current_stage.stage_name', stageFilter)
@@ -91,9 +91,10 @@ export default function PersonalLinesPage() {
     }
 
     loadLeads()
-  }, [stageFilter])
+  }, [stageFilter, page])
 
   const applyFilter = (stage: string | null) => {
+    setPage(0)
     if (!stage) {
       router.push('/csr/pipeline/personal')
     } else {
@@ -264,7 +265,7 @@ export default function PersonalLinesPage() {
           </span>
           <button
             onClick={() => setPage(p => p + 1)}
-            disabled={leads.length < 50 || loading}
+            disabled={leads.length < 10 || loading}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Next
