@@ -223,32 +223,34 @@ export default function LeadReviewPage() {
 
             {/* ACTIONS */}
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                 <button
                   onClick={() => router.back()}
-                  className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2 font-medium"
+                  className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-500 border border-gray-300 text-white hover:bg-emerald-600 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium"
                 >
                   <ArrowLeft size={16} />
                   Back
                 </button>
-                <button
-                  onClick={openHistoryModal}
-                  className="px-4 py-2.5 bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 rounded-lg shadow-sm transition font-medium"
-                >
-                  View History
-                </button>
-                <button
-                  onClick={() => {
-                    if (!lead.pipeline_id) {
-                      alert('Pipeline not assigned to this lead')
-                      return
-                    }
-                    setShowUpdateModal(true)
-                  }}
-                  className="px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow transition"
-                >
-                  Update Status
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={openHistoryModal}
+                    className="flex-1 sm:flex-none px-4 py-2.5 bg-brand-dark border border-gray-300 text-white hover:bg-brand-dark/80 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium"
+                  >
+                    View History
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!lead.pipeline_id) {
+                        alert('Pipeline not assigned to this lead')
+                        return
+                      }
+                      setShowUpdateModal(true)
+                    }}
+                    className="flex-1 sm:flex-none px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition text-center flex justify-center items-center"
+                  >
+                    Update Status
+                  </button>
+                </div>
               </div>
 
               {/* DYNAMIC STATUS BADGES */}
@@ -289,24 +291,24 @@ export default function LeadReviewPage() {
 
             {/* FORM OPERATIONS */}
             {isSubmitted && form && (
-              <div className="space-y-4 border-t pt-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-6">
                 <button
                   onClick={() => setShowFormModal(true)}
-                  className="w-full flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 py-4 rounded-xl font-bold transition-colors shadow-sm"
+                  className="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 py-4 rounded-xl font-bold transition-colors shadow-sm"
                 >
                   <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                   </svg>
-                  View Submitted Form
+                  View Form
                 </button>
 
                 {!isAccepted && (
                   <button
                     onClick={handleAccept}
                     disabled={accepting}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-colors"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-colors"
                   >
-                    {accepting ? 'Accepting Lead...' : 'Accept Lead'}
+                    {accepting ? 'Accepting...' : 'Accept Lead'}
                   </button>
                 )}
               </div>
@@ -430,17 +432,17 @@ export default function LeadReviewPage() {
         {showHistory && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-              <div className="px-6 py-4 border-b flex items-center justify-between bg-white sticky top-0 z-10">
+              <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800">Stage History</h2>
-                  <p className="text-sm text-slate-500">Previous updates for this lead</p>
+                  <h2 className="text-xl font-bold text-white">Stage History</h2>
+                  <p className="text-sm text-white">Previous updates for this lead</p>
                 </div>
                 <button
                   onClick={() => setShowHistory(false)}
-                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                  className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shadow-sm"
                   title="Close"
                 >
-                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
               </div>
 
@@ -451,15 +453,15 @@ export default function LeadReviewPage() {
                     Loading history...
                   </div>
                 ) : history.length === 0 ? (
-                  <div className="py-12 text-center text-slate-500 bg-white rounded-xl border border-dashed border-slate-300">
+                  <div className="py-12 text-center text-emerald-500 bg-white rounded-xl border border-dashed border-slate-300">
                     No stage history found for this lead.
                   </div>
                 ) : (
                   history.map((item) => (
                     <div key={item.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                      <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-                        <h3 className="font-bold text-slate-800">{item.stage_name}</h3>
-                        <span className="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded-md">
+                      <div className="bg-emerald-50/50 px-5 py-3 border-b border-emerald-100 flex items-center justify-between">
+                        <h3 className="font-bold text-emerald-700">{item.stage_name}</h3>
+                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">
                           {new Date(item.created_at).toLocaleString()}
                         </span>
                       </div>

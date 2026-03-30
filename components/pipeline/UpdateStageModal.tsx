@@ -491,10 +491,10 @@ export default function UpdateStageModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
-        <div className="flex justify-between items-center mb-2">
-          <h2 className="text-xl font-bold text-gray-800">Update Status</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        <div className="flex justify-between items-center mb-4 border-b pb-4">
+          <h2 className="text-xl font-bold text-[#2E5C85]">Update Status</h2>
+          <button onClick={onClose} className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
 
@@ -505,7 +505,7 @@ export default function UpdateStageModal({
           </div>
         ) : (
           <div>
-            <label className="block text-gray-700 font-semibold mb-2 text-sm uppercase tracking-wide">New Status</label>
+            <label className="block text-emerald-700 font-bold mb-2 text-sm uppercase tracking-wide">Select New Status</label>
             <div className="relative">
               <select
                 className="w-full border-2 border-emerald-500 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 text-gray-900 font-bold appearance-none bg-white cursor-pointer transition-all shadow-sm"
@@ -609,17 +609,17 @@ export default function UpdateStageModal({
           })}
         </div>
 
-        <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100 mt-4">
           <button
             onClick={onClose}
-            className="px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+            className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={saving || isBlockedByNo}
-            className={`px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center gap-2
+            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2
               ${saving || isBlockedByNo
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
