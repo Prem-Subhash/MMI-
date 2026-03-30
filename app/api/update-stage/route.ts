@@ -48,6 +48,7 @@ export async function POST(req: Request) {
     const { data: stage, error: stageError } = await supabaseServer
       .from('pipeline_stages')
       .select(`
+        id,
         stage_name, 
         mandatory_fields, 
         pipeline_id,
@@ -142,12 +143,26 @@ export async function POST(req: Request) {
       }
     }
 
-    // 2. Commercial Lines - Required Documents Check
+    // 2. Business Rules - Required Documents Validation
     if (stage.stage_name === 'Quoting in Progress') {
-      // mergedMetadata.required_documents_received should be a boolean true if checkbox/dropdown was Yes
-      if (mergedMetadata.required_documents_received !== true) {
+      // Commercial pipelines
+      if (
+        fieldsToCheck.includes('required_documents_received') &&
+        mergedMetadata.required_documents_received !== true
+      ) {
         return NextResponse.json(
           { error: 'You must receive all required documents before proceeding.' },
+          { status: 400 }
+        )
+      }
+
+      // Personal pipelines
+      if (
+        fieldsToCheck.includes('info_received') &&
+        mergedMetadata.info_received !== true
+      ) {
+        return NextResponse.json(
+          { error: 'You must receive all required information before proceeding.' },
           { status: 400 }
         )
       }
@@ -235,6 +250,23 @@ export async function POST(req: Request) {
         { error: 'Failed to update stage' },
         { status: 500 }
       )
+    }
+
+    // Insert history snapshot after successful update
+    const { error: historyError } = await supabaseServer
+      .from('lead_stage_history')
+      .insert([
+        {
+          lead_id: lead.id,
+          stage_id: stage.id,
+          stage_name: stage.stage_name,
+          stage_metadata: mergedMetadata,
+        },
+      ])
+
+    if (historyError) {
+      console.error('Stage history insertion failed:', historyError)
+      // Proceed returning success since primary update succeeded
     }
 
     return NextResponse.json({ success: true })

@@ -87,7 +87,7 @@ export default function HomeInsuranceForm({
           <div className="space-y-4">
             <div className="relative">
               <label className="block text-[0.95rem] font-bold text-slate-900 mb-3 ml-1">
-                Any claims in last 5 years?
+                Claims (Last 5 Years)
               </label>
               <div className="relative">
                 <select
@@ -112,7 +112,7 @@ export default function HomeInsuranceForm({
             {data.claims_last_5_years === 'yes' && (
               <div className="animate-in slide-in-from-top-2 duration-300">
                 <label className="block text-sm font-bold text-rose-600 mb-2 ml-2">
-                  How many claims?
+                  Number of Claims
                 </label>
                 <input
                   type="number"
@@ -129,7 +129,7 @@ export default function HomeInsuranceForm({
           <div className="space-y-4">
             <div className="relative">
               <label className="block text-[0.95rem] font-bold text-slate-900 mb-3 ml-1">
-                Is there a basement?
+                Has Basement?
               </label>
               <div className="relative">
                 <select
@@ -234,7 +234,7 @@ export default function HomeInsuranceForm({
         {/* MORTGAGE CLAUSE */}
         <div className="pt-4">
           <label className="block text-[0.95rem] font-bold text-slate-900 mb-3 ml-1">
-            Mortgagee Clause (if applicable)
+            Mortgagee Clause
           </label>
           <textarea
             placeholder="Details of your mortgagee clause..."
