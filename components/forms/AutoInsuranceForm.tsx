@@ -114,7 +114,6 @@ export default function AutoInsuranceForm({
               value={data.violation_count || ''}
               disabled={disabled}
               onChange={e => updateField('violation_count', e.target.value)}
-              className="border-red-100 bg-red-50/10 focus:border-red-400"
             />
           </div>
         )}

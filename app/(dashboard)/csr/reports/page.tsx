@@ -43,7 +43,7 @@ export default function MonthlyReportPage() {
             const json = await res.json()
             if (json.error) throw new Error(json.error)
 
-            setData(json || [])
+            setData(json.data || [])
         } catch (err: any) {
             console.error(err)
             alert('Error: ' + err.message)

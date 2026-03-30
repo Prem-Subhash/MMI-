@@ -88,7 +88,7 @@ export default function HomeInsuranceForm({
             onChange={e => updateField('claims_last_5_years', e.target.value)}
           />
 
-          {data.claims_last_5_years === 'yes' ? (
+          {data.claims_last_5_years === 'yes' && (
             <Input
               id="home-claims-count"
               label="How many claims?"
@@ -99,7 +99,7 @@ export default function HomeInsuranceForm({
               disabled={disabled}
               onChange={e => updateField('claims_count', e.target.value)}
             />
-          ) : <div />}
+          )}
         </FieldGrid>
 
         <FieldGrid columns={2} gap={8}>
@@ -114,7 +114,7 @@ export default function HomeInsuranceForm({
             onChange={e => updateField('has_basement', e.target.value)}
           />
 
-          {data.has_basement === 'yes' ? (
+          {data.has_basement === 'yes' && (
             <Select
               id="home-basement-type"
               label="Basement Type"
@@ -125,7 +125,7 @@ export default function HomeInsuranceForm({
               disabled={disabled}
               onChange={e => updateField('basement_type', e.target.value)}
             />
-          ) : <div />}
+          )}
         </FieldGrid>
 
         <FieldGrid columns={2} gap={8}>

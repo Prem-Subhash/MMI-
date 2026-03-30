@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
+import { FIELD_LABELS } from '@/lib/fieldLabels'
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -21,6 +22,9 @@ export default function LeadReviewPage() {
   const [error, setError] = useState<string | null>(null)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showFormModal, setShowFormModal] = useState(false)
+  const [history, setHistory] = useState<any[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
 
   /* ================= LOAD LEAD + FORM ================= */
   useEffect(() => {
@@ -72,6 +76,22 @@ export default function LeadReviewPage() {
 
     loadData()
   }, [leadId])
+
+  /* ================= FETCH HISTORY ================= */
+  const openHistoryModal = async () => {
+    setHistoryLoading(true)
+    setShowHistory(true)
+    const { data, error } = await supabase
+      .from('lead_stage_history')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('created_at', { ascending: false })
+
+    if (!error && data) {
+      setHistory(data)
+    }
+    setHistoryLoading(false)
+  }
 
   /* ================= ACCEPT LEAD ================= */
   const handleAccept = async () => {
@@ -212,6 +232,12 @@ export default function LeadReviewPage() {
                   Back
                 </button>
                 <button
+                  onClick={openHistoryModal}
+                  className="px-4 py-2.5 bg-slate-100 border border-slate-300 hover:bg-slate-200 text-slate-700 rounded-lg shadow-sm transition font-medium"
+                >
+                  View History
+                </button>
+                <button
                   onClick={() => {
                     if (!lead.pipeline_id) {
                       alert('Pipeline not assigned to this lead')
@@ -320,7 +346,7 @@ export default function LeadReviewPage() {
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
                  {/* STRUCTURED FORM DATA RENDERER */}
                  {form.form_data && Object.entries(form.form_data).map(([sectionKey, sectionData]) => {
-                    const formatLabel = (key: string) => key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                    const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
                     // Skip empty sections completely
                     if (!sectionData || (typeof sectionData === 'object' && Object.keys(sectionData).length === 0)) return null;
@@ -395,6 +421,70 @@ export default function LeadReviewPage() {
                       )})}
                     </div>
                   </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        {/* VIEW HISTORY MODAL */}
+        {showHistory && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+              <div className="px-6 py-4 border-b flex items-center justify-between bg-white sticky top-0 z-10">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800">Stage History</h2>
+                  <p className="text-sm text-slate-500">Previous updates for this lead</p>
+                </div>
+                <button
+                  onClick={() => setShowHistory(false)}
+                  className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+                  title="Close"
+                >
+                  <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+              </div>
+
+              <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50 space-y-4">
+                {historyLoading ? (
+                  <div className="py-12 text-center text-slate-500">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                    Loading history...
+                  </div>
+                ) : history.length === 0 ? (
+                  <div className="py-12 text-center text-slate-500 bg-white rounded-xl border border-dashed border-slate-300">
+                    No stage history found for this lead.
+                  </div>
+                ) : (
+                  history.map((item) => (
+                    <div key={item.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                      <div className="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+                        <h3 className="font-bold text-slate-800">{item.stage_name}</h3>
+                        <span className="text-xs font-semibold text-slate-500 bg-slate-200 px-2 py-1 rounded-md">
+                          {new Date(item.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      {item.stage_metadata && Object.keys(item.stage_metadata).length > 0 ? (
+                        <div className="p-5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                            {Object.entries(item.stage_metadata).map(([k, v]) => {
+                              // We format just like the actual intake form modal with FIELD_LABELS
+                              const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                              return (
+                                <div key={k}>
+                                  <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{formatLabel(k)}</span>
+                                  <span className="font-medium text-slate-800">{v === null || v === undefined || v === '' ? '-' : String(v)}</span>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="p-4 text-sm text-slate-400 italic text-center">
+                          No additional metadata recorded for this stage
+                        </div>
+                      )}
+                    </div>
+                  ))
                 )}
               </div>
             </div>
