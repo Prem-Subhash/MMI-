@@ -1,4 +1,4 @@
-# 🌙 Moonstar Insurance CRM
+#  Moonstar Insurance CRM
 
 > A full-stack, enterprise-grade CRM platform built for modern insurance agencies. Centralizes lead management, automated multi-step intake workflows, pipeline-driven case tracking, and business intelligence reporting — all in a single unified Next.js application.
 
