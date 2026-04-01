@@ -18,20 +18,51 @@ export default function DashboardLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+    const TIMEOUT_MS = 30 * 60 * 1000 // 30 minutes of inactivity
+    let timeoutId: any = null
 
+    const handleLogout = async () => {
+      await supabase.auth.signOut()
+      router.replace('/login')
+    }
+
+    const resetTimer = () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        console.log('User inactive. Logging out...')
+        handleLogout()
+      }, TIMEOUT_MS)
+    }
+
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         router.replace('/login')
         return
       }
-
       setCheckingAuth(false)
+      resetTimer()
     }
 
+    // 1. Initial Session Check
     checkSession()
+
+    // 2. Listen for Auth Changes (e.g. logging out in another tab)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        router.replace('/login')
+      }
+    })
+
+    // 3. User Activity Tracking
+    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart']
+    events.forEach(name => document.addEventListener(name, resetTimer))
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId)
+      subscription.unsubscribe()
+      events.forEach(name => document.removeEventListener(name, resetTimer))
+    }
   }, [router])
 
   if (checkingAuth) return null
