@@ -35,11 +35,21 @@ const Footer = () => {
                     <div className="flex items-center gap-4">
                         <p className="text-white text-[10px] font-bold uppercase tracking-wider hidden sm:block">Connect with us</p>
                         <div className="flex gap-4 text-white/90">
-                            <Facebook size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
-                            <Instagram size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
-                            <MessageCircle size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
-                            <Send size={14} className="hover:text-rose-400 transition-colors cursor-pointer" />
-                            <Twitter size={14} className="hover:text-emerald-400 transition-colors cursor-pointer" />
+                            <a href="https://www.facebook.com/moonstarmortgage/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
+                                <Facebook size={14} className="cursor-pointer" />
+                            </a>
+                            <a href="https://www.instagram.com/moonstarmortgage/" target="_blank" rel="noopener noreferrer" className="hover:text-rose-600 transition-colors">
+                                <Instagram size={14} className="cursor-pointer" />
+                            </a>
+                            <a href="https://www.facebook.com/moonstarmortgage/" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">
+                                <MessageCircle size={14} className="cursor-pointer" />
+                            </a>
+                            <a href="https://www.facebook.com/moonstarmortgage/" target="_blank" rel="noopener noreferrer" className="hover:text-orange-600 transition-colors">
+                                <Send size={14} className="cursor-pointer" />
+                            </a>
+                            <a href="https://www.facebook.com/moonstarmortgage/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-800 transition-colors">
+                                <Twitter size={14} className="cursor-pointer" />
+                            </a>
                         </div>
                     </div>
                 </div>
