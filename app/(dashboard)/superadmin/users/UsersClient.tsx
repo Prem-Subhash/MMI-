@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react'
+import { toast } from '@/lib/toast'
 
 type UserProfile = {
     id: string
@@ -38,6 +39,7 @@ export default function UsersClient() {
             setUsers(j.users || [])
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -58,9 +60,11 @@ export default function UsersClient() {
 
             setShowCreate(false)
             setFormData({ email: '', full_name: '', password: '', role: 'csr' })
+            toast('User created successfully!', 'success')
             fetchUsers()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setCreateLoading(false)
         }
@@ -74,9 +78,11 @@ export default function UsersClient() {
             const res = await fetch(`/api/superadmin/users?id=${id}`, { method: 'DELETE' })
             const j = await res.json()
             if (j.error) throw new Error(j.error)
+            toast('User deleted successfully!', 'success')
             fetchUsers()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -92,9 +98,11 @@ export default function UsersClient() {
             if (j.error) throw new Error(j.error)
 
             setEditingUserId(null)
+            toast('Role updated successfully!', 'success')
             fetchUsers()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -114,12 +122,22 @@ export default function UsersClient() {
                         ${showCreate ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
                 >
                     {showCreate ? <X size={18} /> : <Plus size={18} />}
-                    {showCreate ? 'x' : 'Create New User'}
+                    {showCreate ? 'Cancel' : 'Create New User'}
                 </button>
             </div>
 
             {showCreate && (
-                <form onSubmit={handleCreateUser} className="bg-white p-6 md:p-8 rounded-2xl border border-gray-200 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 items-end animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden mb-8">
+                    <div className="px-6 py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center gap-3">
+                        <div className="p-2 bg-white/20 text-white rounded-lg backdrop-blur-sm">
+                            <Plus size={18} />
+                        </div>
+                        <div>
+                            <h2 className="text-xs font-bold text-white uppercase tracking-widest">New User Account</h2>
+                            <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Define access and administrative roles</p>
+                        </div>
+                    </div>
+                    <form onSubmit={handleCreateUser} className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 items-end animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Full Name</label>
                         <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all" placeholder="John Doe" />
@@ -144,7 +162,8 @@ export default function UsersClient() {
                     <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
                         {createLoading ? <Loader2 size={20} className="animate-spin" /> : 'Create User'}
                     </button>
-                </form>
+                    </form>
+                </div>
             )}
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
