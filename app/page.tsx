@@ -21,7 +21,7 @@ export default function HomePage() {
     <main style={container}>
       {/* Background Image */}
       <Image
-        src="/hero.jpg"
+        src="/bglogin.jpg"
         alt="Mortgage Home"
         fill
         priority
@@ -91,17 +91,21 @@ const content = {
 }
 
 const heading = {
+  textShadow: '0 0 10px rgba(0,0,0,0.5)',
   fontSize: '56px',
   fontWeight: 700,
   marginTop: '30px',
   lineHeight: '1.1',
+  
 }
 
 const subheading = {
+  textShadow: '0 0 10px rgba(0,0,0,0.5)',
   fontSize: '18px',
   marginTop: '20px',
   maxWidth: '500px',
   opacity: 0.9,
+ 
 }
 
 const button = {
