@@ -1,7 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
 import {
   User,
   Phone,
@@ -16,7 +17,7 @@ import {
 export default function NewLeadPage() {
   /* ---------------- STATE ---------------- */
   const [isLocked, setIsLocked] = useState(false)
-  const [showToast, setShowToast] = useState(false)
+  
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -156,10 +157,7 @@ export default function NewLeadPage() {
 
 
       /* ✅ SUCCESS UI */
-      setShowToast(true)
-
-      /* ✅ SUCCESS UI */
-      setShowToast(true)
+      toast('Lead created successfully!', 'success')
 
       setForm({
         client_name: '',
@@ -177,38 +175,19 @@ export default function NewLeadPage() {
       setIsLocked(false)
 
       if (form.send_email_to_client) {
-        // Redirect to email send page with client details pre-filled if possible
-        // Assuming we have a route like /csr/email or similar. 
-        // For now, let's use a browser alert or mock redirect for the user to implement the Outlook integration popup
-        // The user requirement said: "There will be a pop-up window with templates..." 
-        // Since we don't have that popup component yet, we'll simulate the intent or redirect to the email tool if it exists.
-        // Let's assume there is an email tool or we just show a message.
-        // BETTER: Redirect to the lead detail page where they can click "Send Email"
-        // window.location.href = `/csr/leads/${lead.id}?action=email`
-        alert('Lead created! Redirecting to email templates...')
-        // For now, we just clear. The user can navigate manually or we can add a router.push if we knew the route.
-        // The requirement says "pop-up window". We might need to implement that later.
-        // Let's just keep the toast for now.
+        toast('Redirecting to email templates...', 'info')
       }
-
-      setTimeout(() => setShowToast(false), 2500)
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
       setIsLocked(false)
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
     <div className="min-h-screen bg-[#F4FBF8] py-10 px-4 flex justify-center">
 
-      {showToast && (
-        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-4 rounded-xl shadow-xl">
-          <p className="font-semibold">✅ Lead created successfully</p>
-          <p className="text-sm opacity-90">Ready to create next lead</p>
-        </div>
-      )}
 
       <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border overflow-hidden">
 

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Bell, Clock, User, ChevronRight, Menu } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
 
 export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
     const router = useRouter()
@@ -112,6 +113,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
+        toast('Logged out successfully', 'info')
         router.replace('/login')
     }
 

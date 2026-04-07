@@ -1,9 +1,10 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity } from 'lucide-react'
+import { toast } from '@/lib/toast'
 
 // Types
 type Lead = {
@@ -25,6 +26,7 @@ export default function AdminAssignmentsPage() {
     const [csrs, setCsrs] = useState<CSR[]>([])
     const [pipelines, setPipelines] = useState<Pipeline[]>([])
     const [stages, setStages] = useState<Stage[]>([])
+    
 
     const [loading, setLoading] = useState(true)
     const [updatingParams, setUpdatingParams] = useState<Record<string, boolean>>({})
@@ -85,9 +87,10 @@ export default function AdminAssignmentsPage() {
         console.log("Update Data Result:", data)
         if (error) {
             console.error("Update SQL Error:", error)
-            alert('Failed to update assignment: ' + error.message)
+            toast('Failed to update assignment: ' + error.message, 'error')
         } else {
             console.log("Update successful, setting local state.")
+            toast('Lead assignment updated successfully!', 'success')
             setLeads(prev => prev.map(lead => lead.id === leadId ? { ...lead, assigned_csr: newCsrId === 'unassigned' ? null : newCsrId } : lead))
         }
 
