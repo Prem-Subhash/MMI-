@@ -235,24 +235,16 @@ export default function AdminNewLeadPage() {
                     send_email_to_client: form.send_email_to_client ?? false,
                     client_id: clientId,
                     assigned_csr: null, // MODIFIED FOR ADMIN Lead Creation
+                    pipeline_id: form.insurence_category === 'commercial' 
+                        ? '930d64f7-d10a-4305-9036-67892a6075d3' 
+                        : 'f77d068d-1754-421b-b2ce-d527ec8bd0f3',
                 })
                 .select()
                 .single()
 
             if (error || !lead) throw error
 
-            const { data: stage } = await supabase
-                .from('pipeline_stages')
-                .select('id')
-                .eq('stage_name', 'Quoting in Progress')
-                .single()
 
-            if (stage) {
-                await supabase
-                    .from('temp_leads_basics')
-                    .update({ current_stage_id: stage.id })
-                    .eq('id', lead.id)
-            }
 
             /* ✅ SUCCESS UI */
             setShowToast(true)

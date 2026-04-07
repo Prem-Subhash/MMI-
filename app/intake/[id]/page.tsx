@@ -125,15 +125,7 @@ export default function IntakeFormPage() {
       return
     }
 
-    if (leadId) {
-      await supabase
-        .from('temp_leads_basics')
-        .update({
-          form_submitted_at: new Date().toISOString(),
-          follow_up_date: null
-        })
-        .eq('id', leadId)
-    }
+    // Removed frontend update to temp_leads_basics; notify-submission handles it.
 
     await fetch('/api/notify-submission', {
       method: 'POST',

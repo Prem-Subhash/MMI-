@@ -25,6 +25,7 @@ type Lead = {
 
 const STAGE_FILTERS = [
   { label: 'All', value: null },
+  { label: 'New Lead', value: 'New Lead' },
   { label: 'Quoting in Progress', value: 'Quoting in Progress' },
   { label: 'Quote has been Emailed', value: 'Quote Has Been Emailed' },
   { label: 'Consent Letter Sent', value: 'Consent Letter Sent' },

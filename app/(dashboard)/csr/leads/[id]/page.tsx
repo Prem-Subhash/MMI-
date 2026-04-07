@@ -151,7 +151,7 @@ export default function LeadReviewPage() {
       const { error: leadUpdateError } = await supabase
         .from('temp_leads_basics')
         .update({
-          status: 'accepted',
+          status: 'ACCEPTED',
           current_stage: 'Quoting in Progress',
           accepted_at: new Date().toISOString()
         })
@@ -179,9 +179,7 @@ export default function LeadReviewPage() {
     return <div className="p-10 text-red-600 font-medium">{error}</div>
   }
 
-  const isEmailSent = !!lead?.intake_email_sent;
-  const isSubmitted = !!lead?.form_submitted_at;
-  const isAccepted = lead?.status === 'accepted';
+  const status = lead?.status || 'NOT_SENT';
 
   /* ================= UNIFIED UI ================= */
   return (
@@ -253,44 +251,49 @@ export default function LeadReviewPage() {
                 </div>
               </div>
 
-              {/* DYNAMIC STATUS BADGES */}
-              {!isEmailSent && (
-                <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 text-slate-700 rounded-lg border text-sm font-semibold border-slate-200">
-                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Intake form not sent to client
-                </div>
-              )}
-
-              {isEmailSent && !isSubmitted && (
-                <div className="flex items-center gap-3 px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg border-yellow-200 text-sm font-medium">
-                  <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
-                  Waiting for client to submit intake form
-                </div>
-              )}
-
-              {isSubmitted && !isAccepted && (
-                <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm font-semibold">
-                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  Client has submitted the intake form
-                </div>
-              )}
-
-              {isAccepted && (
-                <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg border text-sm font-semibold border-emerald-200">
-                  <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Lead accepted and moved to pipeline
-                </div>
-              )}
+              {/* DYNAMIC STATUS BADGES (STRICT PRIORITY) */}
+              {(() => {
+                if (status === 'ACCEPTED') {
+                  return (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg border text-sm font-semibold border-emerald-200">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Lead accepted and moved to pipeline
+                    </div>
+                  );
+                } else if (status === 'SUBMITTED') {
+                  return (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm font-semibold">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Client has submitted the intake form
+                    </div>
+                  );
+                } else if (status === 'WAITING_FOR_SUBMISSION') {
+                  return (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg border-yellow-200 text-sm font-medium">
+                      <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                      Waiting for client to submit intake form
+                    </div>
+                  );
+                } else {
+                  // Fallback for NOT_SENT or any undefined status
+                  return (
+                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 text-slate-700 rounded-lg border text-sm font-semibold border-slate-200">
+                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Intake form not sent to client
+                    </div>
+                  );
+                }
+              })()}
             </div>
 
             {/* FORM OPERATIONS */}
-            {isSubmitted && form && (
+            {(status === 'SUBMITTED' || status === 'ACCEPTED') && form && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-6">
                 <button
                   onClick={() => setShowFormModal(true)}
@@ -302,7 +305,7 @@ export default function LeadReviewPage() {
                   View Form
                 </button>
 
-                {!isAccepted && (
+                {status === 'SUBMITTED' && (
                   <button
                     onClick={handleAccept}
                     disabled={accepting}

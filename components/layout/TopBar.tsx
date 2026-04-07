@@ -9,11 +9,14 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
     const router = useRouter()
     const [profileOpen, setProfileOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
-    const [userProfile, setUserProfile] = useState<{ full_name: string | null; email: string | null } | null>(null)
+    const [activityOpen, setActivityOpen] = useState(false)
+    const [userProfile, setUserProfile] = useState<{ full_name: string | null; email: string | null; role: string | null } | null>(null)
     const [notifications, setNotifications] = useState<any[]>([])
+    const [activities, setActivities] = useState<any[]>([])
 
     const profileRef = useRef<HTMLDivElement>(null)
     const notificationsRef = useRef<HTMLDivElement>(null)
+    const activityRef = useRef<HTMLDivElement>(null)
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -22,6 +25,9 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             }
             if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
                 setNotificationsOpen(false)
+            }
+            if (activityRef.current && !activityRef.current.contains(event.target as Node)) {
+                setActivityOpen(false)
             }
         }
 
@@ -37,17 +43,39 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             if (user) {
                 const { data: profile } = await supabase
                     .from('profiles')
-                    .select('full_name, email')
+                    .select('full_name, email, role')
                     .eq('id', user.id)
                     .single()
                 
                 if (profile) {
                     setUserProfile(profile)
                 } else {
-                    setUserProfile({ full_name: null, email: user.email ?? null })
+                    setUserProfile({ full_name: null, email: user.email ?? null, role: null })
                 }
 
-                const { data: leads } = await supabase
+                // FETCH NOTIFICATIONS (BELL)
+                // Wrapped safely so it doesn't crash the entire TopBar if the schema isn't applied yet
+                const { data: notifs, error: notifError } = await supabase
+                    .from('user_notifications')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(5)
+                
+                if (!notifError && notifs) {
+                    setNotifications(notifs.map(n => ({
+                        id: n.id,
+                        name: 'System Alert',
+                        status: n.message,
+                        time: new Date(n.created_at).toLocaleString(),
+                        is_read: n.is_read
+                    })))
+                } else {
+                    setNotifications([]) 
+                }
+
+                // FETCH ACTIVITIES (CLOCK)
+                let query = supabase
                     .from('temp_leads_basics')
                     .select(`
                         id,
@@ -57,9 +85,14 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                             stage_name
                         )
                     `)
-                    .eq('assigned_csr', user.id)
                     .order('created_at', { ascending: false })
                     .limit(5)
+
+                if (profile && profile.role === 'csr') {
+                    query = query.eq('assigned_csr', user.id)
+                }
+
+                const { data: leads } = await query
 
                 if (leads) {
                     const mapped = leads.map(l => ({
@@ -70,7 +103,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                             : (l.current_stage as any)?.stage_name || 'New Lead',
                         time: new Date(l.created_at).toLocaleString()
                     }))
-                    setNotifications(mapped)
+                    setActivities(mapped)
                 }
             }
         }
@@ -119,13 +152,14 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                         <button
                             onClick={() => {
                                 setNotificationsOpen(!notificationsOpen)
+                                setActivityOpen(false)
                                 setProfileOpen(false)
                             }}
                             className={`p-2 rounded-full transition-all relative ${notificationsOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
                             aria-label="Notifications"
                         >
                             <Bell size={22} />
-                            {notifications.length > 0 && (
+                            {notifications.some((n) => !n.is_read) && (
                                 <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-[#10B889] rounded-full"></span>
                             )}
                         </button>
@@ -133,17 +167,83 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                         {notificationsOpen && (
                             <div className="absolute right-0 top-12 lg:top-14 w-[min(320px,calc(100vw-1.5rem))] bg-white rounded-2xl shadow-2xl py-0 text-gray-800 z-50 border border-gray-100 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
                                 <div className="px-4 py-3 sm:px-5 sm:py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Recent Activity</h3>
-                                    <span className="text-[10px] font-bold bg-[#10B889]/10 text-[#10B889] px-2 py-0.5 rounded-full uppercase tracking-wider">Updates</span>
+                                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Notifications</h3>
+                                    <span className="text-[10px] font-bold bg-red-500/10 text-red-600 px-2 py-0.5 rounded-full uppercase tracking-wider">Alerts</span>
                                 </div>
                                 <div className="max-h-[min(400px,55vh)] overflow-y-auto">
                                     {notifications.length > 0 ? (
                                         notifications.map((n) => (
                                             <div 
                                                 key={n.id} 
-                                                className="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-50 hover:bg-emerald-50/30 transition-colors cursor-pointer group"
+                                                className={`px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-50 hover:bg-emerald-50/30 transition-colors cursor-pointer group ${!n.is_read ? 'bg-blue-50/20' : ''}`}
                                                 onClick={() => {
                                                     setNotificationsOpen(false)
+                                                    router.push(n.lead_id ? `/csr/leads/${n.lead_id}` : '/csr/activity-log')
+                                                }}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center text-red-500 flex-shrink-0 group-hover:bg-red-500 group-hover:text-white transition-colors">
+                                                        <Bell size={16} />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-start justify-between gap-2">
+                                                            <p className={`text-sm group-hover:text-emerald-700 transition-colors truncate leading-tight ${!n.is_read ? 'font-bold text-gray-900' : 'font-medium text-gray-700'}`}>
+                                                                {n.name}
+                                                            </p>
+                                                            {!n.is_read && <span className="w-2 h-2 rounded-full bg-blue-500 mt-1 flex-shrink-0"></span>}
+                                                        </div>
+                                                        <p className="text-xs text-gray-600 mt-1 font-medium break-words whitespace-pre-wrap">
+                                                            {n.status}
+                                                        </p>
+                                                        <div className="flex items-center gap-1.5 mt-2 text-[10px] text-gray-400 font-medium">
+                                                            <Clock size={11} />
+                                                            {n.time}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="p-8 text-center flex flex-col items-center">
+                                            <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
+                                                <Bell size={24} className="text-gray-300" />
+                                            </div>
+                                            <p className="text-gray-500 font-medium italic text-sm">You have no unread notifications.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Recent Activity Clock */}
+                    <div className="relative" ref={activityRef}>
+                        <button
+                            onClick={() => {
+                                setActivityOpen(!activityOpen)
+                                setNotificationsOpen(false)
+                                setProfileOpen(false)
+                            }}
+                            className={`p-2 rounded-full transition-all relative ${activityOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                            aria-label="Recent Activity"
+                        >
+                            <Clock size={22} />
+                        </button>
+
+                        {activityOpen && (
+                            <div className="absolute right-0 top-12 lg:top-14 w-[min(320px,calc(100vw-1.5rem))] bg-white rounded-2xl shadow-2xl py-0 text-gray-800 z-50 border border-gray-100 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="px-4 py-3 sm:px-5 sm:py-4 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Recent Activity</h3>
+                                    <span className="text-[10px] font-bold bg-[#10B889]/10 text-[#10B889] px-2 py-0.5 rounded-full uppercase tracking-wider">Updates</span>
+                                </div>
+                                <div className="max-h-[min(400px,55vh)] overflow-y-auto">
+                                    {activities.length > 0 ? (
+                                        activities.map((n) => (
+                                            <div 
+                                                key={n.id} 
+                                                className="px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-50 hover:bg-emerald-50/30 transition-colors cursor-pointer group"
+                                                onClick={() => {
+                                                    setActivityOpen(false)
                                                     router.push('/csr/activity-log')
                                                 }}
                                             >
@@ -172,15 +272,15 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                                     ) : (
                                         <div className="p-8 text-center flex flex-col items-center">
                                             <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3">
-                                                <Bell size={24} className="text-gray-300" />
+                                                <Clock size={24} className="text-gray-300" />
                                             </div>
-                                            <p className="text-gray-500 font-medium italic text-sm">No recent updates found.</p>
+                                            <p className="text-gray-500 font-medium italic text-sm">No recent leads found.</p>
                                         </div>
                                     )}
                                 </div>
                                 <button
                                     onClick={() => {
-                                        setNotificationsOpen(false)
+                                        setActivityOpen(false)
                                         router.push('/csr/activity-log')
                                     }}
                                     className="w-full py-3 text-sm font-bold text-[#2E5C85] hover:bg-gray-50 transition-colors border-t border-gray-100 uppercase tracking-widest"

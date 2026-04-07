@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     /* ================= FETCH LEAD ================= */
     const { data: lead, error: leadError } = await supabaseServer
       .from('temp_leads_basics')
-      .select('id, client_name, email, stage_metadata')
+      .select('id, client_name, email, stage_metadata, status')
       .eq('id', leadId)
       .single()
 
@@ -111,9 +111,16 @@ export async function POST(req: Request) {
       email_sent_at: new Date().toISOString(),
     }
 
+    /* ================= DETERMINE NEW STATUS ================= */
+    let newStatus = lead.status;
+    if (lead.status !== 'SUBMITTED' && lead.status !== 'ACCEPTED') {
+      newStatus = 'WAITING_FOR_SUBMISSION';
+    }
+
     const { error: updateError } = await supabaseServer
       .from('temp_leads_basics')
       .update({
+        status: newStatus,
         send_email: true,
         intake_email_sent: true,
         stage_metadata: updatedStageMetadata,

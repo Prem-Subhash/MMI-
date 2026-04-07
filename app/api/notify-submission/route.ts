@@ -1,27 +1,9 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { createServer } from '@/lib/supabaseServer'
 import { sendGraphEmail } from '@/lib/microsoftGraph'
 
 export async function POST(req: Request) {
     try {
-        const supabaseSession = await createServer()
-        const { data: { user } } = await supabaseSession.auth.getUser()
-
-        if (!user) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-        }
-
-        const { data: profile } = await supabaseSession
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single()
-
-        if (!profile || !['csr', 'admin', 'superadmin'].includes(profile.role)) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-        }
-
         const { leadId, intakeId, formType } = await req.json()
 
         let targetLeadId = leadId
@@ -49,7 +31,7 @@ export async function POST(req: Request) {
         /* ================= FETCH LEAD ================= */
         const { data: lead, error: leadError } = await supabaseServer
             .from('temp_leads_basics')
-            .select('assigned_csr, stage_metadata')
+            .select('assigned_csr, stage_metadata, status, client_name')
             .eq('id', targetLeadId)
             .single()
 
@@ -59,6 +41,21 @@ export async function POST(req: Request) {
                 { error: 'Lead not found' },
                 { status: 404 }
             )
+        }
+
+        /* ================= UPDATE LEAD STATUS ================= */
+        const newStatus = lead.status === 'ACCEPTED' ? 'ACCEPTED' : 'SUBMITTED'
+
+        const { error: updateError } = await supabaseServer
+            .from('temp_leads_basics')
+            .update({
+                status: newStatus,
+                form_submitted_at: new Date().toISOString()
+            })
+            .eq('id', targetLeadId)
+
+        if (updateError) {
+            console.error('FAILED TO UPDATE LEAD STATUS:', updateError)
         }
 
         /* ================= DETERMINE RECIPIENTS ================= */
@@ -97,6 +94,48 @@ export async function POST(req: Request) {
                 { warning: `Email notification failed: ${emailError.message}` },
                 { status: 500 }
             )
+        }
+
+        /* ================= INSERT UI NOTIFICATIONS ================= */
+        try {
+            const notificationTargets = new Set<string>()
+            
+            if (lead.assigned_csr) {
+                notificationTargets.add(lead.assigned_csr)
+            }
+
+            const { data: admins } = await supabaseServer
+                .from('profiles')
+                .select('id')
+                .in('role', ['admin', 'superadmin'])
+
+            if (admins) {
+                admins.forEach(admin => notificationTargets.add(admin.id))
+            }
+
+            if (notificationTargets.size > 0) {
+                const clientName = lead?.client_name ? lead.client_name : 'Client'
+
+                const notificationsToInsert = Array.from(notificationTargets).map(userId => ({
+                    user_id: userId,
+                    title: 'Form Submitted',
+                    message: `${clientName} has submitted intake form`,
+                    lead_id: targetLeadId,
+                    link: `/csr/leads/${targetLeadId}`
+                }))
+
+                const { error: notifError } = await supabaseServer
+                    .from('user_notifications')
+                    .insert(notificationsToInsert)
+
+                if (notifError) {
+                    console.error('FAILED TO INSERT UI NOTIFICATIONS:', notifError)
+                } else {
+                    console.log('UI NOTIFICATIONS INSERTED SUCCESSFULLY')
+                }
+            }
+        } catch (notifErr: any) {
+            console.error('Error inserting UI notifications:', notifErr)
         }
 
         return NextResponse.json({ success: true })
