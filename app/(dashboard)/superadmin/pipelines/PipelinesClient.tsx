@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Edit2, Loader2, Save, ChevronRight, X } from 'lucide-react'
+import { toast } from '@/lib/toast'
 import Link from 'next/link'
 
 type Pipeline = {
@@ -39,6 +40,7 @@ export default function PipelinesClient() {
             setPipelines(j.pipelines || [])
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -59,9 +61,11 @@ export default function PipelinesClient() {
 
             setShowCreate(false)
             setFormData({ name: '', category: 'Personal Lines', is_renewal: false })
+            toast('Pipeline created successfully!', 'success')
             fetchPipelines()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setCreateLoading(false)
         }
@@ -79,9 +83,11 @@ export default function PipelinesClient() {
             if (j.error) throw new Error(j.error)
 
             setEditingId(null)
+            toast('Pipeline updated successfully!', 'success')
             fetchPipelines()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -93,9 +99,11 @@ export default function PipelinesClient() {
             const res = await fetch(`/api/superadmin/pipelines?id=${id}`, { method: 'DELETE' })
             const j = await res.json()
             if (j.error) throw new Error(j.error)
+            toast('Pipeline deleted successfully!', 'success')
             fetchPipelines()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -110,7 +118,7 @@ export default function PipelinesClient() {
                         onClick={() => setShowCreate(false)}
                         className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl hover:bg-red-700 transition-all font-bold shadow-sm text-sm"
                     >
-                        <X size={18} /> x
+                        <X size={18} /> Cancel
                     </button>
                 )}
                 <button
@@ -124,7 +132,17 @@ export default function PipelinesClient() {
             </div>
 
             {showCreate && (
-                <form onSubmit={handleCreate} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden mb-6">
+                    <div className="px-6 py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center gap-3">
+                        <div className="p-2 bg-white/20 text-white rounded-lg backdrop-blur-sm">
+                            <Plus size={18} />
+                        </div>
+                        <div>
+                            <h2 className="text-xs font-bold text-white uppercase tracking-widest">New Marketing Pipeline</h2>
+                            <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Streamline acquisition and retention</p>
+                        </div>
+                    </div>
+                    <form onSubmit={handleCreate} className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-gray-700">Pipeline Name</label>
                         <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Health Insurance" />
@@ -137,10 +155,11 @@ export default function PipelinesClient() {
                         <input type="checkbox" checked={formData.is_renewal} onChange={e => setFormData({ ...formData, is_renewal: e.target.checked })} className="w-5 h-5 text-indigo-600 rounded" />
                         <label className="text-sm font-medium text-gray-700">Is Renewal Pipeline?</label>
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition flex justify-center items-center h-[42px] font-medium disabled:opacity-50">
-                        {createLoading ? <Loader2 size={18} className="animate-spin" /> : 'Create Pipeline'}
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
+                        {createLoading ? <Loader2 size={20} className="animate-spin" /> : 'Create Pipeline'}
                     </button>
-                </form>
+                    </form>
+                </div>
             )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -181,7 +200,7 @@ export default function PipelinesClient() {
                                     {editingId === pipeline.id ? (
                                         <>
                                             <button onClick={() => handleUpdate(pipeline.id)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded" title="Save"><Save size={16} /></button>
-                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> x</button>
+                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> Cancel</button>
                                         </>
                                     ) : (
                                         <>
