@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
+import { toast } from '@/lib/toast'
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -25,6 +26,7 @@ export default function LeadReviewPage() {
   const [history, setHistory] = useState<any[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+
 
   /* ================= LOAD LEAD + FORM ================= */
   useEffect(() => {
@@ -47,7 +49,7 @@ export default function LeadReviewPage() {
         .single()
 
       if (leadError || !leadData) {
-        setError('Lead not found')
+        toast('Lead not found', 'error')
         setLoading(false)
         return
       }
@@ -162,9 +164,10 @@ export default function LeadReviewPage() {
         return
       }
 
+      toast('Lead accepted successfully!', 'success')
       router.refresh()
     } catch (err: any) {
-      setError(err.message || 'Something went wrong')
+      toast(err.message || 'Something went wrong', 'error')
     } finally {
       setAccepting(false)
     }
@@ -239,7 +242,7 @@ export default function LeadReviewPage() {
                   <button
                     onClick={() => {
                       if (!lead.pipeline_id) {
-                        alert('Pipeline not assigned to this lead')
+                        toast('Pipeline not assigned to this lead', 'warning')
                         return
                       }
                       setShowUpdateModal(true)

@@ -28,11 +28,21 @@ module.exports = {
           '60%':      { transform: 'translateX(-4px)' },
           '80%':      { transform: 'translateX(4px)' },
         },
+        slideInRight: {
+          '0%':   { opacity: '0', transform: 'translateX(32px)' },
+          '100%': { opacity: '1', transform: 'translateX(0)' },
+        },
+        slideOutRight: {
+          '0%':   { opacity: '1', transform: 'translateX(0)' },
+          '100%': { opacity: '0', transform: 'translateX(32px)' },
+        },
       },
       animation: {
         'fade-slide-down': 'fadeSlideDown 0.3s ease both',
         'fade-in':         'fadeIn 0.25s ease both',
         'shake':           'shake 0.4s ease',
+        'slide-in-right':  'slideInRight 0.3s ease-out both',
+        'slide-out-right': 'slideOutRight 0.3s ease-in both',
       },
     },
   },

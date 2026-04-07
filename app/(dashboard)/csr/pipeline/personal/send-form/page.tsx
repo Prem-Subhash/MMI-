@@ -1,8 +1,9 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
 
 type EmailTemplate = {
   id: string
@@ -25,6 +26,7 @@ export default function SendFormPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
 
   /* ================= LOAD LEAD + TEMPLATES ================= */
   useEffect(() => {
@@ -209,7 +211,7 @@ export default function SendFormPage() {
       return
     }
 
-    alert(result.message || 'Email sent successfully to the client.')
+    toast(result.message || 'Email sent successfully to the client.', 'success')
     router.push('/csr/leads')
   }
 

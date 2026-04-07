@@ -1,12 +1,14 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { Calendar, Download, Filter, FileText, FileSpreadsheet } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
 
 export default function MonthlyReportPage() {
     const [loading, setLoading] = useState(false)
     const [generating, setGenerating] = useState<'excel' | 'pdf' | null>(null)
+    
 
     // Constants for Line of Business
     const CATEGORIES = [
@@ -107,7 +109,7 @@ export default function MonthlyReportPage() {
             setTotalRecords(json.pagination?.total || rawData.length)
         } catch (err: any) {
             console.error(err)
-            alert('Error: ' + err.message)
+            toast('Error: ' + err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -150,6 +152,7 @@ export default function MonthlyReportPage() {
 
     const handleExport = async (type: 'excel' | 'pdf') => {
         setGenerating(type)
+        toast('Your report is being processed. Please wait. The file will be downloaded shortly.', 'info', 6000)
         try {
             const payload = {
                 start_date: filters.fromDate,
@@ -185,7 +188,7 @@ export default function MonthlyReportPage() {
             window.URL.revokeObjectURL(url)
             document.body.removeChild(a)
         } catch (err: any) {
-            alert('Export Error: ' + err.message)
+            toast('Export Error: ' + err.message, 'error')
         } finally {
             setGenerating(null)
         }

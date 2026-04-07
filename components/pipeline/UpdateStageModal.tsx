@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
 
 type Props = {
   leadId: string
@@ -215,7 +216,7 @@ export default function UpdateStageModal({
   /* ================= LOAD STAGES ================= */
   useEffect(() => {
     if (!pipelineId) {
-      alert('Pipeline ID missing. Please refresh the page.')
+      toast('Pipeline ID missing. Please refresh the page.', 'error')
       return
     }
     loadStages()
@@ -249,7 +250,7 @@ export default function UpdateStageModal({
 
     if (stagesRes.error) {
       console.error(stagesRes.error)
-      alert('Failed to load pipeline stages')
+      toast('Failed to load pipeline stages', 'error')
       setLoading(false)
       return
     }
@@ -319,7 +320,7 @@ export default function UpdateStageModal({
         cfg.required &&
         (value === undefined || value === null || value === '')
       ) {
-        alert(`Please fill "${cfg.label}"`)
+        toast(`Please fill "${cfg.label}"`, 'warning')
         return false
       }
     }
@@ -419,7 +420,7 @@ export default function UpdateStageModal({
   /* ================= SAVE ================= */
   async function handleSave() {
     if (!selectedStageId) {
-      alert('Please select a status')
+      toast('Please select a stage first', 'warning')
       return
     }
 
@@ -467,13 +468,13 @@ export default function UpdateStageModal({
     setSaving(false)
 
     if (!res.ok) {
-      alert(result.error || 'Status update failed')
+      toast(result.error || 'Status update failed', 'error')
       console.error(result)
       return
     }
 
     // Success
-    alert('Pipeline stage updated successfully!')
+    toast('Pipeline stage updated successfully!', 'success')
     onSuccess()
     onClose()
   }

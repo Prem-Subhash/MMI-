@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, EyeOff, Mail, Lock, CheckSquare } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
+import { toast } from '@/lib/toast'
 
 /* ================= CAPTCHA GENERATOR ================= */
 const generateCaptcha = () => {
@@ -64,6 +65,7 @@ export default function LoginPage() {
 
     if (error) {
       setError(error.message)
+      toast(error.message, 'error')
       setCaptcha(generateCaptcha())
       setCaptchaInput('')
       return
@@ -85,6 +87,7 @@ export default function LoginPage() {
           accounting: '/accounting',
           superadmin: '/superadmin',
         }
+        toast(`Welcome back! Redirecting to your dashboard...`, 'success', 3000)
         router.push(roleRoutes[profile.role] || '/unauthorized')
         router.refresh()
         return
