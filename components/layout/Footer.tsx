@@ -28,7 +28,7 @@ const Footer = () => {
                     {/* Email Section */}
                     <div className="flex items-center gap-2">
                         <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Email:</p>
-                        <p className="text-xs font-bold tracking-wide text-white">support@innovativeinsurance.com</p>
+                        <p className="text-xs font-bold tracking-wide text-white"><a href="mailto:[EMAIL_ADDRESS]">support@innovativeinsurance.com</a></p>
                     </div>
 
                     {/* Social Section */}
