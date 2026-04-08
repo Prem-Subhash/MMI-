@@ -90,6 +90,7 @@ export default function EmailTemplatesClient() {
             fetchTemplates()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -103,9 +104,11 @@ export default function EmailTemplatesClient() {
             })
             const j = await res.json()
             if (j.error) throw new Error(j.error)
+            toast('Template status updated!', 'success')
             fetchTemplates()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -117,9 +120,11 @@ export default function EmailTemplatesClient() {
             const res = await fetch(`/api/superadmin/email-templates?id=${id}`, { method: 'DELETE' })
             const j = await res.json()
             if (j.error) throw new Error(j.error)
+            toast('Template deleted successfully!', 'success')
             fetchTemplates()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -130,7 +135,6 @@ export default function EmailTemplatesClient() {
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
 
             <div className="flex justify-end">
                 <button

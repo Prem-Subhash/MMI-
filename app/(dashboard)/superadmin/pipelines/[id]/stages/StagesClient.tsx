@@ -146,6 +146,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                 body: JSON.stringify({ id: targetStage.id, stage_order: targetNewOrder })
             })
 
+            toast('Stages reordered', 'success')
             fetchStages()
         } catch (err: any) {
             setError('Failed to reorder stages')
@@ -155,7 +156,6 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
 
             <div className="flex justify-end">
                 <button

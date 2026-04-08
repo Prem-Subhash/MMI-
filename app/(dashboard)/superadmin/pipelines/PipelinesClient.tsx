@@ -109,7 +109,6 @@ export default function PipelinesClient() {
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
 
             <div className="flex justify-end gap-3">
                 {showCreate && (
