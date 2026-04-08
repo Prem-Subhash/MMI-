@@ -69,7 +69,6 @@ export default function RolesClient() {
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200 flex gap-2 items-center"><ShieldAlert size={20} /><span>{error}</span></div>}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">

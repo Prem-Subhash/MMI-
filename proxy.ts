@@ -1,4 +1,5 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { createClient } from '@supabase/supabase-js'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function proxy(request: NextRequest) {
@@ -6,6 +7,7 @@ export async function proxy(request: NextRequest) {
         request: { headers: request.headers },
     })
 
+    // 1. Standard Client for User Auth
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,10 +28,16 @@ export async function proxy(request: NextRequest) {
         }
     )
 
+    // 2. Admin Client for Power-Checks
+    const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+
     const { data: { user } } = await supabase.auth.getUser()
     const pathname = request.nextUrl.pathname
 
-    if (pathname.startsWith('/login')) {
+    if (pathname.startsWith('/login') || pathname.startsWith('/unauthorized')) {
         return response
     }
 
@@ -42,15 +50,17 @@ export async function proxy(request: NextRequest) {
             return NextResponse.redirect(new URL('/login', request.url))
         }
 
-        const { data: profile } = await supabase
+        // Fetch profile with Case-Insensitive fallback
+        const { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')
             .select('role')
             .eq('id', user.id)
             .single()
 
-        const role = profile?.role
+        const role = profile?.role?.toLowerCase()
 
         if (!role) {
+            console.warn(`[PROXY] No role found for user ${user.email} (${user.id})`)
             return NextResponse.redirect(new URL('/unauthorized', request.url))
         }
 

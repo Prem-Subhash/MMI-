@@ -98,12 +98,6 @@ export default function SystemSettingsClient() {
     return (
         <form onSubmit={handleSave} className="space-y-4">
 
-            {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-200 text-sm font-medium">
-                    {error}
-                </div>
-            )}
-
             {/* ── Section 1: Company Info ── */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden">
                 <div className="px-6 py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center gap-4">

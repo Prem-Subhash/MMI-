@@ -108,12 +108,6 @@ export default function UsersClient() {
 
     return (
         <div className="space-y-8">
-            {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3 animate-shake">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                    <p className="text-sm font-bold">{error}</p>
-                </div>
-            )}
 
             <div className="flex justify-end">
                 <button
