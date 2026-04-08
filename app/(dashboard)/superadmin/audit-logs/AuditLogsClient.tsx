@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Loader2, Activity } from 'lucide-react'
+import { toast } from '@/lib/toast'
 
 type AuditLog = {
     id: string
@@ -32,6 +33,7 @@ export default function AuditLogsClient() {
             setLogs(j.logs || [])
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -52,7 +54,6 @@ export default function AuditLogsClient() {
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">

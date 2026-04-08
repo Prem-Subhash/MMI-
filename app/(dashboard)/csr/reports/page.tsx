@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect } from 'react'
 import { Calendar, Download, Filter, FileText, FileSpreadsheet } from 'lucide-react'
@@ -96,7 +96,10 @@ export default function MonthlyReportPage() {
 
             if (!res.ok) {
                 const errJson = await res.json().catch(() => ({}))
-                throw new Error(errJson.error || 'Failed to load report')
+                const errorMsg = typeof errJson.error === 'object' 
+                    ? JSON.stringify(errJson.error.fieldErrors || errJson.error) 
+                    : errJson.error || 'Failed to load report'
+                throw new Error(errorMsg)
             }
 
             const json = await res.json()
@@ -129,6 +132,7 @@ export default function MonthlyReportPage() {
         setData([])
         setFilteredData([])
         setTotalRecords(0)
+        toast('Filters and Report Preview have been cleared.', 'success')
     }
 
     const setPreset = (type: 'thisMonth' | 'lastMonth' | 'thisYear') => {
@@ -174,7 +178,10 @@ export default function MonthlyReportPage() {
 
             if (!res.ok) {
                 const json = await res.json().catch(() => ({}))
-                throw new Error(json.error || 'Export failed')
+                const errorMsg = typeof json.error === 'object'
+                    ? JSON.stringify(json.error.fieldErrors || json.error)
+                    : json.error || 'Export failed'
+                throw new Error(errorMsg)
             }
 
             const blob = await res.blob()
@@ -291,9 +298,9 @@ export default function MonthlyReportPage() {
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-1">
-                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercaseTracking-wide ">This Month</button>
-                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercaseTracking-wide">Last Month</button>
-                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercaseTracking-wide">This Year</button>
+                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide ">This Month</button>
+                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
+                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
                         </div>
                     </div>
 
@@ -518,10 +525,10 @@ export default function MonthlyReportPage() {
                                         <td className="px-4 sm:px-6 py-4 text-gray-600">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-white flex-shrink-0">
-                                                    {(row.assigned_csr_profile?.full_name || 'U')[0]}
+                                                    {(row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || 'U')[0]}
                                                 </div>
                                                 <span className="text-sm whitespace-nowrap">
-                                                    {row.assigned_csr_profile?.full_name || 'Unknown'}
+                                                    {row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || 'Unknown'}
                                                 </span>
                                             </div>
                                         </td>

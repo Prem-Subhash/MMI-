@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Plus, Trash2, Edit2, Loader2, Save, FileJson, X } from 'lucide-react'
+import { toast } from '@/lib/toast'
 
 type FormTemplate = {
     id: string
@@ -40,6 +41,7 @@ export default function FormTemplatesClient() {
             setTemplates(j.templates || [])
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -67,9 +69,11 @@ export default function FormTemplatesClient() {
 
             setShowCreate(false)
             setFormData({ form_name: '', insurance_category: '', is_active: true, fields: '{}' })
+            toast('Form template created successfully!', 'success')
             fetchTemplates()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setCreateLoading(false)
         }
@@ -94,9 +98,11 @@ export default function FormTemplatesClient() {
             if (j.error) throw new Error(j.error)
 
             setEditingId(null)
+            toast('Form template updated successfully!', 'success')
             fetchTemplates()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -108,9 +114,11 @@ export default function FormTemplatesClient() {
             const res = await fetch(`/api/superadmin/form-templates?id=${id}`, { method: 'DELETE' })
             const j = await res.json()
             if (j.error) throw new Error(j.error)
+            toast('Form template deleted successfully!', 'success')
             fetchTemplates()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -121,7 +129,6 @@ export default function FormTemplatesClient() {
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200 flex gap-2"><FileJson size={20} />{error}</div>}
 
             <div className="flex justify-end">
                 <button
@@ -129,12 +136,22 @@ export default function FormTemplatesClient() {
                     className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition font-medium shadow-sm"
                 >
                     {showCreate ? <X size={18} /> : <Plus size={18} />}
-                    {showCreate ? 'x cancel' : 'Build Form'}
+                    {showCreate ? 'Cancel' : 'Build Form'}
                 </button>
             </div>
 
             {showCreate && (
-                <form onSubmit={handleCreate} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col gap-4">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden mb-6">
+                    <div className="px-6 py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center gap-3">
+                        <div className="p-2 bg-white/20 text-white rounded-lg backdrop-blur-sm">
+                            <FileJson size={18} />
+                        </div>
+                        <div>
+                            <h2 className="text-xs font-bold text-white uppercase tracking-widest">New Form Schema</h2>
+                            <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Define structured intake fields</p>
+                        </div>
+                    </div>
+                    <form onSubmit={handleCreate} className="p-6 flex flex-col gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-gray-700">Form Name</label>
@@ -155,7 +172,8 @@ export default function FormTemplatesClient() {
                     <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition flex justify-center items-center h-[42px] font-medium disabled:opacity-50">
                         {createLoading ? <Loader2 size={18} className="animate-spin" /> : 'Save Form Schema'}
                     </button>
-                </form>
+                    </form>
+                </div>
             )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -181,7 +199,7 @@ export default function FormTemplatesClient() {
                                             </div>
                                             <textarea value={editForm.fieldsStr} onChange={e => setEditForm({ ...editForm, fieldsStr: e.target.value })} className="border p-2 rounded w-full outline-none font-mono text-xs h-32" placeholder="{}" />
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> x</button>
+                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> Cancel</button>
                                                 <button onClick={() => handleUpdate(template.id)} className="px-4 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded font-medium"><Save size={16} /> Save JSON Schema</button>
                                             </div>
                                         </div>

@@ -2,6 +2,7 @@
 CREATE OR REPLACE FUNCTION public.get_report_summary(
     p_start_date DATE,
     p_end_date DATE,
+    p_date_type TEXT DEFAULT 'effective',
     p_flow TEXT DEFAULT NULL,
     p_category TEXT DEFAULT NULL,
     p_csr UUID DEFAULT NULL
@@ -22,8 +23,18 @@ BEGIN
         'commercial_line_count', COUNT(id) FILTER (WHERE insurence_category = 'commercial')
     ) INTO result
     FROM public.temp_leads_basics
-    WHERE effective_date >= p_start_date
-      AND effective_date <= p_end_date
+    WHERE (
+        CASE 
+            WHEN p_date_type = 'expiration' THEN renewal_date
+            ELSE effective_date
+        END
+    ) >= p_start_date
+    AND (
+        CASE 
+            WHEN p_date_type = 'expiration' THEN renewal_date
+            ELSE effective_date
+        END
+    ) <= p_end_date
       AND (p_flow IS NULL OR p_flow = '' OR policy_flow = p_flow)
       AND (p_category IS NULL OR p_category = '' OR insurence_category = p_category)
       AND (p_csr IS NULL OR assigned_csr = p_csr);
