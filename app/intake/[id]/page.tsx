@@ -9,10 +9,11 @@ import {
   UploadCloud, 
   ChevronRight, 
   CheckCircle2, 
-  Loader2, 
   MousePointer2,
-  FileText
+  FileText,
+  XCircle
 } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 
 import { FormHeader, FormContainer, SectionCard, Button } from '@/components/ui/IntakeUI'
 import HomeInsuranceForm from '@/components/forms/HomeInsuranceForm'
@@ -140,8 +141,7 @@ export default function IntakeFormPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
-        <p className="mt-4 text-gray-500 font-medium tracking-tight">Syncing application...</p>
+        <Loading message="Syncing application..." />
       </div>
     )
   }
@@ -151,7 +151,7 @@ export default function IntakeFormPage() {
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 font-sans">
         <div className="p-12 bg-white rounded-[32px] shadow-2xl shadow-black/5 max-w-md text-center border border-gray-100">
           <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <Loader2 className="w-8 h-8" />
+            <XCircle size={32} />
           </div>
           <h2 className="text-2xl font-bold text-gray-900 tracking-tight mb-2">{error}</h2>
           <p className="text-gray-500 font-medium tracking-tight leading-relaxed">The link you followed may be invalid or expired. Please contact support.</p>
@@ -263,8 +263,8 @@ export default function IntakeFormPage() {
                 </label>
                 
                 {uploadingFiles && (
-                  <div className="flex items-center gap-4 text-red-600 font-bold bg-red-50 p-6 rounded-2xl border border-red-100 animate-pulse">
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                  <div className="flex items-center gap-4 text-emerald-600 font-bold bg-emerald-50 p-6 rounded-2xl border border-emerald-100 italic">
+                    <Spinner size={24} />
                     Encrypting and moving to secure storage...
                   </div>
                 )}

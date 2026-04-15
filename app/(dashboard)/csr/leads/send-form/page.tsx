@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -6,6 +6,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from '@/lib/toast'
+
+import Loading from '@/components/ui/Loading'
 
 type EmailTemplate = {
   id: string
@@ -218,7 +220,8 @@ export default function SendFormPage() {
   }
 
   /* ================= UI STATES ================= */
-  if (loading) return <div className="p-10">Loading…</div>
+  if (loading) return <Loading message="Fetching lead details..." />
+
 
   /* ================= UI ================= */
   return (

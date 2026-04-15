@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, ArrowUp, ArrowDown, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, ArrowUp, ArrowDown, X } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 type Stage = {
@@ -188,7 +189,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                         <input required type="number" value={formData.stage_order} onChange={e => setFormData({ ...formData, stage_order: parseInt(e.target.value) || 1 })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" />
                     </div>
                     <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded-xl w-32 h-[50px] hover:bg-emerald-700 transition flex justify-center items-center font-bold disabled:opacity-50 shadow-sm">
-                        {createLoading ? <Loader2 size={18} className="animate-spin" /> : 'Save Stage'}
+                        {createLoading ? <Spinner size={18} /> : 'Save Stage'}
                     </button>
                     </form>
                 </div>
@@ -206,7 +207,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                            <tr>
+                                <td colSpan={4} className="p-0">
+                                    <Loading message="Fetching pipeline stages..." />
+                                </td>
+                            </tr>
                         ) : stages.map((stage, index) => (
                             <tr key={stage.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4">

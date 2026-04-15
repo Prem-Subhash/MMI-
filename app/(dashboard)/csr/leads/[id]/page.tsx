@@ -7,6 +7,7 @@ import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
+import Loading, { Spinner } from '@/components/ui/Loading'
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -175,7 +176,11 @@ export default function LeadReviewPage() {
 
   /* ================= UI STATES ================= */
   if (loading) {
-    return <div className="p-10 text-center text-gray-500">Loading lead details...</div>
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loading message="Loading lead details..." />
+      </div>
+    )
   }
 
   if (error) {
@@ -312,9 +317,9 @@ export default function LeadReviewPage() {
                   <button
                     onClick={handleAccept}
                     disabled={accepting}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-colors"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-colors flex items-center justify-center"
                   >
-                    {accepting ? 'Accepting...' : 'Accept Lead'}
+                    {accepting ? <Spinner size={24} /> : 'Accept Lead'}
                   </button>
                 )}
               </div>
@@ -454,9 +459,9 @@ export default function LeadReviewPage() {
 
               <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50 space-y-4">
                 {historyLoading ? (
-                  <div className="py-12 text-center text-slate-500">
-                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-                    Loading history...
+                  <div className="py-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
+                    <Spinner size={32} />
+                    <p className="font-medium">Loading history...</p>
                   </div>
                 ) : history.length === 0 ? (
                   <div className="py-12 text-center text-emerald-500 bg-white rounded-xl border border-dashed border-slate-300">

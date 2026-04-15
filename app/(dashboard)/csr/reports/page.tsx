@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Download, Filter, FileText, FileSpreadsheet } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
+import Loading, { Spinner } from '@/components/ui/Loading'
 
 export default function MonthlyReportPage() {
     const [loading, setLoading] = useState(false)
@@ -216,14 +217,14 @@ export default function MonthlyReportPage() {
                         disabled={!!generating}
                         className="flex items-center justify-center gap-2 bg-emerald-600 text-white border border-emerald-200 px-4 py-2.5 rounded-lg hover:bg-emerald-600 hover:border-emerald-300 hover:shadow-md disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
-                        {generating === 'excel' ? 'Generating...' : <><FileSpreadsheet size={16} /> Export Excel</>}
+                        {generating === 'excel' ? <><Spinner size={16} /> Generating...</> : <><FileSpreadsheet size={16} /> Export Excel</>}
                     </button>
                     <button
                         onClick={() => handleExport('pdf')}
                         disabled={!!generating}
                         className="flex items-center justify-center gap-2 bg-rose-600 text-white border border-rose-200 px-4 py-2.5 rounded-lg hover:bg-rose-600 hover:border-rose-300 hover:shadow-md disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
-                        {generating === 'pdf' ? 'Generating...' : <><FileText size={16} /> Export PDF</>}
+                        {generating === 'pdf' ? <><Spinner size={16} /> Generating...</> : <><FileText size={16} /> Export PDF</>}
                     </button>
                 </div>
             </div>
@@ -426,11 +427,7 @@ export default function MonthlyReportPage() {
                         disabled={loading}
                         className="bg-brand text-white px-8 py-3 rounded-xl hover:bg-brand/80 transition-all shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 font-bold flex items-center gap-2 text-sm w-full sm:w-auto justify-center active:scale-95 disabled:opacity-70"
                     >
-                        {loading ? (
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <FileText size={18} />
-                        )}
+                        {loading ? <Spinner size={18} /> : <FileText size={18} />}
                         Generate Report
                     </button>
                 </div>
@@ -462,11 +459,7 @@ export default function MonthlyReportPage() {
                     </div>
 
                 {loading ? (
-                    <div className="p-16 text-center text-gray-500 flex flex-col items-center justify-center">
-                        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="font-medium text-gray-600">Generating report preview...</p>
-                        <p className="text-sm text-gray-400 mt-1">This may take a moment</p>
-                    </div>
+                    <Loading message="Generating report preview..." />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left min-w-[640px]">
