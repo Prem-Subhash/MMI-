@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
+import { Spinner } from '@/components/ui/Loading'
 
 type Props = {
   leadId: string
@@ -501,7 +502,7 @@ export default function UpdateStageModal({
 
         {loading ? (
           <div className="py-12 text-center text-gray-500 flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner size={32} />
             <p className="font-medium">Loading pipeline stages...</p>
           </div>
         ) : (
@@ -629,7 +630,7 @@ export default function UpdateStageModal({
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <Spinner size={16} />
                 Saving...
               </>
             ) : (

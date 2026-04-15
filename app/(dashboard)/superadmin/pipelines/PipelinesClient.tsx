@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, ChevronRight, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, ChevronRight, X } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import Link from 'next/link'
 
@@ -155,7 +156,7 @@ export default function PipelinesClient() {
                         <label className="text-sm font-medium text-gray-700">Is Renewal Pipeline?</label>
                     </div>
                     <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
-                        {createLoading ? <Loader2 size={20} className="animate-spin" /> : 'Create Pipeline'}
+                        {createLoading ? <Spinner size={20} /> : 'Create Pipeline'}
                     </button>
                     </form>
                 </div>
@@ -173,7 +174,11 @@ export default function PipelinesClient() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                            <tr>
+                                <td colSpan={4} className="p-0">
+                                    <Loading message="Fetching pipelines..." />
+                                </td>
+                            </tr>
                         ) : pipelines.map(pipeline => (
                             <tr key={pipeline.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4 text-gray-800 font-medium">

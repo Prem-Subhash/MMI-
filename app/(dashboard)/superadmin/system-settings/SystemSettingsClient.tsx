@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Save, CheckCircle2, Building2, Mail, Clock, GitBranch } from 'lucide-react'
+import { Save, CheckCircle2, Building2, Mail, Clock, GitBranch } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 const SETTING_KEYS = {
@@ -87,12 +88,7 @@ export default function SystemSettingsClient() {
     }
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-gray-400">
-                <Loader2 className="animate-spin text-emerald-500" size={32} />
-                <p className="text-sm font-medium">Loading settings...</p>
-            </div>
-        )
+        return <Loading message="Loading settings..." />
     }
 
     return (
@@ -188,9 +184,9 @@ export default function SystemSettingsClient() {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed min-w-[160px] justify-center"
                 >
-                    {saving ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
+                    {saving ? <Spinner size={16} /> : <Save size={16} />}
                     {saving ? 'Saving...' : 'Save Settings'}
                 </button>
             </div>

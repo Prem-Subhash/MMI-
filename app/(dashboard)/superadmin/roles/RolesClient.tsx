@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Save, Edit2, ShieldAlert, X } from 'lucide-react'
+import { Save, Edit2, ShieldAlert, X } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 type UserProfile = {
@@ -82,7 +83,11 @@ export default function RolesClient() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                            <tr>
+                                <td colSpan={4} className="p-0">
+                                    <Loading message="Fetching access roles..." />
+                                </td>
+                            </tr>
                         ) : users.map(user => (
                             <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4 text-gray-800 font-medium">

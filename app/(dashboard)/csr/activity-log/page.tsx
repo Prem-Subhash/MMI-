@@ -14,6 +14,7 @@ import {
   Layers
 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import Loading, { Spinner } from '@/components/ui/Loading'
 
 export default function ActivityLogPage() {
   const router = useRouter()
@@ -131,10 +132,7 @@ export default function ActivityLogPage() {
       {/* Main Log List */}
       <div className="space-y-4">
         {loading ? (
-          <div className="p-20 text-center flex flex-col items-center">
-            <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
-            <p className="text-gray-500 font-medium">Loading your activity history...</p>
-          </div>
+          <Loading message="Loading your activity history..." />
         ) : filteredLeads.length > 0 ? (
           filteredLeads.map((item, idx) => (
             <div 
