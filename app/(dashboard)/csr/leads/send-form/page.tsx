@@ -314,20 +314,30 @@ export default function SendFormPage() {
               {/* PREVIEW BUTTON */}
               <button
                 onClick={handlePreview}
-                className="w-full py-4 bg-gray-800 hover:bg-gray-900 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 group active:scale-[0.98]"
+                className="w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm"
               >
-                <span>Preview Form (CSR View)</span>
-                <span className="group-hover:translate-x-1 transition-transform">
-                  →
-                </span>
+                <div className="flex items-center gap-3 bg">
+                  <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  </div>
+                  <div className="text-left ">
+                    <p className="text-white font-bold text-sm leading-tight">Preview Form</p>
+                    <p className="text-white text-xs font-medium mt-0.5">Open a CSR view of the intake form in a new tab</p>
+                  </div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
               </button>
 
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* TEMPLATE SELECT */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between ml-1">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                    <div className="flex items-center justify-between ml-1 h-5">
+                      <label className="text-[10px] font-bold text-black uppercase tracking-widest">
                         Email Purpose ({formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'})
                       </label>
                       <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${formType === 'auto' ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20'}`}>
@@ -339,7 +349,7 @@ export default function SendFormPage() {
                       <select
                         value={templateId}
                         onChange={e => setTemplateId(e.target.value)}
-                        className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
+                        className="peer w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm text-gray-900"
                         disabled={templates.length === 0}
                       >
                         {templates.length === 0 ? (
@@ -364,12 +374,11 @@ export default function SendFormPage() {
                           </>
                         )}
                       </select>
-                      <p className="mt-1 text-[10px] text-gray-400 font-medium ml-1 flex items-center gap-1">
-                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                      <p className="mt-1 text-[10px] text-black font-medium ml-1">
                         Showing only {formType === 'auto' ? 'Auto' : 'Home'} Insurance templates
                       </p>
 
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                      <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
                         <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
                           <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                         </svg>
@@ -379,15 +388,17 @@ export default function SendFormPage() {
 
                   {/* FORM TYPE SELECT (REQUIRED FOR INTAKE FORMS) */}
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                      Form Type
-                    </label>
+                    <div className="flex items-center ml-1 h-5">
+                      <label className="text-[10px] font-bold text-black uppercase tracking-widest">
+                        Form Type
+                      </label>
+                    </div>
 
                     <div className="relative">
                       <select
                         value={formType}
                         onChange={e => setFormType(e.target.value)}
-                        className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
+                        className="peer w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm text-gray-900"
                       >
                         <option value="">Select Form Type</option>
                         <option value="home">Home</option>
@@ -396,13 +407,20 @@ export default function SendFormPage() {
                         <option value="landlord_home">Landlord Home</option>
                       </select>
 
-                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                      <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
                         <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
                           <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                         </svg>
                       </div>
                     </div>
                   </div>
+                </div>
+
+                {/* SECTION DIVIDER */}
+                <div className="flex items-center gap-3 py-1">
+                  <div className="flex-1 h-px bg-black" />
+                  <span className="text-[10px] font-bold text-black uppercase tracking-widest px-1">Email Configuration</span>
+                  <div className="flex-1 h-px bg-black" />
                 </div>
 
                 <EmailGenerator
@@ -424,7 +442,7 @@ export default function SendFormPage() {
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <button
                   onClick={() => router.back()}
-                  className="w-full sm:w-1/3 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+                  className="w-full sm:w-1/3 bg-[#10B889] border border-gray-200 text-white hover:bg-[#10B889]/80 font-bold py-4 rounded-xl shadow-sm transition-all active:scale-[0.99] flex items-center justify-center gap-2"
                 >
                   <ArrowLeft size={20} />
                   Back
