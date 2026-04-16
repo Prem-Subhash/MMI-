@@ -26,9 +26,16 @@ export async function POST(req: Request) {
 
     console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId, hasCustom: !!customBody })
 
-    if (!leadId || !templateId || !formType || !intakeId) {
+    if (!leadId || !templateId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    if (!customBody && (!formType || !intakeId)) {
+      return NextResponse.json(
+        { error: 'Missing form required fields' },
         { status: 400 }
       )
     }
@@ -77,7 +84,7 @@ export async function POST(req: Request) {
         )
       }
 
-      const formLink = `${baseUrl}/intake/${intakeId}?type=${formType}`
+      const formLink = intakeId && formType ? `${baseUrl}/intake/${intakeId}?type=${formType}` : ''
 
       /* ================= PREPARE EMAIL BODY ================= */
       finalSubject = finalSubject || template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
