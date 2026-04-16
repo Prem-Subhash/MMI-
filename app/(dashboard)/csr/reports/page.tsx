@@ -3,10 +3,13 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Download, Filter, FileText, FileSpreadsheet } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
+import Loading, { Spinner } from '@/components/ui/Loading'
 
 export default function MonthlyReportPage() {
     const [loading, setLoading] = useState(false)
     const [generating, setGenerating] = useState<'excel' | 'pdf' | null>(null)
+    
 
     // Constants for Line of Business
     const CATEGORIES = [
@@ -94,7 +97,10 @@ export default function MonthlyReportPage() {
 
             if (!res.ok) {
                 const errJson = await res.json().catch(() => ({}))
-                throw new Error(errJson.error || 'Failed to load report')
+                const errorMsg = typeof errJson.error === 'object' 
+                    ? JSON.stringify(errJson.error.fieldErrors || errJson.error) 
+                    : errJson.error || 'Failed to load report'
+                throw new Error(errorMsg)
             }
 
             const json = await res.json()
@@ -107,7 +113,7 @@ export default function MonthlyReportPage() {
             setTotalRecords(json.pagination?.total || rawData.length)
         } catch (err: any) {
             console.error(err)
-            alert('Error: ' + err.message)
+            toast('Error: ' + err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -127,6 +133,7 @@ export default function MonthlyReportPage() {
         setData([])
         setFilteredData([])
         setTotalRecords(0)
+        toast('Filters and Report Preview have been cleared.', 'success')
     }
 
     const setPreset = (type: 'thisMonth' | 'lastMonth' | 'thisYear') => {
@@ -150,6 +157,7 @@ export default function MonthlyReportPage() {
 
     const handleExport = async (type: 'excel' | 'pdf') => {
         setGenerating(type)
+        toast('Your report is being processed. Please wait. The file will be downloaded shortly.', 'info', 6000)
         try {
             const payload = {
                 start_date: filters.fromDate,
@@ -171,7 +179,10 @@ export default function MonthlyReportPage() {
 
             if (!res.ok) {
                 const json = await res.json().catch(() => ({}))
-                throw new Error(json.error || 'Export failed')
+                const errorMsg = typeof json.error === 'object'
+                    ? JSON.stringify(json.error.fieldErrors || json.error)
+                    : json.error || 'Export failed'
+                throw new Error(errorMsg)
             }
 
             const blob = await res.blob()
@@ -185,7 +196,7 @@ export default function MonthlyReportPage() {
             window.URL.revokeObjectURL(url)
             document.body.removeChild(a)
         } catch (err: any) {
-            alert('Export Error: ' + err.message)
+            toast('Export Error: ' + err.message, 'error')
         } finally {
             setGenerating(null)
         }
@@ -206,14 +217,14 @@ export default function MonthlyReportPage() {
                         disabled={!!generating}
                         className="flex items-center justify-center gap-2 bg-emerald-600 text-white border border-emerald-200 px-4 py-2.5 rounded-lg hover:bg-emerald-600 hover:border-emerald-300 hover:shadow-md disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
-                        {generating === 'excel' ? 'Generating...' : <><FileSpreadsheet size={16} /> Export Excel</>}
+                        {generating === 'excel' ? <><Spinner size={16} /> Generating...</> : <><FileSpreadsheet size={16} /> Export Excel</>}
                     </button>
                     <button
                         onClick={() => handleExport('pdf')}
                         disabled={!!generating}
                         className="flex items-center justify-center gap-2 bg-rose-600 text-white border border-rose-200 px-4 py-2.5 rounded-lg hover:bg-rose-600 hover:border-rose-300 hover:shadow-md disabled:opacity-50 shadow-sm transition-all font-medium text-sm whitespace-nowrap w-full sm:w-auto"
                     >
-                        {generating === 'pdf' ? 'Generating...' : <><FileText size={16} /> Export PDF</>}
+                        {generating === 'pdf' ? <><Spinner size={16} /> Generating...</> : <><FileText size={16} /> Export PDF</>}
                     </button>
                 </div>
             </div>
@@ -288,9 +299,9 @@ export default function MonthlyReportPage() {
                         </div>
 
                         <div className="flex flex-wrap gap-2 pt-1">
-                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercaseTracking-wide ">This Month</button>
-                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercaseTracking-wide">Last Month</button>
-                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercaseTracking-wide">This Year</button>
+                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide ">This Month</button>
+                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
+                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
                         </div>
                     </div>
 
@@ -416,11 +427,7 @@ export default function MonthlyReportPage() {
                         disabled={loading}
                         className="bg-brand text-white px-8 py-3 rounded-xl hover:bg-brand/80 transition-all shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 font-bold flex items-center gap-2 text-sm w-full sm:w-auto justify-center active:scale-95 disabled:opacity-70"
                     >
-                        {loading ? (
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        ) : (
-                            <FileText size={18} />
-                        )}
+                        {loading ? <Spinner size={18} /> : <FileText size={18} />}
                         Generate Report
                     </button>
                 </div>
@@ -452,11 +459,7 @@ export default function MonthlyReportPage() {
                     </div>
 
                 {loading ? (
-                    <div className="p-16 text-center text-gray-500 flex flex-col items-center justify-center">
-                        <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                        <p className="font-medium text-gray-600">Generating report preview...</p>
-                        <p className="text-sm text-gray-400 mt-1">This may take a moment</p>
-                    </div>
+                    <Loading message="Generating report preview..." />
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left min-w-[640px]">
@@ -515,10 +518,10 @@ export default function MonthlyReportPage() {
                                         <td className="px-4 sm:px-6 py-4 text-gray-600">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-white flex-shrink-0">
-                                                    {(row.assigned_csr_profile?.full_name || 'U')[0]}
+                                                    {(row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || 'U')[0]}
                                                 </div>
                                                 <span className="text-sm whitespace-nowrap">
-                                                    {row.assigned_csr_profile?.full_name || 'Unknown'}
+                                                    {row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || 'Unknown'}
                                                 </span>
                                             </div>
                                         </td>

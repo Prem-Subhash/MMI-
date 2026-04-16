@@ -1,7 +1,8 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
 import {
     User,
     Phone,
@@ -14,7 +15,7 @@ import {
 export default function AdminNewLeadPage() {
     /* ---------------- STATE ---------------- */
     const [isLocked, setIsLocked] = useState(false)
-    const [showToast, setShowToast] = useState(false)
+    
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
@@ -247,7 +248,7 @@ export default function AdminNewLeadPage() {
 
 
             /* ✅ SUCCESS UI */
-            setShowToast(true)
+            toast('Lead created successfully (Unassigned)!', 'success')
             setForm({
                 client_name: '',
                 phone: '',
@@ -264,10 +265,8 @@ export default function AdminNewLeadPage() {
             setIsLocked(false)
 
             if (form.send_email_to_client) {
-                alert('Lead created (Unassigned)! Redirecting to email templates...')
+                toast('Redirecting to email templates...', 'info')
             }
-
-            setTimeout(() => setShowToast(false), 2500)
         } catch (err: any) {
             setError(err.message || 'Something went wrong')
             setIsLocked(false)
@@ -279,12 +278,6 @@ export default function AdminNewLeadPage() {
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-4 flex justify-center">
 
-            {showToast && (
-                <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-4 rounded-xl shadow-xl">
-                    <p className="font-semibold">✅ Lead created successfully</p>
-                    <p className="text-sm opacity-90">Lead is currently Unassigned</p>
-                </div>
-            )}
 
             <div className="w-full max-w-4xl bg-white rounded-3xl shadow-lg border overflow-hidden">
 

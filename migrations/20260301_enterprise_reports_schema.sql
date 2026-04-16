@@ -17,10 +17,10 @@ ALTER TABLE public.temp_leads_basics ENABLE ROW LEVEL SECURITY;
 -- Drop existing generic policies if any
 DROP POLICY IF EXISTS "Leads visibility" ON public.temp_leads_basics;
 
--- Admin: Can see everything
-CREATE POLICY "Admins view all leads" ON public.temp_leads_basics
+-- Admin & Superadmin: Can see everything
+CREATE POLICY "Admins and Superadmins view all leads" ON public.temp_leads_basics
 FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin', 'csr'))
 );
 
 -- Manager: Can see their own leads AND leads belonging to their team
@@ -28,12 +28,12 @@ CREATE POLICY "Managers view team leads" ON public.temp_leads_basics
 FOR SELECT USING (
   assigned_csr = auth.uid() OR
   assigned_csr IN (SELECT id FROM public.profiles WHERE manager_id = auth.uid()) OR
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin') -- fallback safety
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin', 'csr'))
 );
 
 -- Agent: Can only see their own leads
 CREATE POLICY "Agents view own leads" ON public.temp_leads_basics
 FOR SELECT USING (
   assigned_csr = auth.uid() OR
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'manager'))
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'superadmin', 'manager', 'csr'))
 );

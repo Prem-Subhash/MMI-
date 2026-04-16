@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import ExcelJS from 'exceljs'
-import { TransformStream } from 'node:stream/web'
 
 // 1. Zod Input Validation
 const ReportSchema = z.object({
@@ -64,17 +63,18 @@ export async function POST(request: Request) {
     }
 
     if (!start_date || !end_date) {
-        return NextResponse.json({ error: 'Valid date range (month or start_date/end_date) is required.' }, { status: 400 });
+        return NextResponse.json({ error: 'Valid date range is required.' }, { status: 400 });
     }
 
     const safeFlow = policy_flow === 'all' || policy_flow === '' ? null : policy_flow
     const safeCategory = insurence_category === 'all' || insurence_category === '' ? null : insurence_category
     const dateField = date_type === 'expiration' ? 'renewal_date' : 'effective_date'
 
-    // 3. Fetch KPI Summary (Note: RPC currently doesn't support date_type or LOBs, but we'll still call it for baseline)
+    // 3. Fetch KPI Summary
     const { data: summaryData, error: summaryError } = await supabase.rpc('get_report_summary', {
         p_start_date: start_date,
         p_end_date: end_date,
+        p_date_type: date_type,
         p_flow: safeFlow,
         p_category: safeCategory,
         p_csr: assigned_csr || null
@@ -100,7 +100,8 @@ export async function POST(request: Request) {
             policy_flow,
             insurence_category,
             assigned_csr,
-            assigned_csr_profile:profiles!assigned_csr (full_name)
+            assigned_csr_profile:csrs!temp_leads_assigned_csr_fkey (name),
+            assigned_user_profile:profiles!assigned_csr (full_name)
         `, { count: 'exact' })
         .gte(dateField, start_date)
         .lte(dateField, end_date)
@@ -113,7 +114,6 @@ export async function POST(request: Request) {
     if (assigned_csr) query = query.eq('assigned_csr', assigned_csr)
     if (customer_name) query = query.ilike('client_name', `%${customer_name}%`)
 
-    // Order by the same date field we are filtering on
     query = query.order(dateField, { ascending: false })
 
     // JSON Preview (Paginated)
@@ -135,9 +135,7 @@ export async function POST(request: Request) {
         })
     }
 
-    // 5. Handle Export (Unpaginated stream logic)
-    // NOTE: For 50,000+ records, this shouldn't execute via the Edge/Serverless function.
-    // Recommended: Send this request to an Inngest worker which fetches, builds to S3, and emails link.
+    // 5. Handle Export
     const { data, error } = await query
 
     if (error) {
@@ -146,55 +144,57 @@ export async function POST(request: Request) {
 
     if (exportType === 'excel') {
         const workbook = new ExcelJS.Workbook()
+        const worksheet = workbook.addWorksheet('Enterprise Report')
 
-        // Setup Summary Sheet
-        const summarySheet = workbook.addWorksheet('KPI Summary')
-        summarySheet.columns = [{ width: 30 }, { width: 20 }]
-        summarySheet.addRow(['Metric', 'Value'])
-        summarySheet.getRow(1).font = { bold: true }
-        summarySheet.addRow(['Total Policies', summaryData?.total_policies || 0])
-        summarySheet.addRow(['Total Premium', `$${(summaryData?.total_premium || 0).toLocaleString()}`])
-        summarySheet.addRow(['New Business Premium', `$${(summaryData?.new_business_premium || 0).toLocaleString()}`])
-        summarySheet.addRow(['Renewal Premium', `$${(summaryData?.renewal_premium || 0).toLocaleString()}`])
-        summarySheet.addRow(['Personal Lines', summaryData?.personal_line_count || 0])
-        summarySheet.addRow(['Commercial Lines', summaryData?.commercial_line_count || 0])
+        // Title and Summary Section at the Top
+        worksheet.addRow(['Enterprise Reporting - Monthly Summary']).font = { bold: true, size: 16 }
+        worksheet.addRow([`Period: ${start_date} to ${end_date}`])
+        worksheet.addRow([])
 
-        // Setup Data Sheet
-        const worksheet = workbook.addWorksheet('Raw Data')
-        const dateHeader = date_type === 'expiration' ? 'Renewal Date' : 'Effective Date'
+        worksheet.addRow(['KPI Summary']).font = { bold: true, size: 12 }
+        worksheet.addRow(['Metric', 'Value']).font = { bold: true }
+        worksheet.addRow(['Total Policies', summaryData?.total_policies || 0])
+        worksheet.addRow(['Total Premium', `$${(summaryData?.total_premium || 0).toLocaleString()}`])
+        worksheet.addRow(['New Business Premium', `$${(summaryData?.new_business_premium || 0).toLocaleString()}`])
+        worksheet.addRow(['Renewal Premium', `$${(summaryData?.renewal_premium || 0).toLocaleString()}`])
+        worksheet.addRow(['Personal Lines', summaryData?.personal_line_count || 0])
+        worksheet.addRow(['Commercial Lines', summaryData?.commercial_line_count || 0])
+        worksheet.addRow([])
+
+        // Data Table Headers
+        const dateHeader = date_type === 'expiration' ? 'DATE (EXPIRATION)' : 'DATE (EFFECTIVE)'
         const dateKey = date_type === 'expiration' ? 'renewal_date' : 'effective_date'
 
-        worksheet.columns = [
-            { header: 'Client Name', key: 'client_name', width: 25 },
-            { header: 'Type', key: 'policy_type', width: 20 },
-            { header: 'Category', key: 'insurence_category', width: 15 },
-            { header: 'Flow', key: 'policy_flow', width: 15 },
-            { header: 'Premium', key: 'total_premium', width: 15 },
-            { header: 'CSR', key: 'csr', width: 25 },
-            { header: dateHeader, key: dateKey, width: 15 },
-        ]
-        worksheet.getRow(1).font = { bold: true }
-
-        data?.forEach((row: any) => {
-            worksheet.addRow({
-                client_name: row.client_name,
-                policy_type: row.policy_type,
-                insurence_category: row.insurence_category,
-                policy_flow: row.policy_flow,
-                total_premium: row.total_premium,
-                csr: row.assigned_csr_profile?.full_name || row.assigned_csr,
-                [dateKey]: row[dateKey] || row.effective_date
-            })
+        const tableHeaderRow = worksheet.addRow(['CLIENT', 'TYPE', 'CATEGORY', 'FLOW', 'PREMIUM', 'CSR', dateHeader])
+        tableHeaderRow.font = { bold: true }
+        tableHeaderRow.eachCell(cell => {
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: 'FF10B981' } // A green shade like the UI
+            }
+            cell.font = { color: { argb: 'FFFFFFFF' }, bold: true }
         })
 
-        // Final Totals Row
-        worksheet.addRow({})
-        const finalRow = worksheet.addRow({ client_name: 'TOTALS', total_premium: summaryData?.total_premium || 0 })
-        finalRow.font = { bold: true }
+        // Add lead data
+        data?.forEach((row: any) => {
+            worksheet.addRow([
+                row.client_name || '-',
+                row.policy_type || '-',
+                row.insurence_category || '-',
+                row.policy_flow || '-',
+                row.total_premium ? `$${row.total_premium.toLocaleString()}` : '$0',
+                row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || '-',
+                row[dateKey] || row.effective_date || '-'
+            ])
+        })
+
+        worksheet.columns.forEach((column, i) => {
+            column.width = i === 0 ? 30 : 20
+        })
 
         const buffer = await workbook.xlsx.writeBuffer()
-
-        return new Response(buffer, {
+        return new Response(new Uint8Array(buffer), {
             headers: {
                 'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 'Content-Disposition': `attachment; filename="Enterprise_Report_${start_date}_to_${end_date}.xlsx"`
@@ -203,73 +203,75 @@ export async function POST(request: Request) {
     }
 
     if (exportType === 'pdf') {
-        const { default: PDFDocument } = await import('pdfkit')
+        const PDFDocument = (await import('pdfkit')).default
         const doc = new PDFDocument({ margin: 30, size: 'A4' })
 
-        const headers = new Headers()
-        headers.set('Content-Type', 'application/pdf')
-        headers.set('Content-Disposition', `attachment; filename="Enterprise_Report_${start_date}_to_${end_date}.pdf"`)
+        const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+            const chunks: any[] = []
+            doc.on('data', (chunk) => chunks.push(chunk))
+            doc.on('end', () => resolve(Buffer.concat(chunks)))
+            doc.on('error', reject)
 
-        const { readable, writable } = new globalThis.TransformStream()
-        const writer = writable.getWriter()
+            try {
+                const dateLabel = date_type === 'expiration' ? 'Renewal Date' : 'Effective Date'
+                doc.fontSize(18).font('Helvetica-Bold').text('Enterprise Report', { align: 'center' })
+                doc.fontSize(10).font('Helvetica').text(`Period: ${start_date} to ${end_date} (${dateLabel})`, { align: 'center' })
+                doc.moveDown(2)
 
-        doc.pipe({
-            write: (chunk: any) => writer.write(chunk),
-            end: () => writer.close(),
-            on: () => { }, once: () => { }, emit: () => true,
-        } as any)
+                doc.fontSize(12).font('Helvetica-Bold').text('KPI Summary')
+                doc.fontSize(10).font('Helvetica')
+                doc.text(`Total Policies: ${summaryData?.total_policies || 0}`)
+                doc.text(`Total Premium: $${(summaryData?.total_premium || 0).toLocaleString()}`)
+                doc.moveDown(2)
 
-        // Title and KPI Summary
-        const dateLabel = date_type === 'expiration' ? 'Renewal Date' : 'Effective Date'
-        doc.fontSize(18).font('Helvetica-Bold').text(`Enterprise Report`, { align: 'center' })
-        doc.fontSize(10).font('Helvetica').text(`Period: ${start_date} to ${end_date} (${dateLabel})`, { align: 'center' })
-        doc.moveDown(2)
+                const drawHeader = (startY: number) => {
+                    doc.rect(30, startY - 5, 540, 20).fill('#10B981') // Green box for headers
+                    doc.fillColor('white').font('Helvetica-Bold').fontSize(9)
+                    doc.text('CLIENT', 35, startY)
+                    doc.text('TYPE', 160, startY)
+                    doc.text('CATEGORY', 240, startY)
+                    doc.text('FLOW', 320, startY)
+                    doc.text('PREMIUM', 380, startY)
+                    doc.text('CSR', 460, startY)
+                    doc.text('DATE', 530, startY)
+                    doc.fillColor('black') // Reset color
+                    return startY + 20
+                }
 
-        doc.fontSize(12).font('Helvetica-Bold').text('KPI Summary')
-        doc.fontSize(10).font('Helvetica')
-        doc.text(`Total Policies: ${summaryData?.total_policies || 0}`)
-        doc.text(`Total Premium: $${(summaryData?.total_premium || 0).toLocaleString()}`)
-        doc.text(`New Business: $${(summaryData?.new_business_premium || 0).toLocaleString()} | Renewal: $${(summaryData?.renewal_premium || 0).toLocaleString()}`)
-        doc.moveDown(2)
-
-        // Proper Header Drawer
-        const drawHeader = (startY: number) => {
-            doc.font('Helvetica-Bold').fontSize(9)
-            doc.text('Client', 30, startY)
-            doc.text('Type', 160, startY)
-            doc.text('Flow', 240, startY)
-            doc.text('Premium', 310, startY)
-            doc.text('CSR', 400, startY)
-            doc.text(dateLabel, 500, startY)
-            doc.moveTo(30, startY + 12).lineTo(570, startY + 12).stroke()
-            return startY + 20
-        }
-
-        let y = drawHeader(doc.y)
-        doc.font('Helvetica').fontSize(8)
-
-        data?.forEach((row: any) => {
-            // Safe Page breaks
-            if (y > 750) {
-                doc.addPage()
-                y = drawHeader(30)
+                let y = drawHeader(doc.y)
                 doc.font('Helvetica').fontSize(8)
-            }
 
-            const premium = row.total_premium || 0
-            const rowDate = date_type === 'expiration' ? (row.renewal_date || row.effective_date) : row.effective_date
-            
-            doc.text(row.client_name?.substring(0, 20) || '-', 30, y)
-            doc.text(row.policy_type?.substring(0, 15) || '-', 160, y)
-            doc.text(row.policy_flow || '-', 240, y)
-            doc.text(`$${premium.toLocaleString()}`, 310, y)
-            doc.text(row.assigned_csr_profile?.full_name?.substring(0, 15) || '-', 400, y)
-            doc.text(rowDate || '-', 500, y)
-            y += 18
+                data?.forEach((row: any) => {
+                    if (y > 750) {
+                        doc.addPage()
+                        y = drawHeader(30)
+                        doc.font('Helvetica').fontSize(8)
+                    }
+                    const premium = row.total_premium || 0
+                    const rowDate = date_type === 'expiration' ? (row.renewal_date || row.effective_date) : row.effective_date
+                    
+                    doc.text(row.client_name?.substring(0, 25) || '-', 35, y)
+                    doc.text(row.policy_type?.substring(0, 20) || '-', 160, y)
+                    doc.text(row.insurence_category || '-', 240, y)
+                    doc.text(row.policy_flow || '-', 320, y)
+                    doc.text(`$${premium.toLocaleString()}`, 380, y)
+                    doc.text(row.assigned_csr_profile?.name?.substring(0, 15) || row.assigned_user_profile?.full_name?.substring(0, 15) || '-', 460, y)
+                    doc.text(rowDate || '-', 530, y)
+                    y += 18
+                    doc.moveTo(30, y - 5).lineTo(570, y - 5).strokeColor('#E5E7EB').lineWidth(0.5).stroke().strokeColor('black')
+                })
+                doc.end()
+            } catch (err) {
+                reject(err)
+            }
         })
 
-        doc.end()
-        return new Response(readable, { headers })
+        return new Response(new Uint8Array(pdfBuffer), {
+            headers: {
+                'Content-Type': 'application/pdf',
+                'Content-Disposition': `attachment; filename="Enterprise_Report_${start_date}_to_${end_date}.pdf"`
+            }
+        })
     }
 
     return NextResponse.json({ error: 'Invalid export type' }, { status: 400 })

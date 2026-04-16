@@ -3,15 +3,15 @@
 import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { useSearchParams } from 'next/navigation'
+import { toast } from '@/lib/toast'
+import Loading from '@/components/ui/Loading'
 import {
   User,
   Phone,
   Mail,
-  FileText,
   Shield,
   Send,
   ChevronDown,
-  StickyNote,
 } from 'lucide-react'
 
 function NewLeadContent() {
@@ -20,7 +20,7 @@ function NewLeadContent() {
 
   /* ---------------- STATE ---------------- */
   const [isLocked, setIsLocked] = useState(false)
-  const [showToast, setShowToast] = useState(false)
+  
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
@@ -125,14 +125,12 @@ function NewLeadContent() {
 
   /* ---------------- CLIENT HELPERS ---------------- */
   const getOrCreateClient = async () => {
-    // 1. Check if phone is already in use
     const { data: phoneMatch } = await supabase
       .from('clients')
       .select('id, client_name, email')
       .eq('phone', form.phone)
       .maybeSingle()
 
-    // 2. Check if email is already in use (if provided)
     let emailMatch = null
     if (form.email) {
       const { data } = await supabase
@@ -143,20 +141,15 @@ function NewLeadContent() {
       emailMatch = data
     }
 
-    // --- LOGIC ---
-
-    // Conflict check: phone and email belong to different people
     if (phoneMatch && emailMatch && phoneMatch.id !== emailMatch.id) {
       throw new Error(`Duplicate Conflict: Phone belongs to "${phoneMatch.client_name}" but Email belongs to "${emailMatch.client_name}".`)
     }
 
-    // Use existing if found by either (prioritizing phone)
     const existing = phoneMatch || emailMatch
     if (existing) {
       return existing.id
     }
 
-    // If none found, create NEW
     const { data, error } = await supabase
       .from('clients')
       .insert({
@@ -237,7 +230,6 @@ function NewLeadContent() {
         .from('temp_leads_basics')
         .insert({
           ...form,
-          // DB expects boolean, default to false if undefined
           send_email_to_client: form.send_email_to_client ?? false,
           client_id: clientId,
           assigned_csr: auth.user.id,
@@ -250,10 +242,7 @@ function NewLeadContent() {
 
       if (error || !lead) throw error
 
-
-
-      /* ✅ SUCCESS UI */
-      setShowToast(true)
+      toast('Lead created successfully!', 'success')
       setForm({
         client_name: '',
         phone: '',
@@ -270,21 +259,8 @@ function NewLeadContent() {
       setIsLocked(false)
 
       if (form.send_email_to_client) {
-        // Redirect to email send page with client details pre-filled if possible
-        // Assuming we have a route like /csr/email or similar. 
-        // For now, let's use a browser alert or mock redirect for the user to implement the Outlook integration popup
-        // The user requirement said: "There will be a pop-up window with templates..." 
-        // Since we don't have that popup component yet, we'll simulate the intent or redirect to the email tool if it exists.
-        // Let's assume there is an email tool or we just show a message.
-        // BETTER: Redirect to the lead detail page where they can click "Send Email"
-        // window.location.href = `/csr/leads/${lead.id}?action=email`
-        alert('Lead created! Redirecting to email templates...')
-        // For now, we just clear. The user can navigate manually or we can add a router.push if we knew the route.
-        // The requirement says "pop-up window". We might need to implement that later.
-        // Let's just keep the toast for now.
+        toast('Redirecting to email templates...', 'info')
       }
-
-      setTimeout(() => setShowToast(false), 2500)
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
       setIsLocked(false)
@@ -295,16 +271,7 @@ function NewLeadContent() {
 
   return (
     <div className="min-h-screen bg-[#F4FBF8] py-6 sm:py-10 px-4 flex justify-center">
-
-      {showToast && (
-        <div className="fixed top-6 right-6 z-50 bg-green-600 text-white px-6 py-4 rounded-xl shadow-xl">
-          <p className="font-semibold">✅ Lead created successfully</p>
-          <p className="text-sm opacity-90">Ready to create next lead</p>
-        </div>
-      )}
-
       <div className="w-full max-w-4xl bg-white rounded-3xl shadow-2xl border overflow-hidden">
-
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] p-6 md:p-8 text-white">
           <h1 className="text-2xl md:text-3xl font-bold">
             {form.insurence_category === 'commercial' ? 'Add New Commercial Line Lead' : 'Add New Personal Line Lead'}
@@ -313,12 +280,9 @@ function NewLeadContent() {
         </div>
 
         <div className="p-5 md:p-8 space-y-6">
-
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 rounded animate-in fade-in slide-in-from-left-2">
-              <p className="font-semibold flex items-center gap-2">
-                ⚠️ Error
-              </p>
+              <p className="font-semibold flex items-center gap-2">⚠️ Error</p>
               <p className="text-sm">{error}</p>
             </div>
           )}
@@ -446,7 +410,6 @@ function NewLeadContent() {
             {loading ? 'Creating...' : 'Create Lead'}
             {!loading && <Send />}
           </button>
-
         </div>
       </div>
     </div>
@@ -485,7 +448,6 @@ const Input = ({
   </div>
 )
 
-
 const Select = ({ options, placeholder, ...props }: any) => (
   <div className="relative">
     <select {...props} className="w-full px-4 py-3 border rounded-xl appearance-none bg-white">
@@ -500,7 +462,7 @@ const Select = ({ options, placeholder, ...props }: any) => (
 
 export default function NewLeadPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#F4FBF8] py-10 px-4 flex justify-center items-center">Loading...</div>}>
+    <Suspense fallback={<Loading message="Initializing new lead form..." fullScreen />}>
       <NewLeadContent />
     </Suspense>
   )

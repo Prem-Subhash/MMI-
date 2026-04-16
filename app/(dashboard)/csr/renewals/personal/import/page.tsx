@@ -5,6 +5,7 @@ import Papa from 'papaparse'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
+import { Spinner } from '@/components/ui/Loading'
 
 export default function PersonalRenewalImportPage() {
     const [rows, setRows] = useState<any[]>([])
@@ -211,7 +212,7 @@ export default function PersonalRenewalImportPage() {
                                 disabled={loading}
                                 className="w-full bg-brand-dark hover:bg-brand text-white py-4 rounded-2xl font-bold shadow-xl shadow-brand/20 transition-all flex items-center justify-center gap-3 disabled:opacity-50 active:scale-[0.98]"
                             >
-                                {loading && <div className="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin" />}
+                                {loading && <Spinner size={20} />}
                                 {loading ? 'Importing Data...' : `Start Importing ${rows.length} Rows`}
                             </button>
                         )}

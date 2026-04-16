@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { toast } from '@/lib/toast'
+import { Spinner } from '@/components/ui/Loading'
 
 type Props = {
   leadId: string
@@ -215,7 +217,7 @@ export default function UpdateStageModal({
   /* ================= LOAD STAGES ================= */
   useEffect(() => {
     if (!pipelineId) {
-      alert('Pipeline ID missing. Please refresh the page.')
+      toast('Pipeline ID missing. Please refresh the page.', 'error')
       return
     }
     loadStages()
@@ -249,7 +251,7 @@ export default function UpdateStageModal({
 
     if (stagesRes.error) {
       console.error(stagesRes.error)
-      alert('Failed to load pipeline stages')
+      toast('Failed to load pipeline stages', 'error')
       setLoading(false)
       return
     }
@@ -319,7 +321,7 @@ export default function UpdateStageModal({
         cfg.required &&
         (value === undefined || value === null || value === '')
       ) {
-        alert(`Please fill "${cfg.label}"`)
+        toast(`Please fill "${cfg.label}"`, 'warning')
         return false
       }
     }
@@ -419,7 +421,7 @@ export default function UpdateStageModal({
   /* ================= SAVE ================= */
   async function handleSave() {
     if (!selectedStageId) {
-      alert('Please select a status')
+      toast('Please select a stage first', 'warning')
       return
     }
 
@@ -467,13 +469,13 @@ export default function UpdateStageModal({
     setSaving(false)
 
     if (!res.ok) {
-      alert(result.error || 'Status update failed')
+      toast(result.error || 'Status update failed', 'error')
       console.error(result)
       return
     }
 
     // Success
-    alert('Pipeline stage updated successfully!')
+    toast('Pipeline stage updated successfully!', 'success')
     onSuccess()
     onClose()
   }
@@ -500,7 +502,7 @@ export default function UpdateStageModal({
 
         {loading ? (
           <div className="py-12 text-center text-gray-500 flex flex-col items-center gap-3">
-            <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            <Spinner size={32} />
             <p className="font-medium">Loading pipeline stages...</p>
           </div>
         ) : (
@@ -628,7 +630,7 @@ export default function UpdateStageModal({
           >
             {saving ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <Spinner size={16} />
                 Saving...
               </>
             ) : (

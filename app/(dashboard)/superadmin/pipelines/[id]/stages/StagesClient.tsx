@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, ArrowUp, ArrowDown, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, ArrowUp, ArrowDown, X } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
+import { toast } from '@/lib/toast'
 
 type Stage = {
     id: string
@@ -42,6 +44,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
             setFormData(prev => ({ ...prev, stage_order: sorted.length > 0 ? sorted[sorted.length - 1].stage_order + 1 : 1 }))
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setLoading(false)
         }
@@ -62,9 +65,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
 
             setShowCreate(false)
             setFormData({ stage_name: '', stage_order: formData.stage_order + 1 })
+            toast('Stage created successfully!', 'success')
             fetchStages()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         } finally {
             setCreateLoading(false)
         }
@@ -89,9 +94,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
             if (j.error) throw new Error(j.error)
 
             setEditingId(null)
+            toast('Stage updated successfully!', 'success')
             fetchStages()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -103,9 +110,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
             const res = await fetch(`/api/superadmin/pipelines/stages?id=${id}`, { method: 'DELETE' })
             const j = await res.json()
             if (j.error) throw new Error(j.error)
+            toast('Stage deleted successfully!', 'success')
             fetchStages()
         } catch (err: any) {
             setError(err.message)
+            toast(err.message, 'error')
         }
     }
 
@@ -138,15 +147,16 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                 body: JSON.stringify({ id: targetStage.id, stage_order: targetNewOrder })
             })
 
+            toast('Stages reordered', 'success')
             fetchStages()
         } catch (err: any) {
             setError('Failed to reorder stages')
+            toast('Failed to reorder stages', 'error')
         }
     }
 
     return (
         <div className="space-y-6">
-            {error && <div className="p-4 bg-red-50 text-red-600 rounded-lg border border-red-200">{error}</div>}
 
             <div className="flex justify-end">
                 <button
@@ -154,12 +164,22 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                     className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
                 >
                     {showCreate ? <X size={18} /> : <Plus size={18} />}
-                    {showCreate ? 'x' : 'Add Stage'}
+                    {showCreate ? 'Cancel' : 'Add Stage'}
                 </button>
             </div>
 
             {showCreate && (
-                <form onSubmit={handleCreate} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm flex flex-col md:flex-row gap-4 items-end">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden mb-6">
+                    <div className="px-6 py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center gap-3">
+                        <div className="p-2 bg-white/20 text-white rounded-lg backdrop-blur-sm">
+                            <Plus size={18} />
+                        </div>
+                        <div>
+                            <h2 className="text-xs font-bold text-white uppercase tracking-widest">New Pipeline Stage</h2>
+                            <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Configure deal progression milestones</p>
+                        </div>
+                    </div>
+                    <form onSubmit={handleCreate} className="p-6 flex flex-col md:flex-row gap-4 items-end">
                     <div className="flex flex-col gap-1 flex-1">
                         <label className="text-sm font-medium text-gray-700">Stage Name</label>
                         <input required type="text" value={formData.stage_name} onChange={e => setFormData({ ...formData, stage_name: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Quoting in Progress" />
@@ -168,10 +188,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                         <label className="text-sm font-medium text-gray-700">Order</label>
                         <input required type="number" value={formData.stage_order} onChange={e => setFormData({ ...formData, stage_order: parseInt(e.target.value) || 1 })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" />
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded w-32 h-[42px] hover:bg-emerald-700 transition flex justify-center items-center font-medium disabled:opacity-50">
-                        {createLoading ? <Loader2 size={18} className="animate-spin" /> : 'Save Stage'}
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded-xl w-32 h-[50px] hover:bg-emerald-700 transition flex justify-center items-center font-bold disabled:opacity-50 shadow-sm">
+                        {createLoading ? <Spinner size={18} /> : 'Save Stage'}
                     </button>
-                </form>
+                    </form>
+                </div>
             )}
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -186,7 +207,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                            <tr>
+                                <td colSpan={4} className="p-0">
+                                    <Loading message="Fetching pipeline stages..." />
+                                </td>
+                            </tr>
                         ) : stages.map((stage, index) => (
                             <tr key={stage.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 <td className="p-4">
@@ -220,7 +245,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                                     {editingId === stage.id ? (
                                         <>
                                             <button onClick={() => handleUpdate(stage.id)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded" title="Save"><Save size={16} /></button>
-                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> x</button>
+                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> Cancel</button>
                                         </>
                                     ) : (
                                         <>

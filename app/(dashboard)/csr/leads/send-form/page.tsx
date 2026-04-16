@@ -5,7 +5,10 @@ import { useSearchParams, useRouter } from 'next/navigation'
 
 import { supabase } from '@/lib/supabaseClient'
 import { ArrowLeft } from 'lucide-react'
+import { toast } from '@/lib/toast'
 import EmailGenerator from '@/components/email/EmailGenerator'
+
+import Loading from '@/components/ui/Loading'
 
 type EmailTemplate = {
   id: string
@@ -49,6 +52,7 @@ export default function SendFormPage() {
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
 
   /* ================= LOAD LEAD + TEMPLATES ================= */
   useEffect(() => {
@@ -102,7 +106,7 @@ export default function SendFormPage() {
 
         // Remove "Personal " prefix
         const cleanName = current.name.replace(/^Personal\s+/i, '');
-        
+
         const x = acc.find(item => item.name === cleanName);
         if (!x) {
           return acc.concat([{ ...current, name: cleanName }]);
@@ -190,8 +194,8 @@ export default function SendFormPage() {
     }
 
     // Production Final Combination: Only add HR if notes exist
-    const finalBody = notes.trim() 
-      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}` 
+    const finalBody = notes.trim()
+      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
       : generatedBody;
 
     const res = await fetch('/api/send-email', {
@@ -215,12 +219,13 @@ export default function SendFormPage() {
       return
     }
 
-    alert(result.message || 'Email sent successfully to the client.')
+    toast(result.message || 'Email sent successfully to the client.', 'success')
     router.push('/csr/leads')
   }
 
   /* ================= UI STATES ================= */
-  if (loading) return <div className="p-10">Loading…</div>
+  if (loading) return <Loading message="Fetching lead details..." />
+
 
   /* ================= UI ================= */
   return (
@@ -298,10 +303,10 @@ export default function SendFormPage() {
 
             {/* ERROR ALERT */}
             {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                    <p className="text-sm font-bold">{error}</p>
-                </div>
+              <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                <p className="text-sm font-bold">{error}</p>
+              </div>
             )}
 
             {/* ACTION FORM */}
@@ -345,7 +350,7 @@ export default function SendFormPage() {
                             {templateGroups.map(group => {
                               const groupTemplates = templates.filter(t => group.items.includes(t.name));
                               if (groupTemplates.length === 0) return null;
-                              
+
                               return (
                                 <optgroup key={group.label} label={group.label}>
                                   {groupTemplates.map(t => (

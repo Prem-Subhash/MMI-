@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
+import { toast } from '@/lib/toast'
 
 // Types
 type Lead = {
@@ -25,6 +27,7 @@ export default function AdminAssignmentsPage() {
     const [csrs, setCsrs] = useState<CSR[]>([])
     const [pipelines, setPipelines] = useState<Pipeline[]>([])
     const [stages, setStages] = useState<Stage[]>([])
+    
 
     const [loading, setLoading] = useState(true)
     const [updatingParams, setUpdatingParams] = useState<Record<string, boolean>>({})
@@ -85,9 +88,10 @@ export default function AdminAssignmentsPage() {
         console.log("Update Data Result:", data)
         if (error) {
             console.error("Update SQL Error:", error)
-            alert('Failed to update assignment: ' + error.message)
+            toast('Failed to update assignment: ' + error.message, 'error')
         } else {
             console.log("Update successful, setting local state.")
+            toast('Lead assignment updated successfully!', 'success')
             setLeads(prev => prev.map(lead => lead.id === leadId ? { ...lead, assigned_csr: newCsrId === 'unassigned' ? null : newCsrId } : lead))
         }
 
@@ -194,9 +198,8 @@ export default function AdminAssignmentsPage() {
             </div>
 
             {loading ? (
-                <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl shadow-sm border border-gray-200">
-                    <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-4 text-gray-500 font-medium text-sm">Loading routing data...</p>
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <Loading message="Loading routing data..." />
                 </div>
             ) : (
                 <div className="flex flex-col gap-6">

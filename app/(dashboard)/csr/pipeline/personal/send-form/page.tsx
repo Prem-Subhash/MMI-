@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { ArrowLeft } from 'lucide-react'
+import { toast } from '@/lib/toast'
 import EmailGenerator from '@/components/email/EmailGenerator'
 
 type EmailTemplate = {
@@ -49,6 +50,7 @@ export default function SendFormPage() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+
   /* ================= LOAD LEAD + TEMPLATES ================= */
   useEffect(() => {
     if (!leadId) return
@@ -91,7 +93,7 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-      
+
       const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
         if (current.name.toLowerCase().includes('umbrella')) return acc;
         const cleanName = current.name.replace(/^Personal\s+/i, '');
@@ -175,8 +177,8 @@ export default function SendFormPage() {
     }
 
     // Production Final Combination: Only add HR if notes exist
-    const finalBody = notes.trim() 
-      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}` 
+    const finalBody = notes.trim()
+      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
       : generatedBody;
 
     const res = await fetch('/api/send-email', {
@@ -200,7 +202,7 @@ export default function SendFormPage() {
       return
     }
 
-    alert(result.message || 'Email sent successfully to the client.')
+    toast(result.message || 'Email sent successfully to the client.', 'success')
     router.push('/csr/leads')
   }
 
@@ -243,10 +245,10 @@ export default function SendFormPage() {
             </div>
 
             {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                    <p className="text-sm font-bold">{error}</p>
-                </div>
+              <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                <p className="text-sm font-bold">{error}</p>
+              </div>
             )}
 
             <div className="space-y-6">
@@ -285,7 +287,7 @@ export default function SendFormPage() {
                             {templateGroups.map(group => {
                               const groupTemplates = templates.filter(t => group.items.includes(t.name));
                               if (groupTemplates.length === 0) return null;
-                              
+
                               return (
                                 <optgroup key={group.label} label={group.label}>
                                   {groupTemplates.map(t => (
@@ -314,10 +316,10 @@ export default function SendFormPage() {
                         onChange={e => setFormType(e.target.value)}
                         className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
                       >
-                         <option value="home">Home</option>
-                         <option value="auto">Auto</option>
-                         <option value="condo">Condo</option>
-                         <option value="landlord_home">Landlord Home</option>
+                        <option value="home">Home</option>
+                        <option value="auto">Auto</option>
+                        <option value="condo">Condo</option>
+                        <option value="landlord_home">Landlord Home</option>
                       </select>
                     </div>
                   </div>

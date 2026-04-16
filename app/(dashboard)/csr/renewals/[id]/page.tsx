@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 
 type Stage = {
@@ -22,6 +23,7 @@ type Renewal = {
   carrier?: string
   policy_number?: string
   current_premium?: number
+  renewal_premium?: number
   pipeline_id: string
   current_stage_id: string
   stage_metadata: Record<string, any>
@@ -34,6 +36,9 @@ export default function RenewalDetailPage() {
   const [lead, setLead] = useState<Renewal | null>(null)
   const [loading, setLoading] = useState(true)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [isEditingPremium, setIsEditingPremium] = useState(false)
+  const [tempPremium, setTempPremium] = useState('')
+  const [savingPremium, setSavingPremium] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -50,6 +55,7 @@ export default function RenewalDetailPage() {
         carrier,
         policy_number,
         current_premium,
+        renewal_premium,
         pipeline_id,
         current_stage_id,
         stage_metadata,
@@ -61,7 +67,7 @@ export default function RenewalDetailPage() {
         )
       `)
       .eq('id', id)
-      .eq('assigned_csr', user.id) // Security check
+      .eq('assigned_csr', user.id)
       .single()
 
     if (error || !data) {
@@ -70,7 +76,6 @@ export default function RenewalDetailPage() {
       return
     }
 
-    // Supabase returns array or single object depending on relationship, normalize it
     const stage = Array.isArray(data.pipeline_stages)
       ? data.pipeline_stages[0]
       : data.pipeline_stages
@@ -79,19 +84,37 @@ export default function RenewalDetailPage() {
       ...data,
       pipeline_stage: stage,
     })
+    setTempPremium(data.renewal_premium?.toString() || '')
 
     setLoading(false)
+  }
+
+  const savePremium = async () => {
+    if (!lead) return
+    setSavingPremium(true)
+    const val = tempPremium === '' ? null : Number(tempPremium)
+    
+    const { error } = await supabase
+      .from('temp_leads_basics')
+      .update({ renewal_premium: val })
+      .eq('id', lead.id)
+
+    if (error) {
+      alert('Failed to save premium: ' + error.message)
+    } else {
+      setLead({ ...lead, renewal_premium: val ?? undefined })
+      setIsEditingPremium(false)
+    }
+    setSavingPremium(false)
   }
 
   useEffect(() => {
     load()
   }, [id])
 
-
-
   if (loading) return (
     <div className="flex h-screen items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      <Loading message="Syncing renewal data..." />
     </div>
   )
 
@@ -107,7 +130,6 @@ export default function RenewalDetailPage() {
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
       <div className="max-w-5xl mx-auto">
       <div className="mb-6 flex items-center justify-between">
-
         <div className="text-sm text-gray-400 font-mono">ID: {lead.id.slice(0, 8)}</div>
       </div>
 
@@ -138,10 +160,63 @@ export default function RenewalDetailPage() {
                 <p className="font-semibold text-gray-800">{new Date(lead.renewal_date).toLocaleDateString()}</p>
               </div>
               <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Current Premium</p>
+                <p className="text-sm text-gray-500">Premium</p>
                 <p className="font-semibold text-gray-800">
                   {lead.current_premium ? `$${lead.current_premium.toLocaleString()}` : '—'}
                 </p>
+              </div>
+            </div>
+
+            <div className={`mb-8 p-6 rounded-2xl border ${!lead.renewal_premium ? 'bg-cyan-50 border-cyan-100' : 'bg-gray-50 border-gray-100'}`}>
+              <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest mb-4 flex items-center gap-2">
+                Renewal Premium Setup
+                {!lead.renewal_premium && <span className="text-[10px] bg-cyan-600 text-white px-2 py-0.5 rounded-full">Required</span>}
+              </h3>
+              
+              <div className="max-w-xs">
+                {isEditingPremium ? (
+                  <div className="flex gap-2">
+                    <div className="relative flex-1">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                      <input
+                        type="number"
+                        autoFocus
+                        value={tempPremium}
+                        onChange={(e) => setTempPremium(e.target.value)}
+                        className="w-full pl-7 pr-4 py-2 bg-white border-2 border-emerald-500 rounded-lg outline-none transition-all font-bold"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <button
+                      onClick={savePremium}
+                      disabled={savingPremium}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg transition-colors disabled:opacity-50 min-w-[70px] flex items-center justify-center"
+                    >
+                      {savingPremium ? <Spinner size={16} /> : 'Save'}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsEditingPremium(false)
+                        setTempPremium(lead.renewal_premium?.toString() || '')
+                      }}
+                      className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-lg transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsEditingPremium(true)}
+                    className="group flex flex-col items-start"
+                  >
+                    <span className={`text-3xl font-black ${lead.renewal_premium ? 'text-gray-900' : 'text-cyan-600 underline decoration-dotted'}`}>
+                      {lead.renewal_premium ? `$${lead.renewal_premium.toLocaleString()}` : 'Enter Renewal Premium'}
+                    </span>
+                    <span className="text-[10px] font-bold text-gray-400 mt-1 group-hover:text-emerald-600 transition-colors uppercase tracking-widest">
+                      {lead.renewal_premium ? 'Click to change amount' : 'Manually entered required'}
+                    </span>
+                  </button>
+                )}
               </div>
             </div>
 
