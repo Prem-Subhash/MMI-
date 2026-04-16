@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Loader2, Activity } from 'lucide-react'
+import { Activity } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 type AuditLog = {
@@ -69,7 +70,11 @@ export default function AuditLogsClient() {
                         </thead>
                         <tbody>
                             {loading ? (
-                                <tr><td colSpan={5} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                                <tr>
+                                    <td colSpan={5} className="p-0">
+                                        <Loading message="Fetching audit logs..." />
+                                    </td>
+                                </tr>
                             ) : logs.map(log => (
                                 <tr key={log.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                     <td className="p-4 text-xs font-mono text-gray-500 align-top">

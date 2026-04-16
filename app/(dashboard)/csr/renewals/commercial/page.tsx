@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Calendar, Download, Search } from 'lucide-react'
+import Loading from '@/components/ui/Loading'
 
 type Renewal = {
     id: string
@@ -12,6 +13,7 @@ type Renewal = {
     renewal_date: string
     carrier?: string
     current_premium?: number
+    renewal_premium?: number
     assigned_csr?: string
     policy_number?: string
     referral?: string
@@ -24,7 +26,7 @@ type Renewal = {
 
 export default function CommercialRenewalPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Loading message="Loading renewals..." />}>
             <CommercialRenewalContent />
         </Suspense>
     )
@@ -37,79 +39,95 @@ function CommercialRenewalContent() {
     const [searchTerm, setSearchTerm] = useState('')
     const [page, setPage] = useState(0)
     const [errorMsg, setErrorMsg] = useState<string | null>(null)
+    const [editingId, setEditingId] = useState<string | null>(null)
+    const [editValue, setEditValue] = useState('')
 
     useEffect(() => {
         setPage(0)
     }, [monthFilter])
 
-    useEffect(() => {
-        const load = async () => {
-            setLoading(true)
-            setErrorMsg(null)
-            const {
-                data: { user },
-            } = await supabase.auth.getUser()
-            if (!user) return
+    const load = async () => {
+        setLoading(true)
+        setErrorMsg(null)
+        const {
+            data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) return
 
-            let query = supabase
-                .from('temp_leads_basics')
-                .select(`
-          id,
-          client_name,
-          policy_type,
-          renewal_date,
-          carrier,
-          current_premium,
-          assigned_csr,
-          policy_number,
-          referral,
-          notes,
-          insurence_category,
-          business_name,
-          pipeline_stage:pipeline_stages (
-            stage_name,
-            pipeline_id
-          )
-        `)
-                .eq('policy_flow', 'renewal')
-                .eq('insurence_category', 'commercial')
-                .eq('assigned_csr', user.id)
-                .order('renewal_date', { ascending: true })
-                .range(page * 10, (page + 1) * 10 - 1)
+        let query = supabase
+            .from('temp_leads_basics')
+            .select(`
+      id,
+      client_name,
+      policy_type,
+      renewal_date,
+      carrier,
+      current_premium,
+      renewal_premium,
+      assigned_csr,
+      policy_number,
+      referral,
+      notes,
+      insurence_category,
+      business_name,
+      pipeline_stage:pipeline_stages (
+        stage_name,
+        pipeline_id
+      )
+    `)
+            .eq('policy_flow', 'renewal')
+            .eq('insurence_category', 'commercial')
+            .eq('assigned_csr', user.id)
+            .order('renewal_date', { ascending: true })
+            .range(page * 10, (page + 1) * 10 - 1)
 
-            // Apply Month Filter
-            if (monthFilter) {
-                const startOfMonth = `${monthFilter}-01`
-                const [year, month] = monthFilter.split('-')
-                const nextMonth = month === '12' ? 1 : parseInt(month) + 1
-                const nextYear = month === '12' ? parseInt(year) + 1 : parseInt(year)
-                const nextDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
+        // Apply Month Filter
+        if (monthFilter) {
+            const startOfMonth = `${monthFilter}-01`
+            const [year, month] = monthFilter.split('-')
+            const nextMonth = month === '12' ? 1 : parseInt(month) + 1
+            const nextYear = month === '12' ? parseInt(year) + 1 : parseInt(year)
+            const nextDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
 
-                query = query.gte('renewal_date', startOfMonth).lt('renewal_date', nextDate)
-            }
-
-            const { data, error } = await query
-
-            if (error) {
-                console.error(error)
-                setErrorMsg(error.message)
-                setRenewals([])
-            } else {
-                const formatted = (data || []).map((row: any) => ({
-                    ...row,
-                    pipeline_stage: Array.isArray(row.pipeline_stage)
-                        ? row.pipeline_stage[0] ?? null
-                        : row.pipeline_stage,
-                }))
-
-                setRenewals(formatted)
-            }
-
-            setLoading(false)
+            query = query.gte('renewal_date', startOfMonth).lt('renewal_date', nextDate)
         }
 
+        const { data, error } = await query
+
+        if (error) {
+            console.error(error)
+            setErrorMsg(error.message)
+            setRenewals([])
+        } else {
+            const formatted = (data || []).map((row: any) => ({
+                ...row,
+                pipeline_stage: Array.isArray(row.pipeline_stage)
+                    ? row.pipeline_stage[0] ?? null
+                    : row.pipeline_stage,
+            }))
+
+            setRenewals(formatted)
+        }
+
+        setLoading(false)
+    }
+
+    useEffect(() => {
         load()
     }, [monthFilter, page])
+
+    const handleQuickSave = async (id: string) => {
+        const val = editValue === '' ? null : Number(editValue)
+        const { error } = await supabase
+            .from('temp_leads_basics')
+            .update({ renewal_premium: val })
+            .eq('id', id)
+        
+        if (!error) {
+            setRenewals(prev => prev.map(r => r.id === id ? { ...r, renewal_premium: val ?? undefined } : r))
+            setEditingId(null)
+        }
+    }
 
     // Simple client-side search filtering
     const filteredRenewals = renewals.filter(r => {
@@ -123,7 +141,7 @@ function CommercialRenewalContent() {
     })
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto">
+        <div className="p-8 max-w-[1600px] mx-auto min-h-screen">
             {errorMsg && (
                 <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
                     <strong>Error Loading Renewals:</strong> {errorMsg}
@@ -133,10 +151,9 @@ function CommercialRenewalContent() {
             )}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800">
+                    <h1 className="text-3xl font-bold text-gray-800 tracking-tight">
                         Commercial Lines Renewals
                     </h1>
-                    <p className="text-gray-500 mt-1">Manage and track your upcoming policy renewals</p>
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
@@ -188,73 +205,99 @@ function CommercialRenewalContent() {
                 </div>
 
                 {loading ? (
-                    <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
-                        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <p>Loading renewals...</p>
-                    </div>
+                    <Loading message="Fetching renewals..." />
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
+                        <table className="w-full text-sm text-left" style={{ minWidth: '1200px' }}>
                             <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr>
-                                    <th className="px-6 py-4 font-semibold">Client</th>
-                                    <th className="px-6 py-4 font-semibold">Policy Type</th>
-                                    <th className="px-6 py-4 font-semibold">Policy ID</th>
-                                    <th className="px-6 py-4 font-semibold">Renewal Date</th>
-                                    <th className="px-6 py-4 font-semibold">Carrier</th>
-                                    <th className="px-6 py-4 font-semibold">Premium</th>
-                                    <th className="px-6 py-4 font-semibold">Referral</th>
-                                    <th className="px-6 py-4 font-semibold max-w-[200px]">Notes</th>
-                                    <th className="px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-6 py-4 font-semibold text-right">Action</th>
+                                    <th className="px-6 py-4">Client</th>
+                                    <th className="px-6 py-4">Policy Type</th>
+                                    <th className="px-6 py-4">Policy ID</th>
+                                    <th className="px-6 py-4">Renewal Date</th>
+                                    <th className="px-6 py-4">Carrier</th>
+                                    <th className="px-6 py-4">Premium</th>
+                                    <th className="px-6 py-4 bg-cyan-500/10 text-cyan-50">Renewal Premium</th>
+                                    <th className="px-6 py-4">Referral</th>
+                                    <th className="px-6 py-4">Notes</th>
+                                    <th className="px-6 py-4">Stage</th>
+                                    <th className="px-6 py-4 text-right">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody className="divide-y divide-gray-100">
                                 {filteredRenewals.length === 0 ? (
                                     <tr>
-                                        <td colSpan={10} className="px-6 py-12 text-center text-gray-500">
+                                        <td colSpan={11} className="px-6 py-12 text-center text-gray-500">
                                             No renewals found for the selected month or search criteria.
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredRenewals.map(r => (
-                                        <tr key={r.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-6 py-4 font-semibold text-gray-900">
+                                        <tr key={r.id} className="hover:bg-gray-50 transition-colors group text-xs border-l-4 border-transparent hover:border-emerald-500">
+                                            <td className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">
                                                 {r['business_name'] || r.client_name}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className="capitalize px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium border border-gray-200">
-                                                    {r.policy_type}
-                                                </span>
+                                            <td className="px-6 py-4 capitalize text-gray-700">
+                                                {r.policy_type}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500 text-sm">
+                                            <td className="px-6 py-4 text-gray-500 font-mono">
                                                 {r.policy_number || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
+                                            <td className="px-6 py-4 text-gray-700 font-semibold whitespace-nowrap">
                                                 {new Date(r.renewal_date).toLocaleDateString()}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700">{r.carrier || '—'}</td>
-                                            <td className="px-6 py-4 text-gray-900 font-semibold">
+                                            <td className="px-6 py-4 text-gray-700 whitespace-nowrap">{r.carrier || '—'}</td>
+                                            <td className="px-6 py-4 text-gray-900 font-bold">
                                                 {r.current_premium ? `$${r.current_premium.toLocaleString()}` : '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-600">
+                                            <td className={`px-6 py-4 ${!r.renewal_premium ? 'bg-cyan-50' : ''}`}>
+                                                {editingId === r.id ? (
+                                                    <div className="flex items-center gap-1">
+                                                        <input
+                                                            type="number"
+                                                            autoFocus
+                                                            className="w-24 px-2 py-1 border-2 border-cyan-400 rounded-md outline-none text-xs font-bold"
+                                                            value={editValue}
+                                                            onChange={e => setEditValue(e.target.value)}
+                                                            onBlur={() => handleQuickSave(r.id)}
+                                                            onKeyDown={e => e.key === 'Enter' && handleQuickSave(r.id)}
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`font-black tracking-tight ${r.renewal_premium ? 'text-gray-900' : 'text-cyan-600'}`}>
+                                                            {r.renewal_premium ? `$${r.renewal_premium.toLocaleString()}` : 'MISSING'}
+                                                        </span>
+                                                        <button
+                                                            onClick={() => {
+                                                                setEditingId(r.id)
+                                                                setEditValue(r.renewal_premium?.toString() || '')
+                                                            }}
+                                                            className="text-[10px] text-cyan-600 hover:text-cyan-800 font-bold underline"
+                                                        >
+                                                            {r.renewal_premium ? 'Edit' : 'Enter'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-gray-600 truncate max-w-[100px]" title={r.referral || ''}>
                                                 {r.referral || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500 max-w-[200px] truncate" title={r.notes || ''}>
+                                            <td className="px-6 py-4 text-gray-500 truncate max-w-[120px]" title={r.notes || ''}>
                                                 {r.notes || '—'}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border
-                            ${!r.pipeline_stage ? 'bg-gray-100 text-gray-800 border-gray-200' : 'bg-blue-50 text-blue-700 border-blue-100'}
-                        `}>
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border whitespace-nowrap
+                                                    ${!r.pipeline_stage ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-blue-50 text-blue-700 border-blue-200'}
+                                                `}>
                                                     {r.pipeline_stage?.stage_name || 'New'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
-                                                    className="inline-flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-emerald-700 bg-emerald-100 hover:bg-emerald-200 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
+                                                    className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold rounded-lg text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 shadow-sm transition whitespace-nowrap"
                                                 >
                                                     Manage
                                                 </Link>

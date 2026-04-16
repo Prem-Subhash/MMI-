@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 
 type Lead = {
     id: string
@@ -180,10 +181,7 @@ export default function AdminLeadsPage() {
                 </div>
 
                 {loading ? (
-                    <div className="p-12 text-center text-gray-500 flex flex-col items-center gap-3">
-                        <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
-                        <p className="text-sm">Loading leads...</p>
-                    </div>
+                    <Loading message="Loading leads..." />
                 ) : filteredLeads.length === 0 ? (
                     <div className="p-12 text-center text-gray-500 text-sm">
                         No leads found matching your criteria.

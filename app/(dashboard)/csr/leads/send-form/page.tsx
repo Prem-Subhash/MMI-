@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -6,6 +6,9 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { ArrowLeft } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import EmailGenerator from '@/components/email/EmailGenerator'
+
+import Loading from '@/components/ui/Loading'
 
 type EmailTemplate = {
   id: string
@@ -13,6 +16,26 @@ type EmailTemplate = {
   subject: string
   body: string
 }
+
+const templateLabels: Record<string, string> = {
+  info_req: "Information Request",
+  new_lead: "Send Quote",
+  renewal_same: "Renewal (Same Carrier)",
+  renewal_switch: "Renewal (Switch Carrier)",
+  congrats_new: "Congratulations (New Client)",
+  congrats_existing: "Congratulations (Existing Client)",
+  follow_up: "Follow-Up",
+  auto_payment: "Automatic Payment Confirmation",
+  payment_reminder: "Payment Reminder"
+}
+
+const templateGroups = [
+  { label: "Lead Stage", items: ["info_req", "new_lead"] },
+  { label: "Renewal", items: ["renewal_same", "renewal_switch"] },
+  { label: "Closing", items: ["congrats_new", "congrats_existing"] },
+  { label: "Follow-Up", items: ["follow_up"] },
+  { label: "Payments", items: ["auto_payment", "payment_reminder"] }
+]
 
 export default function SendFormPage() {
   const searchParams = useSearchParams()
@@ -22,13 +45,14 @@ export default function SendFormPage() {
   const [lead, setLead] = useState<any>(null)
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [templateId, setTemplateId] = useState('')
-  const [formType, setFormType] = useState('')
+  const [formType, setFormType] = useState('home')
   const [customSubject, setCustomSubject] = useState('')
-  const [customBody, setCustomBody] = useState('')
+  const [generatedBody, setGeneratedBody] = useState('')
+  const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+
 
   /* ================= LOAD LEAD + TEMPLATES ================= */
   useEffect(() => {
@@ -63,6 +87,7 @@ export default function SendFormPage() {
         .from('email_templates')
         .select('*')
         .eq('is_active', true)
+        .eq('policy_type', formType)
 
       if (templateError) {
         setError(templateError.message)
@@ -81,7 +106,7 @@ export default function SendFormPage() {
 
         // Remove "Personal " prefix
         const cleanName = current.name.replace(/^Personal\s+/i, '');
-        
+
         const x = acc.find(item => item.name === cleanName);
         if (!x) {
           return acc.concat([{ ...current, name: cleanName }]);
@@ -91,11 +116,13 @@ export default function SendFormPage() {
       }, []);
 
       setTemplates(uniqueTemplates)
+      console.log("DEBUG: FormType:", formType);
+      console.log("DEBUG: Templates Updated:", uniqueTemplates);
       setLoading(false)
     }
 
     loadData()
-  }, [leadId])
+  }, [leadId, formType])
 
   /* ================= ENSURE INTAKE FORM ================= */
   const ensureIntakeForm = async () => {
@@ -128,35 +155,7 @@ export default function SendFormPage() {
     return data.id
   }
 
-  /* ================= PREPARE CUSTOM EMAIL ================= */
-  useEffect(() => {
-    const prepareEmail = async () => {
-      if (!templateId || !formType || !lead) {
-        setCustomSubject('')
-        setCustomBody('')
-        return
-      }
 
-      const template = templates.find((t) => t.id === templateId)
-      if (!template) return
-
-      const intakeId = await ensureIntakeForm()
-      if (!intakeId) return
-
-      const formLink = `${window.location.origin}/intake/${intakeId}?type=${formType}`
-
-      const replacedSubject = template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
-      const replacedBody = template.body
-        .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
-        .replace(/{{\s*form_link\s*}}/g, formLink)
-
-      setCustomSubject(replacedSubject)
-      setCustomBody(replacedBody)
-    }
-
-    prepareEmail()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [templateId, formType, lead])
 
   /* ================= PREVIEW ================= */
   const handlePreview = async () => {
@@ -173,8 +172,8 @@ export default function SendFormPage() {
 
   /* ================= SEND EMAIL ================= */
   const handleSend = async () => {
-    if (!templateId || !formType) {
-      setError('Select template and form type')
+    if (!templateId) {
+      setError('Select an email template')
       return
     }
 
@@ -186,11 +185,18 @@ export default function SendFormPage() {
     setSending(true)
     setError(null)
 
-    const intakeId = await ensureIntakeForm()
-    if (!intakeId) {
+    const intakeId = formType ? await ensureIntakeForm() : null;
+
+    if (formType && !intakeId) {
       setSending(false)
+      setError('Failed to generate Intake Form link. Please try again.')
       return
     }
+
+    // Production Final Combination: Only add HR if notes exist
+    const finalBody = notes.trim()
+      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
+      : generatedBody;
 
     const res = await fetch('/api/send-email', {
       method: 'POST',
@@ -201,7 +207,7 @@ export default function SendFormPage() {
         formType,
         intakeId,
         customSubject,
-        customBody,
+        customBody: finalBody,
       }),
     })
 
@@ -218,7 +224,8 @@ export default function SendFormPage() {
   }
 
   /* ================= UI STATES ================= */
-  if (loading) return <div className="p-10">Loading…</div>
+  if (loading) return <Loading message="Fetching lead details..." />
+
 
   /* ================= UI ================= */
   return (
@@ -296,10 +303,10 @@ export default function SendFormPage() {
 
             {/* ERROR ALERT */}
             {error && (
-                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
-                    <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                    <p className="text-sm font-bold">{error}</p>
-                </div>
+              <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
+                <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                <p className="text-sm font-bold">{error}</p>
+              </div>
             )}
 
             {/* ACTION FORM */}
@@ -315,85 +322,103 @@ export default function SendFormPage() {
                 </span>
               </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* TEMPLATE SELECT */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                    Email Template
-                  </label>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* TEMPLATE SELECT */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between ml-1">
+                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                        Email Purpose ({formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'})
+                      </label>
+                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${formType === 'auto' ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20'}`}>
+                        {formType}
+                      </span>
+                    </div>
 
-                  <div className="relative">
-                    <select
-                      value={templateId}
-                      onChange={e => setTemplateId(e.target.value)}
-                      className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium"
-                    >
-                      <option value="">Select Email Template</option>
-                      {templates.map(t => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={templateId}
+                        onChange={e => setTemplateId(e.target.value)}
+                        className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
+                        disabled={templates.length === 0}
+                      >
+                        {templates.length === 0 ? (
+                          <option value="">No templates available</option>
+                        ) : (
+                          <>
+                            <option value="">Select Email Type</option>
+                            {templateGroups.map(group => {
+                              const groupTemplates = templates.filter(t => group.items.includes(t.name));
+                              if (groupTemplates.length === 0) return null;
 
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
-                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                      </svg>
+                              return (
+                                <optgroup key={group.label} label={group.label}>
+                                  {groupTemplates.map(t => (
+                                    <option key={t.id} value={t.id}>
+                                      {templateLabels[t.name] || t.name}
+                                    </option>
+                                  ))}
+                                </optgroup>
+                              );
+                            })}
+                          </>
+                        )}
+                      </select>
+                      <p className="mt-1 text-[10px] text-gray-400 font-medium ml-1 flex items-center gap-1">
+                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
+                        Showing only {formType === 'auto' ? 'Auto' : 'Home'} Insurance templates
+                      </p>
+
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                        <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* FORM TYPE SELECT (REQUIRED FOR INTAKE FORMS) */}
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+                      Form Type
+                    </label>
+
+                    <div className="relative">
+                      <select
+                        value={formType}
+                        onChange={e => setFormType(e.target.value)}
+                        className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
+                      >
+                        <option value="">Select Form Type</option>
+                        <option value="home">Home</option>
+                        <option value="auto">Auto</option>
+                        <option value="condo">Condo</option>
+                        <option value="landlord_home">Landlord Home</option>
+                      </select>
+
+                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
+                        <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                        </svg>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* FORM TYPE SELECT */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-                    Form Type
-                  </label>
-
-                  <div className="relative">
-                    <select
-                      value={formType}
-                      onChange={e => setFormType(e.target.value)}
-                      className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium"
-                    >
-                      <option value="">Select Form Type</option>
-                      <option value="home">Home</option>
-                      <option value="auto">Auto</option>
-                      <option value="condo">Condo</option>
-                      <option value="landlord_home">Landlord Home</option>
-                    </select>
-
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
-                      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+                <EmailGenerator
+                  templates={templates}
+                  templateId={templateId}
+                  setTemplateId={setTemplateId}
+                  initialClientName={lead.client_name}
+                  customSubject={customSubject}
+                  generatedBody={generatedBody}
+                  setGeneratedBody={setGeneratedBody}
+                  notes={notes}
+                  setNotes={setNotes}
+                  setCustomSubject={setCustomSubject}
+                  formType={formType}
+                />
               </div>
-
-              {templateId && formType && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Subject</label>
-                    <input
-                      type="text"
-                      value={customSubject}
-                      onChange={(e) => setCustomSubject(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] text-sm font-medium transition-all"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Email Body</label>
-                    <textarea
-                      value={customBody}
-                      onChange={(e) => setCustomBody(e.target.value)}
-                      rows={8}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] text-sm font-medium transition-all"
-                    />
-                  </div>
-                </div>
-              )}
 
               {/* ACTION BUTTONS */}
               <div className="flex flex-col sm:flex-row gap-4 pt-4">

@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, X } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 type UserProfile = {
@@ -153,8 +154,8 @@ export default function UsersClient() {
                             <option value="superadmin">Super Admin</option>
                         </select>
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
-                        {createLoading ? <Loader2 size={20} className="animate-spin" /> : 'Create User'}
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm w-full sm:w-auto px-8">
+                        {createLoading ? <Spinner size={20} /> : 'Create User'}
                     </button>
                     </form>
                 </div>
@@ -175,9 +176,8 @@ export default function UsersClient() {
                         <tbody>
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="p-12 text-center text-gray-400">
-                                        <Loader2 className="animate-spin mx-auto text-emerald-500 mb-2" size={32} />
-                                        <p className="text-sm font-bold">Synchronizing users...</p>
+                                    <td colSpan={5} className="p-0">
+                                        <Loading message="Synchronizing users..." />
                                     </td>
                                 </tr>
                             ) : users.map(user => (

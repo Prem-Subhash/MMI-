@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, X, CheckCircle2, XCircle } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, X, CheckCircle2, XCircle } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 type EmailTemplate = {
@@ -180,8 +181,8 @@ export default function EmailTemplatesClient() {
                         <label className="text-sm font-medium text-gray-700">Email Body (HTML/Text)</label>
                         <textarea required value={formData.body} onChange={e => setFormData({ ...formData, body: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none h-32 resize-y" placeholder="Dear client..." />
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
-                        {createLoading ? <Loader2 size={20} className="animate-spin" /> : 'Save Template'}
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm w-full sm:w-auto px-8">
+                        {createLoading ? <Spinner size={20} /> : 'Save Template'}
                     </button>
                     </form>
                 </div>
@@ -199,7 +200,11 @@ export default function EmailTemplatesClient() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={4} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                            <tr>
+                                <td colSpan={4} className="p-0">
+                                    <Loading message="Fetching email templates..." />
+                                </td>
+                            </tr>
                         ) : templates.map(template => (
                             <tr key={template.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 {editingId === template.id ? (

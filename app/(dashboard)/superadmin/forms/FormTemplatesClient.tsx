@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Loader2, Save, FileJson, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, FileJson, X } from 'lucide-react'
+import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
 type FormTemplate = {
@@ -170,7 +171,7 @@ export default function FormTemplatesClient() {
                         <textarea required value={formData.fields} onChange={e => setFormData({ ...formData, fields: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none h-40 font-mono text-sm resize-y" placeholder='{ "fields": [...] }' />
                     </div>
                     <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition flex justify-center items-center h-[42px] font-medium disabled:opacity-50">
-                        {createLoading ? <Loader2 size={18} className="animate-spin" /> : 'Save Form Schema'}
+                        {createLoading ? <Spinner size={18} /> : 'Save Form Schema'}
                     </button>
                     </form>
                 </div>
@@ -187,7 +188,11 @@ export default function FormTemplatesClient() {
                     </thead>
                     <tbody>
                         {loading ? (
-                            <tr><td colSpan={3} className="p-8 text-center text-gray-500"><Loader2 className="animate-spin mx-auto text-emerald-500" /></td></tr>
+                            <tr>
+                                <td colSpan={3} className="p-0">
+                                    <Loading message="Fetching form templates..." />
+                                </td>
+                            </tr>
                         ) : templates.map(template => (
                             <tr key={template.id} className="border-b border-gray-100 hover:bg-gray-50 transition">
                                 {editingId === template.id ? (
