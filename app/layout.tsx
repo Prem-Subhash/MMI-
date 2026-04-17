@@ -4,6 +4,9 @@ import './globals.css'
 export const metadata = {
   title: 'Moonstar CRM',
   description: 'Insurance CSR Dashboard',
+  icons: {
+    icon: '/image.png',
+  },
 }
 
 export default function RootLayout({
