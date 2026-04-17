@@ -106,18 +106,18 @@ moonstar-crm/
 │   ├── (dashboard)/                # Route group — authenticated workspace
 │   │   ├── layout.tsx              # Shell: auth guard, sidebar, topbar, footer
 │   │   ├── csr/                    # CSR role workspace
+│   │   │   ├── activity-log/       # CSR audit trail
+│   │   │   ├── leads/              # Lead management
 │   │   │   ├── page.tsx            # CSR dashboard
-│   │   │   ├── leads/              # Lead management (list + detail)
 │   │   │   ├── pipeline/           # Active pipeline views
 │   │   │   ├── renewals/           # Personal & Commercial renewals
-│   │   │   ├── reports/            # Monthly & date-range reporting
-│   │   │   └── activity-log/       # CSR audit trail
+│   │   │   └── reports/            # CSR-specific reporting
 │   │   ├── admin/                  # Admin role workspace
-│   │   │   ├── page.tsx            # Admin overview
-│   │   │   ├── leads/              # Lead management
-│   │   │   ├── csrs/               # CSR management + workload view
-│   │   │   ├── pipelines/          # Pipeline configuration
 │   │   │   ├── assignments/        # Lead assignment management
+│   │   │   ├── csrs/               # CSR management & workload
+│   │   │   ├── leads/              # Lead management
+│   │   │   ├── page.tsx            # Admin overview
+│   │   │   ├── pipelines/          # Pipeline configuration
 │   │   │   └── reports/            # Admin reporting
 │   │   ├── accounting/             # Accounting role workspace
 │   │   └── superadmin/             # Super admin console
@@ -139,9 +139,14 @@ moonstar-crm/
 │   │
 │   ├── intake/[id]/                # Public-facing client intake form
 │   ├── login/                      # Authentication page
-│   └── unauthorized/               # Role access denied page
+│   ├── unauthorized/               # Role access denied page
+│   ├── globals.css                 # Global CSS
+│   ├── layout.tsx                  # Root layout (Metadata, icons, ToastProvider)
+│   └── page.tsx                    # Landing redirect logic
 │
 ├── components/                     # Reusable React component library
+│   ├── email/                      # Email generation & management
+│   │   └── EmailGenerator.tsx      # Dynamic email composition tool
 │   ├── forms/                      # Domain-specific intake form logic
 │   │   ├── PrimaryApplicantForm.tsx
 │   │   ├── CoApplicantForm.tsx
@@ -156,15 +161,26 @@ moonstar-crm/
 │   │   └── Footer.tsx
 │   ├── pipeline/                   # Workflow & stage management
 │   │   └── UpdateStageModal.tsx    # Conditional field logic per pipeline type
-│   └── ui/                         # Atomic design system primitives
-│       └── IntakeUI.tsx            # Input, Select, SectionCard, FieldGrid
+│   ├── ui/                         # Atomic design system primitives
+│   │   ├── IntakeUI.tsx            # Input, Select, SectionCard, FieldGrid
+│   │   ├── Loading.tsx             # Standardized loading spinners
+│   │   └── Toast.tsx               # Toast notification component
+│   └── page.tsx                    # Shared page wrapper
 │
 ├── lib/                            # Shared utilities & service clients
+│   ├── ToastContext.tsx            # Global toast notification state
+│   ├── emailTemplating.ts          # Email subject/body template logic
+│   ├── fieldLabels.ts              # Human-readable field label dictionary
+│   ├── microsoftGraph.ts           # Graph API client
+│   ├── renewals/                   # Renewals-specific business logic
 │   ├── supabaseClient.ts           # Browser Supabase client (SSR-safe)
 │   ├── supabaseServer.ts           # Server-only Supabase client (service role)
-│   ├── microsoftGraph.ts           # Graph API: token exchange + sendMail
-│   ├── fieldLabels.ts              # Human-readable field label dictionary
-│   └── renewals/                   # Renewals-specific business logic
+│   └── toast.ts                    # Imperative toast utility
+│
+├── public/                         # Static assets (images, icons)
+│   ├── image.png                   # App icon
+│   ├── logo.png                    # Dashboard logo
+│   └── Moonstarlogo.jpeg           # Alternative logo
 │
 ├── utils/
 │   └── auth.ts                     # Auth helpers for server components
