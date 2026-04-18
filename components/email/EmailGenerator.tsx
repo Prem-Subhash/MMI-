@@ -159,13 +159,14 @@ export default function EmailGenerator({
         <div className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
 
         {/* Card Header */}
-        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-5 md:px-8 md:py-6">
-          <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center shrink-0">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2E5C85" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>
+        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-5 md:px-8 md:py-6 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm shrink-0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2E5C85" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
             </svg>
           </div>
-          <span className="text-sm font-bold text-white">Email Configuration</span>
+          <span className="text-base md:text-lg font-bold text-white tracking-tight">Email Configuration</span>
         </div>
 
         <div className="p-5 bg-white space-y-5">

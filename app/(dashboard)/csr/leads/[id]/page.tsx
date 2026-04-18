@@ -228,7 +228,7 @@ export default function LeadReviewPage() {
             </div>
             <button
               onClick={() => setShowEditModal(true)}
-              className="flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 text-white px-4 py-2 rounded-lg border border-white/20 transition-all text-sm font-bold backdrop-blur-sm shadow-sm"
+              className="flex items-center justify-center gap-2 bg-brand-dark hover:bg-brand-dark/90 text-white px-4 py-2 rounded-lg border border-white/20 transition-all text-sm font-bold backdrop-blur-sm shadow-sm"
             >
               <Edit2 size={14} />
               Edit Client Info
@@ -236,82 +236,101 @@ export default function LeadReviewPage() {
           </div>
 
           {/* CONTENT */}
-          <div className="p-8 space-y-8">
-            {/* DETAILS */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Client Name</p>
-                <p className="font-semibold text-gray-800 truncate">{lead.client_name || '—'}</p>
+          <div className="p-8">
+            {/* 1. INFO GRID LAYOUT */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {/* Client Name */}
+              <div className="flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div className="space-y-0.5 overflow-hidden">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Client Name</p>
+                  <p className="text-sm md:text-base font-bold text-gray-900 truncate tracking-tight leading-none">{lead.client_name || '—'}</p>
+                </div>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-semibold text-gray-800 truncate">{lead.email}</p>
+              {/* Email */}
+              <div className="flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div className="space-y-0.5 overflow-hidden">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Email Address</p>
+                  <p className="text-sm md:text-base font-bold text-gray-900 truncate tracking-tight leading-none" title={lead.email}>{lead.email || '—'}</p>
+                </div>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Policy Type</p>
-                <p className="font-semibold capitalize text-gray-800">
-                  {lead.policy_type}
-                </p>
+              {/* Policy Type */}
+              <div className="flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                </div>
+                <div className="space-y-0.5 overflow-hidden">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Policy Type</p>
+                  <p className="text-sm md:text-base font-bold text-gray-900 capitalize tracking-tight leading-none">{lead.policy_type || '—'}</p>
+                </div>
               </div>
 
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Current Status</p>
-                <span className="inline-flex mt-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                  {lead.current_stage || lead.pipeline_stages?.stage_name || 'N/A'}
-                </span>
+              {/* Current Status */}
+              <div className="flex items-center gap-4 p-5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                <div className="w-11 h-11 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                </div>
+                <div className="space-y-0.5 overflow-hidden">
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Current Status</p>
+                  <p className="text-sm md:text-base font-bold text-gray-900 truncate tracking-tight leading-none">
+                    {lead.current_stage || lead.pipeline_stages?.stage_name || 'N/A'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* ACTIONS */}
-            <div 
-              ref={emailSectionRef}
-              className={`flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6 transition-all duration-700 ${isFocused ? 'bg-blue-50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10' : ''}`}
-            >
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
+            {/* 2. BUTTON GROUP ORGANIZATION */}
+            <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6">
+              {/* Primary actions (left group) */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <button
                   onClick={() => router.back()}
-                  className="flex-1 sm:flex-none px-4 py-2.5 bg-emerald-500 border border-gray-300 text-white hover:bg-emerald-600 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium"
+                  className="px-5 py-2.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[120px]"
                 >
                   <ArrowLeft size={16} />
                   Back
                 </button>
-                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-                  <button
-                    onClick={openHistoryModal}
-                    className="flex-1 sm:flex-none px-4 py-2.5 bg-brand-dark border border-gray-300 text-white hover:bg-brand-dark/80 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium"
-                  >
-                    View History
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (!lead.pipeline_id) {
-                        toast('Pipeline not assigned to this lead', 'warning')
-                        return
-                      }
-                      setShowUpdateModal(true)
-                    }}
-                    className="flex-1 sm:flex-none px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition text-center flex justify-center items-center"
-                  >
-                    Update Status
-                  </button>
-                </div>
+                <button
+                  onClick={openHistoryModal}
+                  className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[140px]"
+                >
+                  View History
+                </button>
+                <button
+                  onClick={() => {
+                    if (!lead.pipeline_id) {
+                      toast('Pipeline not assigned to this lead', 'warning')
+                      return
+                    }
+                    setShowUpdateModal(true)
+                  }}
+                  className="px-5 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[150px]"
+                >
+                  Update Status
+                </button>
               </div>
 
-              {/* EMAIL & PIPELINE ACTIONS */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+              {/* Secondary actions (right group) */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 {lead.insurence_category && lead.insurence_category.toLowerCase() === 'personal' && (
                   <Link
                     href={`/csr/leads?stage=${encodeURIComponent(lead.current_stage || lead.pipeline_stages?.stage_name || 'New Lead')}`}
-                    className="flex-1 sm:flex-none px-5 py-2.5 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium whitespace-nowrap"
+                    className="px-5 py-2.5 bg-rose-500 text-white hover:bg-rose-600 hover:text-white border border-gray-200 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
                   >
-                    <ExternalLink size={16} /> View in Pipeline
+                    <ExternalLink size={16} /> 
+                    View in Pipeline
                   </Link>
                 )}
                 <Link
                   href={`/csr/leads/send-form?id=${lead.id}`}
-                  className={`flex-1 sm:flex-none px-6 py-2.5 font-bold uppercase tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-gradient-to-r from-[#10B889] to-[#2E5C85] hover:opacity-90 text-white'}`}
+                  className={`px-6 py-2.5 font-bold tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-[#10B889] hover:opacity-90 text-white'}`}
                 >
                   <Send size={16} />
                   Send Email
@@ -319,39 +338,39 @@ export default function LeadReviewPage() {
               </div>
             </div>
 
-              {/* DYNAMIC STATUS BADGES (STRICT PRIORITY) */}
+            {/* 3. SUCCESS MESSAGE (PHASE STATUS) */}
+            <div className="mt-6">
               {(() => {
                 if (status === 'ACCEPTED') {
                   return (
-                    <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 text-emerald-700 rounded-lg border text-sm font-semibold border-emerald-200">
-                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <div className="flex items-center gap-3 px-5 py-4 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 text-sm font-bold w-full">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
                       Lead accepted and moved to pipeline
                     </div>
                   );
                 } else if (status === 'SUBMITTED') {
                   return (
-                    <div className="flex items-center gap-2 px-4 py-3 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm font-semibold">
-                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div className="flex items-center gap-3 px-5 py-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 text-sm font-bold w-full">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Client has submitted the intake form
                     </div>
                   );
                 } else if (status === 'WAITING_FOR_SUBMISSION') {
                   return (
-                    <div className="flex items-center gap-3 px-4 py-3 bg-yellow-50 text-yellow-700 rounded-lg border-yellow-200 text-sm font-medium">
-                      <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+                    <div className="flex items-center gap-3 px-5 py-4 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-100 text-sm font-bold w-full">
+                      <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse flex-shrink-0" />
                       Waiting for client to submit intake form
                     </div>
                   );
                 } else {
-                  // Fallback for NOT_SENT or any undefined status
                   return (
-                    <div className="flex items-center gap-2 px-4 py-3 bg-slate-50 text-slate-700 rounded-lg border text-sm font-semibold border-slate-200">
-                      <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div className="flex items-center gap-3 px-5 py-4 bg-slate-50 text-slate-700 rounded-lg border border-slate-200 text-sm font-bold w-full">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       Intake form not sent to client
                     </div>
@@ -360,12 +379,12 @@ export default function LeadReviewPage() {
               })()}
             </div>
 
-            {/* FORM OPERATIONS */}
+            {/* 4. "VIEW FORM" & ACCEPT LEAD BOTTOM ACTIONS */}
             {(status === 'SUBMITTED' || status === 'ACCEPTED') && form && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-6">
+              <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4">
                 <button
                   onClick={() => setShowFormModal(true)}
-                  className="flex items-center justify-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 py-4 rounded-xl font-bold transition-colors shadow-sm"
+                  className="w-full flex items-center justify-center gap-3 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-100 py-4 rounded-xl font-bold transition-all shadow-sm"
                 >
                   <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -377,7 +396,7 @@ export default function LeadReviewPage() {
                   <button
                     onClick={handleAccept}
                     disabled={accepting}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-colors flex items-center justify-center"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-all flex items-center justify-center text-lg"
                   >
                     {accepting ? <Spinner size={24} /> : 'Accept Lead'}
                   </button>
@@ -385,6 +404,7 @@ export default function LeadReviewPage() {
               </div>
             )}
           </div>
+        </div>
 
         {/* UPDATE STAGE MODAL */}
         {showUpdateModal && (

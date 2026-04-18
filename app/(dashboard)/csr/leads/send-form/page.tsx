@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -277,61 +277,84 @@ export default function SendFormPage() {
           </div>
 
           <div className="p-6 md:p-8 space-y-6 md:space-y-8">
-            {/* LEAD SUMMARY GRID */}
-            <div className="bg-gray-50 rounded-xl p-5 md:p-6 border border-gray-100">
-              <h3 className="text-[#2E5C85] font-bold mb-4 text-[10px] md:text-xs uppercase tracking-widest">
-                Client Information
-              </h3>
+            {/* CLIENT INFORMATION SUMMARY */}
+            <div className="bg-white rounded-[1.5rem] p-8 md:p-10 border border-gray-100 shadow-lg relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-bold text-gray-900 tracking-tight">Client Summary</h3>
+                  <p className="text-xs font-medium text-gray-500 uppercase tracking-widest">Lead Verification Details</p>
+                </div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-teal-50 text-teal-700 rounded-full text-[10px] font-bold uppercase tracking-widest border border-teal-100">
+                  <span className="w-1.5 h-1.5 bg-teal-500 rounded-full" />
+                  Verified Lead
+                </div>
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-8">
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                    Client Name
-                  </p>
-                  <p className="text-gray-900 font-bold text-sm md:text-base">{lead.client_name}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* 1. Client Name */}
+                <div className="flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                   <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                   </div>
+                   <div className="space-y-1 overflow-hidden">
+                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Client Name</p>
+                     <p className="text-lg font-semibold text-gray-900 truncate tracking-tight leading-none">{lead.client_name}</p>
+                   </div>
                 </div>
 
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                    Email
-                  </p>
-                  <p className="text-gray-900 font-bold text-sm md:text-base break-all" title={lead.email}>
-                    {lead.email}
-                  </p>
+                {/* 2. Email */}
+                <div className="flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                   <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                   </div>
+                   <div className="space-y-1 overflow-hidden">
+                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Email</p>
+                     <p className="text-lg font-semibold text-gray-900 truncate tracking-tight leading-none" title={lead.email}>{lead.email}</p>
+                   </div>
                 </div>
 
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                    Phone
-                  </p>
-                  <p className="text-gray-900 font-bold text-sm md:text-base">{lead.phone}</p>
+                {/* 3. Phone */}
+                <div className="flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                   <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                   </div>
+                   <div className="space-y-1 overflow-hidden">
+                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Phone</p>
+                     <p className="text-lg font-semibold text-gray-900 truncate tracking-tight leading-none">{lead.phone}</p>
+                   </div>
                 </div>
 
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                    Insurance Category
-                  </p>
-                  <p className="text-gray-900 font-bold text-sm md:text-base capitalize">
-                    {lead.insurence_category}
-                  </p>
+                {/* 4. Business Category */}
+                <div className="flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                   <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                   </div>
+                   <div className="space-y-1 overflow-hidden">
+                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Line of Business</p>
+                     <p className="text-lg font-semibold text-gray-900 truncate tracking-tight leading-none capitalize">{lead.insurence_category}</p>
+                   </div>
                 </div>
 
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                    Policy Type
-                  </p>
-                  <p className="text-gray-900 font-bold text-sm md:text-base capitalize">
-                    {lead.policy_type}
-                  </p>
+                {/* 5. Policy Type */}
+                <div className="flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                   <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                   </div>
+                   <div className="space-y-1 overflow-hidden">
+                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Policy Type</p>
+                     <p className="text-lg font-semibold text-gray-900 truncate tracking-tight leading-none capitalize">{lead.policy_type}</p>
+                   </div>
                 </div>
 
-                <div>
-                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">
-                    Policy Flow
-                  </p>
-                  <p className="text-gray-900 font-bold text-sm md:text-base capitalize">
-                    {lead.policy_flow}
-                  </p>
+                {/* 6. Workflow */}
+                <div className="flex items-center gap-4 p-6 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+                   <div className="w-11 h-11 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                   </div>
+                   <div className="space-y-1 overflow-hidden">
+                     <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">Workflow</p>
+                     <p className="text-lg font-semibold text-gray-900 truncate tracking-tight leading-none capitalize">{lead.policy_flow}</p>
+                   </div>
                 </div>
               </div>
             </div>
@@ -366,7 +389,7 @@ export default function SendFormPage() {
               {!isRenewal && composeMode === 'template' && (
                 <button
                   onClick={handlePreview}
-                  className="w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm"
+                  className="w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm hover:bg-[#2E5C85]/80 transition-colors"
                 >
                   <div className="flex items-center gap-3 bg">
                     <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
