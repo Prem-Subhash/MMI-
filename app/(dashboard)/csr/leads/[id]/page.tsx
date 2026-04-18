@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft } from 'lucide-react'
+import { useEffect, useState, useRef } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
+import { ArrowLeft, Send, ExternalLink } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
+import EditClientModal from '@/components/leads/EditClientModal'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
+import { Edit2 } from 'lucide-react'
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -15,7 +18,10 @@ export default function LeadReviewPage() {
   const leadId = params?.id
   const router = useRouter()
 
-  /* ================= STATE ================= */
+  const searchParams = useSearchParams()
+  const viewFocus = searchParams?.get('view')
+  const emailSectionRef = useRef<HTMLDivElement>(null)
+
   const [lead, setLead] = useState<any>(null)
   const [form, setForm] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
@@ -27,6 +33,23 @@ export default function LeadReviewPage() {
   const [history, setHistory] = useState<any[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+
+  const [isFocused, setIsFocused] = useState(false)
+
+  /* ================= AUTO FOCUS ================= */
+  useEffect(() => {
+    if (viewFocus === 'focused' && !loading && emailSectionRef.current) {
+      setIsFocused(true)
+      setTimeout(() => {
+        emailSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+      
+      // Remove highlight after 5 seconds
+      const timer = setTimeout(() => setIsFocused(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [loading, viewFocus])
 
 
   /* ================= LOAD LEAD + FORM ================= */
@@ -196,17 +219,31 @@ export default function LeadReviewPage() {
         <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
           
           {/* HEADER */}
-          <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6">
-            <h1 className="text-2xl font-bold text-white">Lead Details</h1>
-            <p className="text-white/80 text-sm mt-1">
-              Review lead information and pipeline status
-            </p>
+          <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white">{lead.client_name || 'Lead Details'}</h1>
+              <p className="text-white/80 text-sm mt-1">
+                Review lead information and pipeline status
+              </p>
+            </div>
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 text-white px-4 py-2 rounded-lg border border-white/20 transition-all text-sm font-bold backdrop-blur-sm shadow-sm"
+            >
+              <Edit2 size={14} />
+              Edit Client Info
+            </button>
           </div>
 
           {/* CONTENT */}
           <div className="p-8 space-y-8">
             {/* DETAILS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <div className="p-4 bg-gray-50 rounded-xl border">
+                <p className="text-sm text-gray-500">Client Name</p>
+                <p className="font-semibold text-gray-800 truncate">{lead.client_name || '—'}</p>
+              </div>
+
               <div className="p-4 bg-gray-50 rounded-xl border">
                 <p className="text-sm text-gray-500">Email</p>
                 <p className="font-semibold text-gray-800 truncate">{lead.email}</p>
@@ -228,7 +265,10 @@ export default function LeadReviewPage() {
             </div>
 
             {/* ACTIONS */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
+            <div 
+              ref={emailSectionRef}
+              className={`flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6 transition-all duration-700 ${isFocused ? 'bg-blue-50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10' : ''}`}
+            >
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto">
                 <button
                   onClick={() => router.back()}
@@ -258,6 +298,26 @@ export default function LeadReviewPage() {
                   </button>
                 </div>
               </div>
+
+              {/* EMAIL & PIPELINE ACTIONS */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto mt-4 md:mt-0">
+                {lead.insurence_category && lead.insurence_category.toLowerCase() === 'personal' && (
+                  <Link
+                    href={`/csr/leads?stage=${encodeURIComponent(lead.current_stage || lead.pipeline_stages?.stage_name || 'New Lead')}`}
+                    className="flex-1 sm:flex-none px-5 py-2.5 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium whitespace-nowrap"
+                  >
+                    <ExternalLink size={16} /> View in Pipeline
+                  </Link>
+                )}
+                <Link
+                  href={`/csr/leads/send-form?id=${lead.id}`}
+                  className={`flex-1 sm:flex-none px-6 py-2.5 font-bold uppercase tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-gradient-to-r from-[#10B889] to-[#2E5C85] hover:opacity-90 text-white'}`}
+                >
+                  <Send size={16} />
+                  Send Email
+                </Link>
+              </div>
+            </div>
 
               {/* DYNAMIC STATUS BADGES (STRICT PRIORITY) */}
               {(() => {
@@ -325,7 +385,6 @@ export default function LeadReviewPage() {
               </div>
             )}
           </div>
-        </div>
 
         {/* UPDATE STAGE MODAL */}
         {showUpdateModal && (
@@ -502,6 +561,18 @@ export default function LeadReviewPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* EDIT CLIENT MODAL */}
+        {showEditModal && (
+          <EditClientModal
+            lead={lead}
+            onClose={() => setShowEditModal(false)}
+            onSuccess={() => {
+              toast('Data updated. Refreshing...', 'info')
+              router.refresh()
+            }}
+          />
         )}
       </div>
     </div>

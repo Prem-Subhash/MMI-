@@ -225,14 +225,15 @@ function PersonalRenewalContent() {
                                     <th className="px-4 sm:px-6 py-4">Referral</th>
                                     <th className="px-4 sm:px-6 py-4">Notes</th>
                                     <th className="px-4 sm:px-6 py-4">Stage</th>
-                                    <th className="px-4 sm:px-6 py-4 text-right">Action</th>
+                                    <th className="px-4 sm:px-6 py-4 text-center">View</th>
+                                    <th className="px-4 sm:px-6 py-4 text-center">Action</th>
                                 </tr>
                             </thead>
 
                             <tbody className="divide-y divide-gray-100">
                                 {filteredRenewals.length === 0 ? (
                                     <tr>
-                                        <td colSpan={11} className="px-6 py-12 text-center text-gray-500 text-sm">
+                                        <td colSpan={12} className="px-6 py-12 text-center text-gray-500 text-sm">
                                             No renewals found for the selected month or search criteria.
                                         </td>
                                     </tr>
@@ -300,12 +301,23 @@ function PersonalRenewalContent() {
                                                     {r.pipeline_stage?.stage_name || 'New'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-right">
+                                            <td className="px-4 sm:px-6 py-4 text-center">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
                                                     className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold rounded-lg text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 shadow-sm transition whitespace-nowrap"
                                                 >
                                                     Manage
+                                                </Link>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 text-center">
+                                                <Link
+                                                    href={`/csr/leads/send-form?id=${r.id}`}
+                                                    className="inline-flex items-center justify-center px-3 py-1.5 bg-[#2E5C85] hover:bg-[#234b6e] border border-transparent text-xs font-bold rounded-lg text-white shadow-sm transition whitespace-nowrap gap-1.5"
+                                                >
+                                                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                    </svg>
+                                                    Send Email
                                                 </Link>
                                             </td>
                                         </tr>

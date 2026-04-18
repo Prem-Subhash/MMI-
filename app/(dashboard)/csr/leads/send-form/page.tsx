@@ -49,6 +49,8 @@ export default function SendFormPage() {
   const [customSubject, setCustomSubject] = useState('')
   const [generatedBody, setGeneratedBody] = useState('')
   const [notes, setNotes] = useState('')
+  const [composeMode, setComposeMode] = useState<'template' | 'manual'>('template')
+  const [customBody, setCustomBody] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -83,11 +85,19 @@ export default function SendFormPage() {
         return
       }
 
+      const isRenewal = leadData.policy_flow === 'renewal';
+      if (isRenewal && !leadData.policy_type) {
+        console.warn('Missing policy_type for renewal', leadData);
+      }
+      const dynamicPolicyFlow = isRenewal ? 'renewal' : 'lead';
+      const dynamicPolicyType = isRenewal ? (leadData.policy_type?.toLowerCase() || 'auto') : formType;
+
       const { data: templateData, error: templateError } = await supabase
         .from('email_templates')
         .select('*')
         .eq('is_active', true)
-        .eq('policy_type', formType)
+        .eq('policy_flow', dynamicPolicyFlow)
+        .eq('policy_type', dynamicPolicyType)
 
       if (templateError) {
         setError(templateError.message)
@@ -172,14 +182,32 @@ export default function SendFormPage() {
 
   /* ================= SEND EMAIL ================= */
   const handleSend = async () => {
-    if (!templateId) {
-      setError('Select an email template')
-      return
+    // 1. Determine safe template ID (Requirement 5)
+    const safeTemplateId = templateId || (templates?.length ? templates[0].id : null);
+
+    if (!safeTemplateId) {
+      setError('No valid email template found. Please try again later.');
+      return;
     }
 
     if (!lead?.email) {
-      setError('Client email is missing')
-      return
+      setError('Client email is missing');
+      return;
+    }
+
+    // 2. Validation for Manual Mode (Requirement 8)
+    if (composeMode === 'manual') {
+      if (!customSubject.trim()) {
+        setError('Subject is required for manual emails');
+        return;
+      }
+      if (!customBody.trim()) {
+        setError('Email body cannot be empty');
+        return;
+      }
+    } else if (!templateId) {
+      setError('Select an email template');
+      return;
     }
 
     setSending(true)
@@ -193,17 +221,22 @@ export default function SendFormPage() {
       return
     }
 
-    // Production Final Combination: Only add HR if notes exist
-    const finalBody = notes.trim()
-      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
+    // 3. Format Body (Requirement 6)
+    const formattedBody = composeMode === 'manual'
+      ? customBody.replace(/\n/g, '<br>')
       : generatedBody;
+
+    // Production Final Combination: Only add HR if notes exist (Template mode)
+    const finalBody = (composeMode === 'template' && notes.trim())
+      ? `${formattedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
+      : formattedBody;
 
     const res = await fetch('/api/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         leadId,
-        templateId,
+        templateId: safeTemplateId, // Use Requirement 5 safe ID
         formType,
         intakeId,
         customSubject,
@@ -227,6 +260,8 @@ export default function SendFormPage() {
   if (loading) return <Loading message="Fetching lead details..." />
 
 
+  const isRenewal = lead?.policy_flow === 'renewal';
+
   /* ================= UI ================= */
   return (
     <div className="p-4 sm:p-6 lg:p-10 min-h-screen">
@@ -235,9 +270,9 @@ export default function SendFormPage() {
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           {/* HEADER */}
           <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-5 md:px-8 md:py-6">
-            <h1 className="text-xl md:text-2xl font-bold text-white">Send Initial Email</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-white">{isRenewal ? 'Send Renewal Email' : 'Send Initial Email'}</h1>
             <p className="text-white/80 text-xs md:text-sm mt-1">
-              Configure and send the onboarding email to the client.
+              {isRenewal ? 'Configure and send renewal quotes to the client.' : 'Configure and send the onboarding email to the client.'}
             </p>
           </div>
 
@@ -311,38 +346,59 @@ export default function SendFormPage() {
 
             {/* ACTION FORM */}
             <div className="space-y-6">
-              {/* PREVIEW BUTTON */}
-              <button
-                onClick={handlePreview}
-                className="w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm"
-              >
-                <div className="flex items-center gap-3 bg">
-                  <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-                    </svg>
+              {/* MODE TOGGLE */}
+              <div className="flex bg-gray-100 p-1 rounded-xl w-full sm:w-fit">
+                <button
+                  onClick={() => setComposeMode('template')}
+                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${composeMode === 'template' ? 'bg-white text-[#2E5C85] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Template Mode
+                </button>
+                <button
+                  onClick={() => setComposeMode('manual')}
+                  className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-bold transition-all ${composeMode === 'manual' ? 'bg-white text-[#2E5C85] shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Manual Email
+                </button>
+              </div>
+
+              {/* PREVIEW BUTTON (Hide in manual mode) */}
+              {!isRenewal && composeMode === 'template' && (
+                <button
+                  onClick={handlePreview}
+                  className="w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm"
+                >
+                  <div className="flex items-center gap-3 bg">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                      </svg>
+                    </div>
+                    <div className="text-left ">
+                      <p className="text-white font-bold text-sm leading-tight">Preview Form</p>
+                      <p className="text-white text-xs font-medium mt-0.5">Open a CSR view of the intake form in a new tab</p>
+                    </div>
                   </div>
-                  <div className="text-left ">
-                    <p className="text-white font-bold text-sm leading-tight">Preview Form</p>
-                    <p className="text-white text-xs font-medium mt-0.5">Open a CSR view of the intake form in a new tab</p>
-                  </div>
-                </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                  <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
-                </svg>
-              </button>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                    <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                  </svg>
+                </button>
+              )}
 
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* TEMPLATE SELECT */}
-                  <div className="space-y-2">
+                {composeMode === 'template' && (
+                  <div className={`grid grid-cols-1 ${!isRenewal ? 'md:grid-cols-2' : ''} gap-6`}>
+                    {/* TEMPLATE SELECT */}
+                    <div className="space-y-2">
                     <div className="flex items-center justify-between ml-1 h-5">
                       <label className="text-[10px] font-bold text-black uppercase tracking-widest">
-                        Email Purpose ({formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'})
+                        {isRenewal ? 'Renewal Email' : `Email Purpose (${formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'})`}
                       </label>
-                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${formType === 'auto' ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20'}`}>
-                        {formType}
-                      </span>
+                      {!isRenewal && (
+                        <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${formType === 'auto' ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20'}`}>
+                          {formType}
+                        </span>
+                      )}
                     </div>
 
                     <div className="relative">
@@ -384,42 +440,47 @@ export default function SendFormPage() {
                         </svg>
                       </div>
                     </div>
-                  </div>
+                    </div>
 
                   {/* FORM TYPE SELECT (REQUIRED FOR INTAKE FORMS) */}
-                  <div className="space-y-2">
-                    <div className="flex items-center ml-1 h-5">
-                      <label className="text-[10px] font-bold text-black uppercase tracking-widest">
-                        Form Type
-                      </label>
-                    </div>
+                  {!isRenewal && (
+                    <div className="space-y-2">
+                      <div className="flex items-center ml-1 h-5">
+                        <label className="text-[10px] font-bold text-black uppercase tracking-widest">
+                          Form Type
+                        </label>
+                      </div>
 
-                    <div className="relative">
-                      <select
-                        value={formType}
-                        onChange={e => setFormType(e.target.value)}
-                        className="peer w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm text-gray-900"
-                      >
-                        <option value="">Select Form Type</option>
-                        <option value="home">Home</option>
-                        <option value="auto">Auto</option>
-                        <option value="condo">Condo</option>
-                        <option value="landlord_home">Landlord Home</option>
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={formType}
+                          onChange={e => setFormType(e.target.value)}
+                          className="peer w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm text-gray-900"
+                        >
+                          <option value="">Select Form Type</option>
+                          <option value="home">Home</option>
+                          <option value="auto">Auto</option>
+                          <option value="condo">Condo</option>
+                          <option value="landlord_home">Landlord Home</option>
+                        </select>
 
-                      <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
-                        <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                          <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                        </svg>
+                        <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
+                          <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
+              )}
 
                 {/* SECTION DIVIDER */}
                 <div className="flex items-center gap-3 py-1">
                   <div className="flex-1 h-px bg-black" />
-                  <span className="text-[10px] font-bold text-black uppercase tracking-widest px-1">Email Configuration</span>
+                  <span className="text-[10px] font-bold text-black uppercase tracking-widest px-1">
+                    {composeMode === 'manual' ? 'Manual Composition' : 'Email Configuration'}
+                  </span>
                   <div className="flex-1 h-px bg-black" />
                 </div>
 
@@ -435,6 +496,10 @@ export default function SendFormPage() {
                   setNotes={setNotes}
                   setCustomSubject={setCustomSubject}
                   formType={formType}
+                  leadData={lead}
+                  composeMode={composeMode}
+                  customBody={customBody}
+                  setCustomBody={setCustomBody}
                 />
               </div>
 
@@ -453,7 +518,7 @@ export default function SendFormPage() {
                   disabled={sending}
                   className="w-full sm:w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
                 >
-                  {sending ? 'Sending…' : 'Send Initial Email'}
+                  {sending ? 'Sending…' : isRenewal ? 'Send Renewal Email' : 'Send Initial Email'}
                 </button>
               </div>
             </div>

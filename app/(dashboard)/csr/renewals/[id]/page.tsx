@@ -1,12 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useEffect, useState, useRef } from 'react'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Send } from 'lucide-react'
 import Link from 'next/link'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
+import EmailGenerator from '@/components/email/EmailGenerator'
+import { toast } from '@/lib/toast'
 
 type Stage = {
   id: string
@@ -18,6 +20,8 @@ type Stage = {
 type Renewal = {
   id: string
   client_name: string
+  email?: string
+  phone?: string
   policy_type: string
   renewal_date: string
   carrier?: string
@@ -33,12 +37,39 @@ type Renewal = {
 export default function RenewalDetailPage() {
   const { id } = useParams()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const viewFocus = searchParams?.get('view')
+  const actionSectionRef = useRef<HTMLDivElement>(null)
+
   const [lead, setLead] = useState<Renewal | null>(null)
   const [loading, setLoading] = useState(true)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [isEditingPremium, setIsEditingPremium] = useState(false)
   const [tempPremium, setTempPremium] = useState('')
   const [savingPremium, setSavingPremium] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
+
+  /* ================= AUTO FOCUS ================= */
+  useEffect(() => {
+    if (viewFocus === 'focused' && !loading && actionSectionRef.current) {
+      setIsFocused(true)
+      setTimeout(() => {
+        actionSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 300)
+      
+      const timer = setTimeout(() => setIsFocused(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [loading, viewFocus])
+
+  /* ================= EMAIL MODAL STATE ================= */
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [templates, setTemplates] = useState<any[]>([])
+  const [templateId, setTemplateId] = useState('')
+  const [customSubject, setCustomSubject] = useState('')
+  const [generatedBody, setGeneratedBody] = useState('')
+  const [notes, setNotes] = useState('')
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   const load = async () => {
     setLoading(true)
@@ -50,6 +81,8 @@ export default function RenewalDetailPage() {
       .select(`
         id,
         client_name,
+        email,
+        phone,
         policy_type,
         renewal_date,
         carrier,
@@ -111,6 +144,51 @@ export default function RenewalDetailPage() {
   useEffect(() => {
     load()
   }, [id])
+
+  /* ================= EMAIL OPERATIONS ================= */
+  useEffect(() => {
+    if (!showEmailModal) return;
+    const fetchTemplates = async () => {
+      const { data } = await supabase.from('email_templates').select('*').eq('is_active', true)
+      setTemplates(data || [])
+    }
+    fetchTemplates()
+  }, [showEmailModal, lead])
+
+  const handleSendEmail = async () => {
+    if (!templateId) return toast('Select an email template', 'warning')
+    if (!lead?.email) return toast('Client email is missing', 'error')
+
+    setSendingEmail(true)
+    
+    const finalBody = notes.trim()
+      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
+      : generatedBody;
+
+    const res = await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        leadId: lead.id,
+        templateId,
+        formType: 'renewal',
+        customSubject,
+        customBody: finalBody,
+      }),
+    });
+
+    const result = await res.json()
+    setSendingEmail(false)
+
+    if (!res.ok || !result.success) {
+      toast(result?.error || result?.message || 'Email failed to send.', 'error')
+      return
+    }
+
+    toast('Email sent successfully', 'success')
+    setShowEmailModal(false)
+    load() // reload to get updated stage_metadata if needed
+  }
 
   if (loading) return (
     <div className="flex h-screen items-center justify-center">
@@ -221,7 +299,10 @@ export default function RenewalDetailPage() {
             </div>
 
             {/* ACTION BAR */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
+            <div 
+              ref={actionSectionRef}
+              className={`flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6 transition-all duration-700 ${isFocused ? 'bg-blue-50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10' : ''}`}
+            >
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => router.back()}
@@ -229,6 +310,13 @@ export default function RenewalDetailPage() {
                 >
                   <ArrowLeft size={16} />
                   Back
+                </button>
+                <button
+                  onClick={() => setShowEmailModal(true)}
+                  className={`px-6 py-2.5 rounded-lg shadow transition font-medium flex-1 sm:flex-none flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+                >
+                  <Send size={16} />
+                  Send Email
                 </button>
                 <button
                   onClick={() => setShowUpdateModal(true)}
@@ -260,6 +348,59 @@ export default function RenewalDetailPage() {
             load() // Reload data to show new stage
           }}
         />
+      )}
+
+      {/* EMAIL MODAL OVERLAY */}
+      {showEmailModal && lead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl opacity-100 mt-20 mb-10 overflow-hidden flex flex-col pointer-events-auto shadow-2xl">
+            <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
+              <div>
+                <h2 className="text-xl font-bold text-white">Send Renewal Email</h2>
+                <p className="text-sm text-white/80 mt-1">Configure and send an email to {lead.client_name}</p>
+              </div>
+              <button
+                onClick={() => setShowEmailModal(false)}
+                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-all"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="p-6 md:p-8 overflow-y-scroll max-h-[75vh]">
+              <EmailGenerator
+                templates={templates}
+                templateId={templateId}
+                setTemplateId={setTemplateId}
+                initialClientName={lead.client_name}
+                customSubject={customSubject}
+                generatedBody={generatedBody}
+                setGeneratedBody={setGeneratedBody}
+                notes={notes}
+                setNotes={setNotes}
+                setCustomSubject={setCustomSubject}
+                formType={lead.policy_type === 'auto' ? 'auto' : 'home'}
+                leadData={lead}
+              />
+              
+              <div className="flex flex-col sm:flex-row gap-4 pt-6 mt-6 border-t border-gray-100">
+                <button
+                  onClick={() => setShowEmailModal(false)}
+                  className="w-full sm:w-1/3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all flex items-center justify-center"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendEmail}
+                  disabled={sendingEmail}
+                  className="w-full sm:w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {sendingEmail ? <Spinner size={20} /> : 'Send Email'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </div>

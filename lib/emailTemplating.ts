@@ -93,7 +93,7 @@ export function generateDynamicSections(flowType: string): { sections: string, c
   return { sections, counter };
 }
 
-export function replaceTemplate(templateKey: string, templateString: string, data: EmailData): string {
+export function replaceTemplate(templateKey: string, templateString: string, data: EmailData, leadData?: any): string {
   if (!templateString) return '';
   
   // Normalize key for logic matching
@@ -122,9 +122,10 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     savings_breakdown: totalSavings,
 
     // Core variables
-    client_name: data.clientName || '[Client Name]',
+    client_name: data.clientName || leadData?.client_name || '[Client Name]',
     combined_types: combinedTypes,
     eff_date: data.effDate || '[Effective Date]',
+    renewal_date: leadData?.renewal_date ? new Date(leadData.renewal_date).toLocaleDateString() : data.effDate || '[Renewal Date]',
     single_carrier: data.singleCarrier || activeCarrier || '[Carrier Name]',
     manual_year: data.manualYear || '[Year]',
     dynamic_sections: dynamicSections,
@@ -138,6 +139,7 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     premium: activePremium || '[Premium Amount]',
     old_premium: firstPolicy?.oldPremium || firstPolicy?.a1 || '[Old Premium]',
     new_premium: firstPolicy?.newPremium || firstPolicy?.a2 || '[New Premium]',
+    renewal_premium: leadData?.renewal_premium ? `$${leadData.renewal_premium}` : firstPolicy?.newPremium || firstPolicy?.a2 || '[Renewal Premium]',
     carrier: activeCarrier || '[Carrier Name]',
     term: activeTerm
   };

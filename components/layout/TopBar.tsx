@@ -66,10 +66,14 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                 if (!notifError && notifs) {
                     setNotifications(notifs.map(n => ({
                         id: n.id,
-                        name: 'System Alert',
+                        name: n.client_name || 'System Alert',
                         status: n.message,
                         time: new Date(n.created_at).toLocaleString(),
-                        is_read: n.is_read
+                        is_read: n.is_read,
+                        lead_id: n.lead_id,
+                        link: n.link,
+                        client_name: n.client_name,
+                        policy_flow: n.policy_flow
                     })))
                 } else {
                     setNotifications([]) 
@@ -180,7 +184,17 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                                                 className={`px-4 py-3 sm:px-5 sm:py-4 border-b border-gray-50 hover:bg-emerald-50/30 transition-colors cursor-pointer group ${!n.is_read ? 'bg-blue-50/20' : ''}`}
                                                 onClick={() => {
                                                     setNotificationsOpen(false)
-                                                    router.push(n.lead_id ? `/csr/leads/${n.lead_id}` : '/csr/activity-log')
+                                                    if (n.link) {
+                                                        router.push(n.link)
+                                                    } else if (n.lead_id) {
+                                                        if (n.policy_flow === 'renewal') {
+                                                            router.push(`/csr/renewals/${n.lead_id}?view=focused`)
+                                                        } else {
+                                                            router.push(`/csr/leads/${n.lead_id}?view=focused`)
+                                                        }
+                                                    } else {
+                                                        console.warn('No navigation target for notification', n)
+                                                    }
                                                 }}
                                             >
                                                 <div className="flex items-start gap-3">

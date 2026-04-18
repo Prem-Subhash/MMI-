@@ -75,22 +75,18 @@ export async function POST(req: Request) {
         )
       }
 
-      /* ================= GENERATE FORM LINK ================= */
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-      if (!baseUrl) {
-        return NextResponse.json(
-          { error: 'NEXT_PUBLIC_SITE_URL not configured' },
-          { status: 500 }
-        )
-      }
-
-      const formLink = intakeId && formType ? `${baseUrl}/intake/${intakeId}?type=${formType}` : ''
-
       /* ================= PREPARE EMAIL BODY ================= */
       finalSubject = finalSubject || template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
       finalBody = template.body
         .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
-        .replace(/{{\s*form_link\s*}}/g, formLink)
+    }
+
+    /* ================= GENERATE & RESOLVE FORM LINK GLOBALLY ================= */
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
+    const formLink = intakeId && formType && baseUrl ? `${baseUrl}/intake/${intakeId}?type=${formType}` : ''
+    
+    if (finalBody) {
+      finalBody = finalBody.replace(/{{\s*form_link\s*}}/g, formLink)
     }
 
     /* ================= SEND EMAIL (MS GRAPH) ================= */

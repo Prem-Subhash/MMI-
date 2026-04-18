@@ -24,6 +24,10 @@ interface EmailGeneratorProps {
   setNotes: (val: string) => void
   customSubject: string
   formType: string
+  leadData?: any
+  composeMode?: 'template' | 'manual'
+  customBody?: string
+  setCustomBody?: (val: string) => void
 }
 
 export default function EmailGenerator({
@@ -37,7 +41,11 @@ export default function EmailGenerator({
   notes,
   setNotes,
   customSubject,
-  formType
+  formType,
+  leadData,
+  composeMode = 'template',
+  customBody,
+  setCustomBody
 }: EmailGeneratorProps) {
   const [data, setData] = useState<EmailData>({
     clientName: initialClientName || '',
@@ -62,6 +70,8 @@ export default function EmailGenerator({
 
   // Rule 4: Dependency check (templateId, data)
   useEffect(() => {
+    if (composeMode === 'manual') return;
+
     if (!templateId) {
       setCustomSubject('')
       setGeneratedBody('')
@@ -73,12 +83,12 @@ export default function EmailGenerator({
 
     const key = getTemplateKey(template)
 
-    const newSubject = replaceTemplate(key, template.subject, data)
-    const newBody = replaceTemplate(key, template.body, data)
+    const newSubject = replaceTemplate(key, template.subject, data, leadData)
+    const newBody = replaceTemplate(key, template.body, data, leadData)
 
     setCustomSubject(newSubject)
     setGeneratedBody(newBody)
-  }, [templateId, data, templates, setCustomSubject, setGeneratedBody])
+  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData])
 
   const addPolicy = () => {
     setData((prev) => ({
@@ -144,8 +154,9 @@ export default function EmailGenerator({
   return (
     <div className="space-y-4 mt-6">
 
-      {/* ── EMAIL CONFIGURATION CARD ── */}
-      <div className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      {/* ── EMAIL CONFIGURATION CARD (Hide in Manual Mode) ── */}
+      {composeMode === 'template' && (
+        <div className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
 
         {/* Card Header */}
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-5 md:px-8 md:py-6">
@@ -158,6 +169,13 @@ export default function EmailGenerator({
         </div>
 
         <div className="p-5 bg-white space-y-5">
+          {/* READ-ONLY CLIENT DISPLAY */}
+          <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-xl">
+             <div className="w-2 h-2 rounded-full bg-[#10B889]"></div>
+             <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">Client:</span>
+             <span className="text-sm font-semibold text-slate-800">{leadData?.client_name || initialClientName || 'Target Client'}</span>
+          </div>
+
           {!templateId && (
             <div className="bg-amber-50 border border-amber-100 text-amber-700 p-3.5 rounded-xl text-sm flex items-start gap-3">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
@@ -337,9 +355,10 @@ export default function EmailGenerator({
           )}
         </div>
       </div>
+      )}
 
       {/* ── EMAIL BUILDER CARD ── */}
-      {templateId && (
+      {(templateId || composeMode === 'manual') && (
         <div className="rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
 
           {/* Card Header */}
@@ -350,11 +369,13 @@ export default function EmailGenerator({
                   <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
                 </svg>
               </div>
-              <span className="text-white font-bold text-sm">Email Builder</span>
+              <span className="text-white font-bold text-sm">
+                {composeMode === 'manual' ? 'Manual Composer' : 'Email Builder'}
+              </span>
             </div>
             <span className="flex items-center gap-1.5 bg-white/10 text-white/80 text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/15 uppercase tracking-widest">
               <span className="w-1.5 h-1.5 bg-[#10B889] rounded-full" />
-              Live
+              {composeMode === 'manual' ? 'Draft' : 'Live'}
             </span>
           </div>
 
@@ -372,31 +393,47 @@ export default function EmailGenerator({
               />
             </div>
 
-            {/* PREVIEW */}
+            {/* PREVIEW / EDITOR */}
             <div className="px-5 pt-4 pb-5 space-y-2.5">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-black uppercase tracking-widest">Preview</span>
-                <span className="text-[10px] text-black bg-gray-100 px-2 py-0.5 rounded-full font-medium border border-gray-200">Read Only</span>
+                <span className="text-[10px] font-bold text-black uppercase tracking-widest">
+                   {composeMode === 'manual' ? 'Email Message' : 'Preview'}
+                </span>
+                <span className="text-[10px] text-black bg-gray-100 px-2 py-0.5 rounded-full font-medium border border-gray-200">
+                   {composeMode === 'manual' ? 'Editable' : 'Read Only'}
+                </span>
               </div>
-              <div
-                dangerouslySetInnerHTML={{ __html: generatedBody }}
-                className="rounded-xl border border-gray-200 bg-gray-50/60 p-5 text-sm text-gray-700 select-none cursor-default leading-relaxed max-h-[400px] overflow-y-auto"
-              />
+              
+              {composeMode === 'manual' ? (
+                <textarea
+                  value={customBody}
+                  onChange={(e) => setCustomBody?.(e.target.value)}
+                  placeholder="Write your message..."
+                  className="w-full h-[300px] rounded-xl border border-[#10B889]/30 bg-[#10B889]/5 p-5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 focus:bg-white transition-all resize-none leading-relaxed"
+                />
+              ) : (
+                <div
+                  dangerouslySetInnerHTML={{ __html: generatedBody }}
+                  className="rounded-xl border border-gray-200 bg-gray-50/60 p-5 text-sm text-gray-700 select-none cursor-default leading-relaxed max-h-[400px] overflow-y-auto"
+                />
+              )}
             </div>
 
-            {/* ADDITIONAL NOTES */}
-            <div className="px-5 pt-4 pb-5 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-black uppercase tracking-widest">Additional Notes</span>
-                <span className="text-[10px] text-black font-medium">Appended below email body</span>
+            {/* ADDITIONAL NOTES (Hide in manual mode) */}
+            {composeMode === 'template' && (
+              <div className="px-5 pt-4 pb-5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-black uppercase tracking-widest">Additional Notes</span>
+                  <span className="text-[10px] text-black font-medium">Appended below email body</span>
+                </div>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Type your custom message here..."
+                  className="w-full border border-gray-200 rounded-xl p-4 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] focus:bg-white min-h-[120px] resize-none transition-all placeholder:text-gray-400"
+                />
               </div>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Type your custom message here..."
-                className="w-full border border-gray-200 rounded-xl p-4 bg-gray-50 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] focus:bg-white min-h-[120px] resize-none transition-all placeholder:text-gray-400"
-              />
-            </div>
+            )}
 
           </div>
         </div>

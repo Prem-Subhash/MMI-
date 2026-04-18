@@ -121,7 +121,8 @@ export async function POST(req: Request) {
                     title: 'Form Submitted',
                     message: `${clientName} has submitted intake form`,
                     lead_id: targetLeadId,
-                    link: `/csr/leads/${targetLeadId}`
+                    link: `/csr/leads/${targetLeadId}`,
+                    client_name: clientName
                 }))
 
                 const { error: notifError } = await supabaseServer
