@@ -43,7 +43,7 @@ export async function POST(req: Request) {
     /* ================= FETCH LEAD ================= */
     const { data: lead, error: leadError } = await supabaseServer
       .from('temp_leads_basics')
-      .select('id, client_name, email, stage_metadata, status')
+      .select('id, client_name, email, stage_metadata, status, policy_flow')
       .eq('id', leadId)
       .single()
 
