@@ -85,8 +85,9 @@ export async function POST(req: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
     const formLink = intakeId && formType && baseUrl ? `${baseUrl}/intake/${intakeId}?type=${formType}` : ''
     
-    if (finalBody) {
-      finalBody = finalBody.replace(/{{\s*form_link\s*}}/g, formLink)
+    if (finalBody && formLink) {
+      const styledLink = `<a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">${formLink}</a>`
+      finalBody = finalBody.replace(/{{\s*form_link\s*}}/g, styledLink)
     }
 
     /* ================= EXTRACT EMAIL TYPE FOR LOGS ================= */

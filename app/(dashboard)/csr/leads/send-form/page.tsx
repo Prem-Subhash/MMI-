@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
@@ -155,14 +155,12 @@ export default function SendFormPage() {
       const hasLink = template.body.includes('{{form_link}}')
       setHasTemplateFormLink(hasLink)
 
-      // Auto-attach behavior
-      if (template.name === 'info_req') {
-        setIsFormAttached(true)
-      } else if (hasLink) {
-        setIsFormAttached(true)
-      }
+      // Auto-attach behavior (Requirement: Only for Info Request and Send Quote)
+      const isRequiredTemplate = ['info_req', 'new_lead'].includes(template.name);
+      setIsFormAttached(isRequiredTemplate);
     } else {
-      setHasTemplateFormLink(false)
+      setHasTemplateFormLink(false);
+      setIsFormAttached(false);
     }
   }, [templateId, templates, composeMode])
 
@@ -276,20 +274,16 @@ export default function SendFormPage() {
 
     // 3. Format Body (Requirement 6)
     const processedBody = composeMode === 'manual'
-      ? customBody.replace(/\n/g, '<br>')
+      ? customBody
       : generatedBody;
 
-    const baseFinal = `
-${processedBody}
-
-${isFormAttached && !hasTemplateFormLink
-? `Complete your form here:\n${formLink}`
-: ''}
-`.trim();
+    const baseFinal = processedBody + (isFormAttached && !hasTemplateFormLink
+      ? `<br><br><b>Complete your form here:</b><br><a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">${formLink}</a>`
+      : '');
 
     // Production Final Combination: Only add HR if notes exist (Template mode)
     const finalBody = (composeMode === 'template' && notes.trim())
-      ? `${baseFinal}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
+      ? `${baseFinal}<br><br><hr><br>${notes.replace(/\n/g, '<br>')}`
       : baseFinal;
 
     const res = await fetch('/api/send-email', {
