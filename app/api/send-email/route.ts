@@ -89,16 +89,74 @@ export async function POST(req: Request) {
       finalBody = finalBody.replace(/{{\s*form_link\s*}}/g, formLink)
     }
 
-    /* ================= SEND EMAIL (MS GRAPH) ================= */
+    /* ================= EXTRACT EMAIL TYPE FOR LOGS ================= */
+    let emailTypeName = 'manual';
+    let isInfoReq = false;
+
+    if (templateId) {
+      const { data: dbTemplate } = await supabaseServer
+        .from('email_templates')
+        .select('name')
+        .eq('id', templateId)
+        .maybeSingle();
+
+      if (dbTemplate?.name) {
+        emailTypeName = dbTemplate.name;
+        if (dbTemplate.name === 'info_req') isInfoReq = true;
+      }
+    }
+
+    /* ================= BACKEND SAFETY CHECK (FAIL-SAFE) ================= */
+    if (lead?.policy_flow !== 'renewal') {
+      const requiresForm = isInfoReq || !!intakeId;
+
+      if (requiresForm) {
+        // Validate that either the full generated link or at least the intake ID path exists in the body
+        const linkPath = intakeId ? `/intake/${intakeId}` : '{{form_link}}';
+        if (!finalBody || (!finalBody.includes(formLink) && !finalBody.includes(linkPath))) {
+          console.error(`FAIL-SAFE: Form link missing from final email body. Lead: ${lead.id}`);
+          return NextResponse.json(
+            { error: 'Form link missing. Cannot send email.' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    /* ================= SEND EMAIL AND LOG (EXPLICIT) ================= */
     try {
-      await sendGraphEmail([lead.email], finalSubject, finalBody, lead.id, 'initial_email')
-      console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API')
+      // Intentionally omitting leadId and emailType to prevent duplicate MS Graph generic hook logging
+      await sendGraphEmail([lead.email], finalSubject, finalBody);
+      console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API');
+
+      await supabaseServer
+        .from("email_logs")
+        .insert({
+          lead_id: lead.id,
+          email_type: emailTypeName,
+          recipient: lead.email,
+          status: 'sent',
+          created_at: new Date().toISOString()
+        });
+
     } catch (emailError: any) {
-      console.error('FAILED TO SEND EMAIL VIA GRAPH:', emailError)
+      console.error('FAILED TO SEND EMAIL VIA GRAPH:', emailError);
+
+      await supabaseServer
+        .from("email_logs")
+        .insert({
+          lead_id: lead.id,
+          email_type: emailTypeName,
+          recipient: lead.email,
+          status: 'failed',
+          error_message: emailError.message || String(emailError),
+          created_at: new Date().toISOString()
+        });
+
       return NextResponse.json(
         { success: false, message: 'Failed to send email', error: `Email send failed: ${emailError.message}` },
         { status: 500 }
-      )
+      );
     }
 
 

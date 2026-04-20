@@ -46,6 +46,10 @@ export default function SendFormPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [templateId, setTemplateId] = useState('')
   const [formType, setFormType] = useState('home')
+  const [isFormAttached, setIsFormAttached] = useState(false)
+  const [hasTemplateFormLink, setHasTemplateFormLink] = useState(false)
+  const [intakeId, setIntakeId] = useState<string | null>(null)
+  const [formLink, setFormLink] = useState('')
   const [customSubject, setCustomSubject] = useState('')
   const [generatedBody, setGeneratedBody] = useState('')
   const [notes, setNotes] = useState('')
@@ -90,7 +94,8 @@ export default function SendFormPage() {
         console.warn('Missing policy_type for renewal', leadData);
       }
       const dynamicPolicyFlow = isRenewal ? 'renewal' : 'lead';
-      const dynamicPolicyType = isRenewal ? (leadData.policy_type?.toLowerCase() || 'auto') : formType;
+      const dynamicPolicyType = (leadData.policy_type || 'auto').toLowerCase();
+      const dynamicCategory = (leadData.insurence_category || 'personal').toLowerCase();
 
       const { data: templateData, error: templateError } = await supabase
         .from('email_templates')
@@ -98,6 +103,7 @@ export default function SendFormPage() {
         .eq('is_active', true)
         .eq('policy_flow', dynamicPolicyFlow)
         .eq('policy_type', dynamicPolicyType)
+        .eq('insurance_category', dynamicCategory)
 
       if (templateError) {
         setError(templateError.message)
@@ -106,6 +112,11 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
+      
+      // Default formType based on policy_type
+      if (!isRenewal && dynamicPolicyType) {
+        setFormType(dynamicPolicyType);
+      }
 
       // Filter out duplicate templates by name
       const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
@@ -126,23 +137,44 @@ export default function SendFormPage() {
       }, []);
 
       setTemplates(uniqueTemplates)
-      console.log("DEBUG: FormType:", formType);
-      console.log("DEBUG: Templates Updated:", uniqueTemplates);
       setLoading(false)
     }
 
     loadData()
-  }, [leadId, formType])
+  }, [leadId])
+
+  /* ================= TEMPLATE SIDE EFFECTS ================= */
+  useEffect(() => {
+    if (composeMode === 'manual') {
+      setHasTemplateFormLink(false)
+      return
+    }
+
+    const template = templates.find(t => t.id === templateId)
+    if (template && template.body) {
+      const hasLink = template.body.includes('{{form_link}}')
+      setHasTemplateFormLink(hasLink)
+
+      // Auto-attach behavior
+      if (template.name === 'info_req') {
+        setIsFormAttached(true)
+      } else if (hasLink) {
+        setIsFormAttached(true)
+      }
+    } else {
+      setHasTemplateFormLink(false)
+    }
+  }, [templateId, templates, composeMode])
 
   /* ================= ENSURE INTAKE FORM ================= */
-  const ensureIntakeForm = async () => {
-    if (!leadId || !formType) return null
+  const ensureIntakeForm = async (currentFormType: string) => {
+    if (!leadId || !currentFormType) return null
 
     const { data: existing } = await supabase
       .from('temp_intake_forms')
       .select('id')
       .eq('lead_id', leadId)
-      .eq('form_type', formType)
+      .eq('form_type', currentFormType)
       .maybeSingle()
 
     if (existing?.id) return existing.id
@@ -151,7 +183,7 @@ export default function SendFormPage() {
       .from('temp_intake_forms')
       .insert({
         lead_id: leadId,
-        form_type: formType,
+        form_type: currentFormType,
         status: 'sent',
       })
       .select()
@@ -165,7 +197,21 @@ export default function SendFormPage() {
     return data.id
   }
 
-
+  /* ================= ORCHESTRATE INTAKE FORM ================= */
+  useEffect(() => {
+    if (isFormAttached && formType && leadId) {
+      ensureIntakeForm(formType).then(id => {
+        if (id) {
+          setIntakeId(id)
+          const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
+          setFormLink(`${baseUrl}/intake/${id}?type=${formType}`)
+        }
+      })
+    } else {
+      setIntakeId(null)
+      setFormLink('')
+    }
+  }, [isFormAttached, formType, leadId])
 
   /* ================= PREVIEW ================= */
   const handlePreview = async () => {
@@ -174,7 +220,7 @@ export default function SendFormPage() {
       return
     }
 
-    const id = await ensureIntakeForm()
+    const id = await ensureIntakeForm(formType)
     if (!id) return
 
     window.open(`/intake/${id}?preview=true`, '_blank')
@@ -182,6 +228,12 @@ export default function SendFormPage() {
 
   /* ================= SEND EMAIL ================= */
   const handleSend = async () => {
+    // PREVENT SEND BEFORE FORM LINK IS READY
+    if (isFormAttached && !formLink) {
+      toast('Form is still generating. Please wait.', 'error');
+      return;
+    }
+
     // 1. Determine safe template ID (Requirement 5)
     const safeTemplateId = templateId || (templates?.length ? templates[0].id : null);
 
@@ -213,23 +265,32 @@ export default function SendFormPage() {
     setSending(true)
     setError(null)
 
-    const intakeId = formType ? await ensureIntakeForm() : null;
+    // Ensure we have intake form generated if attached
+    const finalIntakeId = isFormAttached && formType ? await ensureIntakeForm(formType) : null;
 
-    if (formType && !intakeId) {
+    if (isFormAttached && !finalIntakeId) {
       setSending(false)
       setError('Failed to generate Intake Form link. Please try again.')
       return
     }
 
     // 3. Format Body (Requirement 6)
-    const formattedBody = composeMode === 'manual'
+    const processedBody = composeMode === 'manual'
       ? customBody.replace(/\n/g, '<br>')
       : generatedBody;
 
+    const baseFinal = `
+${processedBody}
+
+${isFormAttached && !hasTemplateFormLink
+? `Complete your form here:\n${formLink}`
+: ''}
+`.trim();
+
     // Production Final Combination: Only add HR if notes exist (Template mode)
     const finalBody = (composeMode === 'template' && notes.trim())
-      ? `${formattedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
-      : formattedBody;
+      ? `${baseFinal}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
+      : baseFinal;
 
     const res = await fetch('/api/send-email', {
       method: 'POST',
@@ -237,8 +298,8 @@ export default function SendFormPage() {
       body: JSON.stringify({
         leadId,
         templateId: safeTemplateId, // Use Requirement 5 safe ID
-        formType,
-        intakeId,
+        formType: finalIntakeId ? formType : undefined,
+        intakeId: finalIntakeId,
         customSubject,
         customBody: finalBody,
       }),
@@ -496,10 +557,22 @@ export default function SendFormPage() {
                   setNotes={setNotes}
                   setCustomSubject={setCustomSubject}
                   formType={formType}
+                  setFormType={setFormType}
                   leadData={lead}
                   composeMode={composeMode}
                   customBody={customBody}
                   setCustomBody={setCustomBody}
+                  
+                  isFormAttached={isFormAttached}
+                  setIsFormAttached={(val) => {
+                    setIsFormAttached(val);
+                    if (!val) {
+                      setFormLink('');
+                      setIntakeId(null);
+                    }
+                  }}
+                  formLink={formLink}
+                  hasTemplateFormLink={hasTemplateFormLink}
                 />
               </div>
 
@@ -515,7 +588,7 @@ export default function SendFormPage() {
 
                 <button
                   onClick={handleSend}
-                  disabled={sending}
+                  disabled={sending || (isFormAttached && !formLink)}
                   className="w-full sm:w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transform active:scale-[0.99] transition-all disabled:opacity-60"
                 >
                   {sending ? 'Sending…' : isRenewal ? 'Send Renewal Email' : 'Send Initial Email'}

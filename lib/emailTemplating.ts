@@ -93,7 +93,7 @@ export function generateDynamicSections(flowType: string): { sections: string, c
   return { sections, counter };
 }
 
-export function replaceTemplate(templateKey: string, templateString: string, data: EmailData, leadData?: any): string {
+export function replaceTemplate(templateKey: string, templateString: string, data: EmailData, leadData?: any, formLink?: string): string {
   if (!templateString) return '';
   
   // Normalize key for logic matching
@@ -141,7 +141,8 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     new_premium: firstPolicy?.newPremium || firstPolicy?.a2 || '[New Premium]',
     renewal_premium: leadData?.renewal_premium ? `$${leadData.renewal_premium}` : firstPolicy?.newPremium || firstPolicy?.a2 || '[Renewal Premium]',
     carrier: activeCarrier || '[Carrier Name]',
-    term: activeTerm
+    term: activeTerm,
+    form_link: formLink || '{{form_link}}'
   };
   
   let output = templateString;
