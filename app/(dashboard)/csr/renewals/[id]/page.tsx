@@ -301,34 +301,34 @@ export default function RenewalDetailPage() {
             {/* ACTION BAR */}
             <div 
               ref={actionSectionRef}
-              className={`flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6 transition-all duration-700 ${isFocused ? 'bg-blue-50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10' : ''}`}
+              className={`flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-t pt-8 transition-all duration-700 ${isFocused ? 'bg-blue-50/50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10 mx-[-8px]' : ''}`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
                 <button
                   onClick={() => router.back()}
-                  className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2 font-medium"
+                  className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-semibold active:scale-95"
                 >
-                  <ArrowLeft size={16} />
+                  <ArrowLeft size={18} />
                   Back
                 </button>
                 <button
                   onClick={() => setShowEmailModal(true)}
-                  className={`px-6 py-2.5 rounded-lg shadow transition font-medium flex-1 sm:flex-none flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-emerald-600 hover:bg-emerald-700 text-white'}`}
+                  className={`w-full sm:w-auto px-6 py-3 rounded-xl shadow-lg transition-all font-bold flex items-center justify-center gap-2 active:scale-95 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30' : 'bg-[#10B889] hover:bg-[#0e9e75] text-white'}`}
                 >
-                  <Send size={16} />
+                  <Send size={18} />
                   Send Email
                 </button>
                 <button
                   onClick={() => setShowUpdateModal(true)}
-                  className="px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow transition font-medium"
+                  className="w-full sm:w-auto px-6 py-3 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-xl shadow-lg transition-all font-bold active:scale-95 whitespace-nowrap"
                 >
                   Update Status
                 </button>
               </div>
 
-              <div className="flex items-center">
-                <span className="text-sm text-gray-500 mr-2">Current Status:</span>
-                <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
+              <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto bg-blue-50/50 lg:bg-transparent p-3 lg:p-0 rounded-xl border border-blue-100 lg:border-none">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mr-3">Current Status</span>
+                <span className="bg-[#2E5C85]/10 text-[#2E5C85] px-4 py-1.5 rounded-full text-sm font-bold border border-[#2E5C85]/20 shadow-sm">
                   {lead.pipeline_stage.stage_name}
                 </span>
               </div>

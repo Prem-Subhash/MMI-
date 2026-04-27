@@ -94,8 +94,8 @@ export default function EmailGenerator({
 
     const key = getTemplateKey(template)
 
-    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink)
-    const newBody = replaceTemplate(key, template.body, data, leadData, formLink)
+    const newSubject = replaceTemplate(key, template.subject, data, leadData)
+    const newBody = replaceTemplate(key, template.body, data, leadData).replace(/\n/g, '<br>')
 
     setCustomSubject(newSubject)
     setGeneratedBody(newBody)
@@ -163,17 +163,29 @@ export default function EmailGenerator({
   const isMulti = ['renewal_switch', 'new_lead', 'payment_reminder'].includes(tplKey)
 
   const isRenewal = leadData?.policy_flow === 'renewal';
+  const isTemplate = composeMode === 'template';
 
-  // Safe Preview Rendering Logic
-  const basePreviewContent = (composeMode === 'manual'
-    ? (customBody || '')
-    : (generatedBody || '')
-  ).replace(/\n/g, '<br>');
+  // Helper to sync HTML <br> with Textarea \n
+  const handlePreviewChange = (val: string) => {
+    const htmlVal = val.replace(/\n/g, '<br>');
+    if (isTemplate) {
+      setGeneratedBody(htmlVal);
+    } else {
+      setCustomBody?.(htmlVal);
+    }
+  };
+
+  const getPreviewText = () => {
+    const raw = isTemplate ? generatedBody : (customBody || '');
+    return raw.replace(/<br\s*\/?>/gi, '\n');
+  };
 
   const shouldAppendFooter = isFormAttached && !hasTemplateFormLink && formLink;
-  const previewContent = basePreviewContent + (shouldAppendFooter
-    ? `<br><br>Complete your form here:<br><a href="${formLink}" style="color: #2563eb; text-decoration: underline;">${formLink}</a>`
-    : '');
+  const footerContent = shouldAppendFooter
+    ? `\n\nComplete your form here:\n${formLink}`
+    : '';
+
+  const displayContent = getPreviewText() + footerContent;
 
   return (
     <div className="space-y-4 mt-6">
@@ -426,7 +438,7 @@ export default function EmailGenerator({
                     {!hasTemplateFormLink && (
                       <button
                         onClick={() => setIsFormAttached?.(false)}
-                        className="text-xs font-bold text-rose-600 bg-rose-50 px-4 py-2.5 rounded-lg border border-rose-100 hover:bg-rose-100 transition-colors shrink-0"
+                        className="text-xs font-bold text-white bg-rose-600 px-4 py-2.5 rounded-lg border border-rose-100 hover:bg-rose-100 transition-colors shrink-0"
                       >
                         Remove Form
                       </button>
@@ -435,7 +447,7 @@ export default function EmailGenerator({
                 ) : (
                   <button
                     onClick={() => setIsFormAttached?.(true)}
-                    className="w-full sm:w-auto text-sm font-bold text-white bg-gray-800 px-5 py-2.5 rounded-lg hover:bg-black transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+                    className="w-full sm:w-auto text-sm font-bold text-white bg-emerald-600 px-5 py-2.5 rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
                   >
                     <Plus size={16} /> Add Form Here
                   </button>
@@ -481,26 +493,36 @@ export default function EmailGenerator({
               <div className="px-5 pt-4 pb-5 space-y-2.5">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-black uppercase tracking-widest">
-                    {composeMode === 'manual' ? 'Email Message' : 'Preview'}
+                    {isTemplate ? 'Email Preview' : 'Email Message'}
                   </span>
-                  <span className="text-[10px] text-black bg-gray-100 px-2 py-0.5 rounded-full font-medium border border-gray-200">
-                    {composeMode === 'manual' ? 'Editable' : 'Read Only'}
+                  <span className="flex items-center gap-1.5 text-[10px] text-[#10B889] bg-[#10B889]/10 px-2.5 py-0.5 rounded-full font-bold border border-[#10B889]/20 shadow-sm animate-pulse">
+                    <span className="w-1.5 h-1.5 bg-[#10B889] rounded-full" />
+                    Editable
                   </span>
                 </div>
 
-                {composeMode === 'manual' && (
-                  <textarea
-                    value={customBody}
-                    onChange={(e) => setCustomBody?.(e.target.value)}
-                    placeholder="Write your message..."
-                    className="w-full h-[300px] rounded-xl border border-[#10B889]/30 bg-[#10B889]/5 p-5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 focus:bg-white transition-all resize-none leading-relaxed mb-4"
-                  />
-                )}
-
-                <div
-                  dangerouslySetInnerHTML={{ __html: previewContent }}
-                  className="rounded-xl border border-gray-200 bg-gray-50/60 p-5 text-sm text-gray-700 select-none cursor-default leading-relaxed max-h-[400px] overflow-y-auto whitespace-normal"
+                <textarea
+                  value={getPreviewText()}
+                  onChange={(e) => handlePreviewChange(e.target.value)}
+                  placeholder="Write your message..."
+                  className={`w-full min-h-[300px] rounded-xl border border-gray-200 p-5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 focus:border-[#10B889] transition-all resize-none leading-relaxed ${isTemplate ? 'bg-white' : 'bg-[#10B889]/2'}`}
                 />
+
+                {shouldAppendFooter && (
+                  <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-sm">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Intake Link (Appended Automatically)</p>
+                      <p className="text-xs text-blue-800 font-mono truncate">{formLink}</p>
+                    </div>
+                  </div>
+                )}
+                
+                <p className="text-[10px] text-gray-400 italic">
+                  * Manual edits in the preview are preserved until template configuration is changed.
+                </p>
               </div>
 
               {/* ADDITIONAL NOTES (Hide in manual mode) */}
