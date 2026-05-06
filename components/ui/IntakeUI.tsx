@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { type LucideIcon, ChevronDown } from 'lucide-react'
+import { type LucideIcon, ChevronDown, Check } from 'lucide-react'
 
 /* ================= TYPES ================= */
 
@@ -115,7 +115,7 @@ export const Input: React.FC<InputProps> = ({ label, icon: Icon, className = '',
       <input
         id={id}
         className={`
-          w-full bg-white border border-gray-200 rounded-2xl py-4 pr-5 outline-none transition-all
+          w-full bg-white border border-black rounded-2xl py-4 pr-5 outline-none transition-all
           ${Icon ? 'pl-12' : 'pl-5'}
           focus:border-red-300 focus:ring-4 focus:ring-red-50 focus:shadow-[0_0_20px_rgba(220,38,38,0.05)]
           placeholder:text-gray-400 font-semibold text-gray-900 text-lg
@@ -148,7 +148,7 @@ export const Select: React.FC<SelectProps> = ({ label, icon: Icon, options, clas
         <select
           id={id}
           className={`
-            w-full bg-white border border-gray-200 rounded-2xl py-4 pr-12 appearance-none outline-none transition-all
+            w-full bg-white border border-black rounded-2xl py-4 pr-12 appearance-none outline-none transition-all
             ${Icon ? 'pl-12' : 'pl-5'}
             focus:border-red-300 focus:ring-4 focus:ring-red-50 focus:shadow-[0_0_20px_rgba(220,38,38,0.05)]
             font-semibold text-gray-900 text-lg cursor-pointer
@@ -179,7 +179,7 @@ export const Button: React.FC<ButtonProps> = ({ variant = 'primary', size = 'md'
   
   const variants = {
     primary: "bg-red-600 text-white hover:bg-red-700 shadow-red-200",
-    secondary: "bg-white border border-gray-200 text-gray-900 shadow-gray-100 hover:border-gray-300 hover:bg-gray-50/50"
+    secondary: "bg-white border border-black text-gray-900 shadow-gray-100 hover:border-gray-900 hover:bg-gray-50/50"
   }
 
   const sizes = {
@@ -222,6 +222,93 @@ export const FieldGrid: React.FC<FieldGridProps> = ({ columns = 2, gap = 8, chil
   return (
     <div className={`grid grid-cols-1 ${gridColsClass} ${gapClass}`}>
       {children}
+    </div>
+  )
+}
+
+/* ================= 8. CONFIRM DIALOG ================= */
+
+interface ConfirmDialogProps {
+  isOpen: boolean
+  title: string
+  message: string
+  confirmText?: string
+  cancelText?: string
+  onConfirm: () => void
+  onCancel: () => void
+  variant?: 'danger' | 'primary'
+}
+
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ 
+  isOpen, 
+  title, 
+  message, 
+  confirmText = 'Confirm', 
+  cancelText = 'Cancel', 
+  onConfirm, 
+  onCancel,
+  variant = 'primary'
+}) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={onCancel} />
+      <div className="relative bg-white rounded-[40px] p-10 md:p-12 shadow-2xl shadow-black/20 w-full max-w-lg border border-gray-100 animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+        <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-4">{title}</h3>
+        <p className="text-gray-500 text-lg font-medium leading-relaxed mb-10">{message}</p>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button 
+            type="button"
+            onClick={onCancel}
+            className="w-full sm:flex-1 py-4 px-8 rounded-2xl border border-black text-gray-900 font-black tracking-tight hover:bg-gray-50 transition-all active:scale-95"
+          >
+            {cancelText}
+          </button>
+          <button 
+            type="button"
+            onClick={onConfirm}
+            className={`w-full sm:flex-1 py-4 px-8 rounded-2xl font-black tracking-tight text-white transition-all active:scale-95 shadow-lg ${
+              variant === 'danger' 
+                ? 'bg-red-600 hover:bg-red-700 shadow-red-200' 
+                : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-200'
+            }`}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ================= 9. SUCCESS DIALOG ================= */
+
+export const SuccessDialog: React.FC<{ isOpen: boolean, onClose: () => void, title?: string, message?: string }> = ({ 
+  isOpen, 
+  onClose, 
+  title = "Upload Successful", 
+  message = "Your action was completed successfully." 
+}) => {
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
+      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={onClose} />
+      <div className="relative bg-white rounded-[40px] p-10 md:p-12 shadow-2xl shadow-black/20 w-full max-w-lg border border-gray-100 text-center animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+        <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner animate-in zoom-in-50 duration-700 delay-200 fill-mode-both">
+           <Check size={48} strokeWidth={3} />
+        </div>
+        <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-4">{title}</h3>
+        <p className="text-gray-500 text-lg font-medium leading-relaxed mb-10">{message}</p>
+        <button 
+          type="button"
+          onClick={onClose}
+          className="w-full py-5 px-8 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black tracking-tight transition-all active:scale-95 shadow-lg shadow-emerald-200"
+        >
+          Done
+        </button>
+      </div>
     </div>
   )
 }

@@ -208,56 +208,71 @@ function CommercialRenewalContent() {
                     <Loading message="Fetching renewals..." />
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left" style={{ minWidth: '1200px' }}>
-                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
-                                <tr>
-                                    <th className="px-6 py-4">Client</th>
-                                    <th className="px-6 py-4">Policy Type</th>
-                                    <th className="px-6 py-4">Policy ID</th>
-                                    <th className="px-6 py-4">Renewal Date</th>
-                                    <th className="px-6 py-4">Carrier</th>
-                                    <th className="px-6 py-4">Premium</th>
-                                    <th className="px-6 py-4 bg-cyan-500/10 text-cyan-50">Renewal Premium</th>
-                                    <th className="px-6 py-4">Referral</th>
-                                    <th className="px-6 py-4">Notes</th>
-                                    <th className="px-6 py-4">Stage</th>
-                                    <th className="px-6 py-4 text-right">Action</th>
+                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1600px' }}>
+                            <colgroup>
+                                <col style={{ width: '200px' }} />
+                                <col style={{ width: '120px' }} />
+                                <col style={{ width: '140px' }} />
+                                <col style={{ width: '130px' }} />
+                                <col style={{ width: '160px' }} />
+                                <col style={{ width: '110px' }} />
+                                <col style={{ width: '180px' }} />
+                                <col style={{ width: '130px' }} />
+                                <col style={{ width: '180px' }} />
+                                <col style={{ width: '160px' }} />
+                                <col style={{ width: '100px' }} />
+                            </colgroup>
+                            <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
+                                <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Client</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Policy Type</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Policy ID</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">Renewal Date</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Carrier</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Premium</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold bg-white/10">Renewal Premium</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Referral</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Notes</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">Action</th>
                                 </tr>
                             </thead>
 
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 bg-white">
                                 {filteredRenewals.length === 0 ? (
                                     <tr>
-                                        <td colSpan={11} className="px-6 py-12 text-center text-gray-500">
+                                        <td colSpan={11} className="px-6 py-12 text-center text-gray-500 text-sm">
                                             No renewals found for the selected month or search criteria.
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredRenewals.map(r => (
-                                        <tr key={r.id} className="hover:bg-gray-50 transition-colors group text-xs border-l-4 border-transparent hover:border-emerald-500">
-                                            <td className="px-6 py-4 font-bold text-gray-900 whitespace-nowrap">
+                                        <tr key={r.id} className="hover:bg-gray-50/80 transition-colors group">
+                                            <td className="px-4 sm:px-6 py-4 font-bold text-gray-900 truncate" title={r.business_name || r.client_name}>
                                                 {r['business_name'] || r.client_name}
                                             </td>
-                                            <td className="px-6 py-4 capitalize text-gray-700">
+                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 truncate">
                                                 {r.policy_type}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500 font-mono">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono truncate">
                                                 {r.policy_number || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700 font-semibold whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold whitespace-nowrap text-center">
                                                 {new Date(r.renewal_date).toLocaleDateString()}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-700 whitespace-nowrap">{r.carrier || '—'}</td>
-                                            <td className="px-6 py-4 text-gray-900 font-bold">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 truncate" title={r.carrier}>
+                                                {r.carrier || '—'}
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-900 font-bold whitespace-nowrap">
                                                 {r.current_premium ? `$${r.current_premium.toLocaleString()}` : '—'}
                                             </td>
-                                            <td className={`px-6 py-4 ${!r.renewal_premium ? 'bg-cyan-50' : ''}`}>
+                                            <td className={`px-4 sm:px-6 py-4 ${!r.renewal_premium ? 'bg-cyan-50/50' : ''}`}>
                                                 {editingId === r.id ? (
                                                     <div className="flex items-center gap-1">
                                                         <input
                                                             type="number"
                                                             autoFocus
-                                                            className="w-24 px-2 py-1 border-2 border-cyan-400 rounded-md outline-none text-xs font-bold"
+                                                            className="w-full px-2 py-1 border-2 border-cyan-400 rounded-md outline-none text-sm font-bold"
                                                             value={editValue}
                                                             onChange={e => setEditValue(e.target.value)}
                                                             onBlur={() => handleQuickSave(r.id)}
@@ -266,7 +281,7 @@ function CommercialRenewalContent() {
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`font-black tracking-tight ${r.renewal_premium ? 'text-gray-900' : 'text-cyan-600'}`}>
+                                                        <span className={`font-black tracking-tight whitespace-nowrap ${r.renewal_premium ? 'text-gray-900' : 'text-cyan-600'}`}>
                                                             {r.renewal_premium ? `$${r.renewal_premium.toLocaleString()}` : 'MISSING'}
                                                         </span>
                                                         <button
@@ -274,27 +289,27 @@ function CommercialRenewalContent() {
                                                                 setEditingId(r.id)
                                                                 setEditValue(r.renewal_premium?.toString() || '')
                                                             }}
-                                                            className="text-[10px] text-cyan-600 hover:text-cyan-800 font-bold underline"
+                                                            className="text-[10px] text-cyan-600 hover:text-cyan-800 font-bold underline whitespace-nowrap"
                                                         >
                                                             {r.renewal_premium ? 'Edit' : 'Enter'}
                                                         </button>
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-600 truncate max-w-[100px]" title={r.referral || ''}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600 truncate" title={r.referral || ''}>
                                                 {r.referral || '—'}
                                             </td>
-                                            <td className="px-6 py-4 text-gray-500 truncate max-w-[120px]" title={r.notes || ''}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 truncate" title={r.notes || ''}>
                                                 {r.notes || '—'}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] uppercase font-bold border whitespace-nowrap
+                                            <td className="px-4 sm:px-6 py-4">
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap
                                                     ${!r.pipeline_stage ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-blue-50 text-blue-700 border-blue-200'}
                                                 `}>
                                                     {r.pipeline_stage?.stage_name || 'New'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-4 sm:px-6 py-4 text-center">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
                                                     className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold rounded-lg text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 shadow-sm transition whitespace-nowrap"
