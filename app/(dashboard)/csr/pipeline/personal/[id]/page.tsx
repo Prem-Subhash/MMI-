@@ -1,10 +1,83 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import { ArrowLeft } from 'lucide-react'
+
+/* ── helpers ──────────────────────────────────────────────── */
+
+/** "commercial_package" → "Commercial Package" */
+function formatPolicyType(raw?: string | null) {
+  if (!raw) return '—'
+  return raw
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+/** Colour-coded badge for pipeline stage names */
+function StageBadge({ stage }: { stage?: string | null }) {
+  if (!stage) return <span className="text-gray-400 text-sm">—</span>
+
+  const map: Record<string, string> = {
+    'New Lead':                'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    'Quoting in Progress':     'bg-yellow-50  text-yellow-700  border border-yellow-200',
+    'Quote Has Been Emailed':  'bg-blue-50    text-blue-700    border border-blue-200',
+    'Consent Letter Sent':     'bg-purple-50  text-purple-700  border border-purple-200',
+    'Completed':               'bg-blue-100   text-blue-800    border border-blue-300',
+    'Did Not Bind':            'bg-red-50     text-red-700     border border-red-200',
+  }
+  const cls = map[stage] ?? 'bg-gray-100 text-gray-600 border border-gray-200'
+  return (
+    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap ${cls}`}>
+      {stage}
+    </span>
+  )
+}
+
+/** Reusable KPI card – light border + teal left accent */
+function KpiCard({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col gap-2 p-4 bg-white border border-gray-200 border-l-4 border-l-[#10B889] rounded-xl shadow-sm hover:shadow-md transition-all">
+      <div className="flex items-center gap-1.5 text-gray-400">
+        {icon}
+        <p className="text-[11px] font-semibold uppercase tracking-widest leading-none">{label}</p>
+      </div>
+      <div className="pl-0.5">{children}</div>
+    </div>
+  )
+}
+
+/* ── icons (inline SVG to keep zero extra deps) ─────────── */
+const IconUser = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+  </svg>
+)
+const IconMail = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+  </svg>
+)
+const IconFile = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+  </svg>
+)
+const IconZap = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+  </svg>
+)
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -149,25 +222,19 @@ export default function LeadReviewPage() {
           <div className="p-8 space-y-8">
 
             {/* DETAILS */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Email</p>
-                <p className="font-semibold text-gray-800 truncate">{lead.email}</p>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Policy Type</p>
-                <p className="font-semibold capitalize text-gray-800">
-                  {lead.policy_type}
-                </p>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Current Status</p>
-                <span className="inline-flex mt-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                  {lead.pipeline_stages?.stage_name || 'N/A'}
-                </span>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <KpiCard icon={<IconUser />} label="Client Name">
+                <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
+              </KpiCard>
+              <KpiCard icon={<IconMail />} label="Email Address">
+                <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
+              </KpiCard>
+              <KpiCard icon={<IconFile />} label="Policy Type">
+                <p className="text-base font-bold text-gray-800">{formatPolicyType(lead.policy_type)}</p>
+              </KpiCard>
+              <KpiCard icon={<IconZap />} label="Current Status">
+                <StageBadge stage={lead.pipeline_stages?.stage_name} />
+              </KpiCard>
             </div>
 
             {/* ACTIONS */}
@@ -193,8 +260,6 @@ export default function LeadReviewPage() {
                   Update Status
                 </button>
               </div>
-
-
             </div>
 
           </div>
@@ -226,25 +291,19 @@ export default function LeadReviewPage() {
 
         <div className="p-8 space-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-gray-50 rounded-xl border">
-              <p className="text-sm text-gray-500">Email</p>
-              <p className="font-semibold text-gray-800">{lead.email}</p>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-xl border">
-              <p className="text-sm text-gray-500">Policy Type</p>
-              <p className="font-semibold capitalize text-gray-800">
-                {lead.policy_type}
-              </p>
-            </div>
-
-            <div className="p-4 bg-gray-50 rounded-xl border">
-              <p className="text-sm text-gray-500">Current Status</p>
-              <span className="inline-flex mt-1 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
-                {lead.pipeline_stages?.stage_name || 'N/A'}
-              </span>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <KpiCard icon={<IconUser />} label="Client Name">
+              <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
+            </KpiCard>
+            <KpiCard icon={<IconMail />} label="Email Address">
+              <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
+            </KpiCard>
+            <KpiCard icon={<IconFile />} label="Policy Type">
+              <p className="text-base font-bold text-gray-800">{formatPolicyType(lead.policy_type)}</p>
+            </KpiCard>
+            <KpiCard icon={<IconZap />} label="Current Status">
+              <StageBadge stage={lead.pipeline_stages?.stage_name} />
+            </KpiCard>
           </div>
 
           <div className="flex items-center gap-3">
@@ -298,3 +357,4 @@ export default function LeadReviewPage() {
     </div>
   )
 }
+

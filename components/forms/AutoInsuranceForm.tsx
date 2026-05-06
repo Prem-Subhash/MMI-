@@ -136,16 +136,16 @@ export default function AutoInsuranceForm({
         )}
 
         {/* ADDITIONAL DRIVERS SECTION */}
-        <div className="pt-6 border-t border-slate-100">
+        <div className="pt-6 border-t border-black">
           <div className="flex items-center justify-between mb-4">
             <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-              <Users size={18} className="text-emerald-600" />
+              <Users size={18} className="text-red-500" />
               Additional Drivers
             </h4>
             {!disabled && (
               <button
                 onClick={addDriver}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-100"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-500 hover:bg-red-400 rounded-lg transition-colors border border-red-500"
               >
                 <Plus size={14} /> Add Driver
               </button>
@@ -161,7 +161,7 @@ export default function AutoInsuranceForm({
                   <div className="flex-1">
                     <Input
                       id={`driver-${index}`}
-                      label={`Driver #${index + 1} Name`}
+                      label={` ${index + 1} Driver Name`}
                       placeholder="e.g. Jane Doe"
                       value={driver}
                       disabled={disabled}

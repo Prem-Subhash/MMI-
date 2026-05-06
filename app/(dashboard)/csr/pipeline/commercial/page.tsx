@@ -210,46 +210,56 @@ export default function CommercialLinesPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm text-left" >
-                            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
-                                <tr>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Business / Client</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Actions</th>
+                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1200px' }}>
+                            <colgroup>
+                                <col style={{ width: '250px' }} />
+                                <col style={{ width: '140px' }} />
+                                <col style={{ width: '240px' }} />
+                                <col style={{ width: '120px' }} />
+                                <col style={{ width: '160px' }} />
+                                <col style={{ width: '110px' }} />
+                                <col style={{ width: '80px' }} />
+                                <col style={{ width: '100px' }} />
+                            </colgroup>
+                            <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
+                                <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
+                                    <th className="px-4 py-4 font-semibold">Business / Client</th>
+                                    <th className="px-4 py-4 font-semibold">Phone</th>
+                                    <th className="px-4 py-4 font-semibold">Email</th>
+                                    <th className="px-4 py-4 font-semibold">Category</th>
+                                    <th className="px-4 py-4 font-semibold">Stage</th>
+                                    <th className="px-4 py-4 font-semibold text-center">Created</th>
+                                    <th className="px-4 py-4 font-semibold text-center">View</th>
+                                    <th className="px-4 py-4 font-semibold">Actions</th>
                                 </tr>
                             </thead>
 
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 bg-white">
                                 {filteredLeads.map(lead => {
                                     const stage = lead.current_stage?.stage_name ?? '—'
 
                                     return (
                                         <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-4 sm:px-6 py-4 font-medium">
-                                                <div className="flex flex-col">
-                                                    <span className="text-gray-900 font-semibold whitespace-nowrap">{lead.business_name || lead.client_name}</span>
-                                                    {lead.business_name && <span className="text-xs text-gray-500">{lead.client_name}</span>}
+                                            <td className="px-4 py-4 font-medium truncate" title={lead.business_name || lead.client_name}>
+                                                <div className="flex flex-col truncate">
+                                                    <span className="text-gray-900 font-semibold truncate">{lead.business_name || lead.client_name}</span>
+                                                    {lead.business_name && <span className="text-xs text-gray-500 truncate">{lead.client_name}</span>}
                                                 </div>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
-                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">
+                                            <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
+                                            <td className="px-4 py-4 text-gray-600 truncate" title={lead.email}>{lead.email}</td>
+                                            <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
                                                 {lead.insurence_category}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4">
+                                            <td className="px-4 py-4">
                                                 <StageBadge stage={stage} />
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
+                                            <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center">
                                                 {new Date(lead.created_at).toLocaleDateString()}
                                             </td>
 
                                             {/* VIEW */}
-                                            <td className="px-4 sm:px-6 py-4 text-center">
+                                            <td className="px-4 py-4 text-center">
                                                 <Link
                                                     href={`/csr/leads/${lead.id}`}
                                                     className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
@@ -260,12 +270,12 @@ export default function CommercialLinesPage() {
                                             </td>
 
                                             {/* ACTIONS */}
-                                            <td className="px-4 sm:px-6 py-4">
+                                            <td className="px-4 py-4">
                                                 <button
                                                     onClick={() => setEmailModalLeadId(lead.id)}
                                                     className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
                                                 >
-                                                    Send Email
+                                                    Email
                                                 </button>
                                             </td>
                                         </tr>
@@ -325,7 +335,7 @@ function StageBadge({ stage }: { stage: string }) {
                             : 'bg-gray-50 text-gray-700 border border-gray-200'
 
     return (
-        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${color}`}>
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${color}`}>
             {stage}
         </span>
     )

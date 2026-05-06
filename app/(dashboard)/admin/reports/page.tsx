@@ -40,84 +40,51 @@ export default async function AdminReportsPage() {
                 </div>
 
                 {/* ── KPI Cards ── */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
 
                     {/* Card 1 — Total System Volume */}
-                    <div className="relative bg-gradient-to-br from-[#10B889] to-[#0d9470] rounded-2xl p-6 shadow-lg shadow-emerald-200/50 overflow-hidden text-white">
-                        {/* Decorative circles */}
-                        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
-                        <div className="absolute -bottom-8 -right-2 w-20 h-20 rounded-full bg-white/10" />
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <Layers size={22} className="text-white" />
-                                </div>
-                                <span className="flex items-center gap-1 text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                                    <ArrowUpRight size={12} />
-                                    Live
-                                </span>
-                            </div>
-                            <p className="text-sm font-semibold text-white/80 uppercase tracking-wider">Total System Volume</p>
-                            <p className="text-4xl font-black mt-1 tracking-tight">{totalLeads || 0}</p>
-                            <p className="text-xs text-white/70 mt-2 font-medium">Active leads across all pipelines</p>
+                    <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center gap-2 text-gray-500">
+                            <Layers size={14} className="text-gray-400" />
+                            <p className="text-[12px] font-black uppercase tracking-wider leading-none">Total System Volume</p>
                         </div>
+                        <div className="flex items-center gap-2 pl-0.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,184,137,0.4)]" />
+                            <p className="text-[18px] font-black text-gray-900 leading-tight">
+                                {totalLeads || 0}
+                            </p>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold leading-tight">Active leads across all pipelines</p>
                     </div>
 
                     {/* Card 2 — Pipeline Health */}
-                    <div className="relative bg-gradient-to-br from-[#2E5C85] to-[#1e3f5e] rounded-2xl p-6 shadow-lg shadow-blue-200/50 overflow-hidden text-white">
-                        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
-                        <div className="absolute -bottom-8 -right-2 w-20 h-20 rounded-full bg-white/10" />
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <Activity size={22} className="text-white" />
-                                </div>
-                                <span className="flex items-center gap-1 text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                                    <Zap size={12} />
-                                    Healthy
-                                </span>
-                            </div>
-                            <p className="text-sm font-semibold text-white/80 uppercase tracking-wider">Pipeline Health</p>
-                            <p className="text-4xl font-black mt-1 tracking-tight">{pipelineHealth}%</p>
-                            {/* Progress bar */}
-                            <div className="mt-3 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-white rounded-full transition-all duration-700"
-                                    style={{ width: `${pipelineHealth}%` }}
-                                />
-                            </div>
-                            <p className="text-xs text-white/70 mt-2 font-medium">Stages progressing on track</p>
+                    <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center gap-2 text-gray-500">
+                            <Activity size={14} className="text-gray-400" />
+                            <p className="text-[12px] font-black uppercase tracking-wider leading-none">Pipeline Health</p>
                         </div>
+                        <div className="flex items-center gap-2 pl-0.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]" />
+                            <p className="text-[18px] font-black text-gray-900 leading-tight">
+                                {pipelineHealth}%
+                            </p>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold leading-tight">Stages progressing on track</p>
                     </div>
 
                     {/* Card 3 — Conversion Rate */}
-                    <div className="relative bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] rounded-2xl p-6 shadow-lg shadow-purple-200/50 overflow-hidden text-white sm:col-span-2 lg:col-span-1">
-                        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/10" />
-                        <div className="absolute -bottom-8 -right-2 w-20 h-20 rounded-full bg-white/10" />
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="p-2.5 bg-white/20 rounded-xl backdrop-blur-sm">
-                                    <TrendingUp size={22} className="text-white" />
-                                </div>
-                                <span className="flex items-center gap-1 text-xs font-bold bg-white/20 px-2.5 py-1 rounded-full backdrop-blur-sm">
-                                    <ArrowUpRight size={12} />
-                                    +2.1%
-                                </span>
-                            </div>
-                            <p className="text-sm font-semibold text-white/80 uppercase tracking-wider">Conversion Rate</p>
-                            <p className="text-4xl font-black mt-1 tracking-tight">{conversionRate}%</p>
-                            {/* Progress bar */}
-                            <div className="mt-3 h-1.5 bg-white/20 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-white rounded-full transition-all duration-700"
-                                    style={{ width: `${conversionRate * 4}%` }}
-                                />
-                            </div>
-                            <p className="text-xs text-white/70 mt-2 font-medium">Leads closed vs. total received</p>
+                    <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                        <div className="flex items-center gap-2 text-gray-500">
+                            <TrendingUp size={14} className="text-gray-400" />
+                            <p className="text-[12px] font-black uppercase tracking-wider leading-none">Conversion Rate</p>
                         </div>
+                        <div className="flex items-center gap-2 pl-0.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]" />
+                            <p className="text-[18px] font-black text-gray-900 leading-tight">
+                                {conversionRate}%
+                            </p>
+                        </div>
+                        <p className="text-[10px] text-gray-400 font-bold leading-tight">Leads closed vs. total received</p>
                     </div>
                 </div>
 
