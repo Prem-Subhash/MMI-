@@ -90,11 +90,9 @@ export default function LeadReviewPage() {
         .maybeSingle()
 
       if (formData) {
-        const { data: docs } = await supabase
-          .from('uploaded_documents')
-          .select('*')
-          .eq('intake_form_id', formData.id)
-        setDocuments(docs || [])
+        const res = await fetch(`/api/documents?intakeFormId=${formData.id}`)
+        const docs = await res.json()
+        setDocuments(Array.isArray(docs) ? docs : [])
       }
 
       setLead(leadData)
@@ -140,7 +138,13 @@ export default function LeadReviewPage() {
     return <div className="p-10 text-red-600 font-medium">{error}</div>
   }
 
-  const status = lead?.status || 'NOT_SENT';
+  const status = lead?.client_id || lead?.pipeline_id || lead?.current_stage_id
+    ? 'ACCEPTED'
+    : form
+      ? 'SUBMITTED'
+      : lead?.status === 'WAITING_FOR_SUBMISSION' || lead?.intake_form_sent
+        ? 'WAITING_FOR_SUBMISSION'
+        : 'NOT_SENT';
 
   /* ================= UNIFIED UI ================= */
   return (

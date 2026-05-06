@@ -13,7 +13,7 @@ export default function DocumentViewer({ documents }: { documents: any[] }) {
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {documents.map((doc: any) => {
-          const url = supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl;
+          const url = `/api/documents/${doc.id}`;
           return (
             <div key={doc.id} className="p-4 border border-slate-200 rounded-xl bg-white flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start gap-3 mb-4 relative group">
