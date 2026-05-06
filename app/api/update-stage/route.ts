@@ -254,6 +254,7 @@ export async function POST(req: Request) {
     }
 
     // Insert history snapshot after successful update
+    // We store the EXACT payload received from the form as a snapshot
     const { error: historyError } = await supabaseServer
       .from('lead_stage_history')
       .insert([
@@ -261,7 +262,7 @@ export async function POST(req: Request) {
           lead_id: lead.id,
           stage_id: stage.id,
           stage_name: stage.stage_name,
-          stage_metadata: mergedMetadata,
+          stage_metadata: stageMetadata,
         },
       ])
 

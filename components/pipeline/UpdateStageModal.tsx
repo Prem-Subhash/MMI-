@@ -437,32 +437,21 @@ export default function UpdateStageModal({
       stageMetadata: formData,
     })
 
+    // Convert "Yes"/"No" strings to actual booleans so backend business rules pass.
+    // We only sanitize fields that are actually present in the formData.
+    const sanitizedMetadata = { ...formData }
+    Object.keys(sanitizedMetadata).forEach(key => {
+      if (sanitizedMetadata[key] === 'Yes') sanitizedMetadata[key] = true
+      if (sanitizedMetadata[key] === 'No') sanitizedMetadata[key] = false
+    })
+
     const res = await fetch('/api/update-stage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         leadId,
         stageId: selectedStageId,
-        stageMetadata: {
-          ...formData,
-          // normalize boolean if ever used
-          email_sent:
-            formData.email_sent === 'yes'
-              ? true
-              : formData.email_sent === 'no'
-                ? false
-                : formData.email_sent,
-          // Normalize boolean dropdowns to actual booleans for Commercial logic
-          documents_saved_filecenter: formData.documents_saved_filecenter === 'Yes',
-          required_documents_received: formData.required_documents_received === 'Yes',
-          finalized_quote: formData.finalized_quote === 'Yes',
-          policy_docs_saved: formData.policy_docs_saved === 'Yes',
-          docs_sent_to_client: formData.docs_sent_to_client === 'Yes',
-          // Normalizing new booleans for Personal New Business logic
-          docs_saved: formData.docs_saved === 'Yes',
-          info_received: formData.info_received === 'Yes',
-          policy_docs_sent: formData.policy_docs_sent === 'Yes'
-        },
+        stageMetadata: sanitizedMetadata,
       }),
     })
 

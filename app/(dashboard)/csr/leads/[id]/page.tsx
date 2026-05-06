@@ -111,16 +111,10 @@ export default function LeadReviewPage() {
       .from('lead_stage_history')
       .select('*')
       .eq('lead_id', leadId)
-      .order('created_at', { ascending: true }) // Chronological order
+      .order('created_at', { ascending: false }) // Newest first
 
     if (!error && data) {
-      // Duplicate history cleanup: remove consecutive identical stages
-      const deduplicated = data.filter((item, index, arr) => {
-        if (index === 0) return true;
-        return item.stage_name !== arr[index - 1].stage_name || 
-               JSON.stringify(item.stage_metadata) !== JSON.stringify(arr[index - 1].stage_metadata);
-      });
-      setHistory(deduplicated)
+      setHistory(data)
     }
     setHistoryLoading(false)
   }
@@ -451,14 +445,14 @@ export default function LeadReviewPage() {
                         <div className="p-5">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                             {Object.entries(item.stage_metadata).map(([k, v]) => {
-                              // We format just like the actual intake form modal with FIELD_LABELS
                               const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                              const displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
                               return (
                                 <div key={k}>
                                   <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{formatLabel(k)}</span>
-                                  <span className="font-medium text-slate-800">{v === null || v === undefined || v === '' ? '-' : String(v)}</span>
+                                  <span className="font-medium text-slate-800">{displayValue}</span>
                                 </div>
-                              )
+                              );
                             })}
                           </div>
                         </div>
@@ -488,11 +482,13 @@ export default function LeadReviewPage() {
         )}
         
         {/* EMAIL MODAL */}
-        <EmailModal
-          leadId={lead.id}
-          isOpen={showEmailModal}
-          onClose={() => setShowEmailModal(false)}
-        />
+        {showEmailModal && (
+          <EmailModal
+            leadId={leadId}
+            isOpen={true}
+            onClose={() => setShowEmailModal(false)}
+          />
+        )}
       </div>
     </div>
   )
