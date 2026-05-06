@@ -1,3 +1,4 @@
+import React from 'react'
 import { createServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
 import {
@@ -100,7 +101,7 @@ export default async function AdminDashboard() {
                         <div className="relative bg-white rounded-2xl border border-black p-4 shadow-sm hover:shadow-md transition-all h-full flex flex-col gap-1.5">
                             <div className="flex items-center gap-2 text-gray-500">
                                 <div className="text-gray-400">
-                                    {React.cloneElement(stat.icon as React.ReactElement, { size: 14 })}
+                                    {React.cloneElement(stat.icon as React.ReactElement<{ size: number }>, { size: 14 })}
                                 </div>
                                 <p className="text-[12px] font-black uppercase tracking-wider leading-none">
                                     {stat.label}

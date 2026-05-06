@@ -47,9 +47,9 @@ export default function IntakeFormPage() {
   const [error, setError] = useState<string | null>(null)
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
-  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, doc: any } | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean; doc: any } | null>(null)
   const [uploadSuccess, setUploadSuccess] = useState(false)
-
   const { showToast } = useToast()
 
   /* ================= LOAD INTAKE FORM ================= */
@@ -121,6 +121,30 @@ export default function IntakeFormPage() {
       .eq('id', intakeId)
     
     showToast('Progress saved.', 'success')
+  }
+
+  /* ================= PROCESS FILES ================= */
+  const processFiles = async (files: FileList | File[] | null) => {
+    if (!files || files.length === 0 || !intakeId) return;
+    setUploadingFiles(true);
+    let successCount = 0;
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const formDataFile = new FormData();
+      formDataFile.append('file', file);
+      formDataFile.append('intakeFormId', intakeId);
+      if (leadId) formDataFile.append('leadId', leadId);
+      try {
+        const res = await fetch('/api/upload-document', { method: 'POST', body: formDataFile });
+        const data = await res.json();
+        if (data.success) {
+          setUploadedFiles(prev => [...prev, data.document]);
+          successCount++;
+        }
+      } catch (err) { console.error(err); }
+    }
+    setUploadingFiles(false);
+    if (successCount > 0) setUploadSuccess(true);
   }
 
   /* ================= SUBMIT (FINAL) ================= */
@@ -277,41 +301,32 @@ export default function IntakeFormPage() {
               isLast={true}
             >
               <div className="space-y-8">
-                <label className="group relative block w-full">
+                <label 
+                  className="group relative block w-full"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    processFiles(e.dataTransfer.files);
+                  }}
+                >
                   <input 
                     type="file" 
                     multiple 
                     className="hidden"
                     accept=".pdf,image/jpeg,image/png,.doc,.docx"
-                    onChange={async (e) => {
-                      const files = e.target.files;
-                      if (!files || files.length === 0 || !intakeId) return;
-                      setUploadingFiles(true);
-                      for (let i = 0; i < files.length; i++) {
-                        const file = files[i];
-                        const formDataFile = new FormData();
-                        formDataFile.append('file', file);
-                        formDataFile.append('intakeFormId', intakeId);
-                        if (leadId) formDataFile.append('leadId', leadId);
-                        try {
-                          const res = await fetch('/api/upload-document', { method: 'POST', body: formDataFile });
-                          const data = await res.json();
-                          if (data.success) {
-                            setUploadedFiles(prev => [...prev, data.document]);
-                            setUploadSuccess(true);
-                          }
-                        } catch (err) { 
-                          console.error(err); 
-                          showToast('Failed to upload file', 'error');
-                        }
-                      }
-                      setUploadingFiles(false);
+                    onChange={(e) => {
+                      processFiles(e.target.files);
                       e.target.value = '';
                     }}
                     disabled={uploadingFiles}
                   />
-                  <div className="border-2 border-dashed border-gray-900 rounded-[32px] p-16 transition-all group-hover:bg-gray-50 group-hover:border-red-200 cursor-pointer text-center bg-gray-50/30">
-                    <div className="w-20 h-20 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform text-gray-400 group-hover:text-red-500">
+                  <div className={`border-2 border-dashed rounded-[32px] p-16 transition-all cursor-pointer text-center ${isDragging ? 'bg-red-50 border-red-400' : 'border-gray-100 bg-gray-50/30 group-hover:bg-gray-50 group-hover:border-red-200'}`}>
+                    <div className={`w-20 h-20 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-center mx-auto mb-6 transition-transform ${isDragging ? 'scale-110 text-red-500' : 'text-gray-400 group-hover:scale-110 group-hover:text-red-500'}`}>
                       <UploadCloud size={36} />
                     </div>
                     <p className="text-gray-900 font-black text-2xl tracking-tight mb-2">Drop documents here</p>
