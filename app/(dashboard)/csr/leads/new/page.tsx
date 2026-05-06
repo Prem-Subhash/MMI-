@@ -403,7 +403,7 @@ function NewLeadContent() {
           />
 
           <button
-            onClick={handleCreateClient}
+            onClick={() => handleCreateClient()}
             disabled={loading}
             className="w-full py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white rounded-xl font-bold flex justify-center gap-2"
           >

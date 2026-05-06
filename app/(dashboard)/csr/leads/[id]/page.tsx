@@ -7,6 +7,8 @@ import { ArrowLeft, Send, ExternalLink } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
+import DocumentViewer from '@/components/leads/DocumentViewer'
+import EmailModal from '@/components/email/EmailModal'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
@@ -26,7 +28,6 @@ export default function LeadReviewPage() {
   const [form, setForm] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [accepting, setAccepting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
   const [showFormModal, setShowFormModal] = useState(false)
@@ -34,6 +35,7 @@ export default function LeadReviewPage() {
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -111,93 +113,21 @@ export default function LeadReviewPage() {
       .from('lead_stage_history')
       .select('*')
       .eq('lead_id', leadId)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true }) // Chronological order
 
     if (!error && data) {
-      setHistory(data)
+      // Duplicate history cleanup: remove consecutive identical stages
+      const deduplicated = data.filter((item, index, arr) => {
+        if (index === 0) return true;
+        return item.stage_name !== arr[index - 1].stage_name || 
+               JSON.stringify(item.stage_metadata) !== JSON.stringify(arr[index - 1].stage_metadata);
+      });
+      setHistory(deduplicated)
     }
     setHistoryLoading(false)
   }
 
-  /* ================= ACCEPT LEAD ================= */
-  const handleAccept = async () => {
-    if (!lead || !form) return
 
-    setAccepting(true)
-    setError(null)
-
-    try {
-      // Improved check for existing client by both phone and email
-      const { data: phoneMatch } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('phone', lead.phone)
-        .maybeSingle()
-
-      let emailMatch = null
-      if (lead.email) {
-        const { data } = await supabase
-          .from('clients')
-          .select('id')
-          .eq('email', lead.email)
-          .maybeSingle()
-        emailMatch = data
-      }
-
-      let clientId = phoneMatch?.id || emailMatch?.id
-
-      if (!clientId) {
-        const { data: client, error: clientError } = await supabase
-          .from('clients')
-          .insert({
-            client_name: lead.client_name, // Include client name if available
-            phone: lead.phone,
-            email: lead.email,
-            assigned_csr: lead.assigned_csr,
-          })
-          .select()
-          .single()
-
-        if (clientError || !client) {
-          throw new Error('Failed to create client')
-        }
-
-        clientId = client.id
-      }
-
-      await supabase.from('client_insurance_details').insert({
-        client_id: clientId,
-        insurance_category: lead.insurence_category,
-        policy_type: lead.policy_type,
-        full_data: form.form_data,
-        verified_by: lead.assigned_csr,
-      })
-
-      // NEW LOGIC per specifications: Update temp_leads_basics
-      const { error: leadUpdateError } = await supabase
-        .from('temp_leads_basics')
-        .update({
-          status: 'ACCEPTED',
-          current_stage: 'Quoting in Progress',
-          accepted_at: new Date().toISOString()
-        })
-        .eq('id', lead.id)
-
-      if (leadUpdateError) {
-        console.error('Accept Lead failed:', leadUpdateError)
-        return
-      }
-
-      toast('Lead accepted successfully!', 'success')
-      router.refresh()
-    } catch (err: any) {
-      toast(err.message || 'Something went wrong', 'error')
-    } finally {
-      setAccepting(false)
-    }
-  }
-
-  /* ================= UI STATES ================= */
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -328,13 +258,13 @@ export default function LeadReviewPage() {
                     View in Pipeline
                   </Link>
                 )}
-                <Link
-                  href={`/csr/leads/send-form?id=${lead.id}`}
+                <button
+                  onClick={() => setShowEmailModal(true)}
                   className={`px-6 py-2.5 font-bold tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-[#10B889] hover:opacity-90 text-white'}`}
                 >
                   <Send size={16} />
                   Send Email
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -379,7 +309,7 @@ export default function LeadReviewPage() {
               })()}
             </div>
 
-            {/* 4. "VIEW FORM" & ACCEPT LEAD BOTTOM ACTIONS */}
+            {/* 4. "VIEW FORM" BOTTOM ACTIONS */}
             {(status === 'SUBMITTED' || status === 'ACCEPTED') && form && (
               <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4">
                 <button
@@ -391,16 +321,6 @@ export default function LeadReviewPage() {
                   </svg>
                   View Form
                 </button>
-
-                {status === 'SUBMITTED' && (
-                  <button
-                    onClick={handleAccept}
-                    disabled={accepting}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-xl font-bold disabled:opacity-60 shadow-md transition-all flex items-center justify-center text-lg"
-                  >
-                    {accepting ? <Spinner size={24} /> : 'Accept Lead'}
-                  </button>
-                )}
               </div>
             )}
           </div>
@@ -481,39 +401,7 @@ export default function LeadReviewPage() {
                  })}
  
                  {/* UPLOADED DOCUMENTS RENDERER */}
-                 {documents && documents.length > 0 && (
-                  <div className="mt-8 pt-6 border-t border-slate-200">
-                    <h3 className="text-lg font-bold text-emerald-800 mb-5 flex items-center gap-2">
-                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="text-emerald-500"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
-                      Uploaded Documents
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {documents.map((doc: any) => {
-                        const url = supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl;
-                        return (
-                          <div key={doc.id} className="p-4 border border-slate-200 rounded-xl bg-white flex flex-col justify-between shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-start gap-3 mb-4 relative group">
-                              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-lg shrink-0">
-                                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-                              </div>
-                              <div className="overflow-hidden">
-                                <p className="text-sm font-semibold text-slate-800 truncate" title={doc.file_name}>{doc.file_name}</p>
-                                <p className="text-xs text-slate-500 mt-1 font-medium">{new Date(doc.uploaded_at).toLocaleDateString()}</p>
-                              </div>
-                              
-                              {/* Hover explicit filename reveal */}
-                              <div className="absolute hidden group-hover:block z-10 bg-slate-800 text-white text-xs p-2.5 rounded-lg break-words max-w-[200px] top-full left-0 mt-2 shadow-xl whitespace-normal pointer-events-none">
-                                {doc.file_name}
-                              </div>
-                            </div>
-                            <a href={url} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-center text-emerald-600 bg-emerald-50 hover:bg-emerald-100 py-2.5 rounded-lg transition-colors w-full inline-block border border-emerald-100">
-                              View File
-                            </a>
-                          </div>
-                      )})}
-                    </div>
-                  </div>
-                )}
+                 <DocumentViewer documents={documents} />
               </div>
             </div>
           </div>
@@ -594,6 +482,13 @@ export default function LeadReviewPage() {
             }}
           />
         )}
+        
+        {/* EMAIL MODAL */}
+        <EmailModal
+          leadId={lead.id}
+          isOpen={showEmailModal}
+          onClose={() => setShowEmailModal(false)}
+        />
       </div>
     </div>
   )

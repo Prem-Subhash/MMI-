@@ -1,6 +1,6 @@
 'use client'
 
-import { Car, Building2, Calendar, ShieldAlert, BadgeCheck } from 'lucide-react'
+import { Car, Building2, Calendar, ShieldAlert, BadgeCheck, Users, Plus, Trash2 } from 'lucide-react'
 import { SectionCard, Input, Select, FieldGrid } from '@/components/ui/IntakeUI'
 import { YES_NO_OPTIONS } from './constants'
 
@@ -20,6 +20,23 @@ export default function AutoInsuranceForm({
       ...data,
       [field]: value,
     })
+  }
+
+  const additionalDrivers: string[] = data.additional_drivers || []
+
+  const addDriver = () => {
+    onChange({ ...data, additional_drivers: [...additionalDrivers, ''] })
+  }
+
+  const updateDriver = (index: number, val: string) => {
+    const newDrivers = [...additionalDrivers]
+    newDrivers[index] = val
+    onChange({ ...data, additional_drivers: newDrivers })
+  }
+
+  const removeDriver = (index: number) => {
+    const newDrivers = additionalDrivers.filter((_, i) => i !== index)
+    onChange({ ...data, additional_drivers: newDrivers })
   }
 
   return (
@@ -117,6 +134,54 @@ export default function AutoInsuranceForm({
             />
           </div>
         )}
+
+        {/* ADDITIONAL DRIVERS SECTION */}
+        <div className="pt-6 border-t border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Users size={18} className="text-emerald-600" />
+              Additional Drivers
+            </h4>
+            {!disabled && (
+              <button
+                onClick={addDriver}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-100"
+              >
+                <Plus size={14} /> Add Driver
+              </button>
+            )}
+          </div>
+          
+          <div className="space-y-4">
+            {additionalDrivers.length === 0 ? (
+              <p className="text-sm text-slate-500 italic">No additional drivers added.</p>
+            ) : (
+              additionalDrivers.map((driver, index) => (
+                <div key={index} className="flex items-center gap-3 animate-in fade-in slide-in-from-left-2 duration-300">
+                  <div className="flex-1">
+                    <Input
+                      id={`driver-${index}`}
+                      label={`Driver #${index + 1} Name`}
+                      placeholder="e.g. Jane Doe"
+                      value={driver}
+                      disabled={disabled}
+                      onChange={e => updateDriver(index, e.target.value)}
+                    />
+                  </div>
+                  {!disabled && (
+                    <button
+                      onClick={() => removeDriver(index)}
+                      className="mt-6 p-3 text-red-500 hover:text-white hover:bg-red-500 bg-red-50 rounded-xl transition-colors border border-red-100 shrink-0"
+                      title="Remove Driver"
+                    >
+                      <Trash2 size={20} />
+                    </button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
     </SectionCard>
   )

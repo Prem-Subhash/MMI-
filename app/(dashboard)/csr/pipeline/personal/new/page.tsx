@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
@@ -20,6 +20,8 @@ export default function NewLeadPage() {
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [duplicateWarning, setDuplicateWarning] = useState(false)
+  const [isAdditionalQuote, setIsAdditionalQuote] = useState(false)
 
   const [form, setForm] = useState({
     client_name: '',
@@ -90,8 +92,9 @@ export default function NewLeadPage() {
   }
 
   /* ---------------- CREATE LEAD ---------------- */
-  const handleCreateClient = async () => {
+  const handleCreateClient = async (forceAdditionalQuote = false) => {
     setError(null)
+    setDuplicateWarning(false)
 
     if (
       !form.client_name ||
@@ -130,8 +133,8 @@ export default function NewLeadPage() {
       const clientId = await getOrCreateClient()
       const duplicate = await checkDuplicateActiveLead(clientId)
 
-      if (duplicate) {
-        setError('An active policy already exists for this client.')
+      if (duplicate && !forceAdditionalQuote) {
+        setDuplicateWarning(true)
         setLoading(false)
         setIsLocked(false)
         return
@@ -143,6 +146,7 @@ export default function NewLeadPage() {
           ...form,
           // DB expects boolean, default to false if undefined
           send_email_to_client: form.send_email_to_client ?? false,
+          is_additional_quote: forceAdditionalQuote,
           client_id: clientId,
           assigned_csr: auth.user.id,
           pipeline_id: form.insurence_category === 'commercial' 
@@ -158,6 +162,8 @@ export default function NewLeadPage() {
 
       /* ✅ SUCCESS UI */
       toast('Lead created successfully!', 'success')
+      setIsAdditionalQuote(false)
+      setDuplicateWarning(false)
 
       setForm({
         client_name: '',
@@ -201,6 +207,23 @@ export default function NewLeadPage() {
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-700 rounded">
               {error}
+            </div>
+          )}
+
+          {duplicateWarning && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 text-yellow-800 rounded shadow-sm">
+                <p className="font-semibold flex items-center gap-2">
+                    ⚠️ Duplicate Warning
+                </p>
+                <p className="text-sm mt-1 mb-3">
+                    An active policy already exists for this client with the selected policy type.
+                </p>
+                <button
+                    onClick={() => handleCreateClient(true)}
+                    className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium text-sm transition-colors"
+                >
+                    Proceed as Additional Quote
+                </button>
             </div>
           )}
 
@@ -288,7 +311,7 @@ export default function NewLeadPage() {
           />
 
           <button
-            onClick={handleCreateClient}
+            onClick={() => handleCreateClient()}
             disabled={loading}
             className="w-full py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white rounded-xl font-bold flex justify-center gap-2"
           >

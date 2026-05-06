@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
+import EmailModal from '@/components/email/EmailModal'
 
 type Lead = {
   id: string
@@ -13,6 +14,7 @@ type Lead = {
   phone: string
   email: string
   insurence_category: string
+  policy_type: string
   policy_flow: string
   created_at: string
   current_stage: {
@@ -38,6 +40,7 @@ export default function PersonalLinesPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(0)
+  const [emailModalLeadId, setEmailModalLeadId] = useState<string | null>(null)
 
   useEffect(() => {
     const loadLeads = async () => {
@@ -57,6 +60,7 @@ export default function PersonalLinesPage() {
           phone,
           email,
           insurence_category,
+          policy_type,
           policy_flow,
           created_at,
           current_stage:pipeline_stages!inner (
@@ -189,7 +193,7 @@ export default function PersonalLinesPage() {
                   <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
                   <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
                   <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold">Policy Type</th>
                   <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
                   <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
                   <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
@@ -210,7 +214,7 @@ export default function PersonalLinesPage() {
                       <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
                       <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
                       <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">
-                        {lead.insurence_category}
+                        {lead.policy_type || '—'}
                       </td>
                       <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">
                         {lead.policy_flow}
@@ -233,14 +237,12 @@ export default function PersonalLinesPage() {
                       </td>
 
                       <td className="px-4 sm:px-6 py-4">
-                        {stage === 'Quoting in Progress' && (
-                          <Link
-                            href={`/csr/leads/send-form?id=${lead.id}`}
-                            className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
-                          >
-                            Send Email
-                          </Link>
-                        )}
+                        <button
+                          onClick={() => setEmailModalLeadId(lead.id)}
+                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
+                        >
+                          Send Email
+                        </button>
                       </td>
                     </tr>
                   )
@@ -271,6 +273,13 @@ export default function PersonalLinesPage() {
           </button>
         </div>
       </div>
+      
+      {/* EMAIL MODAL */}
+      <EmailModal
+        leadId={emailModalLeadId!}
+        isOpen={!!emailModalLeadId}
+        onClose={() => setEmailModalLeadId(null)}
+      />
     </div>
   )
 }

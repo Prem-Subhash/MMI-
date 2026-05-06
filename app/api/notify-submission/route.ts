@@ -43,19 +43,13 @@ export async function POST(req: Request) {
             )
         }
 
-        /* ================= UPDATE LEAD STATUS ================= */
-        const newStatus = lead.status === 'ACCEPTED' ? 'ACCEPTED' : 'SUBMITTED'
+        /* ================= CONVERT INTAKE TO CLIENT (RPC) ================= */
+        const { error: rpcError } = await supabaseServer.rpc('convert_intake_to_client', {
+            p_lead_id: targetLeadId
+        })
 
-        const { error: updateError } = await supabaseServer
-            .from('temp_leads_basics')
-            .update({
-                status: newStatus,
-                form_submitted_at: new Date().toISOString()
-            })
-            .eq('id', targetLeadId)
-
-        if (updateError) {
-            console.error('FAILED TO UPDATE LEAD STATUS:', updateError)
+        if (rpcError) {
+            console.error('FAILED TO EXECUTE RPC convert_intake_to_client:', rpcError)
         }
 
         /* ================= DETERMINE RECIPIENTS ================= */

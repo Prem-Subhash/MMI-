@@ -1,3 +1,5 @@
+import { formatCurrency } from './currency';
+
 export interface PolicyBreakdown {
   id: string;
   type: string;
@@ -40,7 +42,7 @@ export function calculateTotalSavings(policies: PolicyBreakdown[]): string {
       totalSavings += (oldVal - newVal);
     }
   });
-  return totalSavings > 0 ? totalSavings.toFixed(2) : '0.00';
+  return totalSavings > 0 ? formatCurrency(totalSavings) : formatCurrency(0);
 }
 
 export function generatePolicyBreakdown(templateKey: string, policies: PolicyBreakdown[]): string {
@@ -48,16 +50,16 @@ export function generatePolicyBreakdown(templateKey: string, policies: PolicyBre
   
   // Specific formatting for different template types
   if (templateKey === 'renewal_same') {
-    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance Premium:</b> $${p.a1 || '0.00'}`).join('<br>');
+    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance Premium:</b> ${formatCurrency(p.a1 || 0)}`).join('<br>');
   } 
   if (templateKey === 'renewal_switch') {
-    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Policy Comparison:</b><br>• Current ${p.cName || '[Carrier]'} Carrier (Renewal Premium): $${p.a1 || '0.00'}<br>• New ${p.nName || '[New Carrier]'} Carrier (Quoted Premium): $${p.a2 || '0.00'}`).join('<br><br>');
+    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Policy Comparison:</b><br>• Current ${p.cName || '[Carrier]'} Carrier (Renewal Premium): ${formatCurrency(p.a1 || 0)}<br>• New ${p.nName || '[New Carrier]'} Carrier (Quoted Premium): ${formatCurrency(p.a2 || 0)}`).join('<br><br>');
   }
   if (templateKey === 'payment_reminder') {
-    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance</b> with ${p.cName || '[Carrier]'}: <b>$${p.a1 || '0.00'}</b>`).join('<br>');
+    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance</b> with ${p.cName || '[Carrier]'}: <b>${formatCurrency(p.a1 || 0)}</b>`).join('<br>');
   }
   if (templateKey === 'new_lead') {
-    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Insurance Quote:</b><br>Carrier: ${p.cName || '[Carrier]'}<br>Coverage Term: 12 months<br>Premium Amount: <b>$${p.a1 || '0.00'}</b>`).join('<br><br>');
+    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Insurance Quote:</b><br>Carrier: ${p.cName || '[Carrier]'}<br>Coverage Term: 12 months<br>Premium Amount: <b>${formatCurrency(p.a1 || 0)}</b>`).join('<br><br>');
   }
 
   // Refined production format with numbering and auto-skipping empty fields
@@ -70,11 +72,11 @@ export function generatePolicyBreakdown(templateKey: string, policies: PolicyBre
       if (p.vehicle) lines.push(`Vehicle: ${p.vehicle}`);
       if (p.vin) lines.push(`VIN: ${p.vin}`);
       if (p.cName) lines.push(`Carrier: ${p.cName}`);
-      if (p.a1 || p.newPremium) lines.push(`Premium: $${p.newPremium || p.a1}`);
+      if (p.a1 || p.newPremium) lines.push(`Premium: ${formatCurrency(p.newPremium || p.a1)}`);
     } else {
       lines.push(`Type: ${p.type} Insurance`);
       if (p.cName) lines.push(`Carrier: ${p.cName}`);
-      if (p.a1) lines.push(`Premium: $${p.a1}`);
+      if (p.a1) lines.push(`Premium: ${formatCurrency(p.a1)}`);
     }
     
     return lines.join('<br>') + '<br>';
@@ -136,10 +138,10 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     plural_pol: pluralPol,
 
     // Singular fallbacks (deprioritized in favor of breakdown)
-    premium: activePremium || '[Premium Amount]',
-    old_premium: firstPolicy?.oldPremium || firstPolicy?.a1 || '[Old Premium]',
-    new_premium: firstPolicy?.newPremium || firstPolicy?.a2 || '[New Premium]',
-    renewal_premium: leadData?.renewal_premium ? `$${leadData.renewal_premium}` : firstPolicy?.newPremium || firstPolicy?.a2 || '[Renewal Premium]',
+    premium: activePremium ? formatCurrency(activePremium) : '[Premium Amount]',
+    old_premium: firstPolicy?.oldPremium || firstPolicy?.a1 ? formatCurrency(firstPolicy?.oldPremium || firstPolicy?.a1) : '[Old Premium]',
+    new_premium: firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : '[New Premium]',
+    renewal_premium: leadData?.renewal_premium ? formatCurrency(leadData.renewal_premium) : (firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : '[Renewal Premium]'),
     carrier: activeCarrier || '[Carrier Name]',
     term: activeTerm,
     form_link: formLink || '{{form_link}}'

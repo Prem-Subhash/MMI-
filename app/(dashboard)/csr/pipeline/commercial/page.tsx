@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Search, Eye } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
+import EmailModal from '@/components/email/EmailModal'
 
 /* ================= TYPES ================= */
 
@@ -16,6 +17,7 @@ type Lead = {
     phone: string
     email: string
     insurence_category: string
+    policy_type: string
     policy_flow: string
     created_at: string
     current_stage: {
@@ -46,6 +48,7 @@ export default function CommercialLinesPage() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [page, setPage] = useState(0)
+    const [emailModalLeadId, setEmailModalLeadId] = useState<string | null>(null)
 
     useEffect(() => {
         setPage(0)
@@ -72,6 +75,7 @@ export default function CommercialLinesPage() {
           phone,
           email,
           insurence_category,
+          policy_type,
           policy_flow,
           created_at,
           current_stage:pipeline_stages!inner (
@@ -257,14 +261,12 @@ export default function CommercialLinesPage() {
 
                                             {/* ACTIONS */}
                                             <td className="px-4 sm:px-6 py-4">
-                                                {stage === 'Quoting in Progress' && (
-                                                    <Link
-                                                        href={`/csr/leads/send-form?id=${lead.id}&type=commercial`}
-                                                        className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
-                                                    >
-                                                        Send Email
-                                                    </Link>
-                                                )}
+                                                <button
+                                                    onClick={() => setEmailModalLeadId(lead.id)}
+                                                    className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
+                                                >
+                                                    Send Email
+                                                </button>
                                             </td>
                                         </tr>
                                     )
@@ -295,6 +297,13 @@ export default function CommercialLinesPage() {
                     </button>
                 </div>
             </div>
+
+            {/* EMAIL MODAL */}
+            <EmailModal
+                leadId={emailModalLeadId!}
+                isOpen={!!emailModalLeadId}
+                onClose={() => setEmailModalLeadId(null)}
+            />
         </div>
     )
 }

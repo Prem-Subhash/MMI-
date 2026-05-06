@@ -53,7 +53,7 @@ const PERSONAL_NEW_BUSINESS_FIELDS: Record<string, Record<string, FieldConfig>> 
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Did Not Bind': {
-    // X-date is auto-calculated (60 days prior to Renewal Date) — no manual input needed
+    reason_not_bound: { label: 'Reason Not Bound', type: 'text', required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   }
 }
@@ -190,6 +190,7 @@ const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Cancelled': {
+    cancellation_reason: { label: 'Cancellation Reason', type: 'text', required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   }
 }

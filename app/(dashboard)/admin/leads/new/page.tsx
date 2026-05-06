@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
@@ -18,6 +18,8 @@ export default function AdminNewLeadPage() {
     
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [duplicateWarning, setDuplicateWarning] = useState(false)
+    const [isAdditionalQuote, setIsAdditionalQuote] = useState(false)
     const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
 
     const [form, setForm] = useState({
@@ -181,9 +183,9 @@ export default function AdminNewLeadPage() {
         return data && data.length > 0
     }
 
-    /* ---------------- CREATE LEAD ---------------- */
-    const handleCreateClient = async () => {
+    const handleCreateClient = async (forceAdditionalQuote = false) => {
         setError(null)
+        setDuplicateWarning(false)
 
         if (
             !form.client_name ||
@@ -221,8 +223,8 @@ export default function AdminNewLeadPage() {
             const clientId = await getOrCreateClient()
             const duplicate = await checkDuplicateActiveLead(clientId)
 
-            if (duplicate) {
-                setError('An active policy already exists for this client.')
+            if (duplicate && !forceAdditionalQuote) {
+                setDuplicateWarning(true)
                 setLoading(false)
                 setIsLocked(false)
                 return
@@ -234,6 +236,7 @@ export default function AdminNewLeadPage() {
                     ...form,
                     // DB expects boolean, default to false if undefined
                     send_email_to_client: form.send_email_to_client ?? false,
+                    is_additional_quote: forceAdditionalQuote,
                     client_id: clientId,
                     assigned_csr: null, // MODIFIED FOR ADMIN Lead Creation
                     pipeline_id: form.insurence_category === 'commercial' 
@@ -249,6 +252,8 @@ export default function AdminNewLeadPage() {
 
             /* ✅ SUCCESS UI */
             toast('Lead created successfully (Unassigned)!', 'success')
+            setIsAdditionalQuote(false)
+            setDuplicateWarning(false)
             setForm({
                 client_name: '',
                 phone: '',
@@ -298,15 +303,32 @@ export default function AdminNewLeadPage() {
                     )}
 
                     {existingClient && (
-                        <div className="bg-red-50 border-l-4 border-red-500 p-4 text-red-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
+                        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 text-blue-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
                             <p className="font-semibold flex items-center gap-2">
-                                <Shield className="w-5 h-5 text-red-600" />
+                                <Shield className="w-5 h-5 text-blue-600" />
                                 Existing Client Identified
                             </p>
                             <p className="text-sm mt-1">
                                 This client is already registered to <strong>"{existingClient.client_name}"</strong>.
                                 Details have been auto-filled.
                             </p>
+                        </div>
+                    )}
+
+                    {duplicateWarning && (
+                        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 text-yellow-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
+                            <p className="font-semibold flex items-center gap-2">
+                                ⚠️ Duplicate Warning
+                            </p>
+                            <p className="text-sm mt-1 mb-3">
+                                An active policy already exists for this client with the selected policy type.
+                            </p>
+                            <button
+                                onClick={() => handleCreateClient(true)}
+                                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium text-sm transition-colors"
+                            >
+                                Proceed as Additional Quote
+                            </button>
                         </div>
                     )}
 
@@ -414,7 +436,7 @@ export default function AdminNewLeadPage() {
                     />
 
                     <button
-                        onClick={handleCreateClient}
+                        onClick={() => handleCreateClient()}
                         disabled={loading}
                         className="w-full py-4 bg-gray-800 hover:bg-gray-900 transition-colors text-white rounded-xl font-bold flex justify-center gap-2"
                     >
