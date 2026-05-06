@@ -224,22 +224,66 @@ export default function RenewalDetailPage() {
 
           {/* CONTENT */}
           <div className="p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Carrier</p>
-                <p className="font-semibold text-gray-800">{lead.carrier || '—'}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Client Name */}
+              <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none">Client Name</p>
+                </div>
+                <p className="text-[18px] font-black text-gray-900 truncate leading-tight pl-0.5">{lead.client_name || '—'}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Policy Number</p>
-                <p className="font-semibold text-gray-800">{lead.policy_number || '—'}</p>
+
+              {/* Email */}
+              <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none">Email Address</p>
+                </div>
+                <p className="text-[18px] font-black text-gray-900 truncate leading-tight pl-0.5" title={lead.email}>{lead.email || '—'}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Renewal Date</p>
-                <p className="font-semibold text-gray-800">{new Date(lead.renewal_date).toLocaleDateString()}</p>
+
+              {/* Policy Type */}
+              <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none">Policy Type</p>
+                </div>
+                <p className="text-[18px] font-black text-gray-900 capitalize leading-tight pl-0.5">{lead.policy_type || '—'}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-xl border">
-                <p className="text-sm text-gray-500">Premium</p>
-                <p className="font-semibold text-gray-800">
+
+              {/* Current Status */}
+              <div className="flex flex-col gap-1.5 p-4 bg-white border border-black rounded-2xl shadow-sm hover:shadow-md transition-all">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  <p className="text-[12px] font-black uppercase tracking-wider leading-none">Current Status</p>
+                </div>
+                <div className="flex items-center gap-2 pl-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,184,137,0.4)]" />
+                  <p className="text-[18px] font-black text-gray-900 truncate leading-tight">
+                    {lead.pipeline_stage.stage_name}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Renewal Details Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Carrier</p>
+                <p className="text-sm font-bold text-gray-700">{lead.carrier || '—'}</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Policy Number</p>
+                <p className="text-sm font-bold text-gray-700">{lead.policy_number || '—'}</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Renewal Date</p>
+                <p className="text-sm font-bold text-gray-700">{new Date(lead.renewal_date).toLocaleDateString()}</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Premium</p>
+                <p className="text-sm font-bold text-gray-700">
                   {lead.current_premium ? `$${lead.current_premium.toLocaleString()}` : '—'}
                 </p>
               </div>

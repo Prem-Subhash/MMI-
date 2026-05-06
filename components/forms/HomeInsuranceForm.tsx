@@ -165,7 +165,7 @@ export default function HomeInsuranceForm({
               value={data.mortgage_clause || ''}
               disabled={disabled}
               onChange={e => updateField('mortgage_clause', e.target.value)}
-              className="w-full bg-white border border-gray-200 rounded-2xl py-4 pl-12 pr-5 outline-none transition-all focus:border-red-300 focus:ring-4 focus:ring-red-50 placeholder:text-gray-400 font-semibold text-gray-900 text-lg min-h-[140px] resize-none"
+              className="w-full bg-white border border-black rounded-2xl py-4 pl-12 pr-5 outline-none transition-all focus:border-red-300 focus:ring-4 focus:ring-red-50 placeholder:text-gray-400 font-semibold text-gray-900 text-lg min-h-[140px] resize-none"
             />
           </div>
         </div>

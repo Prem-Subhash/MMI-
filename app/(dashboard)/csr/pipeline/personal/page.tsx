@@ -187,18 +187,18 @@ export default function PersonalLinesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm text-left">
+            <table className="min-w-full text-sm text-left" style={{ minWidth: '1000px' }}>
               <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Policy Type</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
-                  <th className="px-4 sm:px-6 py-4 font-semibold">Actions</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Client Name</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Phone</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Email</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Policy Type</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Flow</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Stage</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Created</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold text-center whitespace-nowrap">View</th>
+                  <th className="px-4 sm:px-6 py-4 font-semibold whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
 

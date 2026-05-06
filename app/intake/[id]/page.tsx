@@ -11,11 +11,14 @@ import {
   CheckCircle2, 
   MousePointer2,
   FileText,
-  XCircle
+  XCircle,
+  Trash2,
+  Eye
 } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
+import { useToast } from '@/components/ui/Toast'
 
-import { FormHeader, FormContainer, SectionCard, Button } from '@/components/ui/IntakeUI'
+import { FormHeader, FormContainer, SectionCard, Button, ConfirmDialog, SuccessDialog } from '@/components/ui/IntakeUI'
 import HomeInsuranceForm from '@/components/forms/HomeInsuranceForm'
 import AutoInsuranceForm from '@/components/forms/AutoInsuranceForm'
 import PrimaryApplicantForm from '@/components/forms/PrimaryApplicantForm'
@@ -44,6 +47,10 @@ export default function IntakeFormPage() {
   const [error, setError] = useState<string | null>(null)
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
+  const [deleteConfirm, setDeleteConfirm] = useState<{ isOpen: boolean, doc: any } | null>(null)
+  const [uploadSuccess, setUploadSuccess] = useState(false)
+
+  const { showToast } = useToast()
 
   /* ================= LOAD INTAKE FORM ================= */
   useEffect(() => {
@@ -76,6 +83,16 @@ export default function IntakeFormPage() {
         ...(data.form_data || {})
       })
 
+      // Fetch existing documents
+      const { data: docs } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('intake_form_id', intakeId)
+      
+      if (docs) {
+        setUploadedFiles(docs)
+      }
+
       setLoading(false)
     }
 
@@ -102,8 +119,8 @@ export default function IntakeFormPage() {
         status: 'draft'
       })
       .eq('id', intakeId)
-
-    alert('Progress saved.')
+    
+    showToast('Progress saved.', 'success')
   }
 
   /* ================= SUBMIT (FINAL) ================= */
@@ -137,11 +154,45 @@ export default function IntakeFormPage() {
     setSubmitted(true)
   }
 
+  /* ================= DELETE FILE HANDLER ================= */
+  const handleDeleteFile = (doc: any) => {
+    setDeleteConfirm({ isOpen: true, doc });
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm?.doc) return;
+    const doc = deleteConfirm.doc;
+    
+    try {
+      const res = await fetch('/api/delete-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          documentId: doc.id, 
+          filePath: doc.file_path, 
+          intakeFormId: intakeId 
+        })
+      });
+      
+      if (res.ok) {
+        setUploadedFiles(prev => prev.filter(f => f.id !== doc.id));
+        showToast('Document removed successfully', 'success');
+      } else {
+        showToast('Failed to delete document', 'error');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error deleting document', 'error');
+    } finally {
+      setDeleteConfirm(null);
+    }
+  }
+
   /* ================= UI STATES ================= */
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <Loading message="Syncing application..." />
+        <Loading message="Opening form..." />
       </div>
     )
   }
@@ -171,8 +222,8 @@ export default function IntakeFormPage() {
           <div className="w-24 h-24 bg-red-50 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-inner">
             <CheckCircle2 size={48} />
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">Submission Received</h2>
-          <p className="text-gray-500 text-lg mb-0 leading-relaxed font-medium">Thank you for your trust. Our underwriting team has received your details and will process your quote within 24 hours.</p>
+          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">Insurance team</h2>
+          <p className="text-gray-500 text-lg mb-0 leading-relaxed font-medium"> Our insurance team has received your details and will process your quote within 24-48 hours.</p>
         </motion.div>
       </div>
     )
@@ -245,15 +296,21 @@ export default function IntakeFormPage() {
                         try {
                           const res = await fetch('/api/upload-document', { method: 'POST', body: formDataFile });
                           const data = await res.json();
-                          if (data.success) setUploadedFiles(prev => [...prev, data.document]);
-                        } catch (err) { console.error(err); }
+                          if (data.success) {
+                            setUploadedFiles(prev => [...prev, data.document]);
+                            setUploadSuccess(true);
+                          }
+                        } catch (err) { 
+                          console.error(err); 
+                          showToast('Failed to upload file', 'error');
+                        }
                       }
                       setUploadingFiles(false);
                       e.target.value = '';
                     }}
                     disabled={uploadingFiles}
                   />
-                  <div className="border-2 border-dashed border-gray-100 rounded-[32px] p-16 transition-all group-hover:bg-gray-50 group-hover:border-red-200 cursor-pointer text-center bg-gray-50/30">
+                  <div className="border-2 border-dashed border-gray-900 rounded-[32px] p-16 transition-all group-hover:bg-gray-50 group-hover:border-red-200 cursor-pointer text-center bg-gray-50/30">
                     <div className="w-20 h-20 bg-white rounded-3xl shadow-lg border border-gray-100 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform text-gray-400 group-hover:text-red-500">
                       <UploadCloud size={36} />
                     </div>
@@ -263,28 +320,49 @@ export default function IntakeFormPage() {
                 </label>
                 
                 {uploadingFiles && (
-                  <div className="flex items-center gap-4 text-emerald-600 font-bold bg-emerald-50 p-6 rounded-2xl border border-emerald-100 italic">
+                  <div className="flex items-center gap-4 text-emerald-600 font-bold bg-emerald-50 p-6 rounded-2xl border border-emerald-100 ">
                     <Spinner size={24} />
-                    Encrypting and moving to secure storage...
+                    Uploading your file ...
                   </div>
                 )}
                 
                 {uploadedFiles.length > 0 && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 gap-5">
                     {uploadedFiles.map((doc, idx) => (
                       <motion.div 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         key={idx} 
-                        className="flex items-center justify-between gap-4 text-gray-700 bg-white px-6 py-5 rounded-2xl border border-gray-100 shadow-sm"
+                        className="flex items-center justify-between gap-4 text-gray-700 bg-white px-6 py-5 rounded-2xl border border-black shadow-sm w-full"
                       >
-                        <div className="flex items-center gap-4 truncate">
+                        <div className="flex items-center gap-4 flex-1 truncate">
                           <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
                              <FileText size={20} />
                           </div>
-                          <span className="truncate font-bold tracking-tight text-lg">{doc.file_name}</span>
+                          <span className="truncate font-bold tracking-tight text-lg leading-tight">{doc.file_name}</span>
                         </div>
-                        <CheckCircle2 size={24} className="text-emerald-500" strokeWidth={3} />
+                        <div className="flex items-center ">
+                           <a 
+                             href={supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl}
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             className="p-2 hover:bg-emerald-50 text-emerald-500 rounded-xl transition-all"
+                             title="View Document"
+                           >
+                             <Eye size={20} />
+                           </a>
+                           <button 
+                             type="button"
+                             onClick={(e) => {
+                               e.preventDefault();
+                               handleDeleteFile(doc);
+                             }}
+                             className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all"
+                             title="Delete Document"
+                           >
+                             <Trash2 size={20} />
+                           </button>
+                        </div>
                       </motion.div>
                     ))}
                   </div>
@@ -301,7 +379,7 @@ export default function IntakeFormPage() {
                 onClick={handleSave}
                 className="w-full sm:w-auto"
               >
-                <span className="flex items-center gap-2">
+                <span className="flex items-center gap-2 ">
                    <Save size={24} />
                    Save as Draft
                 </span>
@@ -335,6 +413,25 @@ export default function IntakeFormPage() {
         </div>
       )}
       <Footer />
+
+      {/* CONFIRMATION MODAL */}
+      <ConfirmDialog 
+        isOpen={!!deleteConfirm?.isOpen}
+        title="Remove Document?"
+        message="Are you sure you want to remove this document? This action cannot be undone."
+        confirmText="Remove"
+        cancelText="Keep File"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirm(null)}
+      />
+
+      <SuccessDialog 
+        isOpen={uploadSuccess}
+        onClose={() => setUploadSuccess(false)}
+        title="Document uploaded sucessfully"
+        message="Safe and sound! Your documents are now securely tucked into our vault."
+      />
     </div>
   )
 }
