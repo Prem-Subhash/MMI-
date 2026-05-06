@@ -98,16 +98,32 @@ export default async function AdminDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 {stats.map((stat, i) => (
                     <Link key={i} href={stat.href} className="group">
-                        <div className="relative bg-white rounded-2xl border border-black p-4 shadow-sm hover:shadow-md transition-all h-full flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 text-gray-500">
-                                <div className="text-gray-400">
+                        <div className={`
+                            relative bg-white rounded-2xl border border-gray-100 p-5
+                            shadow-sm hover:shadow-lg active:shadow-lg ${stat.glow}
+                            hover:-translate-y-1 active:-translate-y-1
+                            hover:border-transparent active:border-transparent
+                            transition-all duration-300 overflow-hidden cursor-pointer h-full flex flex-col gap-1.5
+                        `}>
+                            {/* Top accent bar */}
+                            <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${stat.accent}
+                                transform scale-x-0 group-hover:scale-x-100 group-active:scale-x-100
+                                transition-transform duration-300 origin-left rounded-t-2xl`}
+                            />
+
+                            <div className="flex items-center gap-2">
+                                <div className={`
+                                    p-2 rounded-lg ${stat.iconBg} ${stat.hoverIconBg}
+                                    transition-all duration-300 inline-flex
+                                    group-hover:scale-110 group-active:scale-110
+                                `}>
                                     {React.cloneElement(stat.icon as React.ReactElement<{ size: number }>, { size: 14 })}
                                 </div>
-                                <p className="text-[12px] font-black uppercase tracking-wider leading-none">
+                                <p className="text-[12px] font-black uppercase tracking-wider leading-none text-gray-500 group-hover:text-gray-700 transition-colors">
                                     {stat.label}
                                 </p>
                             </div>
-                            <p className="text-[18px] font-black text-gray-900 leading-tight">
+                            <p className="text-[20px] font-black text-gray-900 leading-tight">
                                 {stat.value}
                             </p>
                             <p className="text-[10px] text-gray-400 font-bold leading-tight">
