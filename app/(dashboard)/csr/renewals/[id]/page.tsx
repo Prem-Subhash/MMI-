@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-import { ArrowLeft, Send } from 'lucide-react'
+import { ArrowLeft, Send, Briefcase, Shield, Calendar, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
@@ -66,14 +66,50 @@ function StageBadge({ stage }: { stage?: string | null }) {
   )
 }
 
-function KpiCard({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function KpiCard({ 
+  icon, 
+  label, 
+  children,
+  accent = 'from-gray-200 to-gray-300',
+  glow = 'shadow-gray-200/50',
+  iconBg = 'bg-gray-50 text-gray-400',
+  hoverIconBg = 'group-hover:bg-gray-100 group-hover:text-gray-600'
+}: { 
+  icon: React.ReactNode; 
+  label: string; 
+  children: React.ReactNode;
+  accent?: string;
+  glow?: string;
+  iconBg?: string;
+  hoverIconBg?: string;
+}) {
   return (
-    <div className="flex flex-col gap-2 p-4 bg-white border border-gray-200 border-l-4 border-l-[#10B889] rounded-xl shadow-sm hover:shadow-md transition-all">
-      <div className="flex items-center gap-1.5 text-gray-400">
-        {icon}
-        <p className="text-[11px] font-semibold uppercase tracking-widest leading-none">{label}</p>
+    <div className={`
+      relative bg-white rounded-2xl border border-gray-100 p-5
+      shadow-sm hover:shadow-lg active:shadow-lg ${glow}
+      hover:-translate-y-1 active:-translate-y-1
+      hover:border-transparent active:border-transparent
+      transition-all duration-300 overflow-hidden h-full flex flex-col gap-1.5 group/card
+    `}>
+      {/* Top accent bar */}
+      <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${accent}
+          transform scale-x-0 group-hover/card:scale-x-100 group-active/card:scale-x-100
+          transition-transform duration-300 origin-left rounded-t-2xl`}
+      />
+
+      <div className="flex items-center gap-2">
+        <div className={`
+            p-2 rounded-lg ${iconBg} ${hoverIconBg}
+            transition-all duration-300 inline-flex
+            group-hover/card:scale-110 group-active/card:scale-110
+        `}>
+          {icon}
+        </div>
+        <p className="text-[11px] font-black uppercase tracking-wider leading-none text-gray-400 group-hover/card:text-gray-600 transition-colors">
+          {label}
+        </p>
       </div>
-      <div className="pl-0.5">{children}</div>
+      <div className="pl-0.5 pt-1">{children}</div>
     </div>
   )
 }
@@ -268,40 +304,92 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
           {/* CONTENT */}
           <div className="p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <KpiCard icon={<IUser />} label="Client Name">
+              <KpiCard 
+                icon={<IUser />} 
+                label="Client Name"
+                accent="from-[#10B889] to-[#0d9470]"
+                glow="shadow-emerald-200/60"
+                iconBg="bg-emerald-50 text-emerald-600"
+                hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+              >
                 <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
               </KpiCard>
-              <KpiCard icon={<IMail />} label="Email Address">
+              <KpiCard 
+                icon={<IMail />} 
+                label="Email Address"
+                accent="from-[#2E5C85] to-[#1e3f5e]"
+                glow="shadow-blue-200/60"
+                iconBg="bg-blue-50 text-blue-600"
+                hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
+              >
                 <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
               </KpiCard>
-              <KpiCard icon={<IFile />} label="Policy Type">
+              <KpiCard 
+                icon={<IFile />} 
+                label="Policy Type"
+                accent="from-amber-500 to-orange-500"
+                glow="shadow-amber-200/60"
+                iconBg="bg-amber-50 text-amber-600"
+                hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
+              >
                 <p className="text-base font-bold text-gray-800">{formatPolicyType(lead.policy_type)}</p>
               </KpiCard>
-              <KpiCard icon={<IZap />} label="Current Status">
+              <KpiCard 
+                icon={<IZap />} 
+                label="Current Status"
+                accent="from-purple-600 to-indigo-600"
+                glow="shadow-purple-200/60"
+                iconBg="bg-purple-50 text-purple-600"
+                hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
+              >
                 <StageBadge stage={lead.pipeline_stage?.stage_name} />
               </KpiCard>
             </div>
 
             {/* Renewal Details Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Carrier</p>
+              <KpiCard 
+                icon={<Briefcase size={14} />} 
+                label="Carrier"
+                accent="from-[#10B889] to-[#0d9470]"
+                glow="shadow-emerald-200/60"
+                iconBg="bg-emerald-50 text-emerald-600"
+                hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+              >
                 <p className="text-sm font-bold text-gray-700">{lead.carrier || '—'}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Policy Number</p>
-                <p className="text-sm font-bold text-gray-700">{lead.policy_number || '—'}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Renewal Date</p>
+              </KpiCard>
+              <KpiCard 
+                icon={<Shield size={14} />} 
+                label="Policy Number"
+                accent="from-[#2E5C85] to-[#1e3f5e]"
+                glow="shadow-blue-200/60"
+                iconBg="bg-blue-50 text-blue-600"
+                hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
+              >
+                <p className="text-sm font-bold text-gray-700 font-mono">{lead.policy_number || '—'}</p>
+              </KpiCard>
+              <KpiCard 
+                icon={<Calendar size={14} />} 
+                label="Renewal Date"
+                accent="from-amber-500 to-orange-500"
+                glow="shadow-amber-200/60"
+                iconBg="bg-amber-50 text-amber-600"
+                hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
+              >
                 <p className="text-sm font-bold text-gray-700">{new Date(lead.renewal_date).toLocaleDateString()}</p>
-              </div>
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Premium</p>
+              </KpiCard>
+              <KpiCard 
+                icon={<DollarSign size={14} />} 
+                label="Premium"
+                accent="from-purple-600 to-indigo-600"
+                glow="shadow-purple-200/60"
+                iconBg="bg-purple-50 text-purple-600"
+                hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
+              >
                 <p className="text-sm font-bold text-gray-700">
                   {lead.current_premium ? `$${lead.current_premium.toLocaleString()}` : '—'}
                 </p>
-              </div>
+              </KpiCard>
             </div>
 
             <div className={`mb-8 p-6 rounded-2xl border ${!lead.renewal_premium ? 'bg-cyan-50 border-cyan-100' : 'bg-gray-50 border-gray-100'}`}>
