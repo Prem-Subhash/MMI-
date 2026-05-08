@@ -23,6 +23,7 @@ function NewLeadContent() {
   
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [duplicateWarning, setDuplicateWarning] = useState(false)
   const [existingClient, setExistingClient] = useState<{ id: string, client_name: string, source: string } | null>(null)
 
   const [form, setForm] = useState({
@@ -180,8 +181,9 @@ function NewLeadContent() {
   }
 
   /* ---------------- CREATE LEAD ---------------- */
-  const handleCreateClient = async () => {
+  const handleCreateClient = async (forceAdditionalQuote = false) => {
     setError(null)
+    setDuplicateWarning(false)
 
     if (
       !form.client_name ||
@@ -219,8 +221,8 @@ function NewLeadContent() {
       const clientId = await getOrCreateClient()
       const duplicate = await checkDuplicateActiveLead(clientId)
 
-      if (duplicate) {
-        setError('An active policy already exists for this client.')
+      if (duplicate && !forceAdditionalQuote) {
+        setDuplicateWarning(true)
         setLoading(false)
         setIsLocked(false)
         return
@@ -243,6 +245,7 @@ function NewLeadContent() {
       if (error || !lead) throw error
 
       toast('Lead created successfully!', 'success')
+      setDuplicateWarning(false)
       setForm({
         client_name: '',
         phone: '',
@@ -297,6 +300,23 @@ function NewLeadContent() {
                 This client is already registered to <strong>"{existingClient.client_name}"</strong>.
                 Details have been auto-filled.
               </p>
+            </div>
+          )}
+
+          {duplicateWarning && (
+            <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 text-yellow-800 rounded animate-in fade-in slide-in-from-left-2 shadow-sm">
+              <p className="font-semibold flex items-center gap-2">
+                ⚠️ Duplicate Warning
+              </p>
+              <p className="text-sm mt-1 mb-3">
+                An active policy already exists for this client with the selected policy type.
+              </p>
+              <button
+                onClick={() => handleCreateClient(true)}
+                className="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded font-medium text-sm transition-colors"
+              >
+                Proceed as Additional Quote
+              </button>
             </div>
           )}
 

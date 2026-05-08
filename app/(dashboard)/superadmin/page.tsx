@@ -6,6 +6,7 @@ import {
     DollarSign, Activity, Settings, ListTodo,
     ArrowRight, Shield
 } from 'lucide-react'
+import { formatCurrency } from '@/lib/currency'
 
 export default async function SuperAdminDashboard() {
     const supabase = await createServer()
@@ -91,7 +92,7 @@ export default async function SuperAdminDashboard() {
         },
         {
             label: 'Bound Premium',
-            value: `$${totalBoundPremium.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            value: formatCurrency(totalBoundPremium),
             icon: <DollarSign size={22} />,
             href: '/accounting',
             description: 'Total completed value',

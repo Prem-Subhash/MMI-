@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Calendar, Download, Search } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
+import { formatCurrency } from '@/lib/currency'
 
 type Renewal = {
     id: string
@@ -270,7 +271,7 @@ function PersonalRenewalContent() {
                                                 {r.carrier || '—'}
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-900 font-bold whitespace-nowrap">
-                                                {r.current_premium ? `$${r.current_premium.toLocaleString()}` : '—'}
+                                                {r.current_premium ? formatCurrency(r.current_premium) : '—'}
                                             </td>
                                             <td className={`px-4 sm:px-6 py-4 ${!r.renewal_premium ? 'bg-cyan-50/50' : ''}`}>
                                                 {editingId === r.id ? (
@@ -288,7 +289,7 @@ function PersonalRenewalContent() {
                                                 ) : (
                                                     <div className="flex items-center gap-2">
                                                         <span className={`font-black tracking-tight whitespace-nowrap ${r.renewal_premium ? 'text-gray-900' : 'text-cyan-600'}`}>
-                                                            {r.renewal_premium ? `$${r.renewal_premium.toLocaleString()}` : 'MISSING'}
+                                                            {r.renewal_premium ? formatCurrency(r.renewal_premium) : 'MISSING'}
                                                         </span>
                                                         <button
                                                             onClick={() => {

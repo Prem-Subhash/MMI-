@@ -5,6 +5,7 @@ import { Calendar, Download, Filter, FileText, FileSpreadsheet } from 'lucide-re
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
+import { formatCurrency } from '@/lib/currency'
 
 export default function MonthlyReportPage() {
     const [loading, setLoading] = useState(false)
@@ -513,7 +514,7 @@ export default function MonthlyReportPage() {
                                             </span>
                                         </td>
                                         <td className="px-4 sm:px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
-                                            ${(row.total_premium || 0).toLocaleString()}
+                                            {formatCurrency(row.total_premium)}
                                         </td>
                                         <td className="px-4 sm:px-6 py-4 text-gray-600">
                                             <div className="flex items-center gap-2">

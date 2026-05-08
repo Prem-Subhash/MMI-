@@ -58,17 +58,45 @@ export default function NewLeadPage() {
 
   /* ---------------- CLIENT HELPERS ---------------- */
   const getOrCreateClient = async () => {
-    const { data: existing } = await supabase
+    // 1. Check if phone is already in use
+    const { data: phoneMatch } = await supabase
       .from('clients')
-      .select('id')
+      .select('id, client_name, email')
       .eq('phone', form.phone)
-      .single()
+      .maybeSingle()
 
-    if (existing?.id) return existing.id
+    // 2. Check if email is already in use (if provided)
+    let emailMatch = null
+    if (form.email) {
+      const { data } = await supabase
+        .from('clients')
+        .select('id, client_name, phone')
+        .eq('email', form.email)
+        .maybeSingle()
+      emailMatch = data
+    }
 
+    // --- LOGIC ---
+
+    // Conflict check: phone and email belong to different people
+    if (phoneMatch && emailMatch && phoneMatch.id !== emailMatch.id) {
+      throw new Error(`Duplicate Conflict: Phone belongs to "${phoneMatch.client_name}" but Email belongs to "${emailMatch.client_name}".`)
+    }
+
+    // Use existing if found by either (prioritizing phone)
+    const existing = phoneMatch || emailMatch
+    if (existing) {
+      return existing.id
+    }
+
+    // If none found, create NEW
     const { data, error } = await supabase
       .from('clients')
-      .insert({ phone: form.phone, email: form.email })
+      .insert({
+        phone: form.phone,
+        email: form.email,
+        client_name: form.client_name
+      })
       .select()
       .single()
 

@@ -9,6 +9,7 @@ import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EmailGenerator from '@/components/email/EmailGenerator'
 import { toast } from '@/lib/toast'
+import { formatCurrency } from '@/lib/currency'
 
 type Stage = {
   id: string
@@ -387,7 +388,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                 hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
               >
                 <p className="text-sm font-bold text-gray-700">
-                  {lead.current_premium ? `$${lead.current_premium.toLocaleString()}` : '—'}
+                  {lead.current_premium ? formatCurrency(lead.current_premium) : '—'}
                 </p>
               </KpiCard>
             </div>
@@ -435,7 +436,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                     className="group flex flex-col items-start"
                   >
                     <span className={`text-3xl font-black ${lead.renewal_premium ? 'text-gray-900' : 'text-cyan-600 underline decoration-dotted'}`}>
-                      {lead.renewal_premium ? `$${lead.renewal_premium.toLocaleString()}` : 'Enter Renewal Premium'}
+                      {lead.renewal_premium ? formatCurrency(lead.renewal_premium) : 'Enter Renewal Premium'}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 mt-1 group-hover:text-emerald-600 transition-colors uppercase tracking-widest">
                       {lead.renewal_premium ? 'Click to change amount' : 'Manually entered required'}
