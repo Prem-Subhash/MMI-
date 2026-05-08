@@ -275,7 +275,7 @@ export default function CommercialLinesPage() {
                                                     onClick={() => setEmailModalLeadId(lead.id)}
                                                     className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
                                                 >
-                                                    Email
+                                                    Send Email
                                                 </button>
                                             </td>
                                         </tr>
