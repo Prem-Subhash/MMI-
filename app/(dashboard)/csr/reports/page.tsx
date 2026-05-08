@@ -19,31 +19,31 @@ export default function MonthlyReportPage() {
         { label: 'Commercial Line', value: 'commercial' }
     ]
 
-    const LOB_OPTIONS: Record<string, string[]> = {
+    const LOB_OPTIONS: Record<string, { label: string, value: string }[]> = {
         commercial: [
-            'Business Owners Policy (BOP)',
-            'Commercial Auto',
-            'commercial_package',
-            'Umbrella (Excess Liability)',
-            'General Liability',
-            'Flood',
-            'Builders Risk',
-            'Lessor Risk',
-            'Surety Bond',
-            'Inland Marine',
-            'Employment Practices Liability',
-            'Cyber Liability',
-            'Errors & Omissions / Professional Liability',
-            'Liquor Liability',
-            'Crime Fidelity Bond',
-            'commercial_property'
+            { label: 'Business Owners Policy (BOP)', value: 'bop' },
+            { label: 'Commercial Auto', value: 'commercial_auto' },
+            { label: 'Commercial Package', value: 'commercial_package' },
+            { label: 'Umbrella (Excess Liability)', value: 'umbrella' },
+            { label: 'General Liability', value: 'general_liability' },
+            { label: 'Flood', value: 'flood' },
+            { label: 'Builders Risk', value: 'builders_risk' },
+            { label: 'Lessor Risk', value: 'lessor_risk' },
+            { label: 'Surety Bond', value: 'surety_bond' },
+            { label: 'Inland Marine', value: 'inland_marine' },
+            { label: 'Employment Practices Liability', value: 'employment_practices_liability' },
+            { label: 'Cyber Liability', value: 'cyber_liability' },
+            { label: 'Errors & Omissions / Professional Liability', value: 'professional_liability' },
+            { label: 'Liquor Liability', value: 'liquor_liability' },
+            { label: 'Crime Fidelity Bond', value: 'crime_fidelity_bond' },
+            { label: 'Commercial Property', value: 'commercial_property' }
         ],
         personal: [
-            'Auto',
-            'Home + Auto',
-            'Condo',
-            'Landlord Home/Condo',
-            'motorcycle'
+            { label: 'Auto', value: 'auto' },
+            { label: 'Home + Auto', value: 'home_auto' },
+            { label: 'Condo', value: 'condo' },
+            { label: 'Landlord Home/Condo', value: 'Landlord Home/Condo' },
+            { label: 'Motorcycle', value: 'Motorcycle' }
         ]
     }
 
@@ -345,22 +345,22 @@ export default function MonthlyReportPage() {
                                     ) : (
                                         <div className="space-y-1.5">
                                             {LOB_OPTIONS[filters.category]?.map(lob => (
-                                                <label key={lob} className="flex items-center gap-2 p-2 rounded-lg hover:bg-emerald-50 cursor-pointer group transition-colors">
+                                                <label key={lob.value} className="flex items-center gap-2 p-2 rounded-lg hover:bg-emerald-50 cursor-pointer group transition-colors">
                                                     <input 
                                                         type="checkbox"
                                                         className="rounded text-emerald-600 focus:ring-emerald-500"
-                                                        checked={filters.lineOfBusiness.includes(lob)}
+                                                        checked={filters.lineOfBusiness.includes(lob.value)}
                                                         onChange={(e) => {
                                                             const checked = e.target.checked
                                                             setFilters(prev => ({
                                                                 ...prev,
                                                                 lineOfBusiness: checked 
-                                                                    ? [...prev.lineOfBusiness, lob]
-                                                                    : prev.lineOfBusiness.filter(item => item !== lob)
+                                                                    ? [...prev.lineOfBusiness, lob.value]
+                                                                    : prev.lineOfBusiness.filter(item => item !== lob.value)
                                                             }))
                                                         }}
                                                     />
-                                                    <span className="text-xs text-gray-700 group-hover:text-emerald-900">{lob}</span>
+                                                    <span className="text-xs text-gray-700 group-hover:text-emerald-900">{lob.label}</span>
                                                 </label>
                                             ))}
                                         </div>

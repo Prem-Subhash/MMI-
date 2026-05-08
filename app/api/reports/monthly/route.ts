@@ -205,7 +205,16 @@ export async function POST(request: Request) {
 
     if (exportType === 'pdf') {
         const PDFDocument = (await import('pdfkit')).default
-        const doc = new PDFDocument({ margin: 30, size: 'A4' })
+        const path = await import('path')
+
+        const fontPathRegular = path.join(process.cwd(), 'assets', 'fonts', 'Roboto-Regular.ttf')
+        const fontPathBold = path.join(process.cwd(), 'assets', 'fonts', 'Roboto-Bold.ttf')
+
+        const doc = new PDFDocument({ 
+            margin: 30, 
+            size: 'A4',
+            font: fontPathRegular 
+        })
 
         const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
             const chunks: any[] = []
@@ -215,19 +224,19 @@ export async function POST(request: Request) {
 
             try {
                 const dateLabel = date_type === 'expiration' ? 'Renewal Date' : 'Effective Date'
-                doc.fontSize(18).font('Helvetica-Bold').text('Enterprise Report', { align: 'center' })
-                doc.fontSize(10).font('Helvetica').text(`Period: ${start_date} to ${end_date} (${dateLabel})`, { align: 'center' })
+                doc.fontSize(18).font(fontPathBold).text('Enterprise Report', { align: 'center' })
+                doc.fontSize(10).font(fontPathRegular).text(`Period: ${start_date} to ${end_date} (${dateLabel})`, { align: 'center' })
                 doc.moveDown(2)
 
-                doc.fontSize(12).font('Helvetica-Bold').text('KPI Summary')
-                doc.fontSize(10).font('Helvetica')
+                doc.fontSize(12).font(fontPathBold).text('KPI Summary')
+                doc.fontSize(10).font(fontPathRegular)
                 doc.text(`Total Policies: ${summaryData?.total_policies || 0}`)
                 doc.text(`Total Premium: ${formatCurrency(summaryData?.total_premium)}`)
                 doc.moveDown(2)
 
                 const drawHeader = (startY: number) => {
                     doc.rect(30, startY - 5, 540, 20).fill('#10B981') // Green box for headers
-                    doc.fillColor('white').font('Helvetica-Bold').fontSize(9)
+                    doc.fillColor('white').font(fontPathBold).fontSize(9)
                     doc.text('CLIENT', 35, startY)
                     doc.text('TYPE', 160, startY)
                     doc.text('CATEGORY', 240, startY)
@@ -240,13 +249,13 @@ export async function POST(request: Request) {
                 }
 
                 let y = drawHeader(doc.y)
-                doc.font('Helvetica').fontSize(8)
+                doc.font(fontPathRegular).fontSize(8)
 
                 data?.forEach((row: any) => {
                     if (y > 750) {
                         doc.addPage()
                         y = drawHeader(30)
-                        doc.font('Helvetica').fontSize(8)
+                        doc.font(fontPathRegular).fontSize(8)
                     }
                     const premium = row.total_premium || 0
                     const rowDate = date_type === 'expiration' ? (row.renewal_date || row.effective_date) : row.effective_date
