@@ -350,23 +350,28 @@ export default function UpdateStageModal({
         )
       }
 
-      case 'number':
+      case 'number': {
+        const isMoney = fieldKey.toLowerCase().includes('premium') || fieldKey.toLowerCase().includes('fee') || fieldKey.toLowerCase().includes('amount') || fieldKey.toLowerCase().includes('commission') || fieldKey.toLowerCase().includes('savings');
         return (
-          <input
-            type="number"
-            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700"
-            value={value}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                [fieldKey]:
-                  e.target.value === ''
-                    ? ''
-                    : Number(e.target.value),
-              })
-            }
-          />
+          <div className="relative">
+            {isMoney && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>}
+            <input
+              type="number"
+              className={`w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 ${isMoney ? 'pl-7' : ''}`}
+              value={value}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  [fieldKey]:
+                    e.target.value === ''
+                      ? ''
+                      : Number(e.target.value),
+                })
+              }
+            />
+          </div>
         )
+      }
 
       case 'textarea':
         return (

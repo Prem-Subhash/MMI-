@@ -13,6 +13,7 @@ import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { Edit2 } from 'lucide-react'
+import { formatCurrency } from '@/lib/currency'
 
 /* ── helpers ──────────────────────────────────────────────── */
 
@@ -25,7 +26,7 @@ function formatPolicyType(raw?: string | null) {
 }
 
 /** Colour-coded badge for pipeline stage names or custom statuses */
-function StageBadge({ stage, variant }: { stage?: string | null, variant?: 'ACCEPTED' | 'SUBMITTED' | 'WAITING_FOR_SUBMISSION' | 'NOT_SENT' }) {
+function StageBadge({ stage, variant }: { stage?: string | null, variant?: string }) {
   if (!stage && !variant) return <span className="text-gray-400 text-sm">—</span>
 
   const map: Record<string, string> = {
@@ -36,6 +37,9 @@ function StageBadge({ stage, variant }: { stage?: string | null, variant?: 'ACCE
     'Completed': 'bg-blue-100   text-blue-800    border border-blue-300',
     'Did Not Bind': 'bg-red-50     text-red-700     border border-red-200',
     // Custom variants for Leads Detail Page
+    'COMPLETED': 'bg-blue-100 text-blue-800 border border-blue-300',
+    'QUOTE_EMAILED': 'bg-blue-50 text-blue-700 border border-blue-200',
+    'WAITING_FOR_DOCUMENTS': 'bg-yellow-50 text-yellow-700 border border-yellow-200',
     'ACCEPTED': 'bg-emerald-50 text-emerald-700 border border-emerald-200',
     'SUBMITTED': 'bg-blue-50 text-blue-700 border border-blue-200',
     'WAITING_FOR_SUBMISSION': 'bg-yellow-50 text-yellow-700 border border-yellow-200',
@@ -241,13 +245,19 @@ export default function LeadReviewPage() {
     return <div className="p-10 text-red-600 font-medium">{error}</div>
   }
 
-  const status = lead?.client_id || lead?.pipeline_id || lead?.current_stage_id
-    ? 'ACCEPTED'
-    : form
-      ? 'SUBMITTED'
-      : lead?.status === 'WAITING_FOR_SUBMISSION' || lead?.intake_form_sent
-        ? 'WAITING_FOR_SUBMISSION'
-        : 'NOT_SENT';
+  const stageName = lead?.pipeline_stages?.stage_name || '';
+  
+  const status = stageName === 'Completed' || stageName === 'Did Not Bind'
+    ? 'COMPLETED'
+    : stageName === 'Quote Has Been Emailed'
+      ? 'QUOTE_EMAILED'
+      : stageName.toLowerCase().includes('waiting')
+        ? 'WAITING_FOR_DOCUMENTS'
+        : form
+          ? 'SUBMITTED'
+          : lead?.status === 'WAITING_FOR_SUBMISSION' || lead?.intake_form_sent
+            ? 'WAITING_FOR_SUBMISSION'
+            : 'NOT_SENT';
 
   /* ================= UNIFIED UI ================= */
   return (
@@ -373,18 +383,34 @@ export default function LeadReviewPage() {
             {/* 3. SUCCESS MESSAGE (PHASE STATUS) */}
             <div className="mt-6">
               {(() => {
-                if (status === 'ACCEPTED') {
+                if (status === 'COMPLETED') {
                   return (
-                    <div className="flex items-center gap-3 px-5 py-4 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-100 text-sm font-bold w-full">
+                    <div className="flex items-center gap-3 px-5 py-4 bg-blue-100 text-blue-800 rounded-lg border border-blue-200 text-sm font-bold w-full">
                       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                       </svg>
-                      Lead accepted and moved to pipeline
+                      Policy completed successfully
+                    </div>
+                  );
+                } else if (status === 'QUOTE_EMAILED') {
+                  return (
+                    <div className="flex items-center gap-3 px-5 py-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-200 text-sm font-bold w-full">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      Quote has been emailed to client
+                    </div>
+                  );
+                } else if (status === 'WAITING_FOR_DOCUMENTS') {
+                  return (
+                    <div className="flex items-center gap-3 px-5 py-4 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-200 text-sm font-bold w-full">
+                      <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse flex-shrink-0" />
+                      Waiting for client documents
                     </div>
                   );
                 } else if (status === 'SUBMITTED') {
                   return (
-                    <div className="flex items-center gap-3 px-5 py-4 bg-blue-50 text-blue-700 rounded-lg border border-blue-100 text-sm font-bold w-full">
+                    <div className="flex items-center gap-3 px-5 py-4 bg-emerald-50 text-emerald-700 rounded-lg border border-emerald-200 text-sm font-bold w-full">
                       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -393,9 +419,11 @@ export default function LeadReviewPage() {
                   );
                 } else if (status === 'WAITING_FOR_SUBMISSION') {
                   return (
-                    <div className="flex items-center gap-3 px-5 py-4 bg-yellow-50 text-yellow-700 rounded-lg border border-yellow-100 text-sm font-bold w-full">
-                      <span className="w-2.5 h-2.5 bg-yellow-400 rounded-full animate-pulse flex-shrink-0" />
-                      Waiting for client to submit intake form
+                    <div className="flex items-center gap-3 px-5 py-4 bg-amber-50 text-amber-700 rounded-lg border border-amber-200 text-sm font-bold w-full">
+                      <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      </svg>
+                      Intake form email sent to client
                     </div>
                   );
                 } else {
@@ -404,7 +432,7 @@ export default function LeadReviewPage() {
                       <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      Intake form not sent to client
+                      Intake form not sent yet
                     </div>
                   );
                 }
@@ -412,7 +440,7 @@ export default function LeadReviewPage() {
             </div>
 
             {/* 4. "VIEW FORM" BOTTOM ACTIONS */}
-            {(status === 'SUBMITTED' || status === 'ACCEPTED') && form && (
+            {form && (
               <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col gap-4">
                 <button
                   onClick={() => setShowFormModal(true)}
@@ -550,7 +578,15 @@ export default function LeadReviewPage() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                             {Object.entries(item.stage_metadata).map(([k, v]) => {
                               const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                              const displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
+                              
+                              let displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
+                              
+                              // Check if the key implies a monetary value
+                              const lowerK = k.toLowerCase();
+                              if (lowerK.includes('premium') || lowerK.includes('fee') || lowerK.includes('amount') || lowerK.includes('commission') || lowerK.includes('savings')) {
+                                displayValue = formatCurrency(v as number | string);
+                              }
+
                               return (
                                 <div key={k}>
                                   <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{formatLabel(k)}</span>

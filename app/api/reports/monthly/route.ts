@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import ExcelJS from 'exceljs'
+import { formatCurrency } from '@/lib/currency'
 
 // 1. Zod Input Validation
 const ReportSchema = z.object({
@@ -154,9 +155,9 @@ export async function POST(request: Request) {
         worksheet.addRow(['KPI Summary']).font = { bold: true, size: 12 }
         worksheet.addRow(['Metric', 'Value']).font = { bold: true }
         worksheet.addRow(['Total Policies', summaryData?.total_policies || 0])
-        worksheet.addRow(['Total Premium', `$${(summaryData?.total_premium || 0).toLocaleString()}`])
-        worksheet.addRow(['New Business Premium', `$${(summaryData?.new_business_premium || 0).toLocaleString()}`])
-        worksheet.addRow(['Renewal Premium', `$${(summaryData?.renewal_premium || 0).toLocaleString()}`])
+        worksheet.addRow(['Total Premium', formatCurrency(summaryData?.total_premium)])
+        worksheet.addRow(['New Business Premium', formatCurrency(summaryData?.new_business_premium)])
+        worksheet.addRow(['Renewal Premium', formatCurrency(summaryData?.renewal_premium)])
         worksheet.addRow(['Personal Lines', summaryData?.personal_line_count || 0])
         worksheet.addRow(['Commercial Lines', summaryData?.commercial_line_count || 0])
         worksheet.addRow([])
@@ -183,7 +184,7 @@ export async function POST(request: Request) {
                 row.policy_type || '-',
                 row.insurence_category || '-',
                 row.policy_flow || '-',
-                row.total_premium ? `$${row.total_premium.toLocaleString()}` : '$0',
+                row.total_premium ? formatCurrency(row.total_premium) : '$0.00',
                 row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || '-',
                 row[dateKey] || row.effective_date || '-'
             ])
@@ -221,7 +222,7 @@ export async function POST(request: Request) {
                 doc.fontSize(12).font('Helvetica-Bold').text('KPI Summary')
                 doc.fontSize(10).font('Helvetica')
                 doc.text(`Total Policies: ${summaryData?.total_policies || 0}`)
-                doc.text(`Total Premium: $${(summaryData?.total_premium || 0).toLocaleString()}`)
+                doc.text(`Total Premium: ${formatCurrency(summaryData?.total_premium)}`)
                 doc.moveDown(2)
 
                 const drawHeader = (startY: number) => {
@@ -254,7 +255,7 @@ export async function POST(request: Request) {
                     doc.text(row.policy_type?.substring(0, 20) || '-', 160, y)
                     doc.text(row.insurence_category || '-', 240, y)
                     doc.text(row.policy_flow || '-', 320, y)
-                    doc.text(`$${premium.toLocaleString()}`, 380, y)
+                    doc.text(formatCurrency(premium), 380, y)
                     doc.text(row.assigned_csr_profile?.name?.substring(0, 15) || row.assigned_user_profile?.full_name?.substring(0, 15) || '-', 460, y)
                     doc.text(rowDate || '-', 530, y)
                     y += 18
