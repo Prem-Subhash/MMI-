@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .card-header-navy {
+    @apply w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm hover:bg-[#2E5C85]/80 transition-colors;
+  }
+}

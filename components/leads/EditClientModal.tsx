@@ -5,10 +5,16 @@ import { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import { User, Phone, Mail, X } from 'lucide-react'
 
+type UpdatedClientFields = {
+  client_name: string
+  email: string
+  phone: string
+}
+
 type Props = {
   lead: any
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (updated?: UpdatedClientFields) => void
 }
 
 export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
@@ -69,8 +75,13 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
       } else {
         toast(result.message || 'Client information updated successfully', 'success')
       }
-      
-      onSuccess()
+
+      // Pass the saved values back so the parent can update immediately
+      onSuccess({
+        client_name: formData.client_name,
+        email: formData.email,
+        phone: formData.phone,
+      })
       onClose()
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
@@ -82,28 +93,28 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
   return (
     <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 backdrop-blur-md animate-in fade-in duration-300">
       <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 animate-in zoom-in-95 duration-300 overflow-hidden">
-        
+
         {/* HEADER SECTION */}
-        <div className="relative overflow-hidden bg-slate-50 px-8 pt-8 pb-6 border-b border-slate-100">
+        <div className="relative overflow-hidden bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-8">
           <div className="flex justify-between items-center relative z-10">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-emerald-100 text-emerald-700 rounded-2xl shadow-inner">
-                  <User size={24} strokeWidth={2.5} />
+              <div className="p-3 bg-white/20 text-white rounded-2xl shadow-sm backdrop-blur-md">
+                <User size={24} strokeWidth={2.5} />
               </div>
               <div>
-                <h2 className="text-2xl font-black text-black tracking-tight">Edit Client Info</h2>
-                <p className="text-xs font-semibold text-slate-500 mt-0.5">Update personal details reliably</p>
+                <h2 className="text-2xl font-black text-white tracking-tight leading-none">Edit Client Info</h2>
+                <p className="text-sm font-medium text-white/80 mt-1.5">Update personal details reliably</p>
               </div>
             </div>
-            <button 
-              onClick={onClose} 
-              className="p-2 text-red-400 hover:text-red-600 hover:bg-red-100 rounded-full transition-all duration-200"
+            <button
+              onClick={onClose}
+              className="p-2.5 text-rose-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200"
             >
-              <X size={20} />
+              <X size={22} strokeWidth={2.5} />
             </button>
           </div>
-          {/* Subtle Decorative Gradient */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 blur-3xl rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          {/* Decorative Glow */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
         </div>
 
         <div className="p-8 space-y-6">
@@ -124,7 +135,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
               </label>
               <div className="relative group/input">
                 <User size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-emerald-600 transition-colors" />
-                <input 
+                <input
                   type="text"
                   className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-black placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all shadow-sm"
                   value={formData.client_name}
@@ -142,7 +153,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
               </label>
               <div className="relative group/input">
                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-blue-600 transition-colors" />
-                <input 
+                <input
                   type="email"
                   className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl text-base font-bold text-black placeholder:text-slate-400 focus:outline-none focus:ring-4 transition-all shadow-sm ${!isEmailValid && formData.email ? 'border-red-300 ring-red-100 bg-red-50/20' : 'border-slate-200 focus:ring-blue-500/10 focus:border-blue-500 focus:bg-white'}`}
                   value={formData.email}
@@ -160,7 +171,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
               </label>
               <div className="relative group/input">
                 <Phone size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-indigo-600 transition-colors" />
-                <input 
+                <input
                   type="text"
                   className={`w-full pl-12 pr-4 py-4 bg-slate-50 border rounded-2xl text-base font-bold text-black placeholder:text-slate-400 focus:outline-none focus:ring-4 transition-all shadow-sm ${!isPhoneValid && formData.phone ? 'border-red-300 ring-red-100 bg-red-50/20' : 'border-slate-200 focus:ring-indigo-500/10 focus:border-indigo-500 focus:bg-white'}`}
                   value={formData.phone}
@@ -176,7 +187,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
           <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
             <button
               onClick={onClose}
-              className="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 rounded-2xl text-slate-600 font-black hover:bg-slate-50 hover:text-black transition-all active:scale-95 text-sm uppercase tracking-wider"
+              className="w-full sm:w-auto px-8 py-4  border border-rose-500 rounded-2xl text-rose-600 font-black hover:bg-rose-600 hover:text-white transition-all active:scale-95 text-sm uppercase tracking-wider"
             >
               Cancel
             </button>
@@ -195,9 +206,6 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
               ) : (
                 <>
                   <span>Save Info</span>
-                  <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                    <X size={12} className="rotate-45" />
-                  </div>
                 </>
               )}
             </button>

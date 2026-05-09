@@ -292,9 +292,9 @@ export default function LeadReviewPage() {
             </div>
             <button
               onClick={() => setShowEditModal(true)}
-              className="flex items-center justify-center gap-2 bg-brand-dark hover:bg-brand-dark/90 text-white px-4 py-2 rounded-lg border border-white/20 transition-all text-sm font-bold backdrop-blur-sm shadow-sm"
+              className="flex items-center justify-center gap-2 bg-[#D16B4B] hover:opacity-90 text-white px-4 py-2 rounded-xl transition-all text-sm font-bold shadow-md"
             >
-              <Edit2 size={14} />
+              <Edit2 size={16} />
               Edit Client Info
             </button>
           </div>
@@ -646,9 +646,18 @@ export default function LeadReviewPage() {
           <EditClientModal
             lead={lead}
             onClose={() => setShowEditModal(false)}
-            onSuccess={() => {
-              toast('Data updated. Refreshing...', 'info')
-              router.refresh()
+            onSuccess={(updated) => {
+              // 1. Optimistic update — KPI cards reflect new data instantly
+              if (updated) {
+                setLead((prev: any) => ({
+                  ...prev,
+                  client_name: updated.client_name,
+                  email: updated.email,
+                  phone: updated.phone,
+                }))
+              }
+              // 2. Background sync to confirm DB truth
+              refreshLead()
             }}
           />
         )}
