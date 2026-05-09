@@ -216,6 +216,23 @@ export default function LeadReviewPage() {
     loadData()
   }, [leadId])
 
+  /* ================= REFRESH LEAD (background sync) ================= */
+  const refreshLead = async () => {
+    if (!leadId) return
+    const { data } = await supabase
+      .from('temp_leads_basics')
+      .select(`
+        *,
+        pipeline_stages (
+          id,
+          stage_name
+        )
+      `)
+      .eq('id', leadId)
+      .single()
+    if (data) setLead(data)
+  }
+
   /* ================= FETCH HISTORY ================= */
   const openHistoryModal = async () => {
     setHistoryLoading(true)
@@ -463,7 +480,22 @@ export default function LeadReviewPage() {
             pipelineId={lead?.pipeline_id}
             currentStageId={lead?.current_stage_id}
             onClose={() => setShowUpdateModal(false)}
-            onSuccess={() => router.refresh()}
+            onSuccess={(newStageId?: string, newStageName?: string) => {
+              // 1. Optimistic update — instant UI response
+              if (newStageId && newStageName) {
+                setLead((prev: any) => ({
+                  ...prev,
+                  current_stage_id: newStageId,
+                  pipeline_stages: {
+                    ...(prev?.pipeline_stages ?? {}),
+                    id: newStageId,
+                    stage_name: newStageName,
+                  },
+                }))
+              }
+              // 2. Background sync to confirm truth from DB
+              refreshLead()
+            }}
           />
         )}
 
