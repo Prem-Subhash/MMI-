@@ -11,7 +11,7 @@ type Props = {
   pipelineId: string
   currentStageId?: string
   onClose: () => void
-  onSuccess: () => void
+  onSuccess: (newStageId?: string, newStageName?: string) => void
 }
 
 type FieldConfig = {
@@ -471,7 +471,8 @@ export default function UpdateStageModal({
 
     // Success
     toast('Pipeline stage updated successfully!', 'success')
-    onSuccess()
+    const selectedStage = stages.find((s: any) => s.id === selectedStageId)
+    onSuccess(selectedStageId, selectedStage?.stage_name)
     onClose()
   }
 
