@@ -39,80 +39,89 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
     }, [])
 
     useEffect(() => {
+        let mounted = true
         const loadInitialData = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('full_name, email, role')
-                    .eq('id', user.id)
-                    .single()
-                
-                if (profile) {
-                    setUserProfile(profile)
-                } else {
-                    setUserProfile({ full_name: null, email: user.email ?? null, role: null })
-                }
+            const { data: { session } } = await supabase.auth.getSession()
+            const user = session?.user
+            if (!user || !mounted) return
 
-                // FETCH NOTIFICATIONS (BELL)
-                // Wrapped safely so it doesn't crash the entire TopBar if the schema isn't applied yet
-                const { data: notifs, error: notifError } = await supabase
-                    .from('user_notifications')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false })
-                    .limit(5)
-                
-                if (!notifError && notifs) {
-                    setNotifications(notifs.map(n => ({
-                        id: n.id,
-                        name: n.client_name || 'System Alert',
-                        status: n.message,
-                        time: new Date(n.created_at).toLocaleString(),
-                        is_read: n.is_read,
-                        lead_id: n.lead_id,
-                        link: n.link,
-                        client_name: n.client_name,
-                        policy_flow: n.policy_flow
-                    })))
-                } else {
-                    setNotifications([]) 
-                }
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name, email, role')
+                .eq('id', user.id)
+                .single()
 
-                // FETCH ACTIVITIES (CLOCK)
-                let query = supabase
-                    .from('temp_leads_basics')
-                    .select(`
-                        id,
-                        client_name,
-                        created_at,
-                        current_stage:pipeline_stages (
-                            stage_name
-                        )
-                    `)
-                    .order('created_at', { ascending: false })
-                    .limit(5)
+            if (!mounted) return
 
-                if (profile && profile.role === 'csr') {
-                    query = query.eq('assigned_csr', user.id)
-                }
+            if (profile) {
+                setUserProfile(profile)
+            } else {
+                setUserProfile({ full_name: null, email: user.email ?? null, role: null })
+            }
 
-                const { data: leads } = await query
+            // FETCH NOTIFICATIONS (BELL)
+            // Wrapped safely so it doesn't crash the entire TopBar if the schema isn't applied yet
+            const { data: notifs, error: notifError } = await supabase
+                .from('user_notifications')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false })
+                .limit(5)
 
-                if (leads) {
-                    const mapped = leads.map(l => ({
-                        id: l.id,
-                        name: l.client_name,
-                        status: Array.isArray(l.current_stage) 
-                            ? (l.current_stage[0] as any)?.stage_name 
-                            : (l.current_stage as any)?.stage_name || 'New Lead',
-                        time: new Date(l.created_at).toLocaleString()
-                    }))
-                    setActivities(mapped)
-                }
+            if (!mounted) return
+
+            if (!notifError && notifs) {
+                setNotifications(notifs.map(n => ({
+                    id: n.id,
+                    name: n.client_name || 'System Alert',
+                    status: n.message,
+                    time: new Date(n.created_at).toLocaleString(),
+                    is_read: n.is_read,
+                    lead_id: n.lead_id,
+                    link: n.link,
+                    client_name: n.client_name,
+                    policy_flow: n.policy_flow
+                })))
+            } else {
+                setNotifications([])
+            }
+
+            // FETCH ACTIVITIES (CLOCK)
+            let query = supabase
+                .from('temp_leads_basics')
+                .select(`
+                    id,
+                    client_name,
+                    created_at,
+                    current_stage:pipeline_stages (
+                        stage_name
+                    )
+                `)
+                .order('created_at', { ascending: false })
+                .limit(5)
+
+            if (profile && profile.role === 'csr') {
+                query = query.eq('assigned_csr', user.id)
+            }
+
+            const { data: leads } = await query
+
+            if (!mounted) return
+
+            if (leads) {
+                const mapped = leads.map(l => ({
+                    id: l.id,
+                    name: l.client_name,
+                    status: Array.isArray(l.current_stage)
+                        ? (l.current_stage[0] as any)?.stage_name
+                        : (l.current_stage as any)?.stage_name || 'New Lead',
+                    time: new Date(l.created_at).toLocaleString()
+                }))
+                setActivities(mapped)
             }
         }
         loadInitialData()
+        return () => { mounted = false }
     }, [])
 
     const handleLogout = async () => {
