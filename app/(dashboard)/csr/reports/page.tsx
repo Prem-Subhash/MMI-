@@ -108,10 +108,17 @@ export default function MonthlyReportPage() {
             if (json.error) throw new Error(json.error)
 
             const rawData = json.data || []
-            
+            const total = json.pagination?.total || rawData.length
+
             setData(rawData)
             setFilteredData(rawData)
-            setTotalRecords(json.pagination?.total || rawData.length)
+            setTotalRecords(total)
+
+            if (rawData.length === 0) {
+                toast('No records found for the selected filters. Try adjusting your criteria.', 'info')
+            } else {
+                toast(`Report generated successfully — ${total} record${total !== 1 ? 's' : ''} found.`, 'success')
+            }
         } catch (err: any) {
             console.error(err)
             toast('Error: ' + err.message, 'error')
@@ -141,19 +148,24 @@ export default function MonthlyReportPage() {
         const now = new Date()
         let start = ''
         let end = ''
+        let label = ''
 
         if (type === 'thisMonth') {
             start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
             end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+            label = 'This Month'
         } else if (type === 'lastMonth') {
             start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]
             end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0]
+            label = 'Last Month'
         } else if (type === 'thisYear') {
             start = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0]
             end = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0]
+            label = 'This Year'
         }
 
         setFilters(prev => ({ ...prev, fromDate: start, toDate: end }))
+        toast(`Date range set to ${label} (${start} → ${end}).`, 'info')
     }
 
     const handleExport = async (type: 'excel' | 'pdf') => {
@@ -278,7 +290,7 @@ export default function MonthlyReportPage() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="flex flex-col gap-2">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
                                 <input
@@ -314,7 +326,22 @@ export default function MonthlyReportPage() {
                             </label>
                             <select
                                 value={filters.category}
-                                onChange={e => setFilters({ ...filters, category: e.target.value, lineOfBusiness: [] })}
+                                onChange={e => {
+                                    const newCategory = e.target.value
+                                    const hadLOB = filters.lineOfBusiness.length > 0
+                                    setFilters({ ...filters, category: newCategory, lineOfBusiness: [] })
+                                    if (!newCategory) {
+                                        toast('Category cleared. All categories will be included.', 'info')
+                                    } else {
+                                        const label = CATEGORIES.find(c => c.value === newCategory)?.label || newCategory
+                                        toast(
+                                            hadLOB
+                                                ? `Category set to "${label}". Line of Business selections cleared.`
+                                                : `Category set to "${label}".`,
+                                            'info'
+                                        )
+                                    }
+                                }}
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                             >
                                 {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -354,10 +381,16 @@ export default function MonthlyReportPage() {
                                                             const checked = e.target.checked
                                                             setFilters(prev => ({
                                                                 ...prev,
-                                                                lineOfBusiness: checked 
+                                                                lineOfBusiness: checked
                                                                     ? [...prev.lineOfBusiness, lob.value]
                                                                     : prev.lineOfBusiness.filter(item => item !== lob.value)
                                                             }))
+                                                            toast(
+                                                                checked
+                                                                    ? `"${lob.label}" added to Line of Business filter.`
+                                                                    : `"${lob.label}" removed from Line of Business filter.`,
+                                                                checked ? 'success' : 'info'
+                                                            )
                                                         }}
                                                     />
                                                     <span className="text-xs text-gray-700 group-hover:text-emerald-900">{lob.label}</span>
@@ -372,7 +405,7 @@ export default function MonthlyReportPage() {
 
                     {/* --- CSR, FLOW & SEARCH --- */}
                     <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div className="flex flex-col gap-2">
                                 <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit whitespace-nowrap">
                                     CSR
