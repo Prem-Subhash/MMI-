@@ -261,12 +261,12 @@ export default function MonthlyReportPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* --- DATE SECTION --- */}
-                    <div className="space-y-4 col-span-1 md:col-span-2 lg:col-span-1">
-                        <div className="flex flex-col gap-2">
+                    <div className="space-y-3 col-span-1 md:col-span-2 lg:col-span-1">
+                        <div className="flex flex-col gap-1.5">
                             <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                 Date Type
                             </label>
-                            <div className="flex gap-4 mt-1">
+                            <div className="flex gap-4 mt-0.5">
                                 <label className="flex items-center gap-2 cursor-pointer group">
                                     <input 
                                         type="radio" 
@@ -275,7 +275,7 @@ export default function MonthlyReportPage() {
                                         checked={filters.dateType === 'effective'}
                                         onChange={() => setFilters({...filters, dateType: 'effective'})}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Effective Date</span>
+                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Effective</span>
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer group">
                                     <input 
@@ -285,38 +285,39 @@ export default function MonthlyReportPage() {
                                         checked={filters.dateType === 'expiration'}
                                         onChange={() => setFilters({...filters, dateType: 'expiration'})}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Expiration Date</span>
+                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Expiration</span>
                                 </label>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">From</label>
                                 <input
                                     type="date"
                                     value={filters.fromDate}
                                     onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase">To</label>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">To</label>
                                 <input
                                     type="date"
                                     value={filters.toDate}
                                     onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide ">This Month</button>
+                        <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Month</button>
                             <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
                             <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
                         </div>
                     </div>
+
 
                     {/* --- CATEGORY & LOB SECTION --- */}
                     <div className="space-y-4">
