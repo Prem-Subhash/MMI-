@@ -24,21 +24,24 @@ export default function Sidebar({ setIsHovered, isHovered, isMobileOpen, setIsMo
     const [role, setRole] = useState<string | null>(null)
 
     useEffect(() => {
+        let mounted = true
         const fetchRole = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
+            const { data: { session } } = await supabase.auth.getSession()
+            const user = session?.user
+            if (user && mounted) {
                 const { data } = await supabase
                     .from('profiles')
                     .select('role')
                     .eq('id', user.id)
                     .single()
 
-                if (data?.role) {
+                if (data?.role && mounted) {
                     setRole(data.role)
                 }
             }
         }
         fetchRole()
+        return () => { mounted = false }
     }, [])
 
     const isActive = (path: string) => {

@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/currency'
 export default function MonthlyReportPage() {
     const [loading, setLoading] = useState(false)
     const [generating, setGenerating] = useState<'excel' | 'pdf' | null>(null)
-    
+
 
     // Constants for Line of Business
     const CATEGORIES = [
@@ -98,8 +98,8 @@ export default function MonthlyReportPage() {
 
             if (!res.ok) {
                 const errJson = await res.json().catch(() => ({}))
-                const errorMsg = typeof errJson.error === 'object' 
-                    ? JSON.stringify(errJson.error.fieldErrors || errJson.error) 
+                const errorMsg = typeof errJson.error === 'object'
+                    ? JSON.stringify(errJson.error.fieldErrors || errJson.error)
                     : errJson.error || 'Failed to load report'
                 throw new Error(errorMsg)
             }
@@ -251,7 +251,7 @@ export default function MonthlyReportPage() {
                         </div>
                         <h2 className="text-base sm:text-lg font-semibold text-gray-800">Advanced Report Filters</h2>
                     </div>
-                    <button 
+                    <button
                         onClick={resetFilters}
                         className="text-md border-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-300 hover:text-white transition-colors flex items-center gap-1"
                     >
@@ -262,62 +262,62 @@ export default function MonthlyReportPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {/* --- DATE SECTION --- */}
                     <div className="space-y-3 col-span-1 md:col-span-2 lg:col-span-1">
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1.5">
                             <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                 Date Type
                             </label>
-                            <div className="flex gap-4 mt-1">
+                            <div className="flex gap-4 mt-0.5">
                                 <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input 
-                                        type="radio" 
-                                        name="dateType" 
+                                    <input
+                                        type="radio"
+                                        name="dateType"
                                         className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
                                         checked={filters.dateType === 'effective'}
-                                        onChange={() => setFilters({...filters, dateType: 'effective'})}
+                                        onChange={() => setFilters({ ...filters, dateType: 'effective' })}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Effective Date</span>
+                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Effective</span>
                                 </label>
                                 <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input 
-                                        type="radio" 
-                                        name="dateType" 
+                                    <input
+                                        type="radio"
+                                        name="dateType"
                                         className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
                                         checked={filters.dateType === 'expiration'}
-                                        onChange={() => setFilters({...filters, dateType: 'expiration'})}
+                                        onChange={() => setFilters({ ...filters, dateType: 'expiration' })}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Expiration Date</span>
+                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Expiration</span>
                                 </label>
                             </div>
                         </div>
 
-                        {/* FROM / TO — always side-by-side, compact on mobile */}
                         <div className="grid grid-cols-2 gap-2">
                             <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">From</label>
                                 <input
                                     type="date"
                                     value={filters.fromDate}
                                     onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase">To</label>
+                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">To</label>
                                 <input
                                     type="date"
                                     value={filters.toDate}
                                     onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
 
                         <div className="flex flex-wrap gap-1.5 pt-0.5">
-                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2.5 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Month</button>
-                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2.5 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
-                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2.5 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
+                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Month</button>
+                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
+                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
                         </div>
                     </div>
+
 
                     {/* --- CATEGORY & LOB SECTION --- */}
                     <div className="space-y-4">
@@ -359,13 +359,13 @@ export default function MonthlyReportPage() {
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-left flex justify-between items-center group hover:border-emerald-300 transition-colors"
                             >
                                 <span className="truncate text-gray-700">
-                                    {filters.lineOfBusiness.length === 0 
-                                        ? 'Select Multiple...' 
+                                    {filters.lineOfBusiness.length === 0
+                                        ? 'Select Multiple...'
                                         : `${filters.lineOfBusiness.length} Selected`}
                                 </span>
                                 <Filter size={14} className="text-gray-400 group-hover:text-emerald-600" />
                             </button>
-                            
+
                             {isLOBDropdownOpen && (
                                 <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                                     {!filters.category ? (
@@ -374,7 +374,7 @@ export default function MonthlyReportPage() {
                                         <div className="space-y-1.5">
                                             {LOB_OPTIONS[filters.category]?.map(lob => (
                                                 <label key={lob.value} className="flex items-center gap-2 p-2 rounded-lg hover:bg-emerald-50 cursor-pointer group transition-colors">
-                                                    <input 
+                                                    <input
                                                         type="checkbox"
                                                         className="rounded text-emerald-600 focus:ring-emerald-500"
                                                         checked={filters.lineOfBusiness.includes(lob.value)}
@@ -480,18 +480,18 @@ export default function MonthlyReportPage() {
                             <p className="text-xs text-gray-500 mt-0.5">Preview of the data based on current filters</p>
                         </div>
                     </div>
-                        <div className="flex items-center gap-2">
-                            {filters.lineOfBusiness.length > 0 && (
-                                <span className="hidden lg:inline-flex bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-100 uppercase tracking-tight">
-                                    LOB Filter Active
-                                </span>
-                            )}
-                            <span className="bg-white text-gray-600 px-4 py-1.5 rounded-xl text-xs font-bold border border-gray-200 shadow-sm flex items-center gap-2">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                {totalRecords} Records Total
+                    <div className="flex items-center gap-2">
+                        {filters.lineOfBusiness.length > 0 && (
+                            <span className="hidden lg:inline-flex bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-100 uppercase tracking-tight">
+                                LOB Filter Active
                             </span>
-                        </div>
+                        )}
+                        <span className="bg-white text-gray-600 px-4 py-1.5 rounded-xl text-xs font-bold border border-gray-200 shadow-sm flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                            {totalRecords} Records Total
+                        </span>
                     </div>
+                </div>
 
                 {loading ? (
                     <Loading message="Generating report preview..." />
@@ -561,8 +561,8 @@ export default function MonthlyReportPage() {
                                             </div>
                                         </td>
                                         <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">
-                                            {filters.dateType === 'effective' 
-                                                ? (row.effective_date || '-') 
+                                            {filters.dateType === 'effective'
+                                                ? (row.effective_date || '-')
                                                 : (row.renewal_date || row.effective_date || '-')}
                                         </td>
                                     </tr>
