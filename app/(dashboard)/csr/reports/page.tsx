@@ -216,7 +216,7 @@ export default function MonthlyReportPage() {
     }
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-screen">
+        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-screen min-w-0 overflow-x-hidden">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
@@ -243,78 +243,81 @@ export default function MonthlyReportPage() {
             </div>
 
             {/* Filter Panel */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-4 sm:p-6 mb-6">
-                <div className="flex items-center justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <Filter size={18} />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-3 sm:p-6 mb-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="p-1.5 sm:p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                            <Filter size={16} />
                         </div>
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-800">Advanced Report Filters</h2>
+                        <h2 className="text-sm sm:text-lg font-semibold text-gray-800 truncate">Advanced Report Filters</h2>
                     </div>
                     <button
                         onClick={resetFilters}
-                        className="text-md border-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-300 hover:text-white transition-colors flex items-center gap-1"
+                        className="shrink-0 ml-2 text-xs border border-rose-500 px-2.5 py-1.5 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-500 transition-colors"
                     >
                         Reset All
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* --- DATE SECTION --- */}
-                    <div className="space-y-3 col-span-1 md:col-span-2 lg:col-span-1">
+                    <div className="space-y-3">
+                        {/* Date Type radio */}
                         <div className="flex flex-col gap-1.5">
                             <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                 Date Type
                             </label>
-                            <div className="flex gap-4 mt-0.5">
-                                <label className="flex items-center gap-2 cursor-pointer group">
+                            <div className="flex gap-5 mt-0.5">
+                                <label className="flex items-center gap-1.5 cursor-pointer">
                                     <input
                                         type="radio"
                                         name="dateType"
-                                        className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                                        className="w-3.5 h-3.5 accent-emerald-600"
                                         checked={filters.dateType === 'effective'}
                                         onChange={() => setFilters({ ...filters, dateType: 'effective' })}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Effective</span>
+                                    <span className="text-xs text-gray-700">Effective</span>
                                 </label>
-                                <label className="flex items-center gap-2 cursor-pointer group">
+                                <label className="flex items-center gap-1.5 cursor-pointer">
                                     <input
                                         type="radio"
                                         name="dateType"
-                                        className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                                        className="w-3.5 h-3.5 accent-emerald-600"
                                         checked={filters.dateType === 'expiration'}
                                         onChange={() => setFilters({ ...filters, dateType: 'expiration' })}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Expiration</span>
+                                    <span className="text-xs text-gray-700">Expiration</span>
                                 </label>
                             </div>
                         </div>
 
+                        {/* FROM / TO — always 2-col, min-w-0 prevents iOS date overflow */}
                         <div className="grid grid-cols-2 gap-2">
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">From</label>
+                            <div className="flex flex-col gap-1 min-w-0">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
                                 <input
                                     type="date"
                                     value={filters.fromDate}
                                     onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-1.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
-                            <div className="flex flex-col gap-1">
-                                <label className="text-[10px] font-bold text-gray-500 uppercase ml-1">To</label>
+                            <div className="flex flex-col gap-1 min-w-0">
+                                <label className="text-[10px] font-bold text-gray-500 uppercase">To</label>
                                 <input
                                     type="date"
                                     value={filters.toDate}
                                     onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-                                    className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-1.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-1.5 pt-0.5">
-                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Month</button>
-                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
-                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
+                        {/* Quick preset buttons */}
+                        <div className="flex flex-wrap gap-1.5">
+                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors uppercase tracking-wide">This Month</button>
+                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors uppercase tracking-wide">Last Month</button>
+                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors uppercase tracking-wide">This Year</button>
                         </div>
                     </div>
 
@@ -405,16 +408,17 @@ export default function MonthlyReportPage() {
                     </div>
 
                     {/* --- CSR, FLOW & SEARCH --- */}
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div className="flex flex-col gap-2">
+                    <div className="space-y-3">
+                        {/* CSR + Flow: always side-by-side on mobile too */}
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit whitespace-nowrap">
                                     CSR
                                 </label>
                                 <select
                                     value={filters.csr}
                                     onChange={e => setFilters({ ...filters, csr: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 >
                                     <option value="">All CSRs</option>
                                     {csrs.map(c => (
@@ -422,14 +426,14 @@ export default function MonthlyReportPage() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                     Flow
                                 </label>
                                 <select
                                     value={filters.flow}
                                     onChange={e => setFilters({ ...filters, flow: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 >
                                     <option value="">All Flows</option>
                                     <option value="new">New Business</option>
@@ -438,7 +442,7 @@ export default function MonthlyReportPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                 Client Name
                             </label>
@@ -447,20 +451,20 @@ export default function MonthlyReportPage() {
                                 placeholder="Search client..."
                                 value={filters.clientName}
                                 onChange={e => setFilters({ ...filters, clientName: e.target.value })}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="mt-4 sm:mt-8 pt-3 sm:pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="text-xs text-gray-400 italic font-medium">
                         * Filtering by <span className="font-bold text-gray-600">{filters.dateType === 'effective' ? 'Effective Date' : 'Expiration Date'}</span>
                     </div>
                     <button
                         onClick={loadReport}
                         disabled={loading}
-                        className="bg-brand text-white px-8 py-3 rounded-xl hover:bg-brand/80 transition-all shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 font-bold flex items-center gap-2 text-sm w-full sm:w-auto justify-center active:scale-95 disabled:opacity-70"
+                        className="bg-brand text-white px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl hover:bg-brand/80 transition-all shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 font-bold flex items-center gap-2 text-sm w-full sm:w-auto justify-center active:scale-95 disabled:opacity-70"
                     >
                         {loading ? <Spinner size={18} /> : <FileText size={18} />}
                         Generate Report
