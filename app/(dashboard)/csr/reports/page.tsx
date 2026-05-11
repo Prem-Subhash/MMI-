@@ -291,15 +291,15 @@ export default function MonthlyReportPage() {
                             </div>
                         </div>
 
-                        {/* FROM / TO — always 2-col, min-w-0 prevents iOS date overflow */}
-                        <div className="grid grid-cols-2 gap-2">
+                        {/* FROM / TO — stacked on mobile, side-by-side on sm+ */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
                                 <input
                                     type="date"
                                     value={filters.fromDate}
                                     onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-                                    className="w-full min-w-0 px-1.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                             <div className="flex flex-col gap-1 min-w-0">
@@ -308,7 +308,7 @@ export default function MonthlyReportPage() {
                                     type="date"
                                     value={filters.toDate}
                                     onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-                                    className="w-full min-w-0 px-1.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                                 />
                             </div>
                         </div>
