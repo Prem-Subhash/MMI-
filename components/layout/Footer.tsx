@@ -15,25 +15,25 @@ const Footer = () => {
                     {/* Help Section */}
                     <div>
                         <h3 className="text-sm font-bold tracking-tight">
-                            We're always here to help you...
+                            Secure Insurance & Mortgage Solutions
                         </h3>
                     </div>
 
                     {/* Hotline Section */}
                     <div className="flex items-center gap-2">
-                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Hotline:</p>
-                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (800) INNOVATIVE</p>
+                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">PHONE:</p>
+                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (800) 771-2304</p>
                     </div>
 
                     {/* Email Section */}
                     <div className="flex items-center gap-2">
                         <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Email:</p>
-                        <p className="text-xs font-bold tracking-wide text-white"><a href="mailto:[EMAIL_ADDRESS]">support@innovativeinsurance.com</a></p>
+                        <p className="text-xs font-bold tracking-wide text-white"><a href="mailto:info@moonstarmortgage.com">info@moonstarmortgage.com</a></p>
                     </div>
 
                     {/* Social Section */}
                     <div className="flex items-center gap-4">
-                        <p className="text-white text-[10px] font-bold uppercase tracking-wider hidden sm:block">Connect with us</p>
+                        <p className="text-white text-[10px] font-bold uppercase tracking-wider hidden sm:block">FOLLOW US</p>
                         <div className="flex gap-4 text-white/90">
                             <a href="https://www.facebook.com/moonstarmortgage/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 transition-colors">
                                 <Facebook size={14} className="cursor-pointer" />
@@ -60,7 +60,7 @@ const Footer = () => {
                 {/* Copyright Row */}
                 <div className="max-w-[1600px] mx-auto flex justify-center text-center">
                     <p className="text-white/30 text-[9px] font-medium tracking-wide">
-                        © {currentYear} Innovative Insurance Solutions | Powered by Innovative Tech
+                        © {currentYear} Moonstar Mortgage. All Rights Reserved.
                     </p>
                 </div>
             </div>
