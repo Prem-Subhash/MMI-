@@ -68,7 +68,7 @@ export default function DashboardLayout({
   if (checkingAuth) return null
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-dvh bg-slate-100">
       <TopBar onMenuClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} />
       
       {/* Sidebar Overlay for Mobile */}

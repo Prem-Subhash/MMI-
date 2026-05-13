@@ -488,7 +488,7 @@ export default function UpdateStageModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-100">
+      <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90dvh] overflow-y-auto shadow-2xl border border-gray-100 pb-safe">
         <div className="flex justify-between items-center mb-4 border-b pb-4">
           <h2 className="text-xl font-bold text-[#2E5C85]">Update Status</h2>
           <button onClick={onClose} className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200">

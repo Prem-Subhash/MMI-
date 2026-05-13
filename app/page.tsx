@@ -64,7 +64,7 @@ export default function HomePage() {
 
 /* Styles */
 const container = {
-  minHeight: '100vh',
+  minHeight: '100dvh',
   position: 'relative' as const,
   display: 'flex',
   flexDirection: 'column' as const,
@@ -80,14 +80,13 @@ const overlay = {
 
 const content = {
   flex: 1,
-  paddingLeft: '80px',
-  paddingTop: '100px',
-  paddingBottom: '100px',
+  padding: '10vh 5%',
   display: 'flex',
   flexDirection: 'column' as const,
   justifyContent: 'center',
   color: '#fff',
-  maxWidth: '700px',
+  maxWidth: '800px',
+  zIndex: 1,
 }
 
 const heading = {

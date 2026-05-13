@@ -216,7 +216,7 @@ export default function MonthlyReportPage() {
     }
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-screen min-w-0 overflow-x-hidden">
+        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-dvh min-w-0 overflow-x-hidden pb-safe">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
@@ -292,14 +292,14 @@ export default function MonthlyReportPage() {
                         </div>
 
                         {/* FROM / TO — stacked on mobile, side-by-side on sm+ */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
                                 <input
                                     type="date"
                                     value={filters.fromDate}
                                     onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 />
                             </div>
                             <div className="flex flex-col gap-1 min-w-0">
@@ -308,7 +308,7 @@ export default function MonthlyReportPage() {
                                     type="date"
                                     value={filters.toDate}
                                     onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 />
                             </div>
                         </div>
@@ -410,7 +410,7 @@ export default function MonthlyReportPage() {
                     {/* --- CSR, FLOW & SEARCH --- */}
                     <div className="space-y-3">
                         {/* CSR + Flow: always side-by-side on mobile too */}
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
                             <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit whitespace-nowrap">
                                     CSR
@@ -418,7 +418,7 @@ export default function MonthlyReportPage() {
                                 <select
                                     value={filters.csr}
                                     onChange={e => setFilters({ ...filters, csr: e.target.value })}
-                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 >
                                     <option value="">All CSRs</option>
                                     {csrs.map(c => (
@@ -433,7 +433,7 @@ export default function MonthlyReportPage() {
                                 <select
                                     value={filters.flow}
                                     onChange={e => setFilters({ ...filters, flow: e.target.value })}
-                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 >
                                     <option value="">All Flows</option>
                                     <option value="new">New Business</option>
