@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Calendar, Download, Search } from 'lucide-react'
+import { Calendar, Download, Search, Eye } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 
@@ -235,7 +235,7 @@ function CommercialRenewalContent() {
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Referral</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Notes</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">Action</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">VIEW</th>
                                 </tr>
                             </thead>
 
@@ -313,9 +313,10 @@ function CommercialRenewalContent() {
                                             <td className="px-4 sm:px-6 py-4 text-center">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
-                                                    className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold rounded-lg text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 shadow-sm transition whitespace-nowrap"
+                                                    className="text-[#E07A5F] hover:text-[#E07A5F]/80 transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
+                                                    title="View Renewal Details"
                                                 >
-                                                    Manage
+                                                    <Eye size={18} />
                                                 </Link>
                                             </td>
                                         </tr>

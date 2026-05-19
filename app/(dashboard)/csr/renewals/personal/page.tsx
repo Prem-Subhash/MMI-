@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Calendar, Download, Search } from 'lucide-react'
+import { Calendar, Download, Search, Eye } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 
@@ -240,8 +240,8 @@ function PersonalRenewalContent() {
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Referral</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Notes</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">Action</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">VIEW</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">ACTIONS</th>
                                 </tr>
                             </thead>
 
@@ -319,20 +319,18 @@ function PersonalRenewalContent() {
                                             <td className="px-4 sm:px-6 py-4 text-center">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
-                                                    className="inline-flex items-center justify-center px-3 py-1.5 bg-white border border-gray-200 text-xs font-bold rounded-lg text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 shadow-sm transition whitespace-nowrap"
+                                                    className="text-[#E07A5F] hover:text-[#E07A5F]/80 transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
+                                                    title="View Renewal Details"
                                                 >
-                                                    Manage
+                                                    <Eye size={18} />
                                                 </Link>
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-center">
                                                 <Link
                                                     href={`/csr/leads/send-form?id=${r.id}`}
-                                                    className="inline-flex items-center justify-center px-3 py-1.5 bg-[#2E5C85] hover:bg-[#234b6e] border border-transparent text-xs font-bold rounded-lg text-white shadow-sm transition whitespace-nowrap gap-1.5"
+                                                    className="text-emerald-600 hover:text-emerald-800 font-bold text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
                                                 >
-                                                    <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                                    </svg>
-                                                    Email
+                                                    SEND EMAIL
                                                 </Link>
                                             </td>
                                         </tr>
