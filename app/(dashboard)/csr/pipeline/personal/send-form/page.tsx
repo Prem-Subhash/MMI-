@@ -320,6 +320,8 @@ export default function SendFormPage() {
                         <option value="auto">Auto</option>
                         <option value="condo">Condo</option>
                         <option value="landlord_home">Landlord Home</option>
+                        <option value="landlord_condo">Landlord Condo</option>
+                        <option value="umbrella">Umbrella</option>
                       </select>
                     </div>
                   </div>

@@ -469,6 +469,8 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                               <option value="auto">Auto</option>
                               <option value="condo">Condo</option>
                               <option value="landlord_home">Landlord Home</option>
+                              <option value="landlord_condo">Landlord Condo</option>
+                              <option value="umbrella">Umbrella</option>
                             </select>
 
                             <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
