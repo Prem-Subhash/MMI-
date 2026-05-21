@@ -253,6 +253,23 @@ export default function IntakeFormPage() {
     )
   }
 
+  /* ================= LAYOUT MAPPING ================= */
+  const formLayoutMap: Record<string, string> = {
+    home: "home",
+    condo: "home",
+    landlord_home: "home",
+    landlord_condo: "home",
+    umbrella: "home",
+    home_auto: "home_auto",
+
+    auto: "auto",
+    motorcycle: "auto"
+  }
+  
+  const mappedLayout = formType ? (formLayoutMap[formType] || formType) : null;
+  const isHomeLayout = mappedLayout === 'home' || mappedLayout === 'home_auto';
+  const isAutoLayout = mappedLayout === 'auto' || mappedLayout === 'home_auto';
+
   /* ================= RENDER FORM ================= */
   return (
     <div className="min-h-dvh flex flex-col bg-gray-50 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden pb-safe">
@@ -276,19 +293,21 @@ export default function IntakeFormPage() {
             disabled={isPreview}
           />
 
-          {(formType === 'home' || formType === 'home_auto') && (
+          {isHomeLayout && (
             <HomeInsuranceForm
               data={formData.home}
               onChange={val => updateSection('home', val)}
               disabled={isPreview}
+              formType={formType || 'home'}
             />
           )}
 
-          {(formType === 'auto' || formType === 'home_auto') && (
+          {isAutoLayout && (
             <AutoInsuranceForm
               data={formData.auto}
               onChange={val => updateSection('auto', val)}
               disabled={isPreview}
+              formType={formType || 'auto'}
             />
           )}
 

@@ -21,12 +21,14 @@ type Props = {
   data: any
   onChange: (value: any) => void
   disabled?: boolean
+  formType?: string
 }
 
 export default function HomeInsuranceForm({
   data,
   onChange,
   disabled = false,
+  formType = 'home',
 }: Props) {
   const updateField = (field: string, value: any) => {
     onChange({
@@ -35,10 +37,14 @@ export default function HomeInsuranceForm({
     })
   }
 
+  const formatTitle = (type: string) => {
+    return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + " Insurance";
+  }
+
   return (
     <SectionCard
       icon={<Home size={32} strokeWidth={2.5} />}
-      title="Home Insurance"
+      title={formatTitle(formType)}
       subtitle="Details about your property and coverage"
     >
       <div className="space-y-8">

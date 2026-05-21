@@ -101,15 +101,19 @@ export default function EmailGenerator({
     setGeneratedBody(newBody)
   }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink])
 
+  const formatFormType = (type: string) => {
+    if (!type) return 'Home';
+    return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
   const addPolicy = () => {
     setData((prev) => ({
       ...prev,
-      // Rule 2: Force type based on formType
       policies: [
         ...prev.policies,
         {
           id: Math.random().toString(),
-          type: formType === 'auto' ? 'auto' : 'Home',
+          type: formatFormType(formType),
           cName: prev.defCurrentCarrier,
           nName: prev.defNewCarrier,
           term: '12 months',
@@ -137,7 +141,7 @@ export default function EmailGenerator({
       ...prev,
       policies: prev.policies.map((p) => {
         if ((p as any).id === id) {
-          return { ...p, [field]: value, type: 'Home' }
+          return { ...p, [field]: value, type: formatFormType(formType) }
         }
         return p
       })
@@ -325,7 +329,7 @@ export default function EmailGenerator({
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
                             </svg>
-                            {formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'}
+                            {formatFormType(formType)} Insurance
                           </span>
                           <button onClick={() => removePolicy(pId)} className="text-rose-500 p-0.5 rounded bg-white">
                             <Trash2 size={14} />
@@ -334,7 +338,7 @@ export default function EmailGenerator({
 
                         {/* Policy card fields */}
                         <div className="p-3 space-y-2">
-                          {formType === 'auto' && (
+                          {(formType === 'auto' || formType === 'motorcycle') && (
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                               <input type="text" value={p.driver || ''} onChange={(e) => updatePolicy(pId, 'driver', e.target.value)}
                                 className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Driver Name" />
@@ -358,7 +362,7 @@ export default function EmailGenerator({
 
                           {!['follow_up', 'auto_payment', 'info_req'].includes(tplKey) && (
                             <div className="flex gap-2">
-                              {formType === 'auto' ? (
+                              {(formType === 'auto' || formType === 'motorcycle') ? (
                                 <>
                                   <input type="number" value={p.oldPremium || p.a1} onChange={(e) => updatePolicy(pId, 'oldPremium', e.target.value)}
                                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Old Premium" />
@@ -433,7 +437,10 @@ export default function EmailGenerator({
                       <option value="home">Home</option>
                       <option value="auto">Auto</option>
                       <option value="condo">Condo</option>
-                      <option value="landlord_home">Landlord</option>
+                      <option value="landlord_home">Landlord Home</option>
+                      <option value="landlord_condo">Landlord Condo</option>
+                      <option value="umbrella">Umbrella</option>
+                      <option value="motorcycle">Motorcycle</option>
                     </select>
                     {!hasTemplateFormLink && (
                       <button
@@ -466,7 +473,7 @@ export default function EmailGenerator({
                   </svg>
                 </div>
                 <span className="text-white font-bold text-sm">
-                  {composeMode === 'manual' ? 'Manual Composer' : 'Email Builder'}
+                  {composeMode === 'manual' ? 'Manual Composer' : `${formatFormType(formType)} Insurance Email Preview`}
                 </span>
               </div>
               <span className="flex items-center gap-1.5 bg-white/10 text-white/80 text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/15 uppercase tracking-widest">

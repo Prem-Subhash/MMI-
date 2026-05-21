@@ -8,12 +8,14 @@ type Props = {
   data: any
   onChange: (value: any) => void
   disabled?: boolean
+  formType?: string
 }
 
 export default function AutoInsuranceForm({
   data,
   onChange,
   disabled = false,
+  formType = 'auto',
 }: Props) {
   const updateField = (field: string, value: any) => {
     onChange({
@@ -39,10 +41,14 @@ export default function AutoInsuranceForm({
     onChange({ ...data, additional_drivers: newDrivers })
   }
 
+  const formatTitle = (type: string) => {
+    return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') + " Insurance";
+  }
+
   return (
     <SectionCard
       icon={<Car size={32} strokeWidth={2.5} />}
-      title="Auto Insurance"
+      title={formatTitle(formType)}
       subtitle="Current policy and driving history"
     >
       <div className="space-y-10">

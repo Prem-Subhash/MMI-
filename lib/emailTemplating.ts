@@ -28,8 +28,9 @@ export interface EmailData {
 }
 
 export function getCombinedTypes(policies: PolicyBreakdown[]): string {
-  // Focus only on HOME
-  return 'Home';
+  if (!policies || policies.length === 0) return 'Insurance';
+  const types = Array.from(new Set(policies.map(p => p.type)));
+  return types.join(' / ');
 }
 
 export function calculateTotalSavings(policies: PolicyBreakdown[]): string {
@@ -66,8 +67,9 @@ export function generatePolicyBreakdown(templateKey: string, policies: PolicyBre
   return policies.map((p, idx) => {
     let lines = [`<b>Policy ${idx + 1}:</b>`];
     
-    if (p.type === 'auto') {
-      lines.push(`Type: Auto Insurance`);
+    const isAutoLayout = p.type.toLowerCase() === 'auto' || p.type.toLowerCase() === 'motorcycle';
+    if (isAutoLayout) {
+      lines.push(`Type: ${p.type} Insurance`);
       if (p.driver) lines.push(`Driver: ${p.driver}`);
       if (p.vehicle) lines.push(`Vehicle: ${p.vehicle}`);
       if (p.vin) lines.push(`VIN: ${p.vin}`);
