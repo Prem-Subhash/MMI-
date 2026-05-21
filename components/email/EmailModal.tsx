@@ -516,31 +516,43 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
 
                   {/* METADATA DISPLAY */}
                   {composeMode === 'template' && templateId && (
-                    <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4 animate-in fade-in zoom-in-95 duration-200">
-                      <div className="flex gap-3 items-start">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" />
+                    <div className="group relative overflow-hidden bg-white border border-gray-200/60 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-gray-300 transition-all duration-300 animate-in fade-in zoom-in-95">
+                      {/* Subtle gradient background decoration */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#10B889]/10 to-[#2E5C85]/10 blur-2xl -z-0 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+
+                      <div className="relative z-10 flex gap-4 items-start">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B889]/10 to-[#2E5C85]/10 text-[#2E5C85] border border-white shadow-sm flex items-center justify-center shrink-0 mt-0.5 ring-1 ring-black/5 group-hover:from-[#10B889]/20 group-hover:to-[#2E5C85]/20 transition-colors">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
                           </svg>
                         </div>
-                        <div className="flex-1 space-y-2">
+                        <div className="flex-1 space-y-2.5">
                           <div>
-                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Loaded Template</p>
-                            <p className="text-sm font-semibold text-gray-900 leading-tight">
-                              {formatFormType(formType)} → {templateLabels[templates.find(t => t.id === templateId)?.name || ''] || templates.find(t => t.id === templateId)?.name}
+                            <p className="text-[10px] font-black text-black-400 uppercase tracking-[0.2em] mb-1">Loaded Template</p>
+                            <p className="text-base font-bold text-gray-900 leading-tight">
+                              <span className="text-[#2E5C85]">{formatFormType(formType)}</span>
+                              <span className="mx-2 text-gray-300 font-medium">→</span>
+                              {templateLabels[templates.find(t => t.id === templateId)?.name || ''] || templates.find(t => t.id === templateId)?.name}
                             </p>
                           </div>
-                          <div className="flex flex-wrap gap-2 pt-1">
+                          <div className="flex flex-wrap gap-2.5 pt-1">
                             {templates.find(t => t.id === templateId) && (
                               <>
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-gray-200 text-gray-600 shadow-sm">
-                                  <span className="text-gray-400">Type:</span> {templates.find(t => t.id === templateId)?.policy_type || formType}
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                  <span className="text-slate-400 font-medium">Type:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.policy_type || formType}</span>
                                 </span>
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-gray-200 text-gray-600 shadow-sm">
-                                  <span className="text-gray-400">Flow:</span> {templates.find(t => t.id === templateId)?.policy_flow}
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                  <span className="text-slate-400 font-medium">Flow:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.policy_flow}</span>
                                 </span>
-                                <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white border border-gray-200 text-gray-600 shadow-sm">
-                                  <span className="text-gray-400">Category:</span> {templates.find(t => t.id === templateId)?.insurance_category}
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                  <span className="text-slate-400 font-medium">Category:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.insurance_category}</span>
                                 </span>
                               </>
                             )}

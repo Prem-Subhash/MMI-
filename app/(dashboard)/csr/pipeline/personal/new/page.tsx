@@ -307,10 +307,11 @@ export default function NewLeadPage() {
                 : [
                   { value: 'home', label: 'Home' },
                   { value: 'auto', label: 'Auto' },
-                  { value: 'home_auto', label: 'Home + Auto' },
                   { value: 'condo', label: 'Condo' },
-                  { value: 'landlord', label: 'Landlord Home/Condo' },
-                  { value: 'motorcycle', label: 'Motorcycle' }
+                  { value: 'landlord_home', label: 'Landlord Home' },
+                  { value: 'landlord_condo', label: 'Landlord Condo' },
+                  { value: 'motorcycle', label: 'Motorcycle' },
+                  { value: 'umbrella', label: 'Umbrella' }
                 ]
             }
           />

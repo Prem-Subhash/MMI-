@@ -39,11 +39,13 @@ export default function MonthlyReportPage() {
             { label: 'Commercial Property', value: 'commercial_property' }
         ],
         personal: [
+            { label: 'Home', value: 'home' },
             { label: 'Auto', value: 'auto' },
-            { label: 'Home + Auto', value: 'home_auto' },
             { label: 'Condo', value: 'condo' },
-            { label: 'Landlord Home/Condo', value: 'Landlord Home/Condo' },
-            { label: 'Motorcycle', value: 'Motorcycle' }
+            { label: 'Landlord Home', value: 'landlord_home' },
+            { label: 'Landlord Condo', value: 'landlord_condo' },
+            { label: 'Motorcycle', value: 'motorcycle' },
+            { label: 'Umbrella', value: 'umbrella' }
         ]
     }
 
