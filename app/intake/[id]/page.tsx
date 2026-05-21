@@ -215,7 +215,7 @@ export default function IntakeFormPage() {
   /* ================= UI STATES ================= */
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-white pb-safe">
         <Loading message="Opening form..." />
       </div>
     )
@@ -223,7 +223,7 @@ export default function IntakeFormPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 font-sans">
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-gray-50 p-6 font-sans pb-safe">
         <div className="p-12 bg-white rounded-[32px] shadow-2xl shadow-black/5 max-w-md text-center border border-gray-100">
           <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <XCircle size={32} />
@@ -237,7 +237,7 @@ export default function IntakeFormPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-6 font-sans">
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-gray-50 p-6 font-sans pb-safe">
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -255,10 +255,10 @@ export default function IntakeFormPage() {
 
   /* ================= RENDER FORM ================= */
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden">
+    <div className="min-h-dvh flex flex-col bg-gray-50 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden pb-safe">
       <FormHeader 
         title="Insurance Application" 
-        subtitle="Secure intake portal for Innovative Insurance Solutions"
+        subtitle="Secure intake portal for Moonstar Mortgage"
         logoSrc="/innovative_logo_-removebg-preview.png"
       />
 

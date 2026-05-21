@@ -105,12 +105,19 @@ moonstar-crm/
 ├── app/                            # Next.js App Router (unified frontend + backend)
 │   ├── (dashboard)/                # Route group — authenticated workspace
 │   │   ├── layout.tsx              # Shell: auth guard, sidebar, topbar, footer
+│   │   ├── loading.tsx             # Global suspense loading state
 │   │   ├── csr/                    # CSR role workspace
 │   │   │   ├── activity-log/       # CSR audit trail
 │   │   │   ├── leads/              # Lead management
 │   │   │   ├── page.tsx            # CSR dashboard
 │   │   │   ├── pipeline/           # Active pipeline views
-│   │   │   ├── renewals/           # Personal & Commercial renewals
+│   │   │   │   ├── commercial/     # Commercial pipeline
+│   │   │   │   └── personal/       # Personal pipeline
+│   │   │   ├── renewals/           # Renewal management
+│   │   │   │   ├── [id]/           # Renewal detail page
+│   │   │   │   ├── commercial/     # Commercial renewals list
+│   │   │   │   ├── debug/          # Debug/diagnostic view
+│   │   │   │   └── personal/       # Personal renewals list
 │   │   │   └── reports/            # CSR-specific reporting
 │   │   ├── admin/                  # Admin role workspace
 │   │   │   ├── assignments/        # Lead assignment management
@@ -120,22 +127,35 @@ moonstar-crm/
 │   │   │   ├── pipelines/          # Pipeline configuration
 │   │   │   └── reports/            # Admin reporting
 │   │   ├── accounting/             # Accounting role workspace
+│   │   │   ├── dashboard/          # Accounting overview
+│   │   │   └── reports/            # Accounting reports
 │   │   └── superadmin/             # Super admin console
+│   │       ├── audit-logs/         # System audit trail
+│   │       ├── email-templates/    # Email template management
+│   │       ├── forms/              # Form template management
+│   │       ├── page.tsx            # Superadmin overview
+│   │       ├── pipelines/          # Pipeline configuration
+│   │       ├── roles/              # Role management
+│   │       ├── system-settings/    # Global system settings
+│   │       └── users/              # User management
 │   │
 │   ├── api/                        # Backend API routes (server-side only)
-│   │   ├── send-email/             # Trigger intake email via Microsoft Graph
+│   │   ├── delete-document/        # Delete uploaded client documents
+│   │   ├── documents/              # Document retrieval
 │   │   ├── notify-submission/      # Notify CSR on client form submission
-│   │   ├── update-stage/           # Pipeline stage transitions + history logging
-│   │   ├── upload-document/        # Secure file upload to Supabase Storage
 │   │   ├── reminder-check/         # Scheduled follow-up reminder logic
 │   │   ├── reports/                # Report generation (Excel / PDF)
+│   │   ├── send-email/             # Trigger intake email via Microsoft Graph
+│   │   ├── update-client/          # Update client record details
+│   │   ├── update-stage/           # Pipeline stage transitions + history logging
+│   │   ├── upload-document/        # Secure file upload to Supabase Storage
 │   │   └── superadmin/             # Admin-only management APIs
-│   │       ├── users/
-│   │       ├── pipelines/
+│   │       ├── audit-logs/
 │   │       ├── email-templates/
 │   │       ├── form-templates/
+│   │       ├── pipelines/
 │   │       ├── system-settings/
-│   │       └── audit-logs/
+│   │       └── users/
 │   │
 │   ├── intake/[id]/                # Public-facing client intake form
 │   ├── login/                      # Authentication page
@@ -144,9 +164,15 @@ moonstar-crm/
 │   ├── layout.tsx                  # Root layout (Metadata, icons, ToastProvider)
 │   └── page.tsx                    # Landing redirect logic
 │
+├── assets/                         # Non-public static assets
+│   └── fonts/                      # Embedded fonts (PDFKit usage)
+│       ├── Roboto-Bold.ttf
+│       └── Roboto-Regular.ttf
+│
 ├── components/                     # Reusable React component library
 │   ├── email/                      # Email generation & management
-│   │   └── EmailGenerator.tsx      # Dynamic email composition tool
+│   │   ├── EmailGenerator.tsx      # Dynamic email composition tool
+│   │   └── EmailModal.tsx          # Email preview & send modal
 │   ├── forms/                      # Domain-specific intake form logic
 │   │   ├── PrimaryApplicantForm.tsx
 │   │   ├── CoApplicantForm.tsx
@@ -159,6 +185,9 @@ moonstar-crm/
 │   │   ├── TopBar.tsx              # Auth state, notifications, user profile
 │   │   ├── Sidebar.tsx             # Role-based navigation
 │   │   └── Footer.tsx
+│   ├── leads/                      # Lead-specific components
+│   │   ├── DocumentViewer.tsx      # In-app document preview
+│   │   └── EditClientModal.tsx     # Client record edit modal
 │   ├── pipeline/                   # Workflow & stage management
 │   │   └── UpdateStageModal.tsx    # Conditional field logic per pipeline type
 │   ├── ui/                         # Atomic design system primitives
@@ -167,8 +196,11 @@ moonstar-crm/
 │   │   └── Toast.tsx               # Toast notification component
 │   └── page.tsx                    # Shared page wrapper
 │
+├── data/                           # Diagnostic output & schema snapshots
+│
 ├── lib/                            # Shared utilities & service clients
 │   ├── ToastContext.tsx            # Global toast notification state
+│   ├── currency.ts                 # Currency formatting helpers
 │   ├── emailTemplating.ts          # Email subject/body template logic
 │   ├── fieldLabels.ts              # Human-readable field label dictionary
 │   ├── microsoftGraph.ts           # Graph API client
@@ -177,10 +209,18 @@ moonstar-crm/
 │   ├── supabaseServer.ts           # Server-only Supabase client (service role)
 │   └── toast.ts                    # Imperative toast utility
 │
-├── public/                         # Static assets (images, icons)
-│   ├── image.png                   # App icon
+├── public/                         # Static assets served at root
+│   ├── bglogin.jpg                 # Login page background
+│   ├── brand_logo.png              # Brand logo
+│   ├── hero.jpg                    # Hero image
+│   ├── image.png                   # App icon / favicon source
+│   ├── innovative_logo_-removebg-preview.png
 │   ├── logo.png                    # Dashboard logo
 │   └── Moonstarlogo.jpeg           # Alternative logo
+│
+├── scripts/                        # One-off dev/debug scripts (not deployed)
+│
+├── supabase/                       # Supabase project config & migrations
 │
 ├── utils/
 │   └── auth.ts                     # Auth helpers for server components

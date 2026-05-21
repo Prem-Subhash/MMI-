@@ -98,7 +98,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
+    <div className="min-h-dvh flex flex-col font-sans pb-safe">
       <div className="flex-1 flex flex-col lg:flex-row">
 
         {/* LEFT SIDE (40%) - Branding */}

@@ -28,3 +28,6 @@ debug_*.json
 # OS files
 .DS_Store
 Thumbs.db
+
+#TypeScripit build Cache
+*.tsbuildinfo

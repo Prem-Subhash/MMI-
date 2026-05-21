@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/currency'
 export default function MonthlyReportPage() {
     const [loading, setLoading] = useState(false)
     const [generating, setGenerating] = useState<'excel' | 'pdf' | null>(null)
-    
+
 
     // Constants for Line of Business
     const CATEGORIES = [
@@ -98,8 +98,8 @@ export default function MonthlyReportPage() {
 
             if (!res.ok) {
                 const errJson = await res.json().catch(() => ({}))
-                const errorMsg = typeof errJson.error === 'object' 
-                    ? JSON.stringify(errJson.error.fieldErrors || errJson.error) 
+                const errorMsg = typeof errJson.error === 'object'
+                    ? JSON.stringify(errJson.error.fieldErrors || errJson.error)
                     : errJson.error || 'Failed to load report'
                 throw new Error(errorMsg)
             }
@@ -108,10 +108,17 @@ export default function MonthlyReportPage() {
             if (json.error) throw new Error(json.error)
 
             const rawData = json.data || []
-            
+            const total = json.pagination?.total || rawData.length
+
             setData(rawData)
             setFilteredData(rawData)
-            setTotalRecords(json.pagination?.total || rawData.length)
+            setTotalRecords(total)
+
+            if (rawData.length === 0) {
+                toast('No records found for the selected filters. Try adjusting your criteria.', 'info')
+            } else {
+                toast(`Report generated successfully — ${total} record${total !== 1 ? 's' : ''} found.`, 'success')
+            }
         } catch (err: any) {
             console.error(err)
             toast('Error: ' + err.message, 'error')
@@ -141,19 +148,24 @@ export default function MonthlyReportPage() {
         const now = new Date()
         let start = ''
         let end = ''
+        let label = ''
 
         if (type === 'thisMonth') {
             start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
             end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+            label = 'This Month'
         } else if (type === 'lastMonth') {
             start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().split('T')[0]
             end = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0]
+            label = 'Last Month'
         } else if (type === 'thisYear') {
             start = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0]
             end = new Date(now.getFullYear(), 11, 31).toISOString().split('T')[0]
+            label = 'This Year'
         }
 
         setFilters(prev => ({ ...prev, fromDate: start, toDate: end }))
+        toast(`Date range set to ${label} (${start} → ${end}).`, 'info')
     }
 
     const handleExport = async (type: 'excel' | 'pdf') => {
@@ -204,7 +216,7 @@ export default function MonthlyReportPage() {
     }
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-screen">
+        <div className="w-full max-w-[1600px] mx-auto bg-gray-50/50 min-h-dvh min-w-0 overflow-x-hidden pb-safe">
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
                 <div>
@@ -231,80 +243,84 @@ export default function MonthlyReportPage() {
             </div>
 
             {/* Filter Panel */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-4 sm:p-6 mb-6">
-                <div className="flex items-center justify-between mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
-                    <div className="flex items-center gap-2">
-                        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                            <Filter size={18} />
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200/60 p-3 sm:p-6 mb-6">
+                <div className="flex items-center justify-between mb-3 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-100">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="p-1.5 sm:p-2 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                            <Filter size={16} />
                         </div>
-                        <h2 className="text-base sm:text-lg font-semibold text-gray-800">Advanced Report Filters</h2>
+                        <h2 className="text-sm sm:text-lg font-semibold text-gray-800 truncate">Advanced Report Filters</h2>
                     </div>
-                    <button 
+                    <button
                         onClick={resetFilters}
-                        className="text-md border-2 px-4 py-2 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-300 hover:text-white transition-colors flex items-center gap-1"
+                        className="shrink-0 ml-2 text-xs border border-rose-500 px-2.5 py-1.5 rounded-lg bg-rose-600 text-white font-semibold hover:bg-rose-500 transition-colors"
                     >
                         Reset All
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* --- DATE SECTION --- */}
-                    <div className="space-y-4 col-span-1 md:col-span-2 lg:col-span-1">
-                        <div className="flex flex-col gap-2">
+                    <div className="space-y-3">
+                        {/* Date Type radio */}
+                        <div className="flex flex-col gap-1.5">
                             <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                 Date Type
                             </label>
-                            <div className="flex gap-4 mt-1">
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input 
-                                        type="radio" 
-                                        name="dateType" 
-                                        className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                            <div className="flex gap-5 mt-0.5">
+                                <label className="flex items-center gap-1.5 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="dateType"
+                                        className="w-3.5 h-3.5 accent-emerald-600"
                                         checked={filters.dateType === 'effective'}
-                                        onChange={() => setFilters({...filters, dateType: 'effective'})}
+                                        onChange={() => setFilters({ ...filters, dateType: 'effective' })}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Effective Date</span>
+                                    <span className="text-xs text-gray-700">Effective</span>
                                 </label>
-                                <label className="flex items-center gap-2 cursor-pointer group">
-                                    <input 
-                                        type="radio" 
-                                        name="dateType" 
-                                        className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                                <label className="flex items-center gap-1.5 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="dateType"
+                                        className="w-3.5 h-3.5 accent-emerald-600"
                                         checked={filters.dateType === 'expiration'}
-                                        onChange={() => setFilters({...filters, dateType: 'expiration'})}
+                                        onChange={() => setFilters({ ...filters, dateType: 'expiration' })}
                                     />
-                                    <span className="text-sm text-gray-700 group-hover:text-emerald-700 transition-colors">Expiration Date</span>
+                                    <span className="text-xs text-gray-700">Expiration</span>
                                 </label>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="flex flex-col gap-2">
+                        {/* FROM / TO — stacked on mobile, side-by-side on sm+ */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase">From</label>
                                 <input
                                     type="date"
                                     value={filters.fromDate}
                                     onChange={e => setFilters({ ...filters, fromDate: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 />
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-gray-500 uppercase">To</label>
                                 <input
                                     type="date"
                                     value={filters.toDate}
                                     onChange={e => setFilters({ ...filters, toDate: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 />
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap gap-2 pt-1">
-                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide ">This Month</button>
-                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">Last Month</button>
-                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-200 hover:text-black transition-colors uppercase tracking-wide">This Year</button>
+                        {/* Quick preset buttons */}
+                        <div className="flex flex-wrap gap-1.5">
+                            <button onClick={() => setPreset('thisMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors uppercase tracking-wide">This Month</button>
+                            <button onClick={() => setPreset('lastMonth')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors uppercase tracking-wide">Last Month</button>
+                            <button onClick={() => setPreset('thisYear')} className="text-[10px] font-bold px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-500 transition-colors uppercase tracking-wide">This Year</button>
                         </div>
                     </div>
+
 
                     {/* --- CATEGORY & LOB SECTION --- */}
                     <div className="space-y-4">
@@ -314,7 +330,22 @@ export default function MonthlyReportPage() {
                             </label>
                             <select
                                 value={filters.category}
-                                onChange={e => setFilters({ ...filters, category: e.target.value, lineOfBusiness: [] })}
+                                onChange={e => {
+                                    const newCategory = e.target.value
+                                    const hadLOB = filters.lineOfBusiness.length > 0
+                                    setFilters({ ...filters, category: newCategory, lineOfBusiness: [] })
+                                    if (!newCategory) {
+                                        toast('Category cleared. All categories will be included.', 'info')
+                                    } else {
+                                        const label = CATEGORIES.find(c => c.value === newCategory)?.label || newCategory
+                                        toast(
+                                            hadLOB
+                                                ? `Category set to "${label}". Line of Business selections cleared.`
+                                                : `Category set to "${label}".`,
+                                            'info'
+                                        )
+                                    }
+                                }}
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                             >
                                 {CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -331,13 +362,13 @@ export default function MonthlyReportPage() {
                                 className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-left flex justify-between items-center group hover:border-emerald-300 transition-colors"
                             >
                                 <span className="truncate text-gray-700">
-                                    {filters.lineOfBusiness.length === 0 
-                                        ? 'Select Multiple...' 
+                                    {filters.lineOfBusiness.length === 0
+                                        ? 'Select Multiple...'
                                         : `${filters.lineOfBusiness.length} Selected`}
                                 </span>
                                 <Filter size={14} className="text-gray-400 group-hover:text-emerald-600" />
                             </button>
-                            
+
                             {isLOBDropdownOpen && (
                                 <div className="absolute top-full left-0 right-0 z-50 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl p-3 max-h-64 overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-200">
                                     {!filters.category ? (
@@ -346,7 +377,7 @@ export default function MonthlyReportPage() {
                                         <div className="space-y-1.5">
                                             {LOB_OPTIONS[filters.category]?.map(lob => (
                                                 <label key={lob.value} className="flex items-center gap-2 p-2 rounded-lg hover:bg-emerald-50 cursor-pointer group transition-colors">
-                                                    <input 
+                                                    <input
                                                         type="checkbox"
                                                         className="rounded text-emerald-600 focus:ring-emerald-500"
                                                         checked={filters.lineOfBusiness.includes(lob.value)}
@@ -354,10 +385,16 @@ export default function MonthlyReportPage() {
                                                             const checked = e.target.checked
                                                             setFilters(prev => ({
                                                                 ...prev,
-                                                                lineOfBusiness: checked 
+                                                                lineOfBusiness: checked
                                                                     ? [...prev.lineOfBusiness, lob.value]
                                                                     : prev.lineOfBusiness.filter(item => item !== lob.value)
                                                             }))
+                                                            toast(
+                                                                checked
+                                                                    ? `"${lob.label}" added to Line of Business filter.`
+                                                                    : `"${lob.label}" removed from Line of Business filter.`,
+                                                                checked ? 'success' : 'info'
+                                                            )
                                                         }}
                                                     />
                                                     <span className="text-xs text-gray-700 group-hover:text-emerald-900">{lob.label}</span>
@@ -371,16 +408,17 @@ export default function MonthlyReportPage() {
                     </div>
 
                     {/* --- CSR, FLOW & SEARCH --- */}
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="flex flex-col gap-2">
+                    <div className="space-y-3">
+                        {/* CSR + Flow: always side-by-side on mobile too */}
+                        <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit whitespace-nowrap">
                                     CSR
                                 </label>
                                 <select
                                     value={filters.csr}
                                     onChange={e => setFilters({ ...filters, csr: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 >
                                     <option value="">All CSRs</option>
                                     {csrs.map(c => (
@@ -388,14 +426,14 @@ export default function MonthlyReportPage() {
                                     ))}
                                 </select>
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-col gap-1 min-w-0">
                                 <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                     Flow
                                 </label>
                                 <select
                                     value={filters.flow}
                                     onChange={e => setFilters({ ...filters, flow: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                    className="w-full min-w-0 px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all min-h-[44px]"
                                 >
                                     <option value="">All Flows</option>
                                     <option value="new">New Business</option>
@@ -404,7 +442,7 @@ export default function MonthlyReportPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col gap-2">
+                        <div className="flex flex-col gap-1">
                             <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit">
                                 Client Name
                             </label>
@@ -413,20 +451,20 @@ export default function MonthlyReportPage() {
                                 placeholder="Search client..."
                                 value={filters.clientName}
                                 onChange={e => setFilters({ ...filters, clientName: e.target.value })}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
+                                className="w-full px-2 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
                             />
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="mt-4 sm:mt-8 pt-3 sm:pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div className="text-xs text-gray-400 italic font-medium">
                         * Filtering by <span className="font-bold text-gray-600">{filters.dateType === 'effective' ? 'Effective Date' : 'Expiration Date'}</span>
                     </div>
                     <button
                         onClick={loadReport}
                         disabled={loading}
-                        className="bg-brand text-white px-8 py-3 rounded-xl hover:bg-brand/80 transition-all shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 font-bold flex items-center gap-2 text-sm w-full sm:w-auto justify-center active:scale-95 disabled:opacity-70"
+                        className="bg-brand text-white px-6 py-2.5 sm:px-8 sm:py-3 rounded-xl hover:bg-brand/80 transition-all shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20 font-bold flex items-center gap-2 text-sm w-full sm:w-auto justify-center active:scale-95 disabled:opacity-70"
                     >
                         {loading ? <Spinner size={18} /> : <FileText size={18} />}
                         Generate Report
@@ -446,18 +484,18 @@ export default function MonthlyReportPage() {
                             <p className="text-xs text-gray-500 mt-0.5">Preview of the data based on current filters</p>
                         </div>
                     </div>
-                        <div className="flex items-center gap-2">
-                            {filters.lineOfBusiness.length > 0 && (
-                                <span className="hidden lg:inline-flex bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-100 uppercase tracking-tight">
-                                    LOB Filter Active
-                                </span>
-                            )}
-                            <span className="bg-white text-gray-600 px-4 py-1.5 rounded-xl text-xs font-bold border border-gray-200 shadow-sm flex items-center gap-2">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
-                                {totalRecords} Records Total
+                    <div className="flex items-center gap-2">
+                        {filters.lineOfBusiness.length > 0 && (
+                            <span className="hidden lg:inline-flex bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-[10px] font-bold border border-emerald-100 uppercase tracking-tight">
+                                LOB Filter Active
                             </span>
-                        </div>
+                        )}
+                        <span className="bg-white text-gray-600 px-4 py-1.5 rounded-xl text-xs font-bold border border-gray-200 shadow-sm flex items-center gap-2">
+                            <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                            {totalRecords} Records Total
+                        </span>
                     </div>
+                </div>
 
                 {loading ? (
                     <Loading message="Generating report preview..." />
@@ -527,8 +565,8 @@ export default function MonthlyReportPage() {
                                             </div>
                                         </td>
                                         <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">
-                                            {filters.dateType === 'effective' 
-                                                ? (row.effective_date || '-') 
+                                            {filters.dateType === 'effective'
+                                                ? (row.effective_date || '-')
                                                 : (row.renewal_date || row.effective_date || '-')}
                                         </td>
                                     </tr>

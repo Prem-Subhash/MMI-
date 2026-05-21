@@ -1,3 +1,44 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Prevent horizontal scroll on mobile */
+  html, body {
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* iOS Safari Reset for inputs to ensure consistent rendering */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="month"],
+  input[type="time"],
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 44px; /* iOS standard touch target height */
+    background-color: white;
+  }
+
+  /* Fix for search input cancel button */
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  /* Notch / Safe Area support */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+}
+
+@layer components {
+  .card-header-navy {
+    @apply w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm hover:bg-[#2E5C85]/80 transition-colors;
+  }
+}

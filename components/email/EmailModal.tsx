@@ -110,7 +110,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       }
 
       setLead(leadData)
-      
+
       // Default formType based on policy_type
       if (!isRenewal && dynamicPolicyType) {
         setFormType(dynamicPolicyType);
@@ -314,7 +314,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 pb-safe">
         {/* HEADER */}
         <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10 shrink-0">
           <div>
@@ -374,12 +374,12 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                 {lead?.policy_flow !== 'renewal' && composeMode === 'template' && (
                   <button
                     onClick={handlePreview}
-                    className="w-full flex items-center justify-between gap-3 bg-[#2E5C85] border border-gray-200 rounded-xl px-5 py-3.5 cursor-pointer shadow-sm hover:bg-[#2E5C85]/80 transition-colors"
+                    className="card-header-navy"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" />
                         </svg>
                       </div>
                       <div className="text-left">
@@ -388,7 +388,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                       </div>
                     </div>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+                      <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
                     </svg>
                   </button>
                 )}
@@ -508,7 +508,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                     composeMode={composeMode}
                     customBody={customBody}
                     setCustomBody={setCustomBody}
-                    
+
                     isFormAttached={isFormAttached}
                     setIsFormAttached={(val) => {
                       setIsFormAttached(val);
@@ -525,12 +525,12 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
             </div>
           )}
         </div>
-        
+
         {/* FOOTER ACTIONS */}
         <div className="px-6 py-4 border-t bg-slate-100 flex items-center justify-end gap-3 shrink-0">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 text-slate-600 hover:text-slate-900 font-bold transition-colors"
+            className="px-6 py-2.5 transition-colors border border-rose-600 rounded-xl bg-rose-600 text-white hover:bg-rose-700 hover:border-rose-700 hover:text-white"
           >
             Cancel
           </button>
