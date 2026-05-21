@@ -30,4 +30,8 @@ debug_*.json
 Thumbs.db
 
 #TypeScripit build Cache
+<<<<<<< HEAD
 *.tsbuildinfo
+=======
+*.tsbuildinfo
+>>>>>>> master

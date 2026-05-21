@@ -11,6 +11,9 @@ type EmailTemplate = {
   name: string
   subject: string
   body: string
+  policy_type?: string
+  policy_flow?: string
+  insurance_category?: string
 }
 
 const templateLabels: Record<string, string> = {
@@ -57,6 +60,18 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  /* ================= UTILS ================= */
+  const formatFormType = (type: string) => {
+    if (!type) return 'Home';
+    return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  const getBadgeStyle = (type: string) => {
+    if (type === 'auto' || type === 'motorcycle') return 'bg-blue-100 text-blue-600 border border-blue-200';
+    if (type === 'umbrella') return 'bg-purple-100 text-purple-600 border border-purple-200';
+    return 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20';
+  }
 
   /* ================= LOAD LEAD + TEMPLATES ================= */
   useEffect(() => {
@@ -400,11 +415,11 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                       <div className="space-y-2">
                         <div className="flex items-center justify-between ml-1 h-5">
                           <label className="text-[10px] font-bold text-black uppercase tracking-widest">
-                            {lead?.policy_flow === 'renewal' ? 'Renewal Email' : `Email Purpose (${formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'})`}
+                            {lead?.policy_flow === 'renewal' ? 'Renewal Email' : `Email Purpose (${formatFormType(formType).toUpperCase()} INSURANCE)`}
                           </label>
                           {lead?.policy_flow !== 'renewal' && (
-                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${formType === 'auto' ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20'}`}>
-                              {formType}
+                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${getBadgeStyle(formType)}`}>
+                              {formatFormType(formType).toUpperCase()}
                             </span>
                           )}
                         </div>
@@ -438,9 +453,20 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                               </>
                             )}
                           </select>
-                          <p className="mt-1 text-[10px] text-black font-medium ml-1">
-                            Showing only {formType === 'auto' ? 'Auto' : 'Home'} Insurance templates
-                          </p>
+                          {templates.length === 0 ? (
+                            <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2 animate-in fade-in zoom-in-95 duration-200">
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 shrink-0 mt-0.5">
+                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+                              </svg>
+                              <p className="text-[10px] text-amber-800 font-semibold leading-tight">
+                                No templates found for {formatFormType(formType)}. Try selecting a different form type or check template settings.
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="mt-1.5 text-[10px] text-gray-500 font-medium ml-1 leading-snug">
+                              Select the email purpose to load <strong className="text-gray-700">{formatFormType(formType)}</strong> templates.
+                            </p>
+                          )}
                           <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
                             <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
                               <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
@@ -471,6 +497,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                               <option value="landlord_home">Landlord Home</option>
                               <option value="landlord_condo">Landlord Condo</option>
                               <option value="umbrella">Umbrella</option>
+                              <option value="motorcycle">Motorcycle</option>
                             </select>
 
                             <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
@@ -479,8 +506,59 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                               </svg>
                             </div>
                           </div>
+                          <p className="mt-1.5 text-[10px] text-gray-500 font-medium ml-1 leading-snug">
+                            Form Type selects the specific subtype templates.
+                          </p>
                         </div>
                       )}
+                    </div>
+                  )}
+
+                  {/* METADATA DISPLAY */}
+                  {composeMode === 'template' && templateId && (
+                    <div className="group relative overflow-hidden bg-white border border-gray-200/60 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-gray-300 transition-all duration-300 animate-in fade-in zoom-in-95">
+                      {/* Subtle gradient background decoration */}
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#10B889]/10 to-[#2E5C85]/10 blur-2xl -z-0 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
+
+                      <div className="relative z-10 flex gap-4 items-start">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B889]/10 to-[#2E5C85]/10 text-[#2E5C85] border border-white shadow-sm flex items-center justify-center shrink-0 mt-0.5 ring-1 ring-black/5 group-hover:from-[#10B889]/20 group-hover:to-[#2E5C85]/20 transition-colors">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                          </svg>
+                        </div>
+                        <div className="flex-1 space-y-2.5">
+                          <div>
+                            <p className="text-[10px] font-black text-black-400 uppercase tracking-[0.2em] mb-1">Loaded Template</p>
+                            <p className="text-base font-bold text-gray-900 leading-tight">
+                              <span className="text-[#2E5C85]">{formatFormType(formType)}</span>
+                              <span className="mx-2 text-gray-300 font-medium">→</span>
+                              {templateLabels[templates.find(t => t.id === templateId)?.name || ''] || templates.find(t => t.id === templateId)?.name}
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap gap-2.5 pt-1">
+                            {templates.find(t => t.id === templateId) && (
+                              <>
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                  <span className="text-slate-400 font-medium">Type:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.policy_type || formType}</span>
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                  <span className="text-slate-400 font-medium">Flow:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.policy_flow}</span>
+                                </span>
+                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                  <span className="text-slate-400 font-medium">Category:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.insurance_category}</span>
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
