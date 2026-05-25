@@ -252,9 +252,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={onCancel} />
-      <div className="relative bg-white rounded-[40px] p-10 md:p-12 shadow-2xl shadow-black/20 w-full max-w-lg border border-gray-100 animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-500">
+      <div className="absolute inset-0 bg-transparent" onClick={onCancel} />
+      <div className="relative bg-white rounded-[40px] p-10 md:p-12 shadow-2xl shadow-black/20 w-full max-w-lg max-h-[90dvh] overflow-y-auto border border-gray-100 animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
         <h3 className="text-3xl font-black text-gray-900 tracking-tight mb-4">{title}</h3>
         <p className="text-gray-500 text-lg font-medium leading-relaxed mb-10">{message}</p>
         <div className="flex flex-col sm:flex-row gap-4">
@@ -293,9 +293,9 @@ export const SuccessDialog: React.FC<{ isOpen: boolean, onClose: () => void, tit
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6">
-      <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-500" onClick={onClose} />
-      <div className="relative bg-white rounded-[40px] p-10 md:p-12 shadow-2xl shadow-black/20 w-full max-w-lg border border-gray-100 text-center animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm animate-in fade-in duration-500">
+      <div className="absolute inset-0 bg-transparent" onClick={onClose} />
+      <div className="relative bg-white rounded-[40px] p-10 md:p-12 shadow-2xl shadow-black/20 w-full max-w-lg max-h-[90dvh] overflow-y-auto border border-gray-100 text-center animate-in zoom-in-95 slide-in-from-bottom-10 duration-500">
         <div className="w-24 h-24 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-8 shadow-inner animate-in zoom-in-50 duration-700 delay-200 fill-mode-both">
            <Check size={48} strokeWidth={3} />
         </div>

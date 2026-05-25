@@ -4,11 +4,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { motion } from 'framer-motion'
-import { 
-  Save, 
-  UploadCloud, 
-  ChevronRight, 
-  CheckCircle2, 
+import {
+  Save,
+  UploadCloud,
+  ChevronRight,
+  CheckCircle2,
   MousePointer2,
   FileText,
   XCircle,
@@ -44,6 +44,7 @@ export default function IntakeFormPage() {
   })
   const [loading, setLoading] = useState(true)
   const [submitted, setSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [uploadingFiles, setUploadingFiles] = useState(false)
   const [uploadedFiles, setUploadedFiles] = useState<any[]>([])
@@ -88,7 +89,7 @@ export default function IntakeFormPage() {
         .from('documents')
         .select('*')
         .eq('intake_form_id', intakeId)
-      
+
       if (docs) {
         setUploadedFiles(docs)
       }
@@ -119,7 +120,7 @@ export default function IntakeFormPage() {
         status: 'draft'
       })
       .eq('id', intakeId)
-    
+
     showToast('Progress saved.', 'success')
   }
 
@@ -152,6 +153,7 @@ export default function IntakeFormPage() {
     if (isPreview || !intakeId) return
 
     setError(null)
+    setIsSubmitting(true)
 
     const { error } = await supabase
       .from('temp_intake_forms')
@@ -164,6 +166,7 @@ export default function IntakeFormPage() {
 
     if (error) {
       setError(error.message)
+      setIsSubmitting(false)
       return
     }
 
@@ -176,6 +179,7 @@ export default function IntakeFormPage() {
     })
 
     setSubmitted(true)
+    setIsSubmitting(false)
   }
 
   /* ================= DELETE FILE HANDLER ================= */
@@ -186,18 +190,18 @@ export default function IntakeFormPage() {
   const confirmDelete = async () => {
     if (!deleteConfirm?.doc) return;
     const doc = deleteConfirm.doc;
-    
+
     try {
       const res = await fetch('/api/delete-document', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          documentId: doc.id, 
-          filePath: doc.file_path, 
-          intakeFormId: intakeId 
+        body: JSON.stringify({
+          documentId: doc.id,
+          filePath: doc.file_path,
+          intakeFormId: intakeId
         })
       });
-      
+
       if (res.ok) {
         setUploadedFiles(prev => prev.filter(f => f.id !== doc.id));
         showToast('Document removed successfully', 'success');
@@ -237,17 +241,65 @@ export default function IntakeFormPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-dvh flex flex-col items-center justify-center bg-gray-50 p-6 font-sans pb-safe">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-16 rounded-[48px] shadow-2xl shadow-black/5 text-center max-w-xl border border-gray-100"
+      <div className="min-h-dvh flex flex-col items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-600 p-6 font-sans pb-safe relative overflow-hidden">
+        {/* Background Styling from Login Page */}
+        <div className="absolute top-0 right-0 w-64 md:w-96 h-full bg-white/10 skew-x-12 translate-x-32 rounded-l-3xl backdrop-blur-sm pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-400/30 rounded-full blur-3xl pointer-events-none" />
+        
+        {/* Ambient background glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[40rem] h-[40rem] bg-emerald-400/20 rounded-full blur-3xl" />
+        </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="relative bg-white/95 backdrop-blur-2xl p-10 sm:p-16 rounded-[2.5rem] sm:rounded-[3rem] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] text-center max-w-xl w-full border border-white/20"
         >
-          <div className="w-24 h-24 bg-red-50 text-red-600 rounded-3xl flex items-center justify-center mx-auto mb-10 shadow-inner">
-            <CheckCircle2 size={48} />
+          <div className="relative w-32 h-32 mx-auto mb-10 flex items-center justify-center">
+            {/* Animated rings */}
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1.2, opacity: 0 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
+              className="absolute inset-0 bg-emerald-100 rounded-full"
+            />
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1.5, opacity: 0 }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}
+              className="absolute inset-0 bg-emerald-50 rounded-full"
+            />
+            
+            {/* Main icon container */}
+            <motion.div 
+              initial={{ scale: 0, rotate: -45 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: "spring", damping: 15, stiffness: 200, delay: 0.2 }}
+              className="relative w-20 h-20 bg-gradient-to-br from-emerald-100 to-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center shadow-inner border border-emerald-100"
+            >
+              <CheckCircle2 size={40} strokeWidth={2.5} />
+            </motion.div>
           </div>
-          <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight mb-4 leading-tight">Insurance team</h2>
-          <p className="text-gray-500 text-lg mb-0 leading-relaxed font-medium"> Our insurance team has received your details and will process your quote within 24-48 hours.</p>
+          
+          <motion.h2 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight mb-5 leading-tight"
+          >
+            Insurance team
+          </motion.h2>
+          
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-gray-500 text-base sm:text-lg mb-0 leading-relaxed font-medium sm:px-8"
+          >
+             Our insurance team has received your details and will process your quote within 24-48 hours.
+          </motion.p>
         </motion.div>
       </div>
     )
@@ -265,7 +317,7 @@ export default function IntakeFormPage() {
     auto: "auto",
     motorcycle: "auto"
   }
-  
+
   const mappedLayout = formType ? (formLayoutMap[formType] || formType) : null;
   const isHomeLayout = mappedLayout === 'home' || mappedLayout === 'home_auto';
   const isAutoLayout = mappedLayout === 'auto' || mappedLayout === 'home_auto';
@@ -273,8 +325,8 @@ export default function IntakeFormPage() {
   /* ================= RENDER FORM ================= */
   return (
     <div className="min-h-dvh flex flex-col bg-gray-50 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden pb-safe">
-      <FormHeader 
-        title="Insurance Application" 
+      <FormHeader
+        title="Insurance Application"
         subtitle="Secure intake portal for Moonstar Mortgage"
         logoSrc="/innovative_logo_-removebg-preview.png"
       />
@@ -320,7 +372,7 @@ export default function IntakeFormPage() {
               isLast={true}
             >
               <div className="space-y-8">
-                <label 
+                <label
                   className="group relative block w-full"
                   onDragOver={(e) => {
                     e.preventDefault();
@@ -333,9 +385,9 @@ export default function IntakeFormPage() {
                     processFiles(e.dataTransfer.files);
                   }}
                 >
-                  <input 
-                    type="file" 
-                    multiple 
+                  <input
+                    type="file"
+                    multiple
                     className="hidden"
                     accept=".pdf,image/jpeg,image/png,.doc,.docx"
                     onChange={(e) => {
@@ -352,50 +404,50 @@ export default function IntakeFormPage() {
                     <p className="text-gray-500 text-base font-bold tracking-tight">PDF, JPG, PNG up to 10MB per file</p>
                   </div>
                 </label>
-                
+
                 {uploadingFiles && (
                   <div className="flex items-center gap-4 text-emerald-600 font-bold bg-emerald-50 p-6 rounded-2xl border border-emerald-100 ">
                     <Spinner size={24} />
                     Uploading your file ...
                   </div>
                 )}
-                
+
                 {uploadedFiles.length > 0 && (
                   <div className="grid grid-cols-1 gap-5">
                     {uploadedFiles.map((doc, idx) => (
-                      <motion.div 
+                      <motion.div
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        key={idx} 
+                        key={idx}
                         className="flex items-center justify-between gap-4 text-gray-700 bg-white px-6 py-5 rounded-2xl border border-black shadow-sm w-full"
                       >
                         <div className="flex items-center gap-4 flex-1 truncate">
                           <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
-                             <FileText size={20} />
+                            <FileText size={20} />
                           </div>
                           <span className="truncate font-bold tracking-tight text-lg leading-tight">{doc.file_name}</span>
                         </div>
                         <div className="flex items-center ">
-                           <a 
-                             href={supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl}
-                             target="_blank"
-                             rel="noopener noreferrer"
-                             className="p-2 hover:bg-emerald-50 text-emerald-500 rounded-xl transition-all"
-                             title="View Document"
-                           >
-                             <Eye size={20} />
-                           </a>
-                           <button 
-                             type="button"
-                             onClick={(e) => {
-                               e.preventDefault();
-                               handleDeleteFile(doc);
-                             }}
-                             className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all"
-                             title="Delete Document"
-                           >
-                             <Trash2 size={20} />
-                           </button>
+                          <a
+                            href={supabase.storage.from('documents').getPublicUrl(doc.file_path).data.publicUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 hover:bg-emerald-50 text-emerald-500 rounded-xl transition-all"
+                            title="View Document"
+                          >
+                            <Eye size={20} />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDeleteFile(doc);
+                            }}
+                            className="p-2 hover:bg-red-50 text-red-500 rounded-xl transition-all"
+                            title="Delete Document"
+                          >
+                            <Trash2 size={20} />
+                          </button>
                         </div>
                       </motion.div>
                     ))}
@@ -414,8 +466,8 @@ export default function IntakeFormPage() {
                 className="w-full sm:w-auto"
               >
                 <span className="flex items-center gap-2 ">
-                   <Save size={24} />
-                   Save as Draft
+                  <Save size={24} />
+                  Save as Draft
                 </span>
               </Button>
 
@@ -424,10 +476,20 @@ export default function IntakeFormPage() {
                 size="lg"
                 onClick={handleSubmit}
                 className="w-full sm:flex-1"
+                disabled={isSubmitting}
               >
                 <span className="flex items-center gap-3">
-                  Confirm Application
-                  <ChevronRight size={32} />
+                  {isSubmitting ? (
+                    <>
+                      <Spinner size={24} />
+                      Submitting your application...
+                    </>
+                  ) : (
+                    <>
+                      Confirm Application
+                      <ChevronRight size={32} />
+                    </>
+                  )}
                 </span>
               </Button>
             </div>
@@ -438,7 +500,7 @@ export default function IntakeFormPage() {
       {isPreview && (
         <div className="fixed bottom-10 right-10 z-50 p-6 bg-white border border-gray-100 rounded-[32px] shadow-[0_24px_64px_rgba(0,0,0,0.12)] flex items-center gap-5 max-w-sm animate-in fade-in slide-in-from-bottom-5 duration-700">
           <div className="bg-red-50 p-4 rounded-2xl text-red-600">
-             <MousePointer2 size={28} />
+            <MousePointer2 size={28} />
           </div>
           <div>
             <p className="font-extrabold text-gray-900 text-xl tracking-tight">Interactive Preview</p>
@@ -449,7 +511,7 @@ export default function IntakeFormPage() {
       <Footer />
 
       {/* CONFIRMATION MODAL */}
-      <ConfirmDialog 
+      <ConfirmDialog
         isOpen={!!deleteConfirm?.isOpen}
         title="Remove Document?"
         message="Are you sure you want to remove this document? This action cannot be undone."
@@ -460,7 +522,7 @@ export default function IntakeFormPage() {
         onCancel={() => setDeleteConfirm(null)}
       />
 
-      <SuccessDialog 
+      <SuccessDialog
         isOpen={uploadSuccess}
         onClose={() => setUploadSuccess(false)}
         title="Document uploaded sucessfully"

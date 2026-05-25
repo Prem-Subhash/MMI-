@@ -487,8 +487,11 @@ export default function UpdateStageModal({
   })
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 max-h-[90dvh] overflow-y-auto shadow-2xl border border-gray-100 pb-safe">
+    <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 shadow-2xl border border-gray-100 pb-safe my-auto relative">
         <div className="flex justify-between items-center mb-4 border-b pb-4">
           <h2 className="text-xl font-bold text-[#2E5C85]">Update Status</h2>
           <button onClick={onClose} className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200">
@@ -635,6 +638,8 @@ export default function UpdateStageModal({
           </button>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   )
 }

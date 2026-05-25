@@ -501,8 +501,11 @@ export default function LeadReviewPage() {
 
         {/* VIEW SUBMITTED FORM MODAL */}
         {showFormModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto relative">
               <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
                 <div>
                   <h2 className="text-xl font-bold text-white">Submitted Intake Form</h2>
@@ -567,11 +570,16 @@ export default function LeadReviewPage() {
               </div>
             </div>
           </div>
+        </div>
+        </div>
         )}
         {/* VIEW HISTORY MODAL */}
         {showHistory && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
+            <div className="fixed inset-0 overflow-y-auto">
+              <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto relative">
               <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
                 <div>
                   <h2 className="text-xl font-bold text-white">Stage History</h2>
@@ -639,6 +647,8 @@ export default function LeadReviewPage() {
               </div>
             </div>
           </div>
+        </div>
+        </div>
         )}
 
         {/* EDIT CLIENT MODAL */}

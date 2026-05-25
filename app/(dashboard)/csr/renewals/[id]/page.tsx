@@ -498,8 +498,11 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
 
       {/* EMAIL MODAL OVERLAY */}
       {showEmailModal && lead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 sm:p-6 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl opacity-100 mt-20 mb-10 overflow-hidden flex flex-col pointer-events-auto shadow-2xl">
+        <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl opacity-100 max-h-[90dvh] overflow-hidden flex flex-col pointer-events-auto my-auto relative">
             <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
               <div>
                 <h2 className="text-xl font-bold text-white">Send Renewal Email</h2>
@@ -513,7 +516,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               </button>
             </div>
             
-            <div className="p-6 md:p-8 overflow-y-scroll max-h-[75vh]">
+            <div className="p-6 md:p-8 overflow-y-auto flex-1">
               <EmailGenerator
                 templates={templates}
                 templateId={templateId}
@@ -546,6 +549,8 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               </div>
             </div>
           </div>
+        </div>
+        </div>
         </div>
       )}
       </div>

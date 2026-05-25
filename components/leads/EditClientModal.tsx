@@ -91,8 +91,11 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 flex items-center justify-center z-50 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 animate-in zoom-in-95 duration-300 overflow-hidden">
+    <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" />
+      <div className="fixed inset-0 overflow-y-auto">
+        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
+          <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 overflow-hidden my-auto relative animate-in zoom-in-95 duration-300">
 
         {/* HEADER SECTION */}
         <div className="relative overflow-hidden bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-8">
@@ -212,6 +215,8 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
           </div>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   )
 }
