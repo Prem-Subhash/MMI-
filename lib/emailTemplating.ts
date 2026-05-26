@@ -27,6 +27,12 @@ export interface EmailData {
   policies: PolicyBreakdown[];
 }
 
+export interface CsrData {
+  full_name?: string;
+  email?: string;
+  phone?: string;
+}
+
 export function getCombinedTypes(policies: PolicyBreakdown[]): string {
   if (!policies || policies.length === 0) return 'Insurance';
   const types = Array.from(new Set(policies.map(p => p.type)));
@@ -97,7 +103,7 @@ export function generateDynamicSections(flowType: string): { sections: string, c
   return { sections, counter };
 }
 
-export function replaceTemplate(templateKey: string, templateString: string, data: EmailData, leadData?: any, formLink?: string): string {
+export function replaceTemplate(templateKey: string, templateString: string, data: EmailData, leadData?: any, formLink?: string, csrData?: CsrData): string {
   if (!templateString) return '';
   
   // Normalize key for logic matching
@@ -126,41 +132,58 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     savings_breakdown: totalSavings,
 
     // Core variables
-    client_name: data.clientName || leadData?.client_name || '[Client Name]',
+    client_name: data.clientName || leadData?.client_name || '',
     combined_types: combinedTypes,
-    eff_date: data.effDate || '[Effective Date]',
-    renewal_date: leadData?.renewal_date ? new Date(leadData.renewal_date).toLocaleDateString() : data.effDate || '[Renewal Date]',
-    single_carrier: data.singleCarrier || activeCarrier || '[Carrier Name]',
-    manual_year: data.manualYear || '[Year]',
+    eff_date: data.effDate || '',
+    renewal_date: leadData?.renewal_date ? new Date(leadData.renewal_date).toLocaleDateString() : data.effDate || '',
+    single_carrier: data.singleCarrier || activeCarrier || '',
+    manual_year: data.manualYear || '',
     dynamic_sections: dynamicSections,
     counter: formCounter.toString(),
     pay_type: data.payType || 'Bank Account',
-    last4: data.last4 || '[Last 4 Digits]',
+    last4: data.last4 || '',
     id_text: idText,
     plural_pol: pluralPol,
 
-    // Singular fallbacks (deprioritized in favor of breakdown)
-    premium: activePremium ? formatCurrency(activePremium) : '[Premium Amount]',
-    old_premium: firstPolicy?.oldPremium || firstPolicy?.a1 ? formatCurrency(firstPolicy?.oldPremium || firstPolicy?.a1) : '[Old Premium]',
-    new_premium: firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : '[New Premium]',
-    renewal_premium: leadData?.renewal_premium ? formatCurrency(leadData.renewal_premium) : (firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : '[Renewal Premium]'),
-    carrier: activeCarrier || '[Carrier Name]',
+    // Singular fallbacks and extracted policy fields
+    current_carrier: data.defCurrentCarrier || firstPolicy?.cName || '',
+    new_carrier: data.defNewCarrier || firstPolicy?.nName || '',
+    driver: firstPolicy?.driver || '',
+    vehicle: firstPolicy?.vehicle || '',
+    vin: firstPolicy?.vin || '',
+    
+    premium: activePremium ? formatCurrency(activePremium) : '',
+    old_premium: firstPolicy?.oldPremium || firstPolicy?.a1 ? formatCurrency(firstPolicy?.oldPremium || firstPolicy?.a1) : '',
+    new_premium: firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : '',
+    renewal_premium: leadData?.renewal_premium ? formatCurrency(leadData.renewal_premium) : (firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : ''),
+    carrier: activeCarrier || '',
     term: activeTerm,
-    form_link: formLink || '{{form_link}}'
+    form_link: formLink || '{{form_link}}',
+
+    // CSR Data
+    csr_name: csrData?.full_name || '',
+    csr_email: csrData?.email || '',
+    csr_phone: csrData?.phone || ''
   };
   
   let output = templateString;
 
+  const currencyVars = ['savings_amount', 'savings_breakdown', 'premium', 'old_premium', 'new_premium', 'renewal_premium'];
+
   // STEP 1 & 3: Loop Replacements with Whitespace-resilient Regex for {{ tag }}
   Object.entries(replacements).forEach(([key, value]) => {
-      const regex = new RegExp(`{{\\s*${key}\\s*}}`, "g");
+      const isCurrency = currencyVars.includes(key);
+      const prefix = isCurrency ? '\\$?' : '';
+      const regex = new RegExp(`${prefix}{{\\s*${key}\\s*}}`, "g");
       output = output.replace(regex, value);
   });
 
   // STEP 4: Support for legacy [tag] style used in some database templates
   Object.entries(replacements).forEach(([key, value]) => {
       const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`\\[${escapedKey}\\]`, "g");
+      const isCurrency = currencyVars.includes(key);
+      const prefix = isCurrency ? '\\$?' : '';
+      const regex = new RegExp(`${prefix}\\[${escapedKey}\\]`, "g");
       output = output.replace(regex, value);
   });
   
