@@ -34,6 +34,7 @@ interface EmailGeneratorProps {
   formLink?: string
   hasTemplateFormLink?: boolean
   setFormType?: (val: string) => void
+  csrData?: any
 }
 
 export default function EmailGenerator({
@@ -56,7 +57,8 @@ export default function EmailGenerator({
   setIsFormAttached,
   formLink,
   hasTemplateFormLink,
-  setFormType
+  setFormType,
+  csrData
 }: EmailGeneratorProps) {
   const [data, setData] = useState<EmailData>({
     clientName: initialClientName || '',
@@ -94,12 +96,12 @@ export default function EmailGenerator({
 
     const key = getTemplateKey(template)
 
-    const newSubject = replaceTemplate(key, template.subject, data, leadData)
-    const newBody = replaceTemplate(key, template.body, data, leadData).replace(/\n/g, '<br>')
+    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData)
+    const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData).replace(/\n/g, '<br>')
 
     setCustomSubject(newSubject)
     setGeneratedBody(newBody)
-  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink])
+  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink, csrData])
 
   const formatFormType = (type: string) => {
     if (!type) return 'Home';

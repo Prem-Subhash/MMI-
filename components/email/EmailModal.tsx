@@ -45,6 +45,7 @@ interface EmailModalProps {
 
 export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: EmailModalProps) {
   const [lead, setLead] = useState<any>(null)
+  const [csrData, setCsrData] = useState<any>(null)
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [templateId, setTemplateId] = useState('')
   const [formType, setFormType] = useState('home')
@@ -129,6 +130,17 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       // Default formType based on policy_type
       if (!isRenewal && dynamicPolicyType) {
         setFormType(dynamicPolicyType);
+      }
+
+      // Fetch CSR data
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name, email, phone')
+          .eq('id', authData.user.id)
+          .single();
+        if (profile) setCsrData(profile);
       }
 
       // Filter out duplicate templates by name
@@ -602,6 +614,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                     }}
                     formLink={formLink}
                     hasTemplateFormLink={hasTemplateFormLink}
+                    csrData={csrData}
                   />
                 </div>
               </div>
