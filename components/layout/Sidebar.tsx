@@ -70,6 +70,7 @@ export default function Sidebar({ setIsHovered, isHovered, isMobileOpen, setIsMo
 
     const accountingMenu: MenuItem[] = [
         { label: 'Dashboard', href: '/accounting', icon: <LayoutGrid size={24} /> },
+        { label: 'All Leads', href: '/accounting/all-leads', icon: <GitBranch size={24} /> },
         { label: 'Financial Reports', href: '/accounting/reports', icon: <DollarSign size={24} /> },
     ]
 
