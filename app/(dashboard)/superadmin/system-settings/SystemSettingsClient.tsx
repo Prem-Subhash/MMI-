@@ -172,10 +172,10 @@ export default function SystemSettingsClient() {
             </div>
 
             {/* ── Save Bar ── */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 flex items-center justify-between gap-4">
-                <div className="min-h-[24px]">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="min-h-[24px] w-full sm:w-auto text-center sm:text-left">
                     {success && (
-                        <span className="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
+                        <span className="flex items-center justify-center sm:justify-start gap-2 text-emerald-600 text-sm font-semibold">
                             <CheckCircle2 size={18} />
                             Settings saved successfully!
                         </span>
@@ -184,7 +184,7 @@ export default function SystemSettingsClient() {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed min-w-[160px] justify-center"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 sm:py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto min-w-[160px] justify-center"
                 >
                     {saving ? <Spinner size={16} /> : <Save size={16} />}
                     {saving ? 'Saving...' : 'Save Settings'}

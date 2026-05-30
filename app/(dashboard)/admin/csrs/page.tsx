@@ -31,7 +31,7 @@ export default async function AdminCSRsPage() {
                         <table className="w-full text-left border-collapse min-w-[700px]">
                             <thead>
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
-                                    <th className="p-4 font-semibold">CSR Name</th>
+                                    <th className="p-4 font-semibold">CSR</th>
                                     <th className="p-4 font-semibold">Email Address</th>
                                     <th className="p-4 font-semibold">Joined Date</th>
                                     <th className="p-4 font-semibold text-right">Action</th>

@@ -71,8 +71,9 @@ export default function RolesClient() {
     return (
         <div className="space-y-6">
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm">User</th>
@@ -147,6 +148,7 @@ export default function RolesClient() {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )

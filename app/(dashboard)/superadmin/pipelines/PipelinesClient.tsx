@@ -142,28 +142,29 @@ export default function PipelinesClient() {
                             <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Streamline acquisition and retention</p>
                         </div>
                     </div>
-                    <form onSubmit={handleCreate} className="p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                    <form onSubmit={handleCreate} className="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-gray-700">Pipeline Name</label>
-                        <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Health Insurance" />
+                        <input required type="text" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none w-full" placeholder="e.g. Health Insurance" />
                     </div>
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-gray-700">Category</label>
-                        <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Personal Lines" />
+                        <input required type="text" value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none w-full" placeholder="e.g. Personal Lines" />
                     </div>
                     <div className="flex items-center gap-2 pb-2 h-[42px]">
                         <input type="checkbox" checked={formData.is_renewal} onChange={e => setFormData({ ...formData, is_renewal: e.target.checked })} className="w-5 h-5 text-indigo-600 rounded" />
                         <label className="text-sm font-medium text-gray-700">Is Renewal Pipeline?</label>
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm">
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center h-[50px] font-bold disabled:opacity-50 shadow-sm w-full">
                         {createLoading ? <Spinner size={20} /> : 'Create Pipeline'}
                     </button>
                     </form>
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm">Pipeline Name</th>
@@ -210,7 +211,7 @@ export default function PipelinesClient() {
                                         <>
                                             <Link href={`/superadmin/pipelines/${pipeline.id}/stages`}>
                                                 <button className="flex items-center gap-1 text-sm text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-1.5 rounded transition font-medium mr-2">
-                                                    Manage Stages <ChevronRight size={16} />
+                                                    Manage Pipeline <ChevronRight size={16} />
                                                 </button>
                                             </Link>
                                             <button onClick={() => { setEditingId(pipeline.id); setEditForm({ name: pipeline.name, category: pipeline.category, is_renewal: pipeline.is_renewal }) }} className="p-2 text-emerald-600 hover:text-emerald-600 hover:bg-emerald-50 rounded transition"><Edit2 size={16} /></button>
@@ -225,6 +226,7 @@ export default function PipelinesClient() {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )
