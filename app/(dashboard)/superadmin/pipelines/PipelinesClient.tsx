@@ -116,7 +116,7 @@ export default function PipelinesClient() {
                     <button
                         type="button"
                         onClick={() => setShowCreate(false)}
-                        className="flex items-center gap-2 bg-red-600 text-white px-5 py-2.5 rounded-xl hover:bg-red-700 transition-all font-bold shadow-sm text-sm"
+                        className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm"
                     >
                         <X size={18} /> Cancel
                     </button>
@@ -205,7 +205,7 @@ export default function PipelinesClient() {
                                     {editingId === pipeline.id ? (
                                         <>
                                             <button onClick={() => handleUpdate(pipeline.id)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded" title="Save"><Save size={16} /></button>
-                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> Cancel</button>
+                                            <button onClick={() => setEditingId(null)} className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> Cancel</button>
                                         </>
                                     ) : (
                                         <>

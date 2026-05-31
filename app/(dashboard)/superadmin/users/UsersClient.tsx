@@ -113,8 +113,8 @@ export default function UsersClient() {
             <div className="flex justify-end">
                 <button
                     onClick={() => setShowCreate(!showCreate)}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm
-                        ${showCreate ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-emerald-600 text-white hover:bg-emerald-700'}`}
+                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm border
+                        ${showCreate ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'}`}
                 >
                     {showCreate ? <X size={18} /> : <Plus size={18} />}
                     {showCreate ? 'Cancel' : 'Create New User'}
