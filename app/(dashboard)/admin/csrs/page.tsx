@@ -1,5 +1,6 @@
 import { createServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
+import { ArrowLeft } from 'lucide-react'
 
 export default async function AdminCSRsPage() {
     const supabase = await createServer()
@@ -20,8 +21,8 @@ export default async function AdminCSRsPage() {
                         <p className="text-gray-600 mt-1">View all Customer Success Representatives in the system.</p>
                     </div>
                     <Link href="/admin" className="w-full md:w-auto">
-                        <button className="w-full px-5 py-2.5 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition-all font-bold shadow-sm">
-                            Back to Dashboard
+                        <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full md:w-auto justify-center h-full">
+                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                         </button>
                     </Link>
                 </div>
@@ -30,7 +31,7 @@ export default async function AdminCSRsPage() {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse min-w-[700px]">
                             <thead>
-                                <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                                <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
                                     <th className="p-4 font-semibold">CSR</th>
                                     <th className="p-4 font-semibold">Email Address</th>
                                     <th className="p-4 font-semibold">Joined Date</th>

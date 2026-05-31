@@ -130,8 +130,8 @@ export default function AdminLeadsPage() {
                         + New Lead
                     </Link>
                     <Link href="/admin" className="w-full sm:w-auto">
-                        <button className="w-full px-5 py-2.5 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition-all font-bold whitespace-nowrap">
-                            Back to Dashboard
+                        <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full sm:w-auto justify-center h-full">
+                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                         </button>
                     </Link>
                 </div>

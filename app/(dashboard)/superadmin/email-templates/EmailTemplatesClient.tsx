@@ -192,7 +192,7 @@ export default function EmailTemplatesClient() {
                 <div className="overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm">Status</th>
                             <th className="p-4 font-semibold text-white text-sm">Name & Details</th>
                             <th className="p-4 font-semibold text-white text-sm">Subject & Body Preview</th>
@@ -219,7 +219,7 @@ export default function EmailTemplatesClient() {
                                             </div>
                                             <textarea value={editForm.body} onChange={e => setEditForm({ ...editForm, body: e.target.value })} className="border p-2 rounded w-full outline-none h-24" placeholder="Body" />
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> Cancel</button>
+                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium flex items-center gap-1"><X size={16} /> Cancel</button>
                                                 <button onClick={() => handleUpdate(template.id)} className="px-4 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded font-medium"><Save size={16} /> Save Changes</button>
                                             </div>
                                         </div>

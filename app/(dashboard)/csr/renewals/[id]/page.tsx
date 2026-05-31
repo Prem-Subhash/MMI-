@@ -280,7 +280,9 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
     <div className="p-8 text-center">
       <h2 className="text-xl font-semibold text-gray-700">Renewal Not Found</h2>
       <p className="text-gray-500 mt-2">This renewal does not exist or you do not have permission to view it.</p>
-      <Link href="/csr/renewals" className="mt-4 inline-block text-emerald-600 hover:underline">Back to Dashboard</Link>
+      <Link href="/csr/renewals" className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mx-auto">
+        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
+      </Link>
     </div>
   )
 

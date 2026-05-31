@@ -181,7 +181,7 @@ export default function FormTemplatesClient() {
                 <div className="overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm w-1/4">Name & Category</th>
                             <th className="p-4 font-semibold text-white text-sm w-1/2">Schema Preview</th>
                             <th className="p-4 font-semibold text-white text-sm text-right w-1/4">Actions</th>
