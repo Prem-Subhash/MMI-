@@ -152,7 +152,7 @@ export default function FormTemplatesClient() {
                             <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Define structured intake fields</p>
                         </div>
                     </div>
-                    <form onSubmit={handleCreate} className="p-6 flex flex-col gap-4">
+                    <form onSubmit={handleCreate} className="p-4 sm:p-6 flex flex-col gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-gray-700">Form Name</label>
@@ -170,17 +170,18 @@ export default function FormTemplatesClient() {
                         </label>
                         <textarea required value={formData.fields} onChange={e => setFormData({ ...formData, fields: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none h-40 font-mono text-sm resize-y" placeholder='{ "fields": [...] }' />
                     </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded hover:bg-emerald-700 transition flex justify-center items-center h-[42px] font-medium disabled:opacity-50">
+                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 px-8 rounded hover:bg-emerald-700 transition flex justify-center items-center h-[42px] font-medium disabled:opacity-50 w-full sm:w-auto">
                         {createLoading ? <Spinner size={18} /> : 'Save Form Schema'}
                     </button>
                     </form>
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm w-1/4">Name & Category</th>
                             <th className="p-4 font-semibold text-white text-sm w-1/2">Schema Preview</th>
                             <th className="p-4 font-semibold text-white text-sm text-right w-1/4">Actions</th>
@@ -238,6 +239,7 @@ export default function FormTemplatesClient() {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )

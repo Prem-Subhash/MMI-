@@ -249,9 +249,9 @@ export default function PersonalRenewalImportPage() {
             <div className="mb-8">
                 <Link
                     href="/csr/renewals/personal"
-                    className="group inline-flex items-center text-gray-400 hover:text-brand transition-colors mb-4 text-sm font-medium"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4 text-sm"
                 >
-                    <ArrowLeft size={16} className="mr-2 transition-transform group-hover:-translate-x-1" />
+                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
                     Back to Personal Renewals
                 </Link>
                 <div className="flex items-center gap-4">

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, Search, AlertCircle, CheckCircle2 } from 'lucide-react'
+import { Eye, Search, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 
@@ -19,7 +19,7 @@ type Lead = {
     current_stage: {
         stage_name: string
     } | null
-    profiles: {
+    assigned_csr_profile: {
         full_name: string
     } | null
 }
@@ -60,7 +60,7 @@ export default function AccountingAllLeadsPage() {
           current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
             stage_name
           ),
-          profiles (
+          assigned_csr_profile:profiles!fk_profile (
             full_name
           )
         `)
@@ -82,9 +82,9 @@ export default function AccountingAllLeadsPage() {
                     current_stage: Array.isArray(row.current_stage)
                         ? row.current_stage[0] ?? null
                         : row.current_stage ?? null,
-                    profiles: Array.isArray(row.profiles)
-                        ? row.profiles[0] ?? null
-                        : row.profiles ?? null,
+                    assigned_csr_profile: Array.isArray(row.assigned_csr_profile)
+                        ? row.assigned_csr_profile[0] ?? null
+                        : row.assigned_csr_profile ?? null,
                 }))
 
                 setLeads(formatted)
@@ -110,7 +110,7 @@ export default function AccountingAllLeadsPage() {
             (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
             (lead.email && lead.email.toLowerCase().includes(term)) ||
             (lead.phone && lead.phone.includes(term)) ||
-            (lead.profiles && lead.profiles.full_name && lead.profiles.full_name.toLowerCase().includes(term))
+            (lead.assigned_csr_profile && lead.assigned_csr_profile.full_name && lead.assigned_csr_profile.full_name.toLowerCase().includes(term))
         )
     })
 
@@ -132,8 +132,8 @@ export default function AccountingAllLeadsPage() {
 
                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                         <Link href="/accounting" className="w-full sm:w-auto">
-                            <button className="w-full px-5 py-2.5 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition-all font-bold whitespace-nowrap shadow-sm">
-                                Back to Dashboard
+                            <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full sm:w-auto justify-center h-full">
+                                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                             </button>
                         </Link>
                     </div>
@@ -235,9 +235,9 @@ export default function AccountingAllLeadsPage() {
                                                     </span>
                                                 </td>
                                                 <td className="px-4 sm:px-6 py-4">
-                                                    {lead.profiles?.full_name ? (
+                                                    {lead.assigned_csr_profile?.full_name ? (
                                                         <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
-                                                            {lead.profiles.full_name}
+                                                            {lead.assigned_csr_profile.full_name}
                                                         </span>
                                                     ) : (
                                                         <span className="text-amber-600 font-semibold text-sm">Unassigned</span>

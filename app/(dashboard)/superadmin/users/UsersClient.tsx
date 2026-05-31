@@ -132,7 +132,7 @@ export default function UsersClient() {
                             <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Define access and administrative roles</p>
                         </div>
                     </div>
-                    <form onSubmit={handleCreateUser} className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 items-end animate-in fade-in slide-in-from-top-4 duration-300">
+                    <form onSubmit={handleCreateUser} className="p-4 sm:p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 items-end animate-in fade-in slide-in-from-top-4 duration-300">
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Full Name</label>
                         <input required type="text" value={formData.full_name} onChange={e => setFormData({ ...formData, full_name: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all" placeholder="John Doe" />
@@ -147,7 +147,7 @@ export default function UsersClient() {
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Role</label>
-                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all">
+                        <select value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} className="bg-gray-50 border border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all w-full">
                             <option value="csr">CSR</option>
                             <option value="admin">Admin</option>
                             <option value="accounting">Accounting</option>
@@ -161,8 +161,8 @@ export default function UsersClient() {
                 </div>
             )}
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="bg-white sm:rounded-2xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
+                <div className="overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
                             <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">

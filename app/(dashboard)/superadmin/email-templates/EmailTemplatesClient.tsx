@@ -158,7 +158,7 @@ export default function EmailTemplatesClient() {
                             <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Design automated communication workflows</p>
                         </div>
                     </div>
-                    <form onSubmit={handleCreate} className="p-6 flex flex-col gap-4">
+                    <form onSubmit={handleCreate} className="p-4 sm:p-6 flex flex-col gap-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-gray-700">Template Name</label>
@@ -188,10 +188,11 @@ export default function EmailTemplatesClient() {
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm">Status</th>
                             <th className="p-4 font-semibold text-white text-sm">Name & Details</th>
                             <th className="p-4 font-semibold text-white text-sm">Subject & Body Preview</th>
@@ -218,7 +219,7 @@ export default function EmailTemplatesClient() {
                                             </div>
                                             <textarea value={editForm.body} onChange={e => setEditForm({ ...editForm, body: e.target.value })} className="border p-2 rounded w-full outline-none h-24" placeholder="Body" />
                                             <div className="flex justify-end gap-2">
-                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded font-medium flex items-center gap-1"><X size={16} /> Cancel</button>
+                                                <button onClick={() => setEditingId(null)} className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded font-medium flex items-center gap-1"><X size={16} /> Cancel</button>
                                                 <button onClick={() => handleUpdate(template.id)} className="px-4 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded font-medium"><Save size={16} /> Save Changes</button>
                                             </div>
                                         </div>
@@ -256,6 +257,7 @@ export default function EmailTemplatesClient() {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )

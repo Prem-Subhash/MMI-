@@ -310,8 +310,8 @@ export default function CSRWorkloadPage() {
         <div className="text-center">
           <AlertCircle size={48} className="text-red-400 mx-auto mb-3" />
           <p className="text-gray-700 font-semibold text-lg">CSR not found</p>
-          <Link href="/admin/csrs" className="text-emerald-600 text-sm hover:underline mt-2 inline-block">
-           <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg">  Back to CSR Management</button>
+          <Link href="/admin/csrs" className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mt-4">
+            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to CSR Management
           </Link>
         </div>
       </div>
@@ -324,10 +324,9 @@ export default function CSRWorkloadPage() {
       {/* ── Back Link ── */}
       <Link
         href="/admin/csrs"
-        className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-gray-500 hover:text-emerald-600 transition-colors mb-4 sm:mb-5 font-medium"
+        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4 sm:mb-5"
       >
-        <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg">
-           Back to CSR Management</button>
+        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to CSR Management
       </Link>
 
       {/* ── Header ── */}

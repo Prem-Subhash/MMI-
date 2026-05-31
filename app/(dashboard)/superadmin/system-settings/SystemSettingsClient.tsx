@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Save, CheckCircle2, Building2, Mail, Clock, GitBranch } from 'lucide-react'
+import { Save, CheckCircle2, Building2, Mail, Clock, GitBranch, ChevronDown } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
@@ -141,41 +141,47 @@ export default function SystemSettingsClient() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">System Timezone</label>
-                        <select
-                            required
-                            value={settings[SETTING_KEYS.TIMEZONE] || 'America/New_York'}
-                            onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.TIMEZONE]: e.target.value })}
-                            className={inputClass}
-                        >
-                            <option value="America/New_York">Eastern Time (ET)</option>
-                            <option value="America/Chicago">Central Time (CT)</option>
-                            <option value="America/Denver">Mountain Time (MT)</option>
-                            <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                            <option value="UTC">UTC</option>
-                        </select>
+                        <div className="relative">
+                            <select
+                                required
+                                value={settings[SETTING_KEYS.TIMEZONE] || 'America/New_York'}
+                                onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.TIMEZONE]: e.target.value })}
+                                className={`${inputClass} appearance-none pr-10`}
+                            >
+                                <option value="America/New_York">Eastern Time (ET)</option>
+                                <option value="America/Chicago">Central Time (CT)</option>
+                                <option value="America/Denver">Mountain Time (MT)</option>
+                                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                                <option value="UTC">UTC</option>
+                            </select>
+                            <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Default Pipeline</label>
-                        <select
-                            required
-                            value={settings[SETTING_KEYS.DEFAULT_PIPELINE] || ''}
-                            onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.DEFAULT_PIPELINE]: e.target.value })}
-                            className={inputClass}
-                        >
-                            <option value="" disabled>Select a default pipeline...</option>
-                            {pipelines.map(p => (
-                                <option key={p.id} value={p.id}>{p.name} ({p.category})</option>
-                            ))}
-                        </select>
+                        <div className="relative">
+                            <select
+                                required
+                                value={settings[SETTING_KEYS.DEFAULT_PIPELINE] || ''}
+                                onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.DEFAULT_PIPELINE]: e.target.value })}
+                                className={`${inputClass} appearance-none pr-10`}
+                            >
+                                <option value="" disabled>Select a default pipeline...</option>
+                                {pipelines.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name} ({p.category})</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
             </div>
 
             {/* ── Save Bar ── */}
-            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-6 py-4 flex items-center justify-between gap-4">
-                <div className="min-h-[24px]">
+            <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="min-h-[24px] w-full sm:w-auto text-center sm:text-left">
                     {success && (
-                        <span className="flex items-center gap-2 text-emerald-600 text-sm font-semibold">
+                        <span className="flex items-center justify-center sm:justify-start gap-2 text-emerald-600 text-sm font-semibold">
                             <CheckCircle2 size={18} />
                             Settings saved successfully!
                         </span>
@@ -184,7 +190,7 @@ export default function SystemSettingsClient() {
                 <button
                     type="submit"
                     disabled={saving}
-                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed min-w-[160px] justify-center"
+                    className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 sm:py-2.5 rounded-xl font-bold text-sm transition-all shadow-sm shadow-emerald-200 disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto min-w-[160px] justify-center"
                 >
                     {saving ? <Spinner size={16} /> : <Save size={16} />}
                     {saving ? 'Saving...' : 'Save Settings'}

@@ -161,7 +161,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
             <div className="flex justify-end">
                 <button
                     onClick={() => setShowCreate(!showCreate)}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
+                    className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand transition font-medium shadow-sm"
                 >
                     {showCreate ? <X size={18} /> : <Plus size={18} />}
                     {showCreate ? 'Cancel' : 'Add Stage'}
@@ -198,11 +198,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm w-20">Order</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Stage Name</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Mandatory Fields (JSON)</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right">Actions</th>
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
+                            <th className="p-4 font-semibold text-white-600 text-sm w-20">Order</th>
+                            <th className="p-4 font-semibold text-white-600 text-sm">Stage Name</th>
+                            <th className="p-4 font-semibold text-white-600 text-sm">Mandatory Fields (JSON)</th>
+                            <th className="p-4 font-semibold text-white-600 text-sm text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>

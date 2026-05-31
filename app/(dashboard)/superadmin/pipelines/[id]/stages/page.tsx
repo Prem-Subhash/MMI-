@@ -16,8 +16,8 @@ export default async function PipelineStagesPage({ params }: { params: { id: str
     return (
         <div className="p-8 max-w-5xl mx-auto">
             <Link href="/superadmin/pipelines">
-                <button className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-medium mb-6 transition">
-                    <ArrowLeft size={18} /> Back to Pipelines
+                <button className="inline-flex items-center gap-2 px-4 py-2 bg-rose-500 text-white   border border-gray-200  rounded-xl font-semibold transition-all shadow-sm group w-fit mb-6">
+                    <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Pipelines
                 </button>
             </Link>
 
