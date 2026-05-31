@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, Search } from 'lucide-react'
+import { Eye, Search, ArrowLeft } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
 type Lead = {
@@ -18,7 +18,7 @@ type Lead = {
     current_stage: {
         stage_name: string
     } | null
-    profiles: {
+    assigned_csr_profile: {
         full_name: string
     } | null
 }
@@ -59,7 +59,7 @@ export default function AdminLeadsPage() {
           current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
             stage_name
           ),
-          profiles (
+          assigned_csr_profile:profiles!fk_profile (
             full_name
           )
         `)
@@ -81,9 +81,9 @@ export default function AdminLeadsPage() {
                     current_stage: Array.isArray(row.current_stage)
                         ? row.current_stage[0] ?? null
                         : row.current_stage ?? null,
-                    profiles: Array.isArray(row.profiles)
-                        ? row.profiles[0] ?? null
-                        : row.profiles ?? null,
+                    assigned_csr_profile: Array.isArray(row.assigned_csr_profile)
+                        ? row.assigned_csr_profile[0] ?? null
+                        : row.assigned_csr_profile ?? null,
                 }))
 
                 setLeads(formatted)
@@ -109,7 +109,7 @@ export default function AdminLeadsPage() {
             (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
             (lead.email && lead.email.toLowerCase().includes(term)) ||
             (lead.phone && lead.phone.includes(term)) ||
-            (lead.profiles && lead.profiles.full_name && lead.profiles.full_name.toLowerCase().includes(term))
+            (lead.assigned_csr_profile && lead.assigned_csr_profile.full_name && lead.assigned_csr_profile.full_name.toLowerCase().includes(term))
         )
     })
 
@@ -224,9 +224,9 @@ export default function AdminLeadsPage() {
                                                 <StageBadge stage={stage} />
                                             </td>
                                             <td className="px-4 sm:px-6 py-4">
-                                                {lead.profiles?.full_name ? (
+                                                {lead.assigned_csr_profile?.full_name ? (
                                                     <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
-                                                        {lead.profiles.full_name}
+                                                        {lead.assigned_csr_profile.full_name}
                                                     </span>
                                                 ) : (
                                                     <span className="text-amber-600 font-semibold text-sm">Unassigned</span>

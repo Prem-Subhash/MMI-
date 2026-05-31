@@ -31,7 +31,7 @@ const { data: leads, error: leadsError } = await supabase
         current_stage:pipeline_stages (
             stage_name
         ),
-        profiles (
+        assigned_csr_profile:profiles!fk_profile (
             full_name
         )
     `)

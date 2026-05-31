@@ -19,7 +19,7 @@ type Lead = {
     current_stage: {
         stage_name: string
     } | null
-    profiles: {
+    assigned_csr_profile: {
         full_name: string
     } | null
 }
@@ -53,7 +53,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
     const normalizedLeads = pipelineLeads.map((row: any) => ({
         ...row,
         current_stage: row.current_stage ?? null,
-        profiles: row.profiles ?? null,
+        assigned_csr_profile: row.assigned_csr_profile ?? null,
     }))
 
     const stagedLeads = stageFilter
@@ -66,7 +66,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
             lead.client_name?.toLowerCase().includes(term) ||
             lead.email?.toLowerCase().includes(term) ||
             lead.phone?.includes(term) ||
-            lead.profiles?.full_name?.toLowerCase().includes(term)
+            lead.assigned_csr_profile?.full_name?.toLowerCase().includes(term)
         )
     })
 
@@ -79,8 +79,8 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                     <p className="text-gray-600 text-sm mt-1">Overview of pipeline stages and current lead distribution separated by pipeline.</p>
                 </div>
                 <Link href="/admin" className="w-full sm:w-auto">
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full sm:w-auto justify-center">
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
+                    <button className="w-full sm:w-auto px-4 py-2 bg-[#E07A5F] text-white rounded-lg hover:bg-[#E07A5F]/80 transition font-medium whitespace-nowrap">
+                        Back to Dashboard
                     </button>
                 </Link>
             </div>
@@ -199,9 +199,9 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                                                         <StageBadge stage={stage} />
                                                     </td>
                                                     <td className="px-4 sm:px-6 py-4">
-                                                        {lead.profiles?.full_name ? (
+                                                        {lead.assigned_csr_profile?.full_name ? (
                                                             <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
-                                                                {lead.profiles.full_name}
+                                                                {lead.assigned_csr_profile.full_name}
                                                             </span>
                                                         ) : (
                                                             <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
