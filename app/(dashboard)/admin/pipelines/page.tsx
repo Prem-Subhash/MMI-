@@ -16,9 +16,9 @@ export default async function AdminPipelinesPage() {
         .order('stage_order', { ascending: true })
 
     // 3. Fetch ALL Leads (SERVER SIDE ✅)
-const { data: leads, error: leadsError } = await supabase
-    .from('temp_leads_basics')
-    .select(`
+    const { data: leads, error: leadsError } = await supabase
+        .from('temp_leads_basics')
+        .select(`
         id,
         client_name,
         phone,
@@ -31,11 +31,11 @@ const { data: leads, error: leadsError } = await supabase
         current_stage:pipeline_stages (
             stage_name
         ),
-        profiles:profiles!fk_profile (
+        assigned_csr_profile:profiles!fk_profile (
             full_name
         )
     `)
-    .order('created_at', { ascending: false })
+        .order('created_at', { ascending: false })
 
     if (leadsError) {
         console.error("ERROR fetching leads:", leadsError)

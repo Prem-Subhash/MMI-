@@ -1,9 +1,10 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Save, ArrowUp, ArrowDown, X } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, ArrowUp, ArrowDown, X, GitBranch } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
+import { motion, AnimatePresence } from 'framer-motion'
 
 type Stage = {
     id: string
@@ -158,51 +159,88 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
     return (
         <div className="space-y-6">
 
-            <div className="flex justify-end">
-                <button
-                    onClick={() => setShowCreate(!showCreate)}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition font-medium shadow-sm"
-                >
-                    {showCreate ? <X size={18} /> : <Plus size={18} />}
-                    {showCreate ? 'Cancel' : 'Add Stage'}
-                </button>
+            {/* Top Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                    <p className="text-sm text-gray-500 font-medium mb-1">Total Stages</p>
+                    <p className="text-2xl font-bold text-gray-800">{stages.length}</p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                    <p className="text-sm text-gray-500 font-medium mb-1">Initial Stage</p>
+                    <p className="text-lg font-bold text-gray-800 truncate">{stages[0]?.stage_name || 'N/A'}</p>
+                </div>
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
+                    <p className="text-sm text-gray-500 font-medium mb-1">Final Stage</p>
+                    <p className="text-lg font-bold text-gray-800 truncate">{stages[stages.length - 1]?.stage_name || 'N/A'}</p>
+                </div>
             </div>
 
+            <div className="flex justify-between items-center mb-2">
+                <h3 className="text-lg font-bold text-gray-800 tracking-tight">Stage Management</h3>
+                <div className="flex gap-2">
+                    {showCreate && (
+                        <button
+                            onClick={() => setShowCreate(false)}
+                            className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-4 py-2 rounded-lg transition font-medium shadow-sm text-sm"
+                        >
+                            <X size={18} /> Cancel
+                        </button>
+                    )}
+                    {!showCreate && (
+                        <button
+                            onClick={() => setShowCreate(true)}
+                            className="flex items-center gap-2 bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition font-medium shadow-sm text-sm"
+                        >
+                            <Plus size={18} /> Add Stage
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            <AnimatePresence>
             {showCreate && (
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden mb-6">
-                    <div className="px-6 py-4 bg-gradient-to-r from-[#10B889] to-[#2E5C85] flex items-center gap-3">
-                        <div className="p-2 bg-white/20 text-white rounded-lg backdrop-blur-sm">
-                            <Plus size={18} />
+                <motion.div
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: 'auto', marginBottom: 24 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    className="overflow-hidden"
+                >
+                <div className="bg-white rounded-2xl border border-orange-100 shadow-xl overflow-hidden mt-4">
+                    <div className="px-6 py-4 bg-orange-50 flex items-center gap-3 border-b border-orange-100">
+                        <div className="p-2 bg-orange-100 text-orange-600 rounded-lg">
+                            <GitBranch size={18} />
                         </div>
                         <div>
-                            <h2 className="text-xs font-bold text-white uppercase tracking-widest">New Pipeline Stage</h2>
-                            <p className="text-[10px] text-emerald-50/80 font-medium uppercase tracking-wider mt-0.5">Configure deal progression milestones</p>
+                            <h2 className="text-sm font-bold text-gray-800 tracking-tight">New Pipeline Stage</h2>
+                            <p className="text-xs text-gray-500 font-medium mt-0.5">Stages define the linear progression of your pipelines.</p>
                         </div>
                     </div>
-                    <form onSubmit={handleCreate} className="p-6 flex flex-col md:flex-row gap-4 items-end">
-                    <div className="flex flex-col gap-1 flex-1">
-                        <label className="text-sm font-medium text-gray-700">Stage Name</label>
-                        <input required type="text" value={formData.stage_name} onChange={e => setFormData({ ...formData, stage_name: e.target.value })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="e.g. Quoting in Progress" />
-                    </div>
-                    <div className="flex flex-col gap-1 w-32">
-                        <label className="text-sm font-medium text-gray-700">Order</label>
-                        <input required type="number" value={formData.stage_order} onChange={e => setFormData({ ...formData, stage_order: parseInt(e.target.value) || 1 })} className="border p-2 rounded focus:ring-2 focus:ring-indigo-500 outline-none" />
-                    </div>
-                    <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white p-2 rounded-xl w-32 h-[50px] hover:bg-emerald-700 transition flex justify-center items-center font-bold disabled:opacity-50 shadow-sm">
-                        {createLoading ? <Spinner size={18} /> : 'Save Stage'}
-                    </button>
+                    <form onSubmit={handleCreate} className="p-6 flex flex-col sm:flex-row gap-4 items-end">
+                        <div className="flex flex-col gap-1.5 flex-1 w-full">
+                            <label className="text-sm font-medium text-gray-700">Stage Name</label>
+                            <input required type="text" value={formData.stage_name} onChange={e => setFormData({ ...formData, stage_name: e.target.value })} className="border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all w-full" placeholder="e.g. Quoting in Progress" />
+                        </div>
+                        <div className="flex flex-col gap-1.5 w-full sm:w-32">
+                            <label className="text-sm font-medium text-gray-700">Order</label>
+                            <input required type="number" value={formData.stage_order} onChange={e => setFormData({ ...formData, stage_order: parseInt(e.target.value) || 1 })} className="border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 outline-none transition-all w-full" />
+                        </div>
+                        <button type="submit" disabled={createLoading} className="bg-orange-600 text-white p-2.5 rounded-lg w-full sm:w-32 h-[46px] hover:bg-orange-700 transition-all flex justify-center items-center font-bold disabled:opacity-50 shadow-sm mt-4 sm:mt-0">
+                            {createLoading ? <Spinner size={18} /> : 'Save Stage'}
+                        </button>
                     </form>
                 </div>
+                </motion.div>
             )}
+            </AnimatePresence>
 
             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-600 text-sm w-20">Order</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Stage Name</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm">Mandatory Fields (JSON)</th>
-                            <th className="p-4 font-semibold text-gray-600 text-sm text-right">Actions</th>
+                        <tr className= "bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
+                            <th className="p-4 font-semibold text-white text-sm w-20">Order</th>
+                            <th className="p-4 font-semibold text-white text-sm">Stage Name</th>
+                            <th className="p-4 font-semibold text-white text-sm">Mandatory Fields (JSON)</th>
+                            <th className="p-4 font-semibold text-white text-sm text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -221,8 +259,8 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                                         <div className="flex items-center gap-2">
                                             <span className="font-semibold text-gray-700 w-6 text-center">{stage.stage_order}</span>
                                             <div className="flex flex-col">
-                                                <button onClick={() => handleReorder(stage.id, -1)} disabled={index === 0} className="text-gray-400 hover:text-indigo-600 disabled:opacity-30 disabled:hover:text-gray-400"><ArrowUp size={14} /></button>
-                                                <button onClick={() => handleReorder(stage.id, 1)} disabled={index === stages.length - 1} className="text-gray-400 hover:text-indigo-600 disabled:opacity-30 disabled:hover:text-gray-400"><ArrowDown size={14} /></button>
+                                                <button onClick={() => handleReorder(stage.id, -1)} disabled={index === 0} className="text-gray-400 hover:text-orange-600 disabled:opacity-30 disabled:hover:text-gray-400"><ArrowUp size={14} /></button>
+                                                <button onClick={() => handleReorder(stage.id, 1)} disabled={index === stages.length - 1} className="text-gray-400 hover:text-orange-600 disabled:opacity-30 disabled:hover:text-gray-400"><ArrowDown size={14} /></button>
                                             </div>
                                         </div>
                                     )}
@@ -245,11 +283,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                                     {editingId === stage.id ? (
                                         <>
                                             <button onClick={() => handleUpdate(stage.id)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded" title="Save"><Save size={16} /></button>
-                                            <button onClick={() => setEditingId(null)} className="p-2 text-gray-500 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> Cancel</button>
+                                            <button onClick={() => setEditingId(null)} className="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 rounded text-sm font-medium flex items-center gap-1"><X size={14} /> Cancel</button>
                                         </>
                                     ) : (
                                         <>
-                                            <button onClick={() => { setEditingId(stage.id); setEditForm({ stage_name: stage.stage_name, stage_order: stage.stage_order, mandatory_fields: JSON.stringify(stage.mandatory_fields, null, 2) }) }} className="p-2 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"><Edit2 size={16} /></button>
+                                            <button onClick={() => { setEditingId(stage.id); setEditForm({ stage_name: stage.stage_name, stage_order: stage.stage_order, mandatory_fields: JSON.stringify(stage.mandatory_fields, null, 2) }) }} className="p-2 text-gray-500 hover:text-orange-600 hover:bg-orange-50 rounded transition"><Edit2 size={16} /></button>
                                             <button onClick={() => handleDelete(stage.id, stage.stage_name)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
                                         </>
                                     )}

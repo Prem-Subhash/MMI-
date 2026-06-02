@@ -98,45 +98,69 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-dvh flex flex-col font-sans pb-safe">
-      <div className="flex-1 flex flex-col lg:flex-row">
+    <div className="min-h-dvh flex flex-col font-sans pb-safe relative overflow-hidden lg:overflow-visible">
+      
+      {/* Mobile-only background gradient wrapper */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-700 lg:hidden -z-20 overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 md:w-96 h-full bg-white/10 skew-x-12 translate-x-32 rounded-l-3xl backdrop-blur-sm pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-400/30 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[40rem] h-[40rem] bg-emerald-400/20 rounded-full blur-3xl" />
+        </div>
+      </div>
+      
+      {/* Desktop-only background color wrapper */}
+      <div className="absolute inset-0 bg-gray-50/50 hidden lg:block -z-20"></div>
 
-        {/* LEFT SIDE (40%) - Branding */}
-        <div className="hidden lg:flex w-full lg:w-[40%] bg-gradient-to-br from-emerald-500 to-teal-600 relative overflow-hidden flex-col justify-center px-12 text-white">
-          {/* Geometric Shape */}
-          <div className="absolute top-0 right-0 w-32 h-full bg-white/10 skew-x-12 translate-x-16 rounded-l-3xl backdrop-blur-sm"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-teal-400/20 rounded-full blur-3xl"></div>
+      <div className="flex-1 flex flex-col lg:flex-row w-full z-10">
 
-          <div className="relative z-10">
-            <h1 className="text-6xl font-extrabold tracking-tight mb-2">MOONSTAR</h1>
+        {/* LEFT SIDE (40%) - Branding (Desktop Only) */}
+        <div className="hidden lg:flex w-full lg:w-[40%] bg-gradient-to-br from-emerald-500 to-teal-700 relative overflow-hidden flex-col justify-center px-12 lg:px-16 text-white shrink-0 shadow-lg lg:shadow-2xl z-10">
+          {/* Geometric Shapes */}
+          <div className="absolute top-0 right-0 w-48 h-full bg-white/10 skew-x-12 translate-x-24 rounded-l-3xl backdrop-blur-sm"></div>
+          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-teal-400/30 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 left-1/2 w-32 h-32 bg-emerald-300/20 rounded-full blur-2xl"></div>
+
+          <div className="relative z-20 max-w-xl mx-auto lg:mx-0 w-full text-left">
+            <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 drop-shadow-sm">MOONSTAR</h1>
             <h2 className="text-2xl font-medium text-emerald-50 mb-6">Mortgage</h2>
             <div className="w-16 h-1 bg-emerald-300 rounded-full mb-8"></div>
-            <p className="text-lg text-emerald-100 max-w-md leading-relaxed">
+            <p className="text-lg text-emerald-100 max-w-md leading-relaxed drop-shadow-sm">
               Streamline your workflow, manage client relationships effectively, and close more deals with our integrated dashboard solution.
             </p>
           </div>
         </div>
 
         {/* RIGHT SIDE (60%) - Login Form */}
-        <div className="w-full lg:w-[60%] bg-gray-50 flex items-center justify-center p-4 lg:p-8">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-gray-100 p-8 lg:p-10">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-800">Sign In </h2>
-              <p className="text-gray-500 mt-2">Enter your credentials to access your account</p>
+        <div className="w-full lg:w-[60%] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-12 relative flex-1">
+          {/* Decorative background blurs for right side */}
+          <div className="hidden lg:block absolute top-10 right-10 w-64 h-64 bg-teal-100/40 rounded-full blur-3xl -z-10"></div>
+          <div className="hidden lg:block absolute bottom-10 left-10 w-64 h-64 bg-emerald-100/40 rounded-full blur-3xl -z-10"></div>
+
+          {/* MOBILE BRANDING (Visible only on mobile, centered above the card) */}
+          <div className="lg:hidden flex flex-col items-center justify-center text-white mb-6 sm:mb-8 text-center drop-shadow-md z-10 w-full mt-2 sm:mt-6">
+             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-1">MOONSTAR</h1>
+             <h2 className="text-lg sm:text-xl font-medium text-emerald-100">Mortgage</h2>
+          </div>
+
+          <div className="w-full max-w-md bg-white/95 lg:bg-white/70 backdrop-blur-2xl lg:backdrop-blur-xl rounded-[2rem] sm:rounded-[2.5rem] lg:rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] lg:shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/40 lg:border-white/60 p-6 sm:p-8 lg:p-10 relative z-10 transition-all duration-300 lg:hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
+            <div className="text-center mb-6 lg:mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 lg:text-gray-800 tracking-tight">Sign In</h2>
+              <p className="text-sm sm:text-base text-gray-600 lg:text-gray-500 mt-1.5 font-medium">Enter your credentials to access your account</p>
             </div>
 
-            <form onSubmit={handleLogin} className="space-y-5">
+            <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
               {/* Email Input */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 block">Email Address</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 block ml-1">Email Address</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
                     <Mail size={18} />
                   </div>
                   <input
                     type="email"
                     placeholder="name@company.com"
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all text-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all duration-300 text-sm shadow-sm"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                   />
@@ -145,32 +169,32 @@ export default function LoginPage() {
 
               {/* Password Input */}
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-gray-700 block">Password</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <label className="text-xs sm:text-sm font-semibold text-gray-700 block ml-1">Password</label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
                     <Lock size={18} />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all text-sm"
+                    className="w-full pl-10 pr-12 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all duration-300 text-sm shadow-sm"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-teal-600 transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
               </div>
 
-              {/* CAPTCHA - Restored Logic */}
-              <div className="flex gap-3">
+              {/* CAPTCHA */}
+              <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <div
-                  className="w-32 h-11 bg-gray-100 flex items-center justify-center font-bold tracking-[0.2em] rounded-lg border border-gray-200 text-gray-700 select-none pointer-events-none text-lg"
+                  className="w-full sm:w-32 h-12 bg-gray-100/80 flex items-center justify-center font-bold tracking-[0.25em] rounded-xl border border-gray-200 text-gray-700 select-none pointer-events-none text-lg shadow-inner shrink-0"
                   onCopy={e => e.preventDefault()}
                 >
                   {captcha}
@@ -178,14 +202,14 @@ export default function LoginPage() {
                 <input
                   type="text"
                   placeholder="Enter Captcha"
-                  className="flex-1 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all text-sm uppercase"
+                  className="flex-1 px-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all duration-300 text-sm uppercase shadow-sm text-center sm:text-left font-medium"
                   value={captchaInput}
                   onChange={e => setCaptchaInput(e.target.value.toUpperCase())}
                 />
               </div>
 
               {/* Remember Me & Forgot Password */}
-              <div className="flex items-center justify-between text-sm pt-1">
+              <div className="flex items-center justify-between text-sm pt-2 pb-1">
                 <label className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative flex items-center">
                     <input
@@ -194,22 +218,22 @@ export default function LoginPage() {
                       checked={rememberMe}
                       onChange={() => setRememberMe(!rememberMe)}
                     />
-                    <div className={`w-4 h-4 border rounded transition-colors flex items-center justify-center 
-                                    ${rememberMe ? 'bg-brand border-brand text-white' : 'border-gray-300 bg-white text-transparent'}
+                    <div className={`w-4 h-4 border rounded transition-all duration-200 flex items-center justify-center 
+                                    ${rememberMe ? 'bg-teal-500 border-teal-500 text-white shadow-sm' : 'border-gray-300 bg-gray-50/50 text-transparent group-hover:border-teal-400'}
                                 `}>
-                      <CheckSquare size={12} className={rememberMe ? 'block' : 'hidden'} />
+                      <CheckSquare size={12} className={rememberMe ? 'block scale-100' : 'hidden scale-0 transition-transform'} />
                     </div>
                   </div>
-                  <span className="text-gray-600 group-hover:text-gray-800 transition-colors">Remember me</span>
+                  <span className="text-gray-600 font-medium group-hover:text-gray-800 transition-colors">Remember me</span>
                 </label>
-                <button type="button" className="text-brand hover:text-brand-dark font-medium transition-colors">
+                <button type="button" className="text-teal-600 hover:text-teal-700 font-semibold transition-colors hover:underline underline-offset-2">
                   Forgot password?
                 </button>
               </div>
 
               {/* Error Message */}
               {error && (
-                <div className="p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-lg text-center animate-pulse">
+                <div className="p-3 bg-red-50/80 backdrop-blur-sm border border-red-200 text-red-600 text-sm font-medium rounded-xl text-center animate-fade-in shadow-sm">
                   {error}
                 </div>
               )}
@@ -218,18 +242,29 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand hover:bg-brand-dark text-white font-semibold py-3 rounded-lg transition-all shadow-md hover:shadow-lg disabled:opacity-70 disabled:cursor-not-allowed transform active:scale-[0.99]"
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(13,148,136,0.39)] hover:shadow-[0_6px_20px_rgba(13,148,136,0.23)] hover:-translate-y-[1px] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-2"
               >
-                {loading ? 'Logging in...' : 'Submit'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Logging in...
+                  </span>
+                ) : (
+                  'Submit'
+                )}
               </button>
             </form>
-
-
           </div>
         </div>
       </div>
-
-      <Footer />
+      
+      {/* Optimized footer wrapper for better mobile alignment */}
+      <div className="w-full shrink-0 z-10 relative">
+        <Footer />
+      </div>
     </div>
   )
 }

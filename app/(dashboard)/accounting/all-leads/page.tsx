@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, Search, AlertCircle, CheckCircle2, Info } from 'lucide-react'
+import { Eye, Search, AlertCircle, CheckCircle2, ArrowLeft, Info } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 
@@ -25,7 +25,7 @@ type Lead = {
     current_stage: {
         stage_name: string
     } | null
-    profiles: {
+    assigned_csr_profile: {
         full_name: string
     } | null
 }
@@ -44,7 +44,7 @@ export default function AccountingAllLeadsPage() {
     const searchParams = useSearchParams()
     const router = useRouter()
     const stageFilter = searchParams.get('stage')
-    
+
     // --- State Variables ---
     const [leads, setLeads] = useState<Lead[]>([])
     const [loading, setLoading] = useState(true)
@@ -89,26 +89,20 @@ export default function AccountingAllLeadsPage() {
             let query = supabase
                 .from('temp_leads_basics')
                 .select(`
-                  id,
-                  client_name,
-                  phone,
-                  email,
-                  insurence_category,
-                  policy_flow,
-                  created_at,
-                  total_premium,
-                  expected_commission,
-                  actual_commission,
-                  accounting_status,
-                  accounting_verified,
-                  carrier,
-                  current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
-                    stage_name
-                  ),
-                  profiles:profiles!fk_profile (
-                    full_name
-                  )
-                `)
+          id,
+          client_name,
+          phone,
+          email,
+          insurence_category,
+          policy_flow,
+          created_at,
+          current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
+            stage_name
+          ),
+          assigned_csr_profile:profiles!fk_profile (
+            full_name
+          )
+        `)
                 .order('created_at', { ascending: false })
                 .range(page * 10, (page + 1) * 10 - 1) // 10 items per page
 
@@ -155,9 +149,9 @@ export default function AccountingAllLeadsPage() {
                     current_stage: Array.isArray(row.current_stage)
                         ? row.current_stage[0] ?? null
                         : row.current_stage ?? null,
-                    profiles: Array.isArray(row.profiles)
-                        ? row.profiles[0] ?? null
-                        : row.profiles ?? null,
+                    assigned_csr_profile: Array.isArray(row.assigned_csr_profile)
+                        ? row.assigned_csr_profile[0] ?? null
+                        : row.assigned_csr_profile ?? null,
                 }))
 
                 setLeads(formatted)
@@ -184,10 +178,15 @@ export default function AccountingAllLeadsPage() {
             (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
             (lead.email && lead.email.toLowerCase().includes(term)) ||
             (lead.phone && lead.phone.includes(term)) ||
-            (lead.profiles && lead.profiles.full_name && lead.profiles.full_name.toLowerCase().includes(term)) ||
-            (lead.carrier && lead.carrier.toLowerCase().includes(term))
+            (lead.assigned_csr_profile && lead.assigned_csr_profile.full_name && lead.assigned_csr_profile.full_name.toLowerCase().includes(term))
         )
     })
+
+    // Mock functions for deterministic accounting data based on ID
+    const getMockPremium = (id: string) => {
+        const num = id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+        return (num % 5000) + 500
+    }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
@@ -201,8 +200,8 @@ export default function AccountingAllLeadsPage() {
 
                     <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
                         <Link href="/accounting" className="w-full sm:w-auto">
-                            <button className="w-full px-5 py-2.5 bg-[#2E5C85] text-white rounded-lg hover:bg-[#2E5C85]/90 transition-all font-bold whitespace-nowrap shadow-sm text-sm">
-                                Back to Dashboard
+                            <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full sm:w-auto justify-center h-full">
+                                <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                             </button>
                         </Link>
                     </div>
@@ -234,7 +233,7 @@ export default function AccountingAllLeadsPage() {
 
                 {/* TABLE SECTION */}
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                    
+
                     {/* TOOLBAR WITH ADVANCED FILTERS */}
                     <div className="p-4 border-b border-gray-100 bg-gray-50/50 space-y-3">
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -252,7 +251,7 @@ export default function AccountingAllLeadsPage() {
                                 {filteredLeads.length} Lead{filteredLeads.length !== 1 && 's'} Found (This Page)
                             </div>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-gray-100/60">
                             {/* Status Filter */}
                             <div className="space-y-1">
@@ -368,10 +367,14 @@ export default function AccountingAllLeadsPage() {
                                                         {formatCurrency(lead.expected_commission)}
                                                     </span>
                                                 </td>
-                                                <td className="px-4 sm:px-6 py-4 text-right">
-                                                    <span className="font-bold text-purple-600">
-                                                        {formatCurrency(lead.actual_commission)}
-                                                    </span>
+                                                <td className="px-4 sm:px-6 py-4">
+                                                    {lead.assigned_csr_profile?.full_name ? (
+                                                        <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
+                                                            {lead.assigned_csr_profile.full_name}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
+                                                    )}
                                                 </td>
                                                 <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap text-sm font-medium">
                                                     <StatusBadge status={lead.accounting_status} />
@@ -448,7 +451,7 @@ function StageBadge({ stage }: { stage: string }) {
 
 function StatusBadge({ status }: { status: string }) {
     const statusLower = status?.toLowerCase()
-    
+
     let color = 'bg-gray-50 text-gray-600 border-gray-200'
     let icon = <Info size={12} />
 

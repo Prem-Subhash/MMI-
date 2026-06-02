@@ -178,7 +178,7 @@ export default async function SuperAdminDashboard() {
             </div>
 
             {/* ── KPI Cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-10">
                 {stats.map((stat, i) => (
                     <Link key={i} href={stat.href} className="group">
                         <div className={`
@@ -226,7 +226,7 @@ export default async function SuperAdminDashboard() {
                     <h2 className="text-lg font-bold text-gray-800">Quick Actions</h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
                     {quickLinks.map((link, i) => (
                         <Link key={i} href={link.href} className="group">
                             <div className={`

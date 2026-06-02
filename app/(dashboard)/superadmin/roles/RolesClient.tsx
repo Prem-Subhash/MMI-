@@ -71,8 +71,9 @@ export default function RolesClient() {
     return (
         <div className="space-y-6">
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <table className="w-full text-left border-collapse">
+            <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
                             <th className="p-4 font-semibold text-white text-sm">User</th>
@@ -127,10 +128,10 @@ export default function RolesClient() {
                                 <td className="p-4 text-right">
                                     {editingUserId === user.id ? (
                                         <div className="flex justify-end gap-2">
-                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-200 rounded-lg transition font-medium flex items-center gap-1">
+                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-1.5 text-sm text-white bg-rose-600 hover:bg-rose-700 border border-rose-600 rounded-lg transition font-medium flex items-center gap-1">
                                                 <X size={14} /> Cancel
                                             </button>
-                                            <button onClick={() => handleUpdateRole(user.id, user.role)} className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition font-medium shadow-sm">
+                                            <button onClick={() => handleUpdateRole(user.id, user.role)} className="flex items-center gap-1 px-3 py-1.5 text-sm text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition font-medium shadow-sm">
                                                 <Save size={16} /> Save
                                             </button>
                                         </div>
@@ -147,6 +148,7 @@ export default function RolesClient() {
                         )}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     )

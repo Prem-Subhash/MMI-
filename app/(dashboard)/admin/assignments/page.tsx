@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
-import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity } from 'lucide-react'
+import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity, ArrowLeft } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
@@ -129,8 +129,8 @@ export default function AdminAssignmentsPage() {
                     <p className="text-gray-500 mt-1 text-sm">Operational control panel for managing lead workloads.</p>
                 </div>
                 <Link href="/admin" className="w-full md:w-auto">
-                    <button className="w-full md:w-auto px-5 py-2.5 bg-[#E07A5F] border border-gray-200 text-white rounded-lg hover:bg-[#E07A5F]/80 shadow-sm transition-all font-bold whitespace-nowrap">
-                        Back to Dashboard
+                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full md:w-auto justify-center h-full">
+                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
                     </button>
                 </Link>
             </div>
