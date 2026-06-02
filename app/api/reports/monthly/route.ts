@@ -102,7 +102,7 @@ export async function POST(request: Request) {
             insurence_category,
             assigned_csr,
             assigned_csr_profile:csrs!temp_leads_assigned_csr_fkey (name),
-            assigned_user_profile:profiles!assigned_csr (full_name)
+            assigned_user_profile:profiles!fk_profile (full_name)
         `, { count: 'exact' })
         .gte(dateField, start_date)
         .lte(dateField, end_date)

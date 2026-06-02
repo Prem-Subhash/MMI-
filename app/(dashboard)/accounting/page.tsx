@@ -1,136 +1,427 @@
 import React from 'react'
 import Link from 'next/link'
-import { DollarSign, Percent, FileText, AlertCircle, Activity, Download } from 'lucide-react'
+import { redirect } from 'next/navigation'
+import { createServer } from '@/lib/supabaseServer'
 import { formatCurrency } from '@/lib/currency'
+import { 
+  DollarSign, 
+  Percent, 
+  CheckCircle2, 
+  AlertCircle, 
+  Info, 
+  ShieldCheck, 
+  Activity,
+  ArrowRight,
+  TrendingUp,
+  PieChart,
+  User,
+  Clock
+} from 'lucide-react'
 
-export default function AccountingDashboard() {
-    // Hardcoded metrics for demonstration purposes
-    const stats = [
-        {
-            label: 'Total Premium',
-            value: formatCurrency(7850),
-            icon: <DollarSign size={22} />,
-            href: '/accounting/all-leads',
-            description: 'Bound premium across all lines',
-            accent: 'from-[#2E5C85] to-[#1e3f5e]',
-            glow: 'shadow-blue-200/60',
-            iconBg: 'bg-blue-50 text-[#2E5C85]',
-            hoverIconBg: 'group-hover:bg-[#2E5C85] group-hover:text-white',
-            bar: 'bg-[#2E5C85]',
-        },
-        {
-            label: 'Expected Comm',
-            value: formatCurrency(1177.50),
-            icon: <Percent size={22} />,
-            href: '/accounting/all-leads',
-            description: 'Calculated expected commissions',
-            accent: 'from-[#10B889] to-[#0d9470]',
-            glow: 'shadow-emerald-200/60',
-            iconBg: 'bg-emerald-50 text-[#10B889]',
-            hoverIconBg: 'group-hover:bg-[#10B889] group-hover:text-white',
-            bar: 'bg-[#10B889]',
-        },
-        {
-            label: 'Collected Comm',
-            value: formatCurrency(970),
-            icon: <FileText size={22} />,
-            href: '/accounting/reports',
-            description: 'Actual collected commissions',
-            accent: 'from-purple-600 to-indigo-600',
-            glow: 'shadow-purple-200/60',
-            iconBg: 'bg-purple-50 text-purple-600',
-            hoverIconBg: 'group-hover:bg-purple-600 group-hover:text-white',
-            bar: 'bg-purple-600',
-        },
-        {
-            label: 'Discrepancies',
-            value: '1 Pending',
-            icon: <AlertCircle size={22} />,
-            href: '/accounting/all-leads',
-            description: 'Unmatched commission payments',
-            accent: 'from-[#E07A5F] to-[#c9664d]',
-            glow: 'shadow-orange-200/60',
-            iconBg: 'bg-orange-50 text-[#E07A5F]',
-            hoverIconBg: 'group-hover:bg-[#E07A5F] group-hover:text-white',
-            bar: 'bg-[#E07A5F]',
-        },
-    ]
+export default async function AccountingDashboard() {
+  const supabase = await createServer()
 
-    return (
-        <div className="p-4 sm:p-6 lg:p-8">
-            {/* ── Header ── */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
-                        Accounting Dashboard
-                    </h1>
-                    <p className="text-gray-500 mt-1 text-sm max-w-2xl">
-                        Monitor bound premiums, track commissions, and manage reconciliations.
-                    </p>
-                </div>
-                
-                <div className="flex gap-2 w-full md:w-auto">
-                    <button className="bg-[#E07A5F] border border-[#E07A5F] text-white hover:bg-[#E07A5F]/90 px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap">
-                        <Download size={18} />
-                        Export Financials
-                    </button>
-                </div>
-            </div>
+  // 1. Verify User Authentication
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-            {/* ── KPI Cards ── */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((stat, i) => (
-                    <Link key={i} href={stat.href} className="group">
-                        <div className={`
-                            relative bg-white rounded-2xl border border-gray-100 p-5
-                            shadow-sm hover:shadow-lg active:shadow-lg ${stat.glow}
-                            hover:-translate-y-1 active:-translate-y-1
-                            hover:border-transparent active:border-transparent
-                            transition-all duration-300 overflow-hidden cursor-pointer h-full flex flex-col gap-1.5
-                        `}>
-                            {/* Top accent bar */}
-                            <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${stat.accent}
-                                transform scale-x-0 group-hover:scale-x-100 group-active:scale-x-100
-                                transition-transform duration-300 origin-left rounded-t-2xl`}
-                            />
+  // 2. Enforce Role-Based Access Control (RBAC)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-                            <div className="flex items-center gap-2">
-                                <div className={`
-                                    p-2 rounded-lg ${stat.iconBg} ${stat.hoverIconBg}
-                                    transition-all duration-300 inline-flex
-                                    group-hover:scale-110 group-active:scale-110
-                                `}>
-                                    {React.cloneElement(stat.icon as React.ReactElement<{ size: number }>, { size: 14 })}
-                                </div>
-                                <p className="text-[12px] font-black uppercase tracking-wider leading-none text-gray-500 group-hover:text-gray-700 transition-colors">
-                                    {stat.label}
-                                </p>
-                            </div>
-                            <p className="text-[20px] font-black text-gray-900 leading-tight">
-                                {stat.value}
-                            </p>
-                            <p className="text-[10px] text-gray-400 font-bold leading-tight">
-                                {stat.description}
-                            </p>
-                        </div>
-                    </Link>
-                ))}
-            </div>
+  if (!profile || !['accounting', 'superadmin'].includes(profile.role)) {
+    redirect('/unauthorized')
+  }
 
-            {/* ── Recent Activity ── */}
-            <div className="mt-10">
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="p-2 bg-gray-100 text-gray-500 rounded-lg">
-                        <Activity size={16} />
-                    </div>
-                    <h2 className="text-lg font-bold text-gray-800">Recent Accounting Activity</h2>
-                </div>
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div className="p-10 text-center border-b border-gray-100">
-                        <p className="text-gray-400 text-sm">No recent transactions or reconciliations to display.</p>
-                    </div>
-                </div>
-            </div>
+  // 3. Fetch Real Leads Data for Financial Metrics
+  const { data: leads, error: leadsError } = await supabase
+    .from('temp_leads_basics')
+    .select('total_premium, expected_commission, actual_commission, accounting_status')
+
+  if (leadsError) {
+    console.error('Fetch leads failed:', leadsError)
+  }
+
+  // Aggregate stats
+  let totalPremium = 0
+  let totalExpectedComm = 0
+  let totalActualComm = 0
+  let reconciledCount = 0
+  let discrepancyCount = 0
+  let unreconciledCount = 0
+
+  if (leads) {
+    for (const lead of leads) {
+      totalPremium += Number(lead.total_premium) || 0
+      totalExpectedComm += Number(lead.expected_commission) || 0
+      totalActualComm += Number(lead.actual_commission) || 0
+      
+      const status = lead.accounting_status
+      if (status === 'reconciled') {
+        reconciledCount++
+      } else if (status === 'discrepancy') {
+        discrepancyCount++
+      } else if (status === 'unreconciled' || !status || status === 'Pending Verification') {
+        unreconciledCount++
+      }
+    }
+  }
+
+  // 4. Fetch Recent Audit Logs
+  const { data: recentLogs, error: logsError } = await supabase
+    .from('accounting_logs')
+    .select(`
+      id,
+      created_at,
+      old_expected_commission,
+      new_expected_commission,
+      old_actual_commission,
+      new_actual_commission,
+      old_status,
+      new_status,
+      notes,
+      updater:profiles!updated_by (
+        full_name
+      ),
+      lead:temp_leads_basics!lead_id (
+        id,
+        client_name
+      )
+    `)
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  if (logsError) {
+    console.error('Fetch logs failed:', logsError)
+  }
+
+  const kpis = [
+    {
+      label: 'Total Premium',
+      value: formatCurrency(totalPremium),
+      description: 'Bound premium totals',
+      icon: <DollarSign size={20} />,
+      accent: 'from-[#2E5C85] to-[#1e3f5e]',
+      glow: 'shadow-blue-200/50',
+      iconBg: 'bg-blue-50 text-[#2E5C85]',
+      hoverIconBg: 'group-hover:bg-[#2E5C85] group-hover:text-white',
+    },
+    {
+      label: 'Expected Comm',
+      value: formatCurrency(totalExpectedComm),
+      description: 'Projected commission values',
+      icon: <Percent size={20} />,
+      accent: 'from-[#10B889] to-[#0d9470]',
+      glow: 'shadow-emerald-200/50',
+      iconBg: 'bg-emerald-50 text-[#10B889]',
+      hoverIconBg: 'group-hover:bg-[#10B889] group-hover:text-white',
+    },
+    {
+      label: 'Actual Comm',
+      value: formatCurrency(totalActualComm),
+      description: 'Collected commission totals',
+      icon: <DollarSign size={20} />,
+      accent: 'from-purple-600 to-indigo-600',
+      glow: 'shadow-purple-200/50',
+      iconBg: 'bg-purple-50 text-purple-600',
+      hoverIconBg: 'group-hover:bg-purple-600 group-hover:text-white',
+    },
+    {
+      label: 'Reconciled',
+      value: `${reconciledCount} Policies`,
+      description: 'Verified matching policies',
+      icon: <ShieldCheck size={20} />,
+      accent: 'from-teal-500 to-teal-700',
+      glow: 'shadow-teal-200/50',
+      iconBg: 'bg-teal-50 text-teal-600',
+      hoverIconBg: 'group-hover:bg-teal-500 group-hover:text-white',
+    },
+    {
+      label: 'Discrepancies',
+      value: `${discrepancyCount} Pending`,
+      description: 'Mismatched payouts',
+      icon: <AlertCircle size={20} />,
+      accent: 'from-[#E07A5F] to-[#c9664d]',
+      glow: 'shadow-orange-200/50',
+      iconBg: 'bg-orange-50 text-[#E07A5F]',
+      hoverIconBg: 'group-hover:bg-[#E07A5F] group-hover:text-white',
+    },
+    {
+      label: 'Unreconciled',
+      value: `${unreconciledCount} Leads`,
+      description: 'Awaiting reconciliation',
+      icon: <Info size={20} />,
+      accent: 'from-gray-500 to-gray-700',
+      glow: 'shadow-gray-200/50',
+      iconBg: 'bg-gray-150 text-gray-600',
+      hoverIconBg: 'group-hover:bg-gray-600 group-hover:text-white',
+    }
+  ]
+
+  // --- SVG Charts Calculations ---
+  // Chart 1: Expected vs Actual Commission Height Calculation
+  const maxComm = Math.max(totalExpectedComm, totalActualComm, 100)
+  const barExpectedHeight = (totalExpectedComm / maxComm) * 140
+  const barActualHeight = (totalActualComm / maxComm) * 140
+
+  // Chart 2: Reconciliation Status Circular dash calculations
+  const totalPolicies = reconciledCount + discrepancyCount + unreconciledCount || 1
+  const reconciledPct = (reconciledCount / totalPolicies) * 100
+  const discrepancyPct = (discrepancyCount / totalPolicies) * 100
+  const unreconciledPct = (unreconciledCount / totalPolicies) * 100
+
+  const circ = 251.3 // Circumference for r = 40 (2 * pi * 40)
+  const reconciledDash = (reconciledPct / 100) * circ
+  const discrepancyDash = (discrepancyPct / 100) * circ
+  const unreconciledDash = (unreconciledPct / 100) * circ
+
+  const discrepancyOffset = -reconciledDash
+  const unreconciledOffset = -(reconciledDash + discrepancyDash)
+
+  return (
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
+      {/* ── Header ── */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight leading-tight">
+            Financial Dashboard
+          </h1>
+          <p className="text-gray-500 mt-1 text-sm">
+            Real-time policy auditing, premium calculations, and commission matching.
+          </p>
         </div>
-    )
+        
+        <div className="flex gap-2 w-full md:w-auto">
+          <Link href="/accounting/all-leads" className="w-full md:w-auto">
+            <button className="w-full bg-[#2E5C85] hover:bg-[#2E5C85]/90 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-2 whitespace-nowrap text-xs">
+              Manage Reconciliations
+              <ArrowRight size={14} />
+            </button>
+          </Link>
+        </div>
+      </div>
+
+      {/* ── KPI Cards Grid ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        {kpis.map((stat, i) => (
+          <div key={i} className="group">
+            <div className={`
+              relative bg-white rounded-2xl border border-gray-100 p-5
+              shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden h-full flex flex-col gap-2 ${stat.glow}
+            `}>
+              {/* Top Accent line on hover */}
+              <div className={`absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r ${stat.accent}
+                transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-t-2xl`}
+              />
+
+              <div className="flex items-center gap-2">
+                <div className={`p-2 rounded-lg transition-all duration-300 inline-flex ${stat.iconBg} ${stat.hoverIconBg} group-hover:scale-110`}>
+                  {React.cloneElement(stat.icon as React.ReactElement<{ size: number }>, { size: 14 })}
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-gray-400 group-hover:text-gray-600 transition-colors">
+                  {stat.label}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-lg font-black text-gray-900 leading-tight">
+                  {stat.value}
+                </p>
+                <p className="text-[9px] text-gray-400 font-bold mt-0.5">
+                  {stat.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Financial Charts Section ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Chart 1: Expected vs Actual Commission */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
+            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
+              <TrendingUp size={16} />
+            </div>
+            <h2 className="text-sm font-black text-gray-800 uppercase tracking-wider">Commission Comparison</h2>
+          </div>
+
+          <div className="h-[200px] flex items-end justify-around pb-6 pt-4 relative">
+            {/* Grid Lines */}
+            <div className="absolute left-0 right-0 top-4 border-t border-gray-100" />
+            <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 border-t border-gray-100" />
+            <div className="absolute left-0 right-0 bottom-6 border-b border-gray-200" />
+
+            {/* Expected Bar */}
+            <div className="flex flex-col items-center gap-2 z-10 w-24">
+              <span className="text-[10px] font-black text-gray-600 bg-gray-50 border border-gray-150 px-1.5 py-0.5 rounded">
+                {formatCurrency(totalExpectedComm)}
+              </span>
+              <div 
+                style={{ height: `${barExpectedHeight}px` }} 
+                className="w-10 bg-gradient-to-t from-[#10B889]/80 to-[#10B889] rounded-t-lg shadow-sm group-hover:opacity-90 transition-all duration-500" 
+              />
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Expected</span>
+            </div>
+
+            {/* Actual Bar */}
+            <div className="flex flex-col items-center gap-2 z-10 w-24">
+              <span className="text-[10px] font-black text-purple-600 bg-purple-50 border border-purple-100 px-1.5 py-0.5 rounded">
+                {formatCurrency(totalActualComm)}
+              </span>
+              <div 
+                style={{ height: `${barActualHeight}px` }} 
+                className="w-10 bg-gradient-to-t from-purple-500 to-purple-600 rounded-t-lg shadow-sm group-hover:opacity-90 transition-all duration-500" 
+              />
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Collected</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Chart 2: Reconciliation Status Distribution */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
+            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+              <PieChart size={16} />
+            </div>
+            <h2 className="text-sm font-black text-gray-800 uppercase tracking-wider">Reconciliation Distribution</h2>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
+            {/* SVG Donut Chart */}
+            <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
+              <svg width="140" height="140" viewBox="0 0 100 100" className="transform -rotate-90">
+                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#F1F5F9" strokeWidth="12" />
+                {/* Reconciled (Emerald) */}
+                {reconciledCount > 0 && (
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#10B889" strokeWidth="12"
+                    strokeDasharray={`${reconciledDash} ${circ}`} strokeDashoffset={0} strokeLinecap="round"
+                  />
+                )}
+                {/* Discrepancy (Coral) */}
+                {discrepancyCount > 0 && (
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#E07A5F" strokeWidth="12"
+                    strokeDasharray={`${discrepancyDash} ${circ}`} strokeDashoffset={discrepancyOffset} strokeLinecap="round"
+                  />
+                )}
+                {/* Unreconciled (Blue) */}
+                {unreconciledCount > 0 && (
+                  <circle cx="50" cy="50" r="40" fill="transparent" stroke="#2E5C85" strokeWidth="12"
+                    strokeDasharray={`${unreconciledDash} ${circ}`} strokeDashoffset={unreconciledOffset} strokeLinecap="round"
+                  />
+                )}
+              </svg>
+              {/* Inner details text */}
+              <div className="absolute text-center">
+                <p className="text-sm font-black text-gray-800 leading-none">{totalPolicies}</p>
+                <p className="text-[9px] text-gray-400 font-bold uppercase mt-1">Policies</p>
+              </div>
+            </div>
+
+            {/* Donut Legend */}
+            <div className="space-y-2.5 w-full sm:max-w-[200px]">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#10B889]" />
+                  <span className="font-bold text-gray-600">Reconciled</span>
+                </div>
+                <span className="font-black text-gray-800">{reconciledCount} ({reconciledPct.toFixed(0)}%)</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#E07A5F]" />
+                  <span className="font-bold text-gray-600">Discrepancies</span>
+                </div>
+                <span className="font-black text-gray-800">{discrepancyCount} ({discrepancyPct.toFixed(0)}%)</span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#2E5C85]" />
+                  <span className="font-bold text-gray-600">Unreconciled</span>
+                </div>
+                <span className="font-black text-gray-800">{unreconciledCount} ({unreconciledPct.toFixed(0)}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Recent Activity Section ── */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 bg-gray-150 text-gray-500 rounded-xl">
+            <Activity size={18} />
+          </div>
+          <h2 className="text-lg font-black text-gray-800">Recent Financial Log activity</h2>
+        </div>
+
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          {!recentLogs || recentLogs.length === 0 ? (
+            <div className="p-10 text-center text-gray-400 text-sm">
+              No recent audit transactions or reconciliations recorded.
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {recentLogs.map((log) => {
+                const operatorName = (Array.isArray(log.updater) 
+                  ? log.updater[0]?.full_name 
+                  : (log.updater as any)?.full_name) || 'System Operator'
+                const clientName = (Array.isArray(log.lead) 
+                  ? log.lead[0]?.client_name 
+                  : (log.lead as any)?.client_name) || 'Deleted Lead'
+                
+                // Formulate log summary
+                const details: string[] = []
+                if (log.old_expected_commission !== log.new_expected_commission) {
+                  details.push(`expected commission adjusted to ${formatCurrency(log.new_expected_commission)}`)
+                }
+                if (log.old_actual_commission !== log.new_actual_commission) {
+                  details.push(`collected commission updated to ${formatCurrency(log.new_actual_commission)}`)
+                }
+                if (log.old_status !== log.new_status) {
+                  details.push(`reconciliation status set to "${log.new_status}"`)
+                }
+
+                const actionSummary = details.length > 0 
+                  ? details.join(', ') 
+                  : 'modified reconciliation metadata'
+
+                return (
+                  <div key={log.id} className="p-4 sm:p-5 flex justify-between items-start gap-4 hover:bg-gray-50/50 transition">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                        <User size={14} />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-gray-800">
+                          {operatorName}
+                        </p>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Updated <span className="font-bold text-gray-700">{clientName}</span>: {actionSummary}.
+                        </p>
+                        {log.notes && (
+                          <p className="text-[11px] text-gray-400 italic bg-gray-50 px-2 py-1 rounded border border-gray-100/60 mt-1 inline-block">
+                            "{log.notes}"
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0 flex items-center gap-1.5 text-gray-400 font-semibold text-[10px]">
+                      <Clock size={10} />
+                      {new Date(log.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
 }

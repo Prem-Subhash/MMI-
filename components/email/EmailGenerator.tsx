@@ -521,7 +521,7 @@ export default function EmailGenerator({
                   value={getPreviewText()}
                   onChange={(e) => handlePreviewChange(e.target.value)}
                   placeholder="Write your message..."
-                  className={`w-full min-h-[300px] rounded-xl border border-gray-200 p-5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 focus:border-[#10B889] transition-all resize-none leading-relaxed ${isTemplate ? 'bg-white' : 'bg-[#10B889]/2'}`}
+                  className={`w-full min-h-[300px] rounded-xl border border-gray-200 p-5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 focus:border-[#10B889] transition-all resize-none leading-relaxed git {isTemplate ? 'bg-white' : 'bg-[#10B889]/2'}`}
                 />
 
                 {shouldAppendFooter && (

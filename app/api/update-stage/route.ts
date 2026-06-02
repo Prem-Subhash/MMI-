@@ -33,7 +33,7 @@ export async function POST(req: Request) {
     /* ================= FETCH LEAD ================= */
     const { data: lead, error: leadError } = await supabaseServer
       .from('temp_leads_basics')
-      .select('id, stage_metadata, effective_date, renewal_date')
+      .select('id, stage_metadata, effective_date, renewal_date, renewal_premium')
       .eq('id', leadId)
       .single()
 
@@ -238,6 +238,54 @@ export async function POST(req: Request) {
     // "Set reminder_sent = false for renewal automation" if Completed
     if (stage.stage_name === 'Completed') {
       updatePayload.reminder_sent = false
+    }
+
+    /* ================= ACCOUNTING INTEGRATION ================= */
+    const completionStages = ['Completed', 'Policy Bound', 'Completed (Same)', 'Completed (Switch)']
+    if (completionStages.includes(stage.stage_name)) {
+      let boundPremium = stageMetadata?.bound_premium !== undefined ? stageMetadata.bound_premium : mergedMetadata.bound_premium
+
+      // Fallback to renewal_premium for Completed (Same) where bound_premium is not defined in metadata
+      if ((boundPremium === undefined || boundPremium === null || boundPremium === '') && lead.renewal_premium !== undefined && lead.renewal_premium !== null) {
+        boundPremium = lead.renewal_premium
+      }
+
+      const expectedCommission = stageMetadata?.expected_commission !== undefined ? stageMetadata.expected_commission : mergedMetadata.expected_commission
+
+      if (boundPremium !== undefined && boundPremium !== null && boundPremium !== '') {
+        const val = Number(boundPremium)
+        if (!isNaN(val)) {
+          if (val < 0) {
+            return NextResponse.json({ error: 'Premium value cannot be negative' }, { status: 400 })
+          }
+          updatePayload.total_premium = val
+        }
+      }
+
+      if (expectedCommission !== undefined && expectedCommission !== null && expectedCommission !== '') {
+        const val = Number(expectedCommission)
+        if (!isNaN(val)) {
+          if (val < 0) {
+            return NextResponse.json({ error: 'Commission value cannot be negative' }, { status: 400 })
+          }
+          updatePayload.expected_commission = val
+        }
+      }
+
+      const policyNumber = stageMetadata?.policy_number !== undefined ? stageMetadata.policy_number : mergedMetadata.policy_number
+      if (policyNumber !== undefined && policyNumber !== null) {
+        updatePayload.policy_number = String(policyNumber)
+      }
+
+      const carrierVal = stageMetadata?.carrier !== undefined ? stageMetadata.carrier : mergedMetadata.carrier
+      if (carrierVal !== undefined && carrierVal !== null) {
+        updatePayload.carrier = String(carrierVal)
+      }
+
+      const effectiveDateVal = stageMetadata?.effective_date !== undefined ? stageMetadata.effective_date : mergedMetadata.effective_date
+      if (effectiveDateVal !== undefined && effectiveDateVal !== null) {
+        updatePayload.effective_date = String(effectiveDateVal)
+      }
     }
 
     const { error: updateError } = await supabaseServer
