@@ -320,7 +320,7 @@ export default function UpdateStageModal({
 
       if (
         cfg.required &&
-        (value === undefined || value === null || value === '')
+        (value === undefined || value === null || value === '' || Number.isNaN(value))
       ) {
         toast(`Please fill "${cfg.label}"`, 'warning')
         return false
