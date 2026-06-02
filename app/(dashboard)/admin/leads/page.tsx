@@ -59,7 +59,7 @@ export default function AdminLeadsPage() {
           current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (
             stage_name
           ),
-          profiles (
+          profiles:profiles!fk_profile (
             full_name
           )
         `)

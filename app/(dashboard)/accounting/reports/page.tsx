@@ -1,33 +1,34 @@
 import { createServer } from '@/lib/supabaseServer'
 import { redirect } from 'next/navigation'
-import { FileBarChart } from 'lucide-react'
+import ReportsClient from './ReportsClient'
 
-export default async function AccountingReports() {
-    const supabase = await createServer()
+export default async function AccountingReportsPage() {
+  const supabase = await createServer()
 
-    // Verify Access
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) redirect('/login')
+  // 1. Verify Authentication
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    if (!['accounting', 'superadmin'].includes(profile?.role)) {
-        redirect('/unauthorized')
-    }
+  // 2. Enforce RBAC (only accounting and superadmin roles allowed)
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-    return (
-        <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
-            <div className="max-w-7xl mx-auto space-y-8">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Financial Reports</h1>
-                    <p className="text-gray-600">Generate ad-hoc and standardized accounting reports.</p>
-                </div>
+  if (!profile || !['accounting', 'superadmin'].includes(profile.role)) {
+    redirect('/unauthorized')
+  }
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8 text-center text-gray-500">
-                    <FileBarChart className="mx-auto text-indigo-200 mb-4" size={48} />
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Report Generation System Offline</h3>
-                    <p>Advanced filtering and export functions are being optimized for large datasets.</p>
-                </div>
-            </div>
-        </div>
-    )
+  // 3. Fetch CSR/User Profiles for filters
+  const { data: csrs } = await supabase
+    .from('profiles')
+    .select('id, full_name, role')
+    .order('full_name')
+
+  return (
+    <ReportsClient 
+      csrs={csrs || []} 
+    />
+  )
 }
