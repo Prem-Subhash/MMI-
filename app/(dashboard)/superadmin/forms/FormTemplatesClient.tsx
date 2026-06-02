@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Save, FileJson, X, Info, Code2 } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, FileJson, X, Info, Code2, TrendingUp, Zap, FileBox } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -134,27 +134,83 @@ export default function FormTemplatesClient() {
 
             {/* Top Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Total Schemas</p>
-                    <p className="text-2xl font-bold text-gray-800">{templates.length}</p>
+                {/* Total Schemas */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                        <FileJson size={80} className="text-violet-600" />
+                    </div>
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Schemas</p>
+                            <div className="flex items-end gap-3">
+                                <h4 className="text-3xl font-black text-gray-800">{templates.length}</h4>
+                                <span className="flex items-center text-xs font-medium text-emerald-600 mb-1 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                    <TrendingUp size={12} className="mr-1" /> Updated
+                                </span>
+                            </div>
+                        </div>
+                        <div className="p-3 bg-gradient-to-br from-violet-50 to-violet-100 text-violet-600 rounded-xl shadow-inner border border-violet-100/50">
+                            <FileJson size={22} />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-violet-500"></span>
+                        Structured data forms
+                    </p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Active Forms</p>
-                    <p className="text-2xl font-bold text-violet-600">{templates.filter(t => t.is_active).length}</p>
+
+                {/* Active Forms */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                        <Zap size={80} className="text-emerald-600" />
+                    </div>
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Active Forms</p>
+                            <div className="flex items-end gap-3">
+                                <h4 className="text-3xl font-black text-emerald-600">{templates.filter(t => t.is_active).length}</h4>
+                            </div>
+                        </div>
+                        <div className="p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 rounded-xl shadow-inner border border-emerald-100/50">
+                            <Zap size={22} />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Currently live in production
+                    </p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Recent Version</p>
-                    <p className="text-2xl font-bold text-gray-800">v{templates.length > 0 ? Math.max(...templates.map(t => t.version)) : '1'}</p>
+
+                {/* Recent Version */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                        <FileBox size={80} className="text-indigo-500" />
+                    </div>
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Recent Version</p>
+                            <div className="flex items-end gap-3">
+                                <h4 className="text-3xl font-black text-indigo-600">v{templates.length > 0 ? Math.max(...templates.map(t => t.version)) : '1'}</h4>
+                            </div>
+                        </div>
+                        <div className="p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 text-indigo-600 rounded-xl shadow-inner border border-indigo-100/50">
+                            <FileBox size={22} />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                        Latest schema iteration
+                    </p>
                 </div>
             </div>
 
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                 <h3 className="text-lg font-bold text-gray-800 tracking-tight">Form Schemas</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                     {showCreate && (
                         <button
                             onClick={() => setShowCreate(false)}
-                            className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition font-bold shadow-sm text-sm"
+                            className="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition font-bold shadow-sm text-sm"
                         >
                             <X size={18} /> Cancel
                         </button>
@@ -162,7 +218,7 @@ export default function FormTemplatesClient() {
                     {!showCreate && (
                         <button
                             onClick={() => setShowCreate(true)}
-                            className="flex items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-xl hover:bg-brand transition font-bold shadow-sm text-sm"
+                            className="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-xl hover:bg-brand transition font-bold shadow-sm text-sm"
                         >
                             <Plus size={18} /> Build Form
                         </button>
@@ -181,7 +237,7 @@ export default function FormTemplatesClient() {
                 <div className="bg-white rounded-2xl border border-violet-100 shadow-xl overflow-hidden mt-4">
                     <div className="px-6 py-4 bg-violet-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-violet-100">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-violet-100 text-violet-600 rounded-lg">
+                            <div className="p-2 bg-emerald-100 text-emerald-500 rounded-lg">
                                 <FileJson size={18} />
                             </div>
                             <div>
@@ -189,8 +245,8 @@ export default function FormTemplatesClient() {
                                 <p className="text-xs text-gray-500 font-medium mt-0.5">Define structured intake fields</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-violet-100 text-xs font-medium text-violet-800 shadow-sm">
-                            <Info size={14} className="text-violet-500" />
+                        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-violet-100 text-xs font-medium text-emerald-800 shadow-sm">
+                            <Info size={14} className="text-emerald-500" />
                             Use valid JSON array for the fields schema.
                         </div>
                     </div>
@@ -198,16 +254,16 @@ export default function FormTemplatesClient() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium text-gray-700">Form Name</label>
-                                <input required type="text" value={formData.form_name} onChange={e => setFormData({ ...formData, form_name: e.target.value })} className="border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all" placeholder="e.g. Commercial Auto Intake" />
+                                <input required type="text" value={formData.form_name} onChange={e => setFormData({ ...formData, form_name: e.target.value })} className="border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-violet-500/20 focus:border-emerald-500 outline-none transition-all" placeholder="e.g. Commercial Auto Intake" />
                             </div>
                             <div className="flex flex-col gap-1.5">
                                 <label className="text-sm font-medium text-gray-700">Category (Optional)</label>
-                                <input type="text" value={formData.insurance_category} onChange={e => setFormData({ ...formData, insurance_category: e.target.value })} className="border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 outline-none transition-all" placeholder="e.g. Commercial Lines" />
+                                <input type="text" value={formData.insurance_category} onChange={e => setFormData({ ...formData, insurance_category: e.target.value })} className="border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-violet-500/20 focus:border-emerald-500 outline-none transition-all" placeholder="e.g. Commercial Lines" />
                             </div>
                         </div>
                         <div className="flex flex-col gap-1.5">
                             <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
-                                <Code2 size={16} className="text-violet-500" /> JSON Schema Builder
+                                <Code2 size={16} className="text-emerald-500" /> JSON Schema Builder
                             </label>
                             <div className="rounded-xl overflow-hidden bg-slate-900 border border-slate-800 shadow-inner">
                                 <div className="bg-slate-800 px-4 py-2 border-b border-slate-700 flex gap-2">
@@ -219,7 +275,7 @@ export default function FormTemplatesClient() {
                             </div>
                         </div>
                         <div className="flex justify-end pt-2">
-                            <button type="submit" disabled={createLoading} className="bg-violet-600 text-white px-8 py-3 rounded-xl hover:bg-violet-700 transition-all flex justify-center items-center font-bold disabled:opacity-50 shadow-sm w-full sm:w-auto">
+                            <button type="submit" disabled={createLoading} className="bg-emerald-600 text-white px-8 py-3 rounded-xl hover:bg-emerald-700 transition-all flex justify-center items-center font-bold disabled:opacity-50 shadow-sm w-full sm:w-auto">
                                 {createLoading ? <Spinner size={20} /> : 'Save Form Schema'}
                             </button>
                         </div>
@@ -230,13 +286,60 @@ export default function FormTemplatesClient() {
             </AnimatePresence>
 
             <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
-                <div className="overflow-x-auto w-full">
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {loading ? (
+                        <div className="p-6 flex justify-center"><Loading message="Fetching form templates..." /></div>
+                    ) : templates.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400 text-sm">No form templates defined.</div>
+                    ) : templates.map(template => (
+                        <div key={template.id} className="p-4 space-y-4 hover:bg-gray-50 transition-colors">
+                            {editingId === template.id ? (
+                                <div className="flex flex-col gap-4 p-4 bg-indigo-50 rounded-lg">
+                                    <div className="flex flex-col gap-3">
+                                        <input type="text" value={editForm.form_name} onChange={e => setEditForm({ ...editForm, form_name: e.target.value })} className="border p-2 rounded w-full outline-none font-bold" placeholder="Name" />
+                                        <input type="text" value={editForm.insurance_category} onChange={e => setEditForm({ ...editForm, insurance_category: e.target.value })} className="border p-2 rounded w-full outline-none text-sm" placeholder="Category" />
+                                    </div>
+                                    <textarea value={editForm.fieldsStr} onChange={e => setEditForm({ ...editForm, fieldsStr: e.target.value })} className="border p-2 rounded w-full outline-none font-mono text-xs h-32" placeholder="{}" />
+                                    <div className="flex gap-2 w-full mt-2">
+                                        <button onClick={() => setEditingId(null)} className="flex-1 justify-center px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 rounded-lg font-medium flex items-center gap-1 shadow-sm text-sm"><X size={14} /> Cancel</button>
+                                        <button onClick={() => handleUpdate(template.id)} className="flex-1 justify-center px-3 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-medium shadow-sm text-sm"><Save size={16} /> Save</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <div>
+                                            <p className="font-bold text-gray-800 text-base leading-tight">{template.form_name}</p>
+                                            <div className="flex flex-wrap gap-2 mt-1.5">
+                                                {template.insurance_category && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded uppercase tracking-wide font-bold">{template.insurance_category}</span>}
+                                                <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase">v{template.version}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                            <button onClick={() => startEdit(template)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDelete(template.id, template.form_name)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"><Trash2 size={16} /></button>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div className="bg-gray-50 p-2 rounded-lg border border-gray-100 max-h-32 overflow-y-auto overflow-x-hidden font-mono text-[10px] text-gray-500 break-all w-full">
+                                            {JSON.stringify(template.fields)}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
-                        <tr className="bg-gray-50 border-b border-gray-200">
-                            <th className="p-4 font-semibold text-gray-700 text-sm w-1/4">Name & Category</th>
-                            <th className="p-4 font-semibold text-gray-700 text-sm w-1/2">Schema Preview</th>
-                            <th className="p-4 font-semibold text-gray-700 text-sm text-right w-1/4">Actions</th>
+                        <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
+                            <th className="p-4 font-semibold text-white text-sm w-1/4">Name & Category</th>
+                            <th className="p-4 font-semibold text-white text-sm w-1/2">Schema Preview</th>
+                            <th className="p-4 font-semibold text-white text-sm text-right w-1/4">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -298,7 +401,7 @@ export default function FormTemplatesClient() {
                             </tr>
                         )}
                     </tbody>
-                </table>
+                    </table>
                 </div>
             </div>
         </div>

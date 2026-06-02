@@ -57,7 +57,43 @@ export default function AuditLogsClient() {
         <div className="space-y-6">
 
             <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
-                <div className="overflow-x-auto w-full">
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {loading ? (
+                        <div className="p-6 flex justify-center"><Loading message="Fetching audit logs..." /></div>
+                    ) : logs.length === 0 ? (
+                        <div className="p-12 text-center text-gray-400">
+                            <Activity className="mx-auto mb-2 opacity-50" size={32} />
+                            No audit logs recorded yet.
+                        </div>
+                    ) : logs.map(log => (
+                        <div key={log.id} className="p-4 space-y-3 hover:bg-gray-50 transition-colors">
+                            <div className="flex justify-between items-start gap-2">
+                                <div>
+                                    <div className="text-sm font-bold text-gray-800">{log.profiles?.full_name || 'System / Unknown'}</div>
+                                    <div className="text-xs text-gray-500 break-all">{log.profiles?.email || 'N/A'}</div>
+                                </div>
+                                <span className="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] uppercase font-bold tracking-wider rounded border border-indigo-100 whitespace-nowrap flex-shrink-0">
+                                    {log.action}
+                                </span>
+                            </div>
+                            
+                            <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 flex flex-col gap-2">
+                                <div className="flex justify-between items-center">
+                                    <div className="text-sm font-semibold text-gray-700">{log.entity}</div>
+                                    <div className="text-[10px] font-mono text-gray-400">{formatDate(log.created_at)}</div>
+                                </div>
+                                {log.entity_id && <div className="text-[10px] font-mono text-gray-400 truncate w-full" title={log.entity_id}>ID: {log.entity_id}</div>}
+                                <div className="text-[10px] font-mono text-gray-600 bg-white p-2 rounded border border-gray-200 mt-1 max-h-32 overflow-y-auto w-full overflow-x-hidden whitespace-pre-wrap">
+                                    {formatJSON(log.metadata)}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
                             <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white tracking-wider">

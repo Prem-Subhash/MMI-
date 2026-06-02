@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, Edit2, Save, X, CheckCircle2, XCircle, Mail, Info } from 'lucide-react'
+import { Plus, Trash2, Edit2, Save, X, CheckCircle2, XCircle, Mail, Info, TrendingUp, Zap, Inbox } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -140,27 +140,83 @@ export default function EmailTemplatesClient() {
 
             {/* Top Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Total Templates</p>
-                    <p className="text-2xl font-bold text-gray-800">{templates.length}</p>
+                {/* Total Templates */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                        <Mail size={80} className="text-blue-600" />
+                    </div>
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Templates</p>
+                            <div className="flex items-end gap-3">
+                                <h4 className="text-3xl font-black text-gray-800">{templates.length}</h4>
+                                <span className="flex items-center text-xs font-medium text-emerald-600 mb-1 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                    <TrendingUp size={12} className="mr-1" /> Active
+                                </span>
+                            </div>
+                        </div>
+                        <div className="p-3 bg-gradient-to-br from-blue-50 to-blue-100 text-blue-600 rounded-xl shadow-inner border border-blue-100/50">
+                            <Mail size={22} />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                        Automated communication schemas
+                    </p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Active Workflows</p>
-                    <p className="text-2xl font-bold text-emerald-600">{templates.filter(t => t.is_active).length}</p>
+
+                {/* Active Workflows */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                        <Zap size={80} className="text-emerald-600" />
+                    </div>
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Active Workflows</p>
+                            <div className="flex items-end gap-3">
+                                <h4 className="text-3xl font-black text-emerald-600">{templates.filter(t => t.is_active).length}</h4>
+                            </div>
+                        </div>
+                        <div className="p-3 bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-600 rounded-xl shadow-inner border border-emerald-100/50">
+                            <Zap size={22} />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Currently live in production
+                    </p>
                 </div>
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Inactive Templates</p>
-                    <p className="text-2xl font-bold text-gray-400">{templates.filter(t => !t.is_active).length}</p>
+
+                {/* Inactive Templates */}
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:scale-110 transition-transform duration-300">
+                        <Inbox size={80} className="text-gray-400" />
+                    </div>
+                    <div className="flex justify-between items-start relative z-10">
+                        <div>
+                            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Inactive Templates</p>
+                            <div className="flex items-end gap-3">
+                                <h4 className="text-3xl font-black text-gray-500">{templates.filter(t => !t.is_active).length}</h4>
+                            </div>
+                        </div>
+                        <div className="p-3 bg-gradient-to-br from-gray-50 to-gray-100 text-gray-500 rounded-xl shadow-inner border border-gray-200/50">
+                            <Inbox size={22} />
+                        </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-4 font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                        Drafts or deprecated flows
+                    </p>
                 </div>
             </div>
 
-            <div className="flex justify-between items-center mb-2">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                 <h3 className="text-lg font-bold text-gray-800 tracking-tight">Email Templates</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                     {showCreate && (
                         <button
                             onClick={() => setShowCreate(false)}
-                            className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition font-bold shadow-sm text-sm"
+                            className="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition font-bold shadow-sm text-sm"
                         >
                             <X size={18} /> Cancel
                         </button>
@@ -168,7 +224,7 @@ export default function EmailTemplatesClient() {
                     {!showCreate && (
                         <button
                             onClick={() => setShowCreate(true)}
-                            className="flex items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-xl hover:bg-brand-70 transition font-bold shadow-sm text-sm"
+                            className="flex-1 sm:flex-none flex justify-center items-center gap-2 bg-brand text-white px-5 py-2.5 rounded-xl hover:bg-brand-70 transition font-bold shadow-sm text-sm"
                         >
                             <Plus size={18} /> Create Template
                         </button>
@@ -242,7 +298,58 @@ export default function EmailTemplatesClient() {
             </AnimatePresence>
 
             <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
-                <div className="overflow-x-auto w-full">
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {loading ? (
+                        <div className="p-6 flex justify-center"><Loading message="Fetching email templates..." /></div>
+                    ) : templates.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400 text-sm">No email templates created yet.</div>
+                    ) : templates.map(template => (
+                        <div key={template.id} className="p-4 space-y-4 hover:bg-gray-50 transition-colors">
+                            {editingId === template.id ? (
+                                <div className="flex flex-col gap-4 p-4 bg-indigo-50 rounded-lg">
+                                    <div className="flex flex-col gap-3">
+                                        <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="border p-2 rounded w-full outline-none font-bold" placeholder="Name" />
+                                        <input type="text" value={editForm.subject} onChange={e => setEditForm({ ...editForm, subject: e.target.value })} className="border p-2 rounded w-full outline-none text-sm" placeholder="Subject" />
+                                        <input type="text" value={editForm.insurance_category || ''} onChange={e => setEditForm({ ...editForm, insurance_category: e.target.value })} className="border p-2 rounded w-full outline-none text-sm" placeholder="Category" />
+                                        <input type="text" value={editForm.policy_flow || ''} onChange={e => setEditForm({ ...editForm, policy_flow: e.target.value })} className="border p-2 rounded w-full outline-none text-sm" placeholder="Flow" />
+                                    </div>
+                                    <textarea value={editForm.body} onChange={e => setEditForm({ ...editForm, body: e.target.value })} className="border p-2 rounded w-full outline-none h-24" placeholder="Body" />
+                                    <div className="flex gap-2 w-full mt-2">
+                                        <button onClick={() => setEditingId(null)} className="flex-1 justify-center px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 rounded-lg font-medium flex items-center gap-1 shadow-sm text-sm"><X size={14} /> Cancel</button>
+                                        <button onClick={() => handleUpdate(template.id)} className="flex-1 justify-center px-3 py-2 flex items-center gap-1 bg-emerald-600 text-white hover:bg-emerald-700 rounded-lg font-medium shadow-sm text-sm"><Save size={16} /> Save</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3">
+                                    <div className="flex justify-between items-start gap-2">
+                                        <div className="flex flex-col gap-1.5">
+                                            <p className="font-bold text-gray-800 text-base leading-tight">{template.name}</p>
+                                            <button onClick={() => handleToggleStatus(template.id, template.is_active, template.name)} title={`Click to ${template.is_active ? 'Deactivate' : 'Activate'}`} className={`inline-flex self-start items-center gap-1 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-bold ${template.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                {template.is_active ? <><CheckCircle2 size={12} /> Active</> : <><XCircle size={12} /> Inactive</>}
+                                            </button>
+                                            <div className="flex flex-wrap gap-1 mt-0.5">
+                                                {template.insurance_category && <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 rounded">{template.insurance_category}</span>}
+                                                {template.policy_flow && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded">{template.policy_flow}</span>}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                            <button onClick={() => startEdit(template)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"><Edit2 size={16} /></button>
+                                            <button onClick={() => handleDelete(template.id, template.name)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"><Trash2 size={16} /></button>
+                                        </div>
+                                    </div>
+                                    <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <p className="font-semibold text-gray-700 text-sm mb-1">{template.subject}</p>
+                                        <p className="text-xs text-gray-500 line-clamp-3">{template.body}</p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
@@ -317,7 +424,7 @@ export default function EmailTemplatesClient() {
                             </tr>
                         )}
                     </tbody>
-                </table>
+                    </table>
                 </div>
             </div>
         </div>

@@ -72,7 +72,75 @@ export default function RolesClient() {
         <div className="space-y-6">
 
             <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
-                <div className="overflow-x-auto w-full">
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {loading ? (
+                        <div className="p-6 flex justify-center"><Loading message="Fetching access roles..." /></div>
+                    ) : users.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500 text-sm">No users found in the system.</div>
+                    ) : users.map(user => (
+                        <div key={user.id} className="p-4 space-y-4 hover:bg-gray-50 transition-colors">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-sm flex-shrink-0">
+                                    {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                                </div>
+                                <div>
+                                    <div className="text-gray-800 font-bold text-sm leading-tight">{user.full_name || 'No Name'}</div>
+                                    <div className="text-gray-500 text-xs mt-0.5 break-all">{user.email}</div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-3 pt-2">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold text-gray-500 uppercase">Role:</span>
+                                    {editingUserId === user.id ? (
+                                        <select
+                                            value={editingRole}
+                                            onChange={e => setEditingRole(e.target.value)}
+                                            className="border-2 border-indigo-400 rounded-md p-1.5 text-xs bg-indigo-50 outline-none w-full font-bold"
+                                        >
+                                            <option value="csr">CSR</option>
+                                            <option value="admin">Admin</option>
+                                            <option value="accounting">Accounting</option>
+                                            <option value="superadmin">Super Admin</option>
+                                        </select>
+                                    ) : (
+                                        <div className="flex items-center gap-2">
+                                            <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
+                                                ${user.role === 'superadmin' ? 'bg-purple-100 text-purple-700 border-purple-200' :
+                                                    user.role === 'admin' ? 'bg-blue-100 text-blue-700 border-blue-200' :
+                                                        user.role === 'accounting' ? 'bg-amber-100 text-amber-700 border-amber-200' :
+                                                            'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+                                                {user.role}
+                                            </span>
+                                            {user.role === 'superadmin' && <ShieldAlert size={14} className="text-purple-600" />}
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="flex justify-end pt-1">
+                                    {editingUserId === user.id ? (
+                                        <div className="flex justify-end gap-2 w-full">
+                                            <button onClick={() => setEditingUserId(null)} className="px-3 py-2 flex-1 justify-center text-sm text-white bg-rose-600 hover:bg-rose-700 border border-rose-600 rounded-lg transition font-medium flex items-center gap-1 shadow-sm">
+                                                <X size={14} /> Cancel
+                                            </button>
+                                            <button onClick={() => handleUpdateRole(user.id, user.role)} className="px-3 py-2 flex-1 justify-center text-sm text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition font-medium flex items-center gap-1 shadow-sm">
+                                                <Save size={16} /> Save
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="flex items-center justify-center gap-1 px-4 py-2 w-full text-sm text-emerald-600 font-medium bg-emerald-50 hover:bg-emerald-100 rounded-lg transition shadow-sm border border-emerald-100">
+                                            <Edit2 size={16} /> Edit Access
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[700px]">
                     <thead>
                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
@@ -147,7 +215,7 @@ export default function RolesClient() {
                             <tr><td colSpan={4} className="p-8 text-center text-gray-500">No users found in the system.</td></tr>
                         )}
                     </tbody>
-                </table>
+                    </table>
                 </div>
             </div>
         </div>
