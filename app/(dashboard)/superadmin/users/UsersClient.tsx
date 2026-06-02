@@ -110,10 +110,10 @@ export default function UsersClient() {
     return (
         <div className="space-y-8">
 
-            <div className="flex justify-end">
+            <div className="flex justify-end w-full">
                 <button
                     onClick={() => setShowCreate(!showCreate)}
-                    className={`flex items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm border
+                    className={`w-full sm:w-auto flex justify-center items-center gap-2 px-6 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm border
                         ${showCreate ? 'bg-rose-600 hover:bg-rose-700 text-white border-rose-600' : 'bg-emerald-600 hover:bg-emerald-700 text-white border-emerald-600'}`}
                 >
                     {showCreate ? <X size={18} /> : <Plus size={18} />}
@@ -162,7 +162,71 @@ export default function UsersClient() {
             )}
 
             <div className="bg-white sm:rounded-2xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
-                <div className="overflow-x-auto w-full">
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {loading ? (
+                        <div className="p-6 flex justify-center"><Loading message="Synchronizing users..." /></div>
+                    ) : users.length === 0 ? (
+                        <div className="p-8 text-center text-gray-400 text-sm font-bold">No users found in the system.</div>
+                    ) : users.map(user => (
+                        <div key={user.id} className="p-4 space-y-4 hover:bg-gray-50 transition-colors">
+                            <div className="flex justify-between items-start gap-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm ring-2 ring-indigo-50/50 flex-shrink-0">
+                                        {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-800 font-bold text-sm leading-tight">{user.full_name || 'No Name'}</div>
+                                        <div className="text-gray-500 text-xs mt-0.5 break-all">{user.email}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center justify-between pt-2">
+                                <div className="flex items-center gap-2">
+                                    {editingUserId === user.id ? (
+                                        <select
+                                            value={editingRole}
+                                            onChange={e => setEditingRole(e.target.value)}
+                                            className="bg-white border border-gray-200 rounded-lg p-1.5 text-xs font-bold focus:ring-2 focus:ring-indigo-500/20 outline-none"
+                                        >
+                                            <option value="csr">csr</option>
+                                            <option value="admin">admin</option>
+                                            <option value="accounting">accounting</option>
+                                            <option value="superadmin">superadmin</option>
+                                        </select>
+                                    ) : (
+                                        <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border
+                                            ${user.role === 'superadmin' ? 'bg-purple-50 text-purple-700 border-purple-100' :
+                                                user.role === 'admin' ? 'bg-blue-50 text-blue-700 border-blue-100' :
+                                                    user.role === 'accounting' ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                                                        'bg-emerald-50 text-emerald-700 border-emerald-100'}`}>
+                                            {user.role}
+                                        </span>
+                                    )}
+                                </div>
+                                
+                                <div className="flex justify-end gap-1">
+                                    {editingUserId === user.id ? (
+                                        <button onClick={() => handleUpdateRole(user.id)} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all" title="Save Role">
+                                            <Save size={18} />
+                                        </button>
+                                    ) : (
+                                        <button onClick={() => { setEditingUserId(user.id); setEditingRole(user.role) }} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all" title="Edit Role">
+                                            <Edit2 size={18} />
+                                        </button>
+                                    )}
+                                    <button onClick={() => handleDelete(user.id)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all" title="Delete User">
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead>
                             <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
