@@ -111,12 +111,12 @@ export default function PipelinesClient() {
     return (
         <div className="space-y-6">
 
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 w-full">
                 {showCreate && (
                     <button
                         type="button"
                         onClick={() => setShowCreate(false)}
-                        className="flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm"
+                        className="w-full sm:w-auto flex justify-center items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 px-5 py-2.5 rounded-xl transition-all font-bold shadow-sm text-sm"
                     >
                         <X size={18} /> Cancel
                     </button>
@@ -124,7 +124,7 @@ export default function PipelinesClient() {
                 <button
                     type="button"
                     onClick={() => setShowCreate(true)}
-                    className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-700 transition-all font-bold shadow-sm text-sm"
+                    className="w-full sm:w-auto flex justify-center items-center gap-2 bg-emerald-600 text-white px-5 py-2.5 rounded-xl hover:bg-emerald-700 transition-all font-bold shadow-sm text-sm"
                 >
                     <Plus size={18} />
                     Create Pipeline
@@ -163,7 +163,64 @@ export default function PipelinesClient() {
             )}
 
             <div className="bg-white sm:rounded-xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
-                <div className="overflow-x-auto w-full">
+                {/* Mobile Cards View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {loading ? (
+                        <div className="p-6 flex justify-center"><Loading message="Fetching pipelines..." /></div>
+                    ) : pipelines.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500 text-sm">No pipelines created yet.</div>
+                    ) : pipelines.map(pipeline => (
+                        <div key={pipeline.id} className="p-4 space-y-4 hover:bg-gray-50 transition-colors">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    {editingId === pipeline.id ? (
+                                        <input type="text" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="border p-1 rounded w-full outline-none font-bold text-gray-800 mb-2" />
+                                    ) : (
+                                        <div className="font-bold text-gray-800 text-base">{pipeline.name}</div>
+                                    )}
+                                    {editingId === pipeline.id ? (
+                                        <input type="text" value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value })} className="border p-1 rounded w-full outline-none text-sm text-gray-600" />
+                                    ) : (
+                                        <div className="text-gray-500 text-sm">{pipeline.category}</div>
+                                    )}
+                                </div>
+                                <div className="flex-shrink-0 ml-2">
+                                    {editingId === pipeline.id ? (
+                                        <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={editForm.is_renewal} onChange={e => setEditForm({ ...editForm, is_renewal: e.target.checked })} /> Renewal</label>
+                                    ) : (
+                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${pipeline.is_renewal ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>
+                                            {pipeline.is_renewal ? 'RENEWAL' : 'NEW'}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-col gap-2 pt-2">
+                                {editingId === pipeline.id ? (
+                                    <div className="flex gap-2 w-full">
+                                        <button onClick={() => setEditingId(null)} className="flex-1 justify-center px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white border border-rose-600 rounded-lg text-sm font-medium flex items-center gap-1 shadow-sm"><X size={14} /> Cancel</button>
+                                        <button onClick={() => handleUpdate(pipeline.id)} className="flex-1 justify-center px-3 py-2 text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm font-medium flex items-center gap-1 shadow-sm"><Save size={16} /> Save</button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between w-full">
+                                        <Link href={`/superadmin/pipelines/${pipeline.id}/stages`} className="flex-1 mr-2">
+                                            <button className="w-full flex items-center justify-center gap-1 text-sm text-white bg-emerald-600 hover:bg-emerald-700 px-3 py-2 rounded-lg transition font-medium shadow-sm">
+                                                Manage <ChevronRight size={16} />
+                                            </button>
+                                        </Link>
+                                        <div className="flex items-center gap-1 flex-shrink-0">
+                                            <button onClick={() => { setEditingId(pipeline.id); setEditForm({ name: pipeline.name, category: pipeline.category, is_renewal: pipeline.is_renewal }) }} className="p-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition"><Edit2 size={18} /></button>
+                                            <button onClick={() => handleDelete(pipeline.id, pipeline.name)} className="p-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition"><Trash2 size={18} /></button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block overflow-x-auto w-full">
                     <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider">
@@ -225,7 +282,7 @@ export default function PipelinesClient() {
                             <tr><td colSpan={4} className="p-8 text-center text-gray-500">No pipelines created yet.</td></tr>
                         )}
                     </tbody>
-                </table>
+                    </table>
                 </div>
             </div>
         </div>

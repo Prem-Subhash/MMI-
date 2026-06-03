@@ -487,14 +487,14 @@ export default function UpdateStageModal({
   })
 
   return (
-    <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
-      <div className="fixed inset-0 overflow-y-auto">
+    <div className="fixed inset-0 z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
+      <div className="absolute inset-0 overflow-y-auto">
         <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-          <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 shadow-2xl border border-gray-100 pb-safe my-auto relative">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 shadow-2xl border border-gray-100 my-auto relative">
         <div className="flex justify-between items-center mb-4 border-b pb-4">
           <h2 className="text-xl font-bold text-[#2E5C85]">Update Status</h2>
-          <button onClick={onClose} className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200">
+          <button type="button" onClick={onClose} className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
@@ -612,18 +612,20 @@ export default function UpdateStageModal({
 
         <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100 mt-4">
           <button
+            type="button"
             onClick={onClose}
             className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSave}
             disabled={saving || isBlockedByNo}
             className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2
               ${saving || isBlockedByNo
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white md:hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
               }
             `}
           >

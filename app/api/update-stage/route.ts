@@ -83,10 +83,18 @@ export async function POST(req: Request) {
       ? mandatoryFields
       : Object.keys(mandatoryFields)
 
+    // Globally optional fields that should never block stage updates, even if present in the database configuration
+    const globallyOptionalFields = ['notes', 'details', 'x_date']
+
     for (const key of fieldsToCheck) {
       // In array format, key is the field name itself
       // In object format, key is field name
       const fieldName = key
+      
+      if (globallyOptionalFields.includes(fieldName.toLowerCase())) {
+        continue
+      }
+
       const fieldConfig = !Array.isArray(mandatoryFields) ? mandatoryFields[key] : { required: true }
 
       const value = mergedMetadata[fieldName]
