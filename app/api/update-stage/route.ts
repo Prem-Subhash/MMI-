@@ -281,11 +281,6 @@ export async function POST(req: Request) {
       if (carrierVal !== undefined && carrierVal !== null) {
         updatePayload.carrier = String(carrierVal)
       }
-
-      const effectiveDateVal = stageMetadata?.effective_date !== undefined ? stageMetadata.effective_date : mergedMetadata.effective_date
-      if (effectiveDateVal !== undefined && effectiveDateVal !== null) {
-        updatePayload.effective_date = String(effectiveDateVal)
-      }
     }
 
     const { error: updateError } = await supabaseServer
