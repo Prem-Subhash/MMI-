@@ -158,9 +158,9 @@ export default function AccountingAllLeadsPage() {
   ].filter(Boolean).length
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">
       {/* ── Page Header ── */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
           <Link href="/accounting">
             <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4">

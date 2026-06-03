@@ -168,7 +168,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
 
 
   return (
-    <div className="p-8 print-container min-h-screen">
+    <div className="p-4 sm:p-6 lg:p-8 print-container min-h-screen max-w-[1600px] mx-auto w-full">
       <style jsx global>{`
         @media print {
           body { background: white !important; color: black !important; }
@@ -178,7 +178,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
       `}</style>
 
       {/* ── Header ── */}
-      <div className="flex justify-between items-center mb-6 no-print">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 no-print">
         <div>
           <Link href="/accounting">
             <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4">
@@ -191,16 +191,16 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
           </p>
         </div>
 
-        <div className="flex gap-3 shrink-0 no-print">
+        <div className="flex flex-col xs:flex-row gap-3 shrink-0 w-full md:w-auto no-print">
           <button
             onClick={handleExportCSV}
-            className="bg-brand hover:bg-brand-dark text-white px-4 py-2 rounded-lg font-medium shadow-sm transition-colors inline-flex items-center gap-2"
+            className="bg-brand hover:bg-brand-dark text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors inline-flex justify-center items-center gap-2 w-full xs:w-auto"
           >
             <Download size={16} /> Export CSV
           </button>
           <button
             onClick={() => window.print()}
-            className="bg-emerald-800 hover:bg-emerald-600 text-white border border-gray-200 px-4 py-2 rounded-lg font-medium shadow-sm transition-colors inline-flex items-center gap-2"
+            className="bg-emerald-800 hover:bg-emerald-600 text-white border border-gray-200 px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors inline-flex justify-center items-center gap-2 w-full xs:w-auto"
           >
             <Printer size={16} /> Print
           </button>
@@ -208,7 +208,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
       </div>
 
       {/* ── Filters ── */}
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-6 mb-6 space-y-5 no-print">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 sm:p-6 mb-6 space-y-5 no-print">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
             <SlidersHorizontal size={18} className="text-brand" />
