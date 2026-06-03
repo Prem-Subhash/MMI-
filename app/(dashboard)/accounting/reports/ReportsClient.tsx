@@ -41,6 +41,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
     setPolicyFlow('all')
     setCarrier('all')
     setAssignedCsr('all')
+    showToast('Filters have been cleared.', 'success')
   }
 
   const [availableCarriers, setAvailableCarriers] = useState<string[]>([])

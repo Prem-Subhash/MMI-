@@ -243,11 +243,11 @@ export default async function AccountingDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Expected vs Actual Commission */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
-            <div className="p-1.5 bg-emerald-50 text-emerald-600 rounded-lg">
-              <TrendingUp size={16} />
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+            <div className="p-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 text-white rounded-lg shadow-sm">
+              <TrendingUp size={18} />
             </div>
-            <h2 className="text-sm font-black text-gray-800 uppercase tracking-wider">Commission Comparison</h2>
+            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-widest">Commission Comparison</h2>
           </div>
 
           <div className="h-[200px] flex items-end justify-around pb-6 pt-4 relative">
@@ -284,11 +284,11 @@ export default async function AccountingDashboard() {
 
         {/* Chart 2: Reconciliation Status Distribution */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-gray-50">
-            <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
-              <PieChart size={16} />
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-100">
+            <div className="p-2 bg-gradient-to-r from-emerald-500 via-teal-500 to-blue-600 text-white rounded-lg shadow-sm">
+              <PieChart size={18} />
             </div>
-            <h2 className="text-sm font-black text-gray-800 uppercase tracking-wider">Reconciliation Distribution</h2>
+            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-widest">Reconciliation Distribution</h2>
           </div>
 
           <div className="flex flex-col sm:flex-row items-center justify-around gap-6 py-2">
