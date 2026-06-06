@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { EmailData, PolicyBreakdown, replaceTemplate } from '@/lib/emailTemplating'
 import { Plus, Trash2 } from 'lucide-react'
+import { toast } from '@/lib/toast'
 
 type EmailTemplate = {
   id: string
@@ -96,19 +97,27 @@ export default function EmailGenerator({
 
     const key = getTemplateKey(template)
 
-    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData)
-    const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData).replace(/\n/g, '<br>')
+    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData, notes)
+    const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData, notes).replace(/\n/g, '<br>')
 
     setCustomSubject(newSubject)
     setGeneratedBody(newBody)
-  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink, csrData])
+  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink, csrData, notes])
 
   const formatFormType = (type: string) => {
     if (!type) return 'Home';
     return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
-  const addPolicy = () => {
+  const addPolicy = (currentIndex?: number) => {
+    if (currentIndex !== undefined) {
+      const current = data.policies[currentIndex];
+      if (!current.cName && !current.a1 && !current.oldPremium && !current.newPremium) {
+        toast('Please fill out at least a Carrier or Premium before adding another policy.', 'warning');
+        return;
+      }
+    }
+
     setData((prev) => ({
       ...prev,
       policies: [
@@ -314,28 +323,26 @@ export default function EmailGenerator({
                     <div className="w-1 h-4 bg-[#10B889] rounded-full" />
                     <span className="text-sm font-bold text-black">Policy Breakdown</span>
                   </div>
-                  <button onClick={addPolicy}
-                    className="flex items-center gap-1.5 text-[11px] font-bold text-[#10B889] bg-white border border-[#10B889]/25 px-3 py-1.5 rounded-lg shadow-sm hover:bg-[#10B889]/80 hover:text-white">
-                    <Plus size={13} /> Add Policy
-                  </button>
+                  {data.policies.length === 0 && (
+                    <button onClick={() => addPolicy()}
+                      className="flex items-center gap-1.5 text-[11px] font-bold text-[#10B889] bg-white border border-[#10B889]/25 px-3 py-1.5 rounded-lg shadow-sm hover:bg-[#10B889]/80 hover:text-white">
+                      <Plus size={13} /> Add Policy
+                    </button>
+                  )}
                 </div>
 
                 <div className="space-y-3">
-                  {data.policies.map((p) => {
+                  {data.policies.map((p, index) => {
                     const pId = (p as any).id
                     return (
                       <div key={pId} className="rounded-xl border border-gray-200 overflow-hidden">
-                        {/* Policy card header */}
-                        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-[#10B889] to-[#2E5C85] md:px-8 md:py-6">
+                        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-[#10B889] to-[#2E5C85] md:px-6 md:py-4">
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white">
                             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
                             </svg>
-                            {formatFormType(formType)} Insurance
+                            {formatFormType(formType)} Policy {index + 1}
                           </span>
-                          <button onClick={() => removePolicy(pId)} className="text-rose-500 p-0.5 rounded bg-white">
-                            <Trash2 size={14} />
-                          </button>
                         </div>
 
                         {/* Policy card fields */}
@@ -390,6 +397,18 @@ export default function EmailGenerator({
                               )}
                             </div>
                           )}
+                        </div>
+
+                        {/* Inline Policy Actions */}
+                        <div className="bg-gray-50/80 border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-3">
+                          <button onClick={() => removePolicy(pId)}
+                            className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-rose-600 transition-colors px-3 py-1.5 rounded-lg hover:bg-rose-50">
+                            <Trash2 size={14} /> Remove Policy
+                          </button>
+                          <button onClick={() => addPolicy(index)}
+                            className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#10B889] hover:bg-[#0e9e75] px-4 py-1.5 rounded-lg shadow-sm transition-all transform active:scale-95">
+                            <Plus size={14} /> Add Policy
+                          </button>
                         </div>
                       </div>
                     )

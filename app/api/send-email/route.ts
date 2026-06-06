@@ -62,7 +62,7 @@ export async function POST(req: Request) {
     if (!finalBody || !finalSubject) {
       const { data: template, error: templateError } = await supabaseServer
         .from('email_templates')
-        .select('id, subject, body')
+        .select('id, name, subject, body')
         .eq('id', templateId)
         .eq('is_active', true)
         .single()
@@ -76,9 +76,21 @@ export async function POST(req: Request) {
       }
 
       /* ================= PREPARE EMAIL BODY ================= */
-      finalSubject = finalSubject || template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
-      finalBody = template.body
-        .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+      const { replaceTemplate } = await import('@/lib/emailTemplating')
+      const dummyData = {
+        clientName: lead.client_name || '',
+        effDate: '',
+        singleCarrier: '',
+        defCurrentCarrier: '',
+        defNewCarrier: '',
+        payType: 'bank account',
+        last4: '',
+        manualYear: new Date().getFullYear().toString(),
+        policies: []
+      }
+      
+      finalSubject = customSubject || replaceTemplate(template.name || '', template.subject, dummyData, lead)
+      finalBody = replaceTemplate(template.name || '', template.body, dummyData, lead)
     }
 
     /* ================= GENERATE & RESOLVE FORM LINK GLOBALLY ================= */

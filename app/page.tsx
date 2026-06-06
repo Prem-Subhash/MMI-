@@ -10,12 +10,22 @@ export default function HomePage() {
   const router = useRouter()
 
   useEffect(() => {
-    // If user lands on home page, ensure they are logged out
-    const clearSession = async () => {
-      await supabase.auth.signOut()
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+        
+        if (profile?.role) {
+          router.push(`/${profile.role}`)
+        }
+      }
     }
-    clearSession()
-  }, [])
+    checkSession()
+  }, [router])
 
   return (
     <main style={container}>
