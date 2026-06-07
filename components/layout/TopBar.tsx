@@ -146,10 +146,15 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                 </button>
             </div>
 
-            {/* Logo Container */}
             <div
                 className="flex-1 lg:flex-none lg:w-[260px] h-full flex items-center justify-center px-2 flex-shrink-0 cursor-pointer"
-                onClick={() => window.location.href = '/'}
+                onClick={() => {
+                    if (userProfile?.role) {
+                        router.push(`/${userProfile.role}`)
+                    } else {
+                        router.push('/')
+                    }
+                }}
             >
                 <img
                     src="/logo.png"
