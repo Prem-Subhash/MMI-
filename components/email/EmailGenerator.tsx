@@ -420,7 +420,7 @@ export default function EmailGenerator({
                     <div className="bg-gray-50/80 border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-3">
                       <button onClick={handleAddDetails}
                         className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#10B889] hover:bg-[#0e9e75] px-4 py-1.5 rounded-lg shadow-sm transition-all transform active:scale-95">
-                        <Plus size={14} /> Add Details (+)
+                        <Plus size={14} /> Add Details 
                       </button>
                     </div>
                   </div>
