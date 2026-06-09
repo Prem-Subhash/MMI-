@@ -57,34 +57,47 @@ export function generatePolicyBreakdown(templateKey: string, policies: PolicyBre
   
   // Specific formatting for different template types
   if (templateKey === 'renewal_same') {
-    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance Premium:</b> ${formatCurrency(p.a1 || 0)}`).join('<br>');
+    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance Premium:</b> ${formatCurrency(p.oldPremium || p.newPremium || p.a1 || p.a2 || 0)}`).join('<br>');
   } 
   if (templateKey === 'renewal_switch') {
-    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Policy Comparison:</b><br>• Current ${p.cName || '[Carrier]'} Carrier (Renewal Premium): ${formatCurrency(p.a1 || 0)}<br>• New ${p.nName || '[New Carrier]'} Carrier (Quoted Premium): ${formatCurrency(p.a2 || 0)}`).join('<br><br>');
+    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Policy Comparison:</b><br>• Current ${p.cName || '[Carrier]'} Carrier (Renewal Premium): ${formatCurrency(p.oldPremium || p.a1 || 0)}<br>• New ${p.nName || '[New Carrier]'} Carrier (Quoted Premium): ${formatCurrency(p.newPremium || p.a2 || 0)}`).join('<br><br>');
   }
   if (templateKey === 'payment_reminder') {
-    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance</b> with ${p.cName || '[Carrier]'}: <b>${formatCurrency(p.a1 || 0)}</b>`).join('<br>');
+    return policies.map((p, idx) => `• <b>Policy ${idx + 1}: ${p.type} Insurance</b> with ${p.cName || '[Carrier]'}: <b>${formatCurrency(p.oldPremium || p.newPremium || p.a1 || p.a2 || 0)}</b>`).join('<br>');
   }
   if (templateKey === 'new_lead') {
-    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Insurance Quote:</b><br>Carrier: ${p.cName || '[Carrier]'}<br>Coverage Term: 12 months<br>Premium Amount: <b>${formatCurrency(p.a1 || 0)}</b>`).join('<br><br>');
+    return policies.map((p, idx) => `<b>Policy ${idx + 1}: ${p.type} Insurance Quote:</b><br>Carrier: ${p.cName || '[Carrier]'}<br>Coverage Term: ${p.term || '12 months'}<br>Premium Amount: <b>${formatCurrency(p.oldPremium || p.newPremium || p.a1 || p.a2 || 0)}</b>`).join('<br><br>');
   }
 
   // Refined production format with numbering and auto-skipping empty fields
   return policies.map((p, idx) => {
     let lines = [`<b>Policy ${idx + 1}:</b>`];
     
-    const isAutoLayout = p.type.toLowerCase() === 'auto' || p.type.toLowerCase() === 'motorcycle';
+    const pType = p.type ? p.type.toLowerCase() : '';
+    const isAutoLayout = pType === 'auto' || pType === 'motorcycle';
+    
+    lines.push(`Type: ${p.type} Insurance`);
+    
     if (isAutoLayout) {
-      lines.push(`Type: ${p.type} Insurance`);
       if (p.driver) lines.push(`Driver: ${p.driver}`);
       if (p.vehicle) lines.push(`Vehicle: ${p.vehicle}`);
       if (p.vin) lines.push(`VIN: ${p.vin}`);
-      if (p.cName) lines.push(`Carrier: ${p.cName}`);
-      if (p.a1 || p.newPremium) lines.push(`Premium: ${formatCurrency(p.newPremium || p.a1)}`);
-    } else {
-      lines.push(`Type: ${p.type} Insurance`);
-      if (p.cName) lines.push(`Carrier: ${p.cName}`);
-      if (p.a1) lines.push(`Premium: ${formatCurrency(p.a1)}`);
+    }
+    
+    if (p.cName) lines.push(`Carrier: ${p.cName}`);
+    else if (p.nName) lines.push(`Carrier: ${p.nName}`);
+
+    // Determine the premium to show
+    const currentPrem = p.oldPremium || p.a1;
+    const newPrem = p.newPremium || p.a2;
+
+    if (currentPrem && newPrem) {
+      lines.push(`Current Premium: ${formatCurrency(currentPrem)}`);
+      lines.push(`New Premium: ${formatCurrency(newPrem)}`);
+    } else if (newPrem) {
+      lines.push(`Premium: ${formatCurrency(newPrem)}`);
+    } else if (currentPrem) {
+      lines.push(`Premium: ${formatCurrency(currentPrem)}`);
     }
     
     return lines.join('<br>') + '<br>';
@@ -121,7 +134,7 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
   // Sourcing singular values from the first policy if available
   const firstPolicy = data.policies[0];
   const activeCarrier = firstPolicy?.cName || data.singleCarrier || '';
-  const activePremium = firstPolicy?.a1 || '';
+  const activePremium = firstPolicy?.a1 || firstPolicy?.oldPremium || firstPolicy?.newPremium || firstPolicy?.a2 || '';
   const activeTerm = firstPolicy?.term || '12 months';
 
   const replacements: Record<string, string> = {
@@ -135,6 +148,7 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     client_name: data.clientName || leadData?.client_name || '',
     combined_types: combinedTypes,
     eff_date: data.effDate || '',
+    effective_date: data.effDate || '',
     renewal_date: leadData?.renewal_date ? new Date(leadData.renewal_date).toLocaleDateString() : data.effDate || '',
     single_carrier: data.singleCarrier || activeCarrier || '',
     manual_year: data.manualYear || '',
