@@ -1,25 +1,13 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { createServer } from '@/lib/supabaseServer'
 import { sendGraphEmail } from '@/lib/microsoftGraph'
+import { authenticateApiRequest } from '@/utils/auth'
 
 export async function POST(req: Request) {
   try {
-    const supabaseSession = await createServer()
-    const { data: { user } } = await supabaseSession.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabaseSession
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['csr', 'admin', 'superadmin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const auth = await authenticateApiRequest(req, ['csr', 'admin', 'superadmin'])
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
 
     const { leadId, templateId, formType, intakeId, customSubject, customBody } = await req.json()

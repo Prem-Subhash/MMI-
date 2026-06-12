@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServer, supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
+import { authenticateApiRequest } from '@/utils/auth'
 
 export async function POST(req: Request) {
     try {
@@ -10,8 +11,8 @@ export async function POST(req: Request) {
         }
 
         // Validate Authentication / Authorization
-        const supabaseSession = await createServer()
-        const { data: { user } } = await supabaseSession.auth.getUser()
+        const auth = await authenticateApiRequest(req, undefined, false)
+        const user = auth.user
 
         // Allowed: User is signed in OR they have the matching intakeFormId
         if (!user && !intakeFormId) {

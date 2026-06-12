@@ -1,26 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { createServer } from '@/lib/supabaseServer';
+import { authenticateApiRequest } from '@/utils/auth';
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-async function verifySuperAdmin(supabaseSession: any) {
-    const { data: { user } } = await supabaseSession.auth.getUser();
-    if (!user) return { authorized: false, error: 'Unauthorized', status: 401 };
-
-    const { data: profile } = await supabaseSession.from('profiles').select('role').eq('id', user.id).single();
-    if (profile?.role !== 'superadmin') return { authorized: false, error: 'Forbidden', status: 403 };
-
-    return { authorized: true, user };
-}
-
-export async function GET() {
-    const supabaseSession = await createServer();
-    const auth = await verifySuperAdmin(supabaseSession);
-    if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+export async function GET(request: Request) {
+    const auth = await authenticateApiRequest(request, ['superadmin']);
+    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     const { data: pipelines, error } = await supabaseAdmin
         .from('pipelines')
@@ -32,9 +21,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-    const supabaseSession = await createServer();
-    const auth = await verifySuperAdmin(supabaseSession);
-    if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await authenticateApiRequest(request, ['superadmin']);
+    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     try {
         const { name, category, is_renewal } = await request.json();
@@ -63,9 +51,8 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-    const supabaseSession = await createServer();
-    const auth = await verifySuperAdmin(supabaseSession);
-    if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await authenticateApiRequest(request, ['superadmin']);
+    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     try {
         const { id, name, category, is_renewal } = await request.json();
@@ -95,9 +82,8 @@ export async function PATCH(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-    const supabaseSession = await createServer();
-    const auth = await verifySuperAdmin(supabaseSession);
-    if (!auth.authorized) return NextResponse.json({ error: auth.error }, { status: auth.status });
+    const auth = await authenticateApiRequest(request, ['superadmin']);
+    if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     try {
         const { searchParams } = new URL(request.url);

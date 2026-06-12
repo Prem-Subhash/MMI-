@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServer, supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
+import { authenticateApiRequest } from '@/utils/auth'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
@@ -7,8 +8,8 @@ const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'appli
 export async function POST(req: Request) {
     try {
         // 1. Validate Authentication
-        const supabaseSession = await createServer()
-        const { data: { user } } = await supabaseSession.auth.getUser()
+        const auth = await authenticateApiRequest(req, undefined, false)
+        const user = auth.user
 
         // 2. Parse FormData
         const formData = await req.formData()
