@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     }
     const { user } = auth
 
-    const { leadId, client_name, email, phone } = await req.json()
+    const { leadId, client_name, email, phone, selectedPolicies } = await req.json()
 
     if (!leadId) {
       return NextResponse.json({ error: 'Missing leadId' }, { status: 400 })
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     /* ================= 1. FETCH CURRENT DATA ================= */
     const { data: lead, error: leadError } = await supabaseServer
       .from('temp_leads_basics')
-      .select('client_name, email, phone, client_id')
+      .select('client_name, email, phone, client_id, policy_type, lead_policies(policy_type)')
       .eq('id', leadId)
       .single()
 
@@ -33,16 +33,25 @@ export async function POST(req: Request) {
     const oldName = lead.client_name || ''
     const oldEmail = lead.email || ''
     const oldPhone = cleanPhone(lead.phone || '')
+    const oldPolicies = lead.lead_policies?.length > 0
+      ? lead.lead_policies.map((p: any) => p.policy_type)
+      : lead.policy_type ? [lead.policy_type] : []
     
     const newName = (client_name || '').trim()
     const newEmail = (email || '').trim()
     const newPhone = cleanPhone(phone || '')
+    const newPolicies = Array.isArray(selectedPolicies) ? selectedPolicies : []
 
     const changes: Record<string, { old: string, new: string }> = {}
 
     if (newName && newName !== oldName) changes.client_name = { old: oldName, new: newName }
     if (newEmail !== oldEmail) changes.email = { old: oldEmail, new: newEmail }
     if (newPhone !== oldPhone) changes.phone = { old: oldPhone, new: newPhone }
+    
+    const sortedOldPolicies = [...oldPolicies].sort()
+    const sortedNewPolicies = [...newPolicies].sort()
+    const policiesChanged = JSON.stringify(sortedOldPolicies) !== JSON.stringify(sortedNewPolicies) && newPolicies.length > 0
+    if (policiesChanged) changes.policies = { old: oldPolicies.join(', '), new: newPolicies.join(', ') }
 
     const changedFields = Object.keys(changes)
 
@@ -53,13 +62,19 @@ export async function POST(req: Request) {
     /* ================= 3. SAFE UPDATE SEQUENCE ================= */
     
     // A. Update temp_leads_basics
+    const updatePayload: any = {
+      client_name: newName || oldName,
+      email: newEmail,
+      phone: newPhone
+    }
+
+    if (policiesChanged) {
+      updatePayload.policy_type = newPolicies[0]
+    }
+
     const { error: updateLeadError } = await supabaseServer
       .from('temp_leads_basics')
-      .update({
-        client_name: newName || oldName,
-        email: newEmail,
-        phone: newPhone
-      })
+      .update(updatePayload)
       .eq('id', leadId)
 
     if (updateLeadError) {
@@ -86,7 +101,22 @@ export async function POST(req: Request) {
       }
     }
 
-    // C. Insert Audit Logs
+    // C. Update Multi-Policy Table
+    if (policiesChanged) {
+      await supabaseServer.from('lead_policies').delete().eq('lead_id', leadId)
+      
+      const policiesPayload = newPolicies.map((p) => ({
+        lead_id: leadId,
+        policy_type: p
+      }))
+      
+      const { error: policiesError } = await supabaseServer.from('lead_policies').insert(policiesPayload)
+      if (policiesError) {
+        console.error('Update policies failed:', policiesError)
+      }
+    }
+
+    // D. Insert Audit Logs
     const auditLogs = changedFields.map(field => ({
       user_id: user.id,
       action: 'UPDATE_CLIENT',
@@ -112,7 +142,8 @@ export async function POST(req: Request) {
     const fieldLabels: Record<string, string> = {
       client_name: 'Name',
       email: 'Email',
-      phone: 'Phone'
+      phone: 'Phone',
+      policies: 'Policies'
     }
     const updatedLabelList = changedFields.map(f => fieldLabels[f] || f).join(', ')
 

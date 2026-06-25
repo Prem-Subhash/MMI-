@@ -4,11 +4,13 @@ import { useState } from 'react'
 import { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import { User, Phone, Mail, X } from 'lucide-react'
+import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
 
 type UpdatedClientFields = {
   client_name: string
   email: string
   phone: string
+  selectedPolicies?: string[]
 }
 
 type Props = {
@@ -23,6 +25,12 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
     email: lead.email || '',
     phone: (lead.phone || '').replace(/\D/g, '').slice(0, 10)
   })
+  
+  const initialPolicies = lead.lead_policies?.length > 0 
+    ? lead.lead_policies.map((p: any) => p.policy_type) 
+    : lead.policy_type ? [lead.policy_type] : []
+    
+  const [selectedPolicies, setSelectedPolicies] = useState<string[]>(initialPolicies)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -52,6 +60,11 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
       return
     }
 
+    if (selectedPolicies.length === 0) {
+      setError('Please select at least one policy type')
+      return
+    }
+
     setSaving(true)
 
     try {
@@ -60,7 +73,8 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId: lead.id,
-          ...formData
+          ...formData,
+          selectedPolicies
         })
       })
 
@@ -81,6 +95,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
         client_name: formData.client_name,
         email: formData.email,
         phone: formData.phone,
+        selectedPolicies,
       })
       onClose()
     } catch (err: any) {
@@ -181,6 +196,40 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
                   onChange={handlePhoneChange}
                   placeholder="000 000 0000"
                   maxLength={10}
+                />
+              </div>
+            </div>
+
+            {/* POLICIES */}
+            <div className="space-y-2 group">
+              <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
+                <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
+                Policy Types
+              </label>
+              <div className="relative z-[110]">
+                <MultiSelectPolicy 
+                  selectedValues={selectedPolicies}
+                  onChange={setSelectedPolicies}
+                  error={selectedPolicies.length === 0 ? "Please select at least one policy type" : false}
+                  options={lead.insurence_category === 'commercial' 
+                    ? [
+                      { value: 'workers_comp', label: 'Workers Comp' },
+                      { value: 'bop', label: 'Business Owners Policy' },
+                      { value: 'commercial_auto', label: 'Commercial Auto' },
+                      { value: 'commercial_package', label: 'Commercial Package' },
+                      { value: 'umbrella', label: 'Umbrella (Excess)' },
+                      { value: 'general_liability', label: 'General Liability' },
+                      { value: 'commercial_property', label: 'Commercial Property' },
+                      { value: 'other', label: 'Other' }
+                    ]
+                    : [
+                      { value: 'home', label: 'Home' },
+                      { value: 'auto', label: 'Auto' },
+                      { value: 'condo', label: 'Condo' },
+                      { value: 'landlord_home', label: 'Landlord Home' },
+                      { value: 'umbrella', label: 'Umbrella' }
+                    ]
+                  }
                 />
               </div>
             </div>

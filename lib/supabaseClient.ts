@@ -3,14 +3,29 @@ import { createBrowserClient } from '@supabase/ssr'
 /* -------------------------------------------------
    SUPABASE CLIENT (ADDED SSR)
 ------------------------------------------------- */
-export const supabase = createBrowserClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+let _client: ReturnType<typeof createBrowserClient> | null = null;
 
 export const createClient = () => {
-  return supabase;
+  if (typeof window === 'undefined') {
+    return createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  if (!_client) {
+    _client = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  }
+  return _client;
 }
+
+export const supabase = new Proxy({} as ReturnType<typeof createBrowserClient>, {
+  get(target, prop) {
+    return (createClient() as any)[prop]
+  }
+})
 
 /* -------------------------------------------------
    PIPELINE HELPERS (PHASE 2)

@@ -29,11 +29,18 @@ export async function proxy(request: NextRequest) {
     // 2. Admin Client for Power-Checks
     const supabaseAdmin = createClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY!
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { auth: { persistSession: false } }
     )
 
     const { data: { user } } = await supabase.auth.getUser()
     const pathname = request.nextUrl.pathname
+    
+    if (user) {
+        console.log(`[MIDDLEWARE] User Session Active: ${user.id} accessing ${pathname}`);
+    } else {
+        console.log(`[MIDDLEWARE] No User Session accessing ${pathname}`);
+    }
 
     if (pathname.startsWith('/login') || pathname.startsWith('/unauthorized')) {
         return response
@@ -45,7 +52,13 @@ export async function proxy(request: NextRequest) {
 
     if (isProtectedRoute) {
         if (!user) {
-            return NextResponse.redirect(new URL('/login', request.url))
+            console.log(`[MIDDLEWARE] Redirecting to /login - No user found`)
+            const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
+            // Copy cookies from our refreshed response object to the redirect response
+            response.cookies.getAll().forEach(cookie => {
+                redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+            })
+            return redirectResponse
         }
 
         // Fetch profile with Case-Insensitive fallback
@@ -58,8 +71,12 @@ export async function proxy(request: NextRequest) {
         const role = profile?.role?.toLowerCase()
 
         if (!role) {
-            console.warn(`[PROXY] No role found for user ${user.email} (${user.id})`)
-            return NextResponse.redirect(new URL('/unauthorized', request.url))
+            console.warn(`[MIDDLEWARE] No role found for user ${user.email} (${user.id})`)
+            const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
+            response.cookies.getAll().forEach(cookie => {
+                redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+            })
+            return redirectResponse
         }
 
         const accessMatrix: Record<string, string[]> = {
@@ -73,8 +90,13 @@ export async function proxy(request: NextRequest) {
         const isAuthorized = validPaths.some((allowedRoute) => pathname.startsWith(allowedRoute))
 
         if (!isAuthorized) {
+            console.warn(`[MIDDLEWARE] Unauthorized access for user ${user.id}. Role: ${role}, Path: ${pathname}`)
             const fallbackDashboard = validPaths[0] || '/unauthorized'
-            return NextResponse.redirect(new URL(fallbackDashboard, request.url))
+            const redirectResponse = NextResponse.redirect(new URL(fallbackDashboard, request.url))
+            response.cookies.getAll().forEach(cookie => {
+                redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+            })
+            return redirectResponse
         }
     }
 
@@ -86,5 +108,3 @@ export const config = {
         '/((?!_next/static|_next/image|favicon.ico|login\\/bg\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
     ],
 }
-
-export { proxy as middleware}
