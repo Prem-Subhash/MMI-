@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
-import { createServer, supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
+import { authenticateApiRequest } from '@/utils/auth'
 
 export async function GET(req: Request, context: { params: Promise<{ id: string }> }) {
     try {
@@ -9,11 +10,9 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
         }
 
         // 1. Authenticate session
-        const supabaseSession = await createServer()
-        const { data: { user }, error: authError } = await supabaseSession.auth.getUser()
-
-        if (authError || !user) {
-            return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 })
+        const auth = await authenticateApiRequest(req)
+        if (auth.error) {
+            return NextResponse.json({ error: auth.error }, { status: auth.status })
         }
 
         // 2. Fetch document record

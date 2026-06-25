@@ -94,7 +94,10 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
           policy_type,
           lead_policies(policy_type),
           policy_flow,
-          created_at
+          created_at,
+          status,
+          pipeline_id,
+          current_stage_id
         `)
         .eq('id', leadId)
         .single()
@@ -127,6 +130,15 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
         return
       }
 
+      if (leadData.pipeline_id) {
+        const { data: pipelineData } = await supabase
+          .from('pipelines')
+          .select('name')
+          .eq('id', leadData.pipeline_id)
+          .single();
+        if (pipelineData) (leadData as any).pipeline_name = pipelineData.name;
+      }
+      
       setLead(leadData)
 
       // Default formType based on policy_type

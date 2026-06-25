@@ -1,25 +1,13 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { createServer } from '@/lib/supabaseServer'
 import { sendGraphEmail } from '@/lib/microsoftGraph'
+import { authenticateApiRequest } from '@/utils/auth'
 
 export async function POST(req: Request) {
   try {
-    const supabaseSession = await createServer()
-    const { data: { user } } = await supabaseSession.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile } = await supabaseSession
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['csr', 'admin', 'superadmin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    const auth = await authenticateApiRequest(req, ['csr', 'admin', 'superadmin'])
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
 
     const { leadId, templateId, formType, intakeId, customSubject, customBody } = await req.json()
@@ -62,7 +50,7 @@ export async function POST(req: Request) {
     if (!finalBody || !finalSubject) {
       const { data: template, error: templateError } = await supabaseServer
         .from('email_templates')
-        .select('id, subject, body')
+        .select('id, name, subject, body')
         .eq('id', templateId)
         .eq('is_active', true)
         .single()
@@ -76,9 +64,21 @@ export async function POST(req: Request) {
       }
 
       /* ================= PREPARE EMAIL BODY ================= */
-      finalSubject = finalSubject || template.subject.replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
-      finalBody = template.body
-        .replace(/{{\s*client_name\s*}}/g, lead.client_name || '')
+      const { replaceTemplate } = await import('@/lib/emailTemplating')
+      const dummyData = {
+        clientName: lead.client_name || '',
+        effDate: '',
+        singleCarrier: '',
+        defCurrentCarrier: '',
+        defNewCarrier: '',
+        payType: 'bank account',
+        last4: '',
+        manualYear: new Date().getFullYear().toString(),
+        policies: []
+      }
+      
+      finalSubject = customSubject || replaceTemplate(template.name || '', template.subject, dummyData, lead)
+      finalBody = replaceTemplate(template.name || '', template.body, dummyData, lead)
     }
 
     /* ================= GENERATE & RESOLVE FORM LINK GLOBALLY ================= */

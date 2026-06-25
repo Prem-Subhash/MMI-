@@ -1,25 +1,12 @@
 import { NextResponse } from 'next/server'
-import { createServer, supabaseServer } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
+import { authenticateApiRequest } from '@/utils/auth'
 
 export async function GET(req: Request) {
   try {
-    // 1. Authenticate user session
-    const supabaseSession = await createServer()
-    const { data: { user } } = await supabaseSession.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized. Please log in.' }, { status: 401 })
-    }
-
-    // 2. Enforce Role-Based Access Control (RBAC)
-    const { data: profile } = await supabaseSession
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['accounting', 'superadmin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden. Access restricted to Accounting and Superadmin roles.' }, { status: 403 })
+    const auth = await authenticateApiRequest(req, ['accounting', 'superadmin'])
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
 
     // 3. Fetch leads data from temp_leads_basics

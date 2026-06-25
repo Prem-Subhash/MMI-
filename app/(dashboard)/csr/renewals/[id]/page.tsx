@@ -3,10 +3,11 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-import { ArrowLeft, Send, Briefcase, Shield, Calendar, DollarSign } from 'lucide-react'
+import { ArrowLeft, Send, Briefcase, Shield, Calendar, DollarSign, Edit2 } from 'lucide-react'
 import Link from 'next/link'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
+import EditClientModal from '@/components/leads/EditClientModal'
 import EmailGenerator from '@/components/email/EmailGenerator'
 import { toast } from '@/lib/toast'
 import { formatCurrency } from '@/lib/currency'
@@ -125,6 +126,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
 
   const [loading, setLoading] = useState(true)
   const [showUpdateModal, setShowUpdateModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [isEditingPremium, setIsEditingPremium] = useState(false)
   const [tempPremium, setTempPremium] = useState('')
   const [savingPremium, setSavingPremium] = useState(false)
@@ -290,19 +292,24 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
   return (
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
       <div className="max-w-5xl mx-auto">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="text-sm text-gray-400 font-mono">ID: {lead.id.slice(0, 8)}</div>
-      </div>
-
       <div className="flex flex-col gap-6">
         {/* TOP CARD: Client Info (Styled like Lead Details) */}
         <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
           {/* HEADER */}
-          <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6">
-            <h1 className="text-2xl font-bold text-white">{lead.client_name}</h1>
-            <p className="text-white/80 text-sm mt-1">
-              {formatPolicyType(lead.policy_type)} Renewal
-            </p>
+          <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-white">{lead.client_name}</h1>
+              <p className="text-white/80 text-sm mt-1">
+                {formatPolicyType(lead.policy_type)} Renewal
+              </p>
+            </div>
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="flex items-center justify-center gap-2 bg-[#D16B4B] hover:opacity-90 text-white px-4 py-2 rounded-xl transition-all text-sm font-bold shadow-md"
+            >
+              <Edit2 size={16} />
+              Edit Client Info
+            </button>
           </div>
 
           {/* CONTENT */}
@@ -495,6 +502,25 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
           onClose={() => setShowUpdateModal(false)}
           onSuccess={() => {
             load() // Reload data to show new stage
+          }}
+        />
+      )}
+
+      {/* EDIT CLIENT MODAL */}
+      {showEditModal && lead && (
+        <EditClientModal
+          lead={lead}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={(updated) => {
+            if (updated) {
+              setLead((prev: any) => ({
+                ...prev,
+                client_name: updated.client_name,
+                email: updated.email,
+                phone: updated.phone,
+              }))
+            }
+            load()
           }}
         />
       )}

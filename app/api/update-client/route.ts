@@ -1,24 +1,14 @@
 import { NextResponse } from 'next/server'
-import { supabaseServer, createServer } from '@/lib/supabaseServer'
+import { supabaseServer } from '@/lib/supabaseServer'
+import { authenticateApiRequest } from '@/utils/auth'
 
 export async function POST(req: Request) {
   try {
-    const supabase = await createServer()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const auth = await authenticateApiRequest(req, ['csr', 'admin', 'superadmin'])
+    if (auth.error) {
+      return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile || !['csr', 'admin', 'superadmin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
+    const { user } = auth
 
     const { leadId, client_name, email, phone } = await req.json()
 

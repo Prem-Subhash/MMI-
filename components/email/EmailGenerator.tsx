@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { EmailData, PolicyBreakdown, replaceTemplate } from '@/lib/emailTemplating'
 import { Plus, Trash2 } from 'lucide-react'
+import { toast } from '@/lib/toast'
 
 type EmailTemplate = {
   id: string
@@ -74,10 +75,34 @@ export default function EmailGenerator({
     policies: []
   })
 
+  const [draftData, setDraftData] = useState({
+    defCurrentCarrier: '',
+    defNewCarrier: '',
+    effDate: '',
+    policy: {
+      cName: '',
+      nName: '',
+      term: '12 months',
+      a1: '',
+      a2: '',
+      driver: '',
+      vehicle: '',
+      vin: '',
+      oldPremium: '',
+      newPremium: ''
+    }
+  });
+
   // Rule 4: Dependency check (templateId, data)
   useEffect(() => {
     // Reset policies when switching between HOME and AUTO
     setData(prev => ({ ...prev, policies: [] }));
+    setDraftData(prev => ({
+      ...prev,
+      policy: {
+        cName: '', nName: '', term: '12 months', a1: '', a2: '', driver: '', vehicle: '', vin: '', oldPremium: '', newPremium: ''
+      }
+    }));
   }, [formType])
 
   // Normalize template name to logic key
@@ -98,39 +123,58 @@ export default function EmailGenerator({
 
     const key = getTemplateKey(template)
 
-    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData)
-    const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData).replace(/\n/g, '<br>')
+    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData, notes)
+    const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData, notes).replace(/\n/g, '<br>')
 
     setCustomSubject(newSubject)
     setGeneratedBody(newBody)
-  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink, csrData])
+  }, [templateId, data, templates, setCustomSubject, setGeneratedBody, leadData, formLink, csrData, notes])
 
   const formatFormType = (type: string) => {
     if (!type) return 'Home';
     return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
 
-  const addPolicy = () => {
-    setData((prev) => ({
+  const handleAddDetails = () => {
+    if (!draftData.policy.cName && !draftData.policy.a1 && !draftData.policy.oldPremium && !draftData.policy.newPremium && !draftData.defCurrentCarrier) {
+      toast('Please fill out at least a Carrier or Premium before adding details.', 'warning');
+      return;
+    }
+
+    setData((prev) => {
+      const cName = draftData.policy.cName || draftData.defCurrentCarrier;
+      const nName = draftData.policy.nName || draftData.defNewCarrier;
+
+      const newPolicy = {
+        id: Math.random().toString(),
+        type: formatFormType(formType),
+        cName,
+        nName,
+        term: draftData.policy.term,
+        a1: draftData.policy.a1,
+        a2: draftData.policy.a2,
+        driver: draftData.policy.driver,
+        vehicle: draftData.policy.vehicle,
+        vin: draftData.policy.vin,
+        oldPremium: draftData.policy.oldPremium,
+        newPremium: draftData.policy.newPremium
+      };
+
+      return {
+        ...prev,
+        defCurrentCarrier: draftData.defCurrentCarrier || prev.defCurrentCarrier,
+        defNewCarrier: draftData.defNewCarrier || prev.defNewCarrier,
+        effDate: draftData.effDate || prev.effDate,
+        policies: [...prev.policies, newPolicy]
+      };
+    });
+
+    setDraftData(prev => ({
       ...prev,
-      policies: [
-        ...prev.policies,
-        {
-          id: Math.random().toString(),
-          type: formatFormType(formType),
-          cName: prev.defCurrentCarrier,
-          nName: prev.defNewCarrier,
-          term: '12 months',
-          a1: '',
-          a2: '',
-          driver: '',
-          vehicle: '',
-          vin: '',
-          oldPremium: '',
-          newPremium: ''
-        }
-      ]
-    }))
+      policy: {
+        cName: '', nName: '', term: '12 months', a1: '', a2: '', driver: '', vehicle: '', vin: '', oldPremium: '', newPremium: ''
+      }
+    }));
   }
 
   const removePolicy = (id: string) => {
@@ -140,30 +184,21 @@ export default function EmailGenerator({
     }))
   }
 
-  const updatePolicy = (id: string, field: keyof PolicyBreakdown, value: string) => {
-    setData((prev) => ({
+  const handleDraftChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setDraftData((prev) => ({ ...prev, [name]: value }));
+  }
+
+  const updateDraftPolicy = (field: keyof PolicyBreakdown, value: string) => {
+    setDraftData((prev) => ({
       ...prev,
-      policies: prev.policies.map((p) => {
-        if ((p as any).id === id) {
-          return { ...p, [field]: value, type: formatFormType(formType) }
-        }
-        return p
-      })
-    }))
+      policy: { ...prev.policy, [field]: value }
+    }));
   }
 
   const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setData((prev) => {
-      const next = { ...prev, [name]: value }
-      if (name === 'defCurrentCarrier') {
-        next.policies = next.policies.map(p => p.cName === prev.defCurrentCarrier ? { ...p, cName: value } : p)
-      }
-      if (name === 'defNewCarrier') {
-        next.policies = next.policies.map(p => p.nName === prev.defNewCarrier ? { ...p, nName: value } : p)
-      }
-      return next
-    })
+    setData((prev) => ({ ...prev, [name]: value }))
   }
 
   const activeTpl = templates.find(t => t.id === templateId)
@@ -263,14 +298,14 @@ export default function EmailGenerator({
                       <label className="text-[10px] font-bold text-black uppercase tracking-widest">
                         {['new_lead', 'payment_reminder'].includes(tplKey) ? 'Default Carrier' : 'Default Current Carrier'}
                       </label>
-                      <input name="defCurrentCarrier" value={data.defCurrentCarrier} onChange={handleGeneralChange}
+                      <input name="defCurrentCarrier" value={draftData.defCurrentCarrier} onChange={handleDraftChange}
                         className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 text-sm text-gray-900 transition-all"
                         placeholder="Carrier" />
                     </div>
                     {tplKey === 'renewal_switch' && (
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-black uppercase tracking-widest">Default New Carrier</label>
-                        <input name="defNewCarrier" value={data.defNewCarrier} onChange={handleGeneralChange}
+                        <input name="defNewCarrier" value={draftData.defNewCarrier} onChange={handleDraftChange}
                           className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 text-sm text-gray-900 transition-all"
                           placeholder="New Carrier" />
                       </div>
@@ -281,7 +316,7 @@ export default function EmailGenerator({
                 {['new_lead', 'congrats_new', 'congrats_existing', 'follow_up'].includes(tplKey) && (
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-bold text-black uppercase tracking-widest">Effective Date</label>
-                    <input name="effDate" value={data.effDate} onChange={handleGeneralChange}
+                    <input name="effDate" value={draftData.effDate} onChange={handleDraftChange}
                       className="w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none focus:ring-2 focus:ring-[#10B889]/10 text-sm text-gray-900 transition-all"
                       placeholder="MM/DD/YYYY" />
                   </div>
@@ -316,86 +351,103 @@ export default function EmailGenerator({
                     <div className="w-1 h-4 bg-[#10B889] rounded-full" />
                     <span className="text-sm font-bold text-black">Policy Breakdown</span>
                   </div>
-                  <button onClick={addPolicy}
-                    className="flex items-center gap-1.5 text-[11px] font-bold text-[#10B889] bg-white border border-[#10B889]/25 px-3 py-1.5 rounded-lg shadow-sm hover:bg-[#10B889]/80 hover:text-white">
-                    <Plus size={13} /> Add Policy
-                  </button>
                 </div>
 
                 <div className="space-y-3">
-                  {data.policies.map((p) => {
-                    const pId = (p as any).id
-                    return (
-                      <div key={pId} className="rounded-xl border border-gray-200 overflow-hidden">
-                        {/* Policy card header */}
-                        <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-[#10B889] to-[#2E5C85] md:px-8 md:py-6">
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white">
-                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
-                            </svg>
-                            {formatFormType(formType)} Insurance
-                          </span>
-                          <button onClick={() => removePolicy(pId)} className="text-rose-500 p-0.5 rounded bg-white">
-                            <Trash2 size={14} />
+                  <div className="rounded-xl border border-gray-200 overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-[#10B889] to-[#2E5C85] md:px-6 md:py-4">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-bold text-white">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        Add {formatFormType(formType)} Policy
+                      </span>
+                    </div>
+
+                    {/* Draft Policy card fields */}
+                    <div className="p-3 space-y-2">
+                      {(formType === 'auto' || formType === 'motorcycle') && (
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                          <input type="text" value={draftData.policy.driver || ''} onChange={(e) => updateDraftPolicy('driver', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Driver Name" />
+                          <input type="text" value={draftData.policy.vehicle || ''} onChange={(e) => updateDraftPolicy('vehicle', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Vehicle" />
+                          <input type="text" value={draftData.policy.vin || ''} onChange={(e) => updateDraftPolicy('vin', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="VIN (Optional)" />
+                        </div>
+                      )}
+
+                      <div className="flex gap-2">
+                        <input type="text" value={draftData.policy.cName} onChange={(e) => updateDraftPolicy('cName', e.target.value)}
+                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-black transition-all"
+                          placeholder={['new_lead', 'payment_reminder'].includes(tplKey) ? 'Carrier' : 'Current Carrier'} />
+                        {tplKey === 'renewal_switch' && (
+                          <input type="text" value={draftData.policy.nName} onChange={(e) => updateDraftPolicy('nName', e.target.value)}
+                            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-black transition-all"
+                            placeholder="New Carrier" />
+                        )}
+                      </div>
+
+                      {!['follow_up', 'auto_payment', 'info_req'].includes(tplKey) && (
+                        <div className="flex gap-2">
+                          {(formType === 'auto' || formType === 'motorcycle') ? (
+                            <>
+                              <input type="number" value={draftData.policy.oldPremium || draftData.policy.a1} onChange={(e) => updateDraftPolicy('oldPremium', e.target.value)}
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Old Premium" />
+                              <input type="number" value={draftData.policy.newPremium || draftData.policy.a2} onChange={(e) => updateDraftPolicy('newPremium', e.target.value)}
+                                className="w-full border border-[#10B889]/30 rounded-lg px-3 py-2 text-sm bg-[#10B889]/5 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="New Premium" />
+                            </>
+                          ) : (
+                            <>
+                              <input type="number" value={draftData.policy.a1} onChange={(e) => updateDraftPolicy('a1', e.target.value)}
+                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Premium" />
+                              {tplKey === 'renewal_switch' && (
+                                <input type="number" value={draftData.policy.a2} onChange={(e) => updateDraftPolicy('a2', e.target.value)}
+                                  className="w-full border border-[#10B889]/30 rounded-lg px-3 py-2 text-sm bg-[#10B889]/5 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="New Premium" />
+                              )}
+                            </>
+                          )}
+                          {tplKey === 'new_lead' && (
+                            <select value={draftData.policy.term} onChange={(e) => updateDraftPolicy('term', e.target.value)}
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none text-gray-900">
+                              <option value="12 months">12 Months</option>
+                              <option value="6 months">6 Months</option>
+                            </select>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Inline Policy Actions */}
+                    <div className="bg-gray-50/80 border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-3">
+                      <button onClick={handleAddDetails}
+                        className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#10B889] hover:bg-[#0e9e75] px-4 py-1.5 rounded-lg shadow-sm transition-all transform active:scale-95">
+                        <Plus size={14} /> Add Details 
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Added Policies List */}
+                  {data.policies.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">Added Policies</h4>
+                      {data.policies.map((p, index) => (
+                        <div key={(p as any).id} className="flex items-center justify-between bg-white border border-gray-200 p-3 rounded-xl shadow-sm">
+                          <div className="text-sm">
+                            <div className="font-bold text-gray-800">Policy {index + 1}: {p.type}</div>
+                            <div className="text-xs text-gray-500 mt-1 flex gap-3">
+                              {(p.cName || data.defCurrentCarrier) && <span>Carrier: {p.cName || data.defCurrentCarrier}</span>}
+                              {(p.newPremium || p.a1) && <span className="font-semibold text-emerald-600">Premium: ${p.newPremium || p.a1}</span>}
+                            </div>
+                          </div>
+                          <button onClick={() => removePolicy((p as any).id)}
+                            className="text-gray-400 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-lg">
+                            <Trash2 size={16} />
                           </button>
                         </div>
-
-                        {/* Policy card fields */}
-                        <div className="p-3 space-y-2">
-                          {(formType === 'auto' || formType === 'motorcycle') && (
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                              <input type="text" value={p.driver || ''} onChange={(e) => updatePolicy(pId, 'driver', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Driver Name" />
-                              <input type="text" value={p.vehicle || ''} onChange={(e) => updatePolicy(pId, 'vehicle', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Vehicle" />
-                              <input type="text" value={p.vin || ''} onChange={(e) => updatePolicy(pId, 'vin', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="VIN (Optional)" />
-                            </div>
-                          )}
-
-                          <div className="flex gap-2">
-                            <input type="text" value={p.cName} onChange={(e) => updatePolicy(pId, 'cName', e.target.value)}
-                              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-black transition-all"
-                              placeholder={['new_lead', 'payment_reminder'].includes(tplKey) ? 'Carrier' : 'Current Carrier'} />
-                            {tplKey === 'renewal_switch' && (
-                              <input type="text" value={p.nName} onChange={(e) => updatePolicy(pId, 'nName', e.target.value)}
-                                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-black transition-all"
-                                placeholder="New Carrier" />
-                            )}
-                          </div>
-
-                          {!['follow_up', 'auto_payment', 'info_req'].includes(tplKey) && (
-                            <div className="flex gap-2">
-                              {(formType === 'auto' || formType === 'motorcycle') ? (
-                                <>
-                                  <input type="number" value={p.oldPremium || p.a1} onChange={(e) => updatePolicy(pId, 'oldPremium', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Old Premium" />
-                                  <input type="number" value={p.newPremium || p.a2} onChange={(e) => updatePolicy(pId, 'newPremium', e.target.value)}
-                                    className="w-full border border-[#10B889]/30 rounded-lg px-3 py-2 text-sm bg-[#10B889]/5 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="New Premium" />
-                                </>
-                              ) : (
-                                <>
-                                  <input type="number" value={p.a1} onChange={(e) => updatePolicy(pId, 'a1', e.target.value)}
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="Premium" />
-                                  {tplKey === 'renewal_switch' && (
-                                    <input type="number" value={p.a2} onChange={(e) => updatePolicy(pId, 'a2', e.target.value)}
-                                      className="w-full border border-[#10B889]/30 rounded-lg px-3 py-2 text-sm bg-[#10B889]/5 focus:bg-white focus:border-[#10B889] focus:outline-none text-gray-900 transition-all" placeholder="New Premium" />
-                                  )}
-                                </>
-                              )}
-                              {tplKey === 'new_lead' && (
-                                <select value={p.term} onChange={(e) => updatePolicy(pId, 'term', e.target.value)}
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 focus:outline-none text-gray-900">
-                                  <option value="12 months">12 Months</option>
-                                  <option value="6 months">6 Months</option>
-                                </select>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )
-                  })}
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             )}

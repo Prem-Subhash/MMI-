@@ -418,18 +418,6 @@ export default function AdminNewLeadPage() {
             />
           </div>
 
-                    <div className="flex items-center gap-2 p-4 bg-gray-50 rounded-xl border">
-                        <input
-                            type="checkbox"
-                            id="send_email"
-                            className="w-5 h-5 text-gray-800 rounded focus:ring-gray-800"
-                            checked={form.send_email_to_client}
-                            onChange={(e) => setForm(prev => ({ ...prev, send_email_to_client: e.target.checked }))}
-                        />
-                        <label htmlFor="send_email" className="text-gray-700 font-medium cursor-pointer select-none">
-                            Send an email to the client requesting documents?
-                        </label>
-                    </div>
 
                     <Input icon={<User />} name="referral" value={form.referral} onChange={handleChange} placeholder="Referral (Optional)" />
 
