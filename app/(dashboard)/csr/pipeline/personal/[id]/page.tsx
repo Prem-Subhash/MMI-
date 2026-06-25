@@ -105,6 +105,7 @@ export default function LeadReviewPage() {
         .from('temp_leads_basics')
         .select(`
           *,
+          lead_policies(policy_type),
           pipeline_stages (
             id,
             stage_name
@@ -229,7 +230,7 @@ export default function LeadReviewPage() {
               <KpiCard icon={<IconMail />} label="Email Address">
                 <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
               </KpiCard>
-              <KpiCard icon={<IconFile />} label="Policy Type">
+              <KpiCard icon={<IconFile />} label="Policies">
                 <p className="text-base font-bold text-gray-800">{formatPolicyType(lead.policy_type)}</p>
               </KpiCard>
               <KpiCard icon={<IconZap />} label="Current Status">
@@ -298,7 +299,7 @@ export default function LeadReviewPage() {
             <KpiCard icon={<IconMail />} label="Email Address">
               <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
             </KpiCard>
-            <KpiCard icon={<IconFile />} label="Policy Type">
+            <KpiCard icon={<IconFile />} label="Policies">
               <p className="text-base font-bold text-gray-800">{formatPolicyType(lead.policy_type)}</p>
             </KpiCard>
             <KpiCard icon={<IconZap />} label="Current Status">

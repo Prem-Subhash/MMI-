@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
+import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import EmailModal from '@/components/email/EmailModal'
 
@@ -15,6 +16,7 @@ type Lead = {
   email: string
   insurence_category: string
   policy_type: string
+  lead_policies?: { policy_type: string }[]
   policy_flow: string
   created_at: string
   current_stage: {
@@ -61,6 +63,7 @@ export default function PersonalLinesPage() {
           email,
           insurence_category,
           policy_type,
+          lead_policies(policy_type),
           policy_flow,
           created_at,
           current_stage:pipeline_stages!inner (
@@ -227,7 +230,7 @@ export default function PersonalLinesPage() {
                         {lead.email}
                       </td>
                       <td className="px-4 py-4 capitalize text-gray-700 truncate">
-                        {lead.policy_type || '—'}
+                        {formatPolicies(lead.lead_policies?.length > 0 ? lead.lead_policies.map((p: any) => p.policy_type) : lead.policy_type)}
                       </td>
                       <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
                         {lead.policy_flow}

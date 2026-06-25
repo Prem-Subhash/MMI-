@@ -13,6 +13,7 @@ import {
   Calendar,
   Layers
 } from 'lucide-react'
+import { formatPolicies } from '@/utils/formatPolicies'
 import { supabase } from '@/lib/supabaseClient'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -37,6 +38,7 @@ export default function ActivityLogPage() {
           business_name,
           insurence_category,
           policy_type,
+          lead_policies(policy_type),
           policy_flow,
           created_at,
           current_stage:pipeline_stages (

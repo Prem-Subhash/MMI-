@@ -42,6 +42,7 @@ export default function SendFormPage() {
   const [lead, setLead] = useState<any>(null)
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [templateId, setTemplateId] = useState('')
+  const [activePolicies, setActivePolicies] = useState<string[]>([])
   const [formType, setFormType] = useState('home')
   const [customSubject, setCustomSubject] = useState('')
   const [generatedBody, setGeneratedBody] = useState('')
@@ -79,12 +80,28 @@ export default function SendFormPage() {
         setLoading(false)
         return
       }
+      
+      const { data: lpData } = await supabase
+        .from('lead_policies')
+        .select('policy_type')
+        .eq('lead_id', leadId)
+
+      let policies = [leadData.policy_type || 'home'];
+      if (lpData && lpData.length > 0) {
+        policies = lpData.map((p: any) => p.policy_type);
+      }
+      
+      setActivePolicies(policies);
+      const primaryPolicy = policies[0] || 'home';
+      setFormType(primaryPolicy);
 
       const { data: templateData, error: templateError } = await supabase
         .from('email_templates')
         .select('*')
         .eq('is_active', true)
-        .eq('policy_type', formType)
+        .eq('name', 'info_req')
+        .eq('policy_type', primaryPolicy)
+        .limit(1)
 
       if (templateError) {
         setError(templateError.message)
@@ -93,23 +110,15 @@ export default function SendFormPage() {
       }
 
       setLead(leadData)
-
-      const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
-        if (current.name.toLowerCase().includes('umbrella')) return acc;
-        const cleanName = current.name.replace(/^Personal\s+/i, '');
-        const x = acc.find(item => item.name === cleanName);
-        if (!x) return acc.concat([{ ...current, name: cleanName }]);
-        return acc;
-      }, []);
-
-      setTemplates(uniqueTemplates)
-      console.log("DEBUG: FormType:", formType);
-      console.log("DEBUG: Templates Updated:", uniqueTemplates);
+      setTemplates(templateData || [])
+      if (templateData && templateData.length > 0) {
+        setTemplateId(templateData[0].id)
+      }
       setLoading(false)
     }
 
     loadData()
-  }, [leadId, formType])
+  }, [leadId])
 
   /* ================= ENSURE INTAKE FORM ================= */
   const ensureIntakeForm = async () => {
@@ -261,70 +270,17 @@ export default function SendFormPage() {
               </button>
 
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* TEMPLATE SELECT */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between ml-1">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                        Email Purpose ({formType === 'auto' ? 'Auto Insurance' : 'Home Insurance'})
-                      </label>
-                      <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${formType === 'auto' ? 'bg-blue-100 text-blue-600 border border-blue-200' : 'bg-[#10B889]/10 text-[#10B889] border border-[#10B889]/20'}`}>
-                        {formType}
-                      </span>
-                    </div>
-                    <div className="relative">
-                      <select
-                        value={templateId}
-                        onChange={e => setTemplateId(e.target.value)}
-                        className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
-                        disabled={templates.length === 0}
-                      >
-                        {templates.length === 0 ? (
-                          <option value="">No templates available</option>
-                        ) : (
-                          <>
-                            <option value="">Select Email Type</option>
-                            {templateGroups.map(group => {
-                              const groupTemplates = templates.filter(t => group.items.includes(t.name));
-                              if (groupTemplates.length === 0) return null;
-
-                              return (
-                                <optgroup key={group.label} label={group.label}>
-                                  {groupTemplates.map(t => (
-                                    <option key={t.id} value={t.id}>
-                                      {templateLabels[t.name] || t.name}
-                                    </option>
-                                  ))}
-                                </optgroup>
-                              );
-                            })}
-                          </>
-                        )}
-                      </select>
-                      <p className="mt-1 text-[10px] text-gray-400 font-medium ml-1 flex items-center gap-1">
-                        <span className="w-1 h-1 bg-gray-300 rounded-full" />
-                        Showing only {formType === 'auto' ? 'Auto' : 'Home'} Insurance templates
-                      </p>
-                    </div>
+                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100 mb-6">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Policies Requested</span>
+                    <span className="bg-blue-100 text-blue-700 text-[9px] px-2 py-0.5 rounded-full font-bold">Auto-Detected</span>
                   </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Form Type</label>
-                    <div className="relative">
-                      <select
-                        value={formType}
-                        onChange={e => setFormType(e.target.value)}
-                        className="w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm"
-                      >
-                        <option value="home">Home</option>
-                        <option value="auto">Auto</option>
-                        <option value="condo">Condo</option>
-                        <option value="landlord_home">Landlord Home</option>
-                        <option value="landlord_condo">Landlord Condo</option>
-                        <option value="umbrella">Umbrella</option>
-                        <option value="motorcycle">Motorcycle</option>
-                      </select>
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {activePolicies.map(p => (
+                      <span key={p} className="bg-white border border-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm capitalize">
+                        {p.replace('_', ' ')}
+                      </span>
+                    ))}
                   </div>
                 </div>
 
@@ -340,6 +296,7 @@ export default function SendFormPage() {
                   setNotes={setNotes}
                   setCustomSubject={setCustomSubject}
                   formType={formType}
+                  isPersonalLines={true}
                 />
               </div>
 

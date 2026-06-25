@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Calendar, Download, Search, Eye } from 'lucide-react'
+import { formatPolicies } from '@/utils/formatPolicies'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 
@@ -62,6 +63,7 @@ function PersonalRenewalContent() {
       id,
       client_name,
       policy_type,
+          lead_policies(policy_type),
       renewal_date,
       carrier,
       current_premium,

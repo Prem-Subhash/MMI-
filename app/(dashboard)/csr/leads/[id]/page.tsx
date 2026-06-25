@@ -14,6 +14,7 @@ import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { Edit2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
+import { formatPolicies } from '@/utils/formatPolicies'
 
 /* ── helpers ──────────────────────────────────────────────── */
 
@@ -179,6 +180,7 @@ export default function LeadReviewPage() {
         .from('temp_leads_basics')
         .select(`
           *,
+          lead_policies(policy_type),
           pipeline_stages (
             id,
             stage_name
@@ -222,8 +224,9 @@ export default function LeadReviewPage() {
     const { data } = await supabase
       .from('temp_leads_basics')
       .select(`
-        *,
-        pipeline_stages (
+          *,
+          lead_policies(policy_type),
+          pipeline_stages (
           id,
           stage_name
         )
@@ -325,13 +328,13 @@ export default function LeadReviewPage() {
               </KpiCard>
               <KpiCard 
                 icon={<IconFile />} 
-                label="Policy Type"
+                label="Policies"
                 accent="from-amber-500 to-orange-500"
                 glow="shadow-amber-200/60"
                 iconBg="bg-amber-50 text-amber-600"
                 hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
               >
-                <p className="text-base font-bold text-gray-800">{formatPolicyType(lead?.policy_type)}</p>
+                <p className="text-base font-bold text-gray-800">{formatPolicies(lead?.lead_policies?.length > 0 ? lead.lead_policies.map((p: any) => p.policy_type) : lead?.policy_type)}</p>
               </KpiCard>
               <KpiCard 
                 icon={<IconZap />} 

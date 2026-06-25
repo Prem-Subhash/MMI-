@@ -1,0 +1,18 @@
+﻿app/(dashboard)/admin/leads/page.tsx(65,24): error TS2304: Cannot find name 'page'.
+app/(dashboard)/admin/leads/page.tsx(65,36): error TS2304: Cannot find name 'page'.
+app/(dashboard)/admin/leads/page.tsx(228,55): error TS2339: Property 'csrs' does not exist on type 'Lead'.
+app/(dashboard)/admin/leads/page.tsx(230,63): error TS2339: Property 'csrs' does not exist on type 'Lead'.
+app/(dashboard)/admin/leads/page.tsx(260,40): error TS2304: Cannot find name 'setPage'.
+app/(dashboard)/admin/leads/page.tsx(261,35): error TS2304: Cannot find name 'page'.
+app/(dashboard)/admin/leads/page.tsx(267,31): error TS2304: Cannot find name 'page'.
+app/(dashboard)/admin/leads/page.tsx(270,40): error TS2304: Cannot find name 'setPage'.
+app/(dashboard)/admin/pipelines/PipelineClient.tsx(202,63): error TS2339: Property 'csrs' does not exist on type 'Lead'.
+app/(dashboard)/admin/pipelines/PipelineClient.tsx(204,71): error TS2339: Property 'csrs' does not exist on type 'Lead'.
+app/(dashboard)/csr/leads/[id]/page.tsx(280,14): error TS2304: Cannot find name 'isSubmitted'.
+app/(dashboard)/csr/leads/[id]/page.tsx(292,19): error TS2304: Cannot find name 'isAccepted'.
+app/(dashboard)/csr/pipeline/personal/page.tsx(68,16): error TS2304: Cannot find name 'page'.
+app/(dashboard)/csr/pipeline/personal/page.tsx(68,28): error TS2304: Cannot find name 'page'.
+app/(dashboard)/csr/pipeline/personal/page.tsx(256,28): error TS2304: Cannot find name 'setPage'.
+app/(dashboard)/csr/pipeline/personal/page.tsx(257,23): error TS2304: Cannot find name 'page'.
+app/(dashboard)/csr/pipeline/personal/page.tsx(263,19): error TS2304: Cannot find name 'page'.
+app/(dashboard)/csr/pipeline/personal/page.tsx(266,28): error TS2304: Cannot find name 'setPage'.

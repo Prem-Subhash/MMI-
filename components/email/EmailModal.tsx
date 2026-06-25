@@ -61,6 +61,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [activePolicies, setActivePolicies] = useState<string[]>([])
 
   /* ================= UTILS ================= */
   const formatFormType = (type: string) => {
@@ -91,6 +92,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
           email,
           insurence_category,
           policy_type,
+          lead_policies(policy_type),
           policy_flow,
           created_at
         `)
@@ -162,6 +164,20 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       }, []);
 
       setTemplates(uniqueTemplates)
+      
+      let policies = [leadData.policy_type || 'home'];
+      if (leadData.lead_policies && leadData.lead_policies.length > 0) {
+        policies = leadData.lead_policies.map((p: any) => p.policy_type);
+      }
+      setActivePolicies(policies);
+      
+      if (dynamicCategory === 'personal') {
+        const infoReqTemplate = uniqueTemplates.find(t => t.name === 'info_req');
+        if (infoReqTemplate) {
+          setTemplateId(infoReqTemplate.id);
+        }
+      }
+      
       setLoading(false)
     }
 
@@ -200,7 +216,13 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       .eq('form_type', currentFormType)
       .maybeSingle()
 
-    if (existing?.id) return existing.id
+    if (existing?.id) {
+      await supabase
+        .from('temp_intake_forms')
+        .update({ active_policies: activePolicies })
+        .eq('id', existing.id)
+      return existing.id
+    }
 
     const { data, error } = await supabase
       .from('temp_intake_forms')
@@ -208,6 +230,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
         lead_id: leadId,
         form_type: currentFormType,
         status: 'sent',
+        active_policies: activePolicies
       })
       .select()
       .single()
@@ -227,7 +250,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
         if (id) {
           setIntakeId(id)
           const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-          setFormLink(`${baseUrl}/intake/${id}?type=${formType}`)
+          setFormLink(`${baseUrl}/intake/${id}`)
         }
       })
     } else {
@@ -384,6 +407,22 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
 
               {/* ACTION FORM */}
               <div className="space-y-6">
+                {/* AUTO-DETECTED POLICIES (Personal Lines) */}
+                {lead?.insurence_category === 'personal' && (
+                  <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-100">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Policies Requested</span>
+                      <span className="bg-blue-100 text-blue-700 text-[9px] px-2 py-0.5 rounded-full font-bold">Auto-Detected</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {activePolicies.map(p => (
+                        <span key={p} className="bg-white border border-blue-200 text-blue-700 px-3 py-1.5 rounded-lg text-sm font-bold shadow-sm capitalize">
+                          {p.replace('_', ' ')}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 {/* MODE TOGGLE */}
                 <div className="flex bg-gray-200 p-1 rounded-xl w-full sm:w-fit">
                   <button
@@ -424,7 +463,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                 )}
 
                 <div className="space-y-6">
-                  {composeMode === 'template' && (
+                  {composeMode === 'template' && lead?.insurence_category !== 'personal' && (
                     <div className={`grid grid-cols-1 ${lead?.policy_flow !== 'renewal' ? 'md:grid-cols-2' : ''} gap-6`}>
                       {/* TEMPLATE SELECT */}
                       <div className="space-y-2">
@@ -615,6 +654,7 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                     formLink={formLink}
                     hasTemplateFormLink={hasTemplateFormLink}
                     csrData={csrData}
+                    isPersonalLines={lead?.insurence_category === 'personal'}
                   />
                 </div>
               </div>

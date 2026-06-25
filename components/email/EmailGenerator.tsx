@@ -35,6 +35,7 @@ interface EmailGeneratorProps {
   hasTemplateFormLink?: boolean
   setFormType?: (val: string) => void
   csrData?: any
+  isPersonalLines?: boolean
 }
 
 export default function EmailGenerator({
@@ -58,7 +59,8 @@ export default function EmailGenerator({
   formLink,
   hasTemplateFormLink,
   setFormType,
-  csrData
+  csrData,
+  isPersonalLines = false
 }: EmailGeneratorProps) {
   const [data, setData] = useState<EmailData>({
     clientName: initialClientName || '',
@@ -220,15 +222,15 @@ export default function EmailGenerator({
               <span className="text-sm font-semibold text-slate-800">{leadData?.client_name || initialClientName || 'Target Client'}</span>
             </div>
 
-            {!templateId && (
+            {!templateId && !isPersonalLines && (
               <div className="bg-amber-50 border border-amber-100 text-amber-700 p-3.5 rounded-xl text-sm flex items-start gap-3">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
                 <p className="text-sm"><strong>Select a template</strong> above to load the email configuration fields.</p>
               </div>
             )}
 
-            {/* GENERAL FIELDS */}
-            {templateId && (
+            {/* GENERAL FIELDS & POLICY BREAKDOWN */}
+            {templateId && !isPersonalLines && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-bold text-black uppercase tracking-widest">Client Name</label>
@@ -307,7 +309,7 @@ export default function EmailGenerator({
             )}
 
             {/* POLICY BREAKDOWN */}
-            {templateId && (
+            {templateId && !isPersonalLines && (
               <div className="pt-1">
                 <div className="flex items-center justify-between mb-3 bg-[#10B889]/6 border border-[#10B889]/15 rounded-xl px-4 py-2.5">
                   <div className="flex items-center gap-2">
@@ -431,26 +433,28 @@ export default function EmailGenerator({
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 {isFormAttached ? (
                   <>
-                    <div className="relative">
-                      <select
-                        value={formType}
-                        onChange={(e) => setFormType?.(e.target.value)}
-                        className="cursor-pointer font-bold border-2 border-[#10B889]/30 bg-white text-[#0e8f6a] rounded-lg pl-3 pr-8 py-2 outline-none hover:bg-gray-50 transition-colors appearance-none"
-                      >
-                        <option value="home">Home</option>
-                        <option value="auto">Auto</option>
-                        <option value="condo">Condo</option>
-                        <option value="landlord_home">Landlord Home</option>
-                        <option value="landlord_condo">Landlord Condo</option>
-                        <option value="umbrella">Umbrella</option>
-                        <option value="motorcycle">Motorcycle</option>
-                      </select>
-                      <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0e8f6a]">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="m6 9 6 6 6-6"/>
+                    {!isPersonalLines && (
+                      <div className="relative">
+                        <select
+                          value={formType}
+                          onChange={(e) => setFormType?.(e.target.value)}
+                          className="cursor-pointer font-bold border-2 border-[#10B889]/30 bg-white text-[#0e8f6a] rounded-lg pl-3 pr-8 py-2 outline-none hover:bg-gray-50 transition-colors appearance-none"
+                        >
+                          <option value="home">Home</option>
+                          <option value="auto">Auto</option>
+                          <option value="condo">Condo</option>
+                          <option value="landlord_home">Landlord Home</option>
+                          <option value="landlord_condo">Landlord Condo</option>
+                          <option value="umbrella">Umbrella</option>
+                          <option value="motorcycle">Motorcycle</option>
+                        </select>
+                        <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0e8f6a]">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="m6 9 6 6 6-6"/>
                         </svg>
                       </div>
                     </div>
+                    )}
                     {!hasTemplateFormLink && (
                       <button
                         onClick={() => setIsFormAttached?.(false)}

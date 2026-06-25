@@ -1,0 +1,124 @@
+[
+  {
+    "id": "6f8475b2-202a-4d6d-b6d6-09bfa49ac8a0",
+    "pipeline_id": "1ac96d00-d40e-4636-a9e6-583efea456d1",
+    "stage_name": "Cancelled",
+    "stage_order": 7,
+    "mandatory_fields": [
+      "notes"
+    ],
+    "created_at": "2026-02-17T12:20:02.880364"
+  },
+  {
+    "id": "1ef50d4e-0b8b-4443-97e0-5ed02f3c1529",
+    "pipeline_id": "7c01ef05-580c-4235-8fad-fa91d867896c",
+    "stage_name": "Quote Has Been Emailed",
+    "stage_order": 4,
+    "mandatory_fields": [
+      "follow_up_date",
+      "finalized_quote",
+      "quoted_carrier",
+      "quoted_premium",
+      "savings_amount",
+      "notes"
+    ],
+    "created_at": "2026-02-06T08:51:35.803007"
+  },
+  {
+    "id": "987b8221-b42a-458f-9c2a-8329fc8d31b5",
+    "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+    "stage_name": "Quoting in Progress",
+    "stage_order": 2,
+    "mandatory_fields": {
+      "notes": {
+        "type": "textarea",
+        "label": "Notes / Details",
+        "required": false
+      },
+      "docs_saved": {
+        "type": "boolean",
+        "label": "Saved all client documents in File Center?",
+        "required": true
+      },
+      "info_received": {
+        "type": "boolean",
+        "label": "Received all required information/documents?",
+        "required": true
+      },
+      "target_completion_date": {
+        "type": "date",
+        "label": "Target Completion Date",
+        "required": true
+      }
+    },
+    "created_at": "2026-01-17T11:18:45.543404"
+  },
+  {
+    "id": "3cbb3043-63ee-4754-8dce-2e4692a12770",
+    "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+    "stage_name": "Quote Has Been Emailed",
+    "stage_order": 3,
+    "mandatory_fields": {
+      "notes": {
+        "type": "textarea",
+        "label": "Notes / Details",
+        "required": false
+      },
+      "carrier_name": {
+        "type": "text",
+        "label": "Carrier Name",
+        "required": true
+      },
+      "follow_up_date": {
+        "type": "date",
+        "label": "Follow-up Date",
+        "required": true
+      },
+      "quoted_premium": {
+        "type": "number",
+        "label": "Quoted Premium",
+        "required": true
+      }
+    },
+    "created_at": "2026-01-17T11:18:45.543404"
+  },
+  {
+    "id": "60cc4ffe-f492-45dd-9ba7-ec1df24afb78",
+    "pipeline_id": "f77d068d-1754-421b-b2ce-d527ec8bd0f3",
+    "stage_name": "Consent Letter Sent",
+    "stage_order": 4,
+    "mandatory_fields": {
+      "notes": {
+        "type": "textarea",
+        "label": "Notes / Details",
+        "required": false
+      },
+      "follow_up_date": {
+        "type": "date",
+        "label": "Follow-up Date",
+        "required": true
+      },
+      "payment_method": {
+        "type": "dropdown",
+        "label": "Payment Method",
+        "options": [
+          "Credit Card",
+          "ACH",
+          "Escrow"
+        ],
+        "required": true
+      },
+      "payment_frequency": {
+        "type": "dropdown",
+        "label": "Payment Frequency",
+        "options": [
+          "Monthly",
+          "Quarterly",
+          "Annual"
+        ],
+        "required": true
+      }
+    },
+    "created_at": "2026-01-17T11:18:45.543404"
+  }
+]
