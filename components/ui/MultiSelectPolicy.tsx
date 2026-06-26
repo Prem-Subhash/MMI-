@@ -62,7 +62,7 @@ export function MultiSelectPolicy({
       <div 
         onClick={() => setIsOpen(true)}
         className={`w-full min-h-[48px] p-1.5 bg-white border rounded-xl cursor-text transition-all flex flex-wrap items-center gap-1.5 relative ${
-          error ? 'border-red-500 focus-within:ring-2 focus-within:ring-red-200' : 'border-gray-300 focus-within:ring-2 focus-within:ring-gray-200'
+          error ? 'border-yellow-500 focus-within:ring-2 focus-within:ring-yellow-200' : 'border-gray-300 focus-within:ring-2 focus-within:ring-gray-200'
         }`}
       >
         {selectedValues.map(val => {
@@ -100,7 +100,7 @@ export function MultiSelectPolicy({
       </div>
 
       {error && (
-        <span className="text-red-500 text-[11px] font-medium ml-1 mt-1">
+        <span className="text-yellow-600 text-[11px] font-medium ml-1 mt-1">
           {error}
         </span>
       )}

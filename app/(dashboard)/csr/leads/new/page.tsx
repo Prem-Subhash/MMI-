@@ -388,7 +388,7 @@ function NewLeadContent() {
             <MultiSelectPolicy 
               selectedValues={selectedPolicies}
               onChange={setSelectedPolicies}
-              error={selectedPolicies.length === 0 ? "Please select at least one policy type" : false}
+              error={selectedPolicies.length === 0 ? "Please select policies here" : false}
               options={form.insurence_category === 'commercial' 
                 ? [
                   { value: 'workers_comp', label: 'Workers Comp' },
@@ -455,7 +455,7 @@ const Input = ({
         {...props}
         className={`w-full pl-12 pr-4 py-3 rounded-xl border transition outline-none
           ${error
-            ? 'border-red-500 focus:ring-2 focus:ring-red-200'
+            ? 'border-blue-500 focus:ring-2 focus:ring-blue-200'
             : 'border-gray-300 focus:ring-2 focus:ring-[#10B889]/20'
           }`}
       />
