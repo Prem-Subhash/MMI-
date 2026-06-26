@@ -184,7 +184,7 @@ function CommercialRenewalContent() {
                         className="w-full sm:w-auto bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center whitespace-nowrap"
                     >
                         <Download size={18} />
-                        Import CSV
+                        Import File
                     </Link>
                 </div>
             </div>

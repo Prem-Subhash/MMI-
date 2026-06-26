@@ -187,7 +187,7 @@ function PersonalRenewalContent() {
                         className="bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
                     >
                         <Download size={16} />
-                        Import CSV
+                        Import File
                     </Link>
                 </div>
             </div>

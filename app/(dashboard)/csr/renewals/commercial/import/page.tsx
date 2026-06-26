@@ -60,38 +60,95 @@ export default function CommercialRenewalImportPage() {
         return null
     }
 
-    const handleFileUpload = (file: File) => {
-        setFileName(file.name)
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            complete: (results) => {
-                console.log("RAW RESULTS:", results)
-                // Debug logs retained for troubleshooting
-                if (results.data && results.data.length > 0) {
-                    const rawHeaders = Object.keys(results.data[0] || {})
-                    const normHeaders = rawHeaders.map(h => normalizeKey(h).toLowerCase())
-                    setDetectedHeaders(rawHeaders)
-                    setNormalizedHeaders(normHeaders)
+    const processParsedData = (data: any[]) => {
+        const rawHeaders = Object.keys(data[0] || {})
+        const normHeaders = rawHeaders.map(h => normalizeKey(h).toLowerCase())
+        setDetectedHeaders(rawHeaders)
+        setNormalizedHeaders(normHeaders)
 
-                    const normalizedData = results.data.map((row: any) => {
-                        const newRow: any = {};
-                        Object.keys(row).forEach(key => {
-                            const normalizedKey = normalizeKey(key).toLowerCase();
-                            newRow[normalizedKey] = row[key];
-                        });
-                        return newRow;
-                    });
-                    setRows(normalizedData)
-                    setMessage({ text: `${results.data.length} rows loaded. Ready to import.`, type: 'info' })
-                } else {
-                    setRows([])
-                    setDetectedHeaders([])
-                    setNormalizedHeaders([])
-                    setMessage({ text: 'CSV file is empty or could not be parsed.', type: 'error' })
+        const normalizedData = data.map((row: any) => {
+            const newRow: any = {};
+            Object.keys(row).forEach(key => {
+                const normalizedKey = normalizeKey(key).toLowerCase();
+                newRow[normalizedKey] = row[key];
+            });
+            return newRow;
+        });
+        setRows(normalizedData)
+        setMessage({ text: `${data.length} rows loaded. Ready to import.`, type: 'info' })
+    }
+
+    const handleFileUpload = async (file: File) => {
+        setFileName(file.name)
+        setMessage({ text: 'Parsing file...', type: 'info' })
+        
+        const isExcel = file.name.match(/\.(xlsx|xls)$/i)
+        
+        if (isExcel) {
+            try {
+                const ExcelJS = (await import('exceljs')).default
+                const workbook = new ExcelJS.Workbook()
+                await workbook.xlsx.load(await file.arrayBuffer())
+                const worksheet = workbook.worksheets[0]
+                
+                if (!worksheet || worksheet.rowCount === 0) {
+                    throw new Error('Empty Excel file')
                 }
-            },
-        })
+                
+                const rawData: any[] = []
+                let headers: string[] = []
+                
+                worksheet.eachRow((row, rowNumber) => {
+                    if (rowNumber === 1) {
+                        row.eachCell((cell, colNumber) => {
+                            headers[colNumber] = cell.text || cell.value?.toString() || `Column${colNumber}`
+                        })
+                    } else {
+                        const rowData: any = {}
+                        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                            const header = headers[colNumber]
+                            if (header) {
+                                rowData[header] = cell.text || cell.value?.toString() || ''
+                            }
+                        })
+                        rawData.push(rowData)
+                    }
+                })
+                
+                if (rawData.length > 0) {
+                    console.log("EXCEL RAW RESULTS:", rawData)
+                    processParsedData(rawData)
+                } else {
+                    throw new Error('No data found in Excel file')
+                }
+            } catch (err) {
+                console.error(err)
+                setMessage({ text: 'Excel file could not be parsed.', type: 'error' })
+                setRows([])
+                setDetectedHeaders([])
+                setNormalizedHeaders([])
+            }
+        } else {
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                complete: (results) => {
+                    console.log("CSV RAW RESULTS:", results)
+                    if (results.data && results.data.length > 0) {
+                        processParsedData(results.data)
+                    } else {
+                        setRows([])
+                        setDetectedHeaders([])
+                        setNormalizedHeaders([])
+                        setMessage({ text: 'CSV file is empty or could not be parsed.', type: 'error' })
+                    }
+                },
+                error: (error) => {
+                    console.error(error)
+                    setMessage({ text: 'Error reading CSV file.', type: 'error' })
+                }
+            })
+        }
     }
     const validateRowCommercial = (r: any) => {
         const errors: string[] = []
@@ -300,7 +357,7 @@ export default function CommercialRenewalImportPage() {
                         <div className="relative group">
                             <input
                                 type="file"
-                                accept=".csv"
+                                accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel"
                                 id="file-upload"
                                 className="hidden"
                                 onChange={e => e.target.files && handleFileUpload(e.target.files[0])}
@@ -319,7 +376,7 @@ export default function CommercialRenewalImportPage() {
                                 </div>
                                 <div className="text-center">
                                     <p className="text-lg font-bold text-gray-900 mb-1">
-                                        {fileName ? fileName : 'Drag & drop your CSV file'}
+                                        {fileName ? fileName : 'Drag & drop your CSV or Excel file'}
                                     </p>
                                     <p className="text-sm">
                                         {fileName ? 'Click to change file' : 'or click to browse from computer'}
