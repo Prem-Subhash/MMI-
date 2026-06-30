@@ -5,7 +5,8 @@ import { authenticateApiRequest } from '@/utils/auth';
 // Setup Supabase Admin Client using Service Role Key
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { persistSession: false } }
 );
 
 export async function GET(request: Request) {

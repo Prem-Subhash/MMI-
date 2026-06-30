@@ -14,6 +14,7 @@ import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { Edit2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
+import { formatPolicies } from '@/utils/formatPolicies'
 
 /* ── helpers ──────────────────────────────────────────────── */
 
@@ -179,6 +180,7 @@ export default function LeadReviewPage() {
         .from('temp_leads_basics')
         .select(`
           *,
+          lead_policies(policy_type),
           pipeline_stages (
             id,
             stage_name
@@ -222,8 +224,9 @@ export default function LeadReviewPage() {
     const { data } = await supabase
       .from('temp_leads_basics')
       .select(`
-        *,
-        pipeline_stages (
+          *,
+          lead_policies(policy_type),
+          pipeline_stages (
           id,
           stage_name
         )
@@ -325,13 +328,13 @@ export default function LeadReviewPage() {
               </KpiCard>
               <KpiCard 
                 icon={<IconFile />} 
-                label="Policy Type"
+                label="Policies"
                 accent="from-amber-500 to-orange-500"
                 glow="shadow-amber-200/60"
                 iconBg="bg-amber-50 text-amber-600"
                 hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
               >
-                <p className="text-base font-bold text-gray-800">{formatPolicyType(lead?.policy_type)}</p>
+                <p className="text-base font-bold text-gray-800">{formatPolicies(lead?.lead_policies?.length > 0 ? lead.lead_policies.map((p: any) => p.policy_type) : lead?.policy_type)}</p>
               </KpiCard>
               <KpiCard 
                 icon={<IconZap />} 
@@ -344,6 +347,17 @@ export default function LeadReviewPage() {
                 <StageBadge stage={lead?.pipeline_stages?.stage_name} variant={status as any} />
               </KpiCard>
             </div>
+
+            {/* 1.5 ADDITIONAL NOTES */}
+            {lead?.notes && (
+              <div className="mb-10 bg-slate-100 rounded-2xl border-2 border-slate-200 p-6 shadow-sm">
+                <h3 className="text-xs font-black uppercase tracking-wider text-black mb-2 flex items-center gap-2">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                  Additional Notes
+                </h3>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{lead.notes}</p>
+              </div>
+            )}
 
             {/* 2. BUTTON GROUP ORGANIZATION */}
             <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6">
@@ -664,6 +678,10 @@ export default function LeadReviewPage() {
                   client_name: updated.client_name,
                   email: updated.email,
                   phone: updated.phone,
+                  ...(updated.selectedPolicies ? {
+                    policy_type: updated.selectedPolicies[0],
+                    lead_policies: updated.selectedPolicies.map((p: string) => ({ policy_type: p }))
+                  } : {})
                 }))
               }
               // 2. Background sync to confirm DB truth

@@ -13,6 +13,7 @@ import {
   ChevronDown,
   StickyNote,
 } from 'lucide-react'
+import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
 
 export default function NewLeadPage() {
   /* ---------------- STATE ---------------- */
@@ -22,6 +23,8 @@ export default function NewLeadPage() {
   const [error, setError] = useState<string | null>(null)
   const [duplicateWarning, setDuplicateWarning] = useState(false)
   const [isAdditionalQuote, setIsAdditionalQuote] = useState(false)
+
+  const [selectedPolicies, setSelectedPolicies] = useState<string[]>([]);
 
   const [form, setForm] = useState({
     client_name: '',
@@ -107,16 +110,13 @@ export default function NewLeadPage() {
   const checkDuplicateActiveLead = async (clientId: string) => {
     const { data } = await supabase
       .from('temp_leads_basics')
-      .select(`
-        id,
-        current_stage:pipeline_stages(stage_name)
-      `)
+      .select('id, policy_type, current_stage:pipeline_stages(stage_name)')
       .eq('client_id', clientId)
-      .eq('policy_type', form.policy_type)
       .eq('policy_flow', form.policy_flow)
       .not('current_stage.stage_name', 'in', '("Completed","Did Not Bind")')
 
-    return data && data.length > 0
+    if (!data) return false;
+    return data.some((d: any) => selectedPolicies.includes(d.policy_type));
   }
 
   /* ---------------- CREATE LEAD ---------------- */
@@ -130,7 +130,7 @@ export default function NewLeadPage() {
       !form.request_type ||
       !form.insurence_category ||
       !form.policy_flow ||
-      !form.policy_type
+      selectedPolicies.length === 0
     ) {
       setError('Please fill all mandatory fields')
       return
@@ -168,28 +168,42 @@ export default function NewLeadPage() {
         return
       }
 
+      const primaryPolicy = selectedPolicies[0];
+
+      
       const { data: lead, error } = await supabase
         .from('temp_leads_basics')
         .insert({
+          policy_type: primaryPolicy,
           ...form,
-          // DB expects boolean, default to false if undefined
           send_email_to_client: form.send_email_to_client ?? false,
           is_additional_quote: forceAdditionalQuote,
           client_id: clientId,
           assigned_csr: auth.user.id,
-          pipeline_id: form.insurence_category === 'commercial' 
-            ? '930d64f7-d10a-4305-9036-67892a6075d3' 
-            : 'f77d068d-1754-421b-b2ce-d527ec8bd0f3',
+          pipeline_id: 'f77d068d-1754-421b-b2ce-d527ec8bd0f3',
         })
         .select()
-        .single()
+        .single();
 
-      if (error || !lead) throw error
+      if (error || !lead) throw error;
 
+      // Phase 2: Insert into lead_policies
+      const policiesPayload = selectedPolicies.map((p) => ({
+        lead_id: lead.id,
+        policy_type: p
+      }));
 
+      const { error: policiesError } = await supabase
+        .from('lead_policies')
+        .insert(policiesPayload);
 
-      /* ✅ SUCCESS UI */
-      toast('Lead created successfully!', 'success')
+      // Phase 3: Error Handling with WARNING strategy
+      if (policiesError) {
+        console.error("Backend Integration Error - Failed to insert into lead_policies:", policiesError);
+        toast('Lead was created successfully, but policy records could not be saved. Please contact an administrator.', 'error');
+      } else {
+        toast('Lead created successfully!', 'success');
+      }
       setIsAdditionalQuote(false)
       setDuplicateWarning(false)
 
@@ -292,16 +306,20 @@ export default function NewLeadPage() {
             />
           </div>
 
-          <Select name="policy_type" value={form.policy_type} onChange={handleChange} placeholder="Policy Coverage *"
-            options={
-              form.insurence_category === 'commercial'
+          <div className="col-span-1 md:col-span-2">
+            <MultiSelectPolicy 
+              selectedValues={selectedPolicies}
+              onChange={setSelectedPolicies}
+              error={selectedPolicies.length === 0 ? "Please select at least one policy type" : false}
+              options={form.insurence_category === 'commercial' 
                 ? [
-                  { value: 'general_liability', label: 'General Liability' },
-                  { value: 'workers_comp', label: 'Workers Compensation' },
+                  { value: 'workers_comp', label: 'Workers Comp' },
+                  { value: 'bop', label: 'Business Owners Policy' },
                   { value: 'commercial_auto', label: 'Commercial Auto' },
-                  { value: 'bop', label: 'Business Owners Policy (BOP)' },
+                  { value: 'commercial_package', label: 'Commercial Package' },
+                  { value: 'umbrella', label: 'Umbrella (Excess)' },
+                  { value: 'general_liability', label: 'General Liability' },
                   { value: 'commercial_property', label: 'Commercial Property' },
-                  { value: 'professional_liability', label: 'Professional Liability' },
                   { value: 'other', label: 'Other' }
                 ]
                 : [
@@ -309,12 +327,11 @@ export default function NewLeadPage() {
                   { value: 'auto', label: 'Auto' },
                   { value: 'condo', label: 'Condo' },
                   { value: 'landlord_home', label: 'Landlord Home' },
-                  { value: 'landlord_condo', label: 'Landlord Condo' },
-                  { value: 'motorcycle', label: 'Motorcycle' },
                   { value: 'umbrella', label: 'Umbrella' }
                 ]
-            }
-          />
+              }
+            />
+          </div>
 
 
           <Input icon={<User />} name="referral" value={form.referral} onChange={handleChange} placeholder="Referral (Optional)" />

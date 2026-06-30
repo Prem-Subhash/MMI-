@@ -34,6 +34,7 @@ type Renewal = {
   current_stage_id: string
   stage_metadata: Record<string, any>
   pipeline_stage: Stage
+  lead_policies?: any[]
 }
 
 export default function RenewalDetailPage() {

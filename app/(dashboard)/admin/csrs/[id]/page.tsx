@@ -21,6 +21,7 @@ import {
   Tag,
   GitBranch,
 } from 'lucide-react'
+import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
 // ─────────────────────────────────────────────
@@ -238,6 +239,7 @@ export default function CSRWorkloadPage() {
         insurence_category,
         policy_flow,
         policy_type,
+          lead_policies(policy_type),
         created_at,
         current_stage:pipeline_stages (
           stage_name

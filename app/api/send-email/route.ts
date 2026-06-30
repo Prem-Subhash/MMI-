@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
     /* ================= GENERATE & RESOLVE FORM LINK GLOBALLY ================= */
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
-    const formLink = intakeId && formType && baseUrl ? `${baseUrl}/intake/${intakeId}?type=${formType}` : ''
+    const formLink = intakeId && baseUrl ? `${baseUrl}/intake/${intakeId}` : ''
     
     if (finalBody && formLink) {
       const styledLink = `<a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">${formLink}</a>`

@@ -4,6 +4,7 @@ import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Calendar, Download, Search, Eye } from 'lucide-react'
+import { formatPolicies } from '@/utils/formatPolicies'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 
@@ -61,6 +62,7 @@ function CommercialRenewalContent() {
       id,
       client_name,
       policy_type,
+          lead_policies(policy_type),
       renewal_date,
       carrier,
       current_premium,
@@ -182,7 +184,7 @@ function CommercialRenewalContent() {
                         className="w-full sm:w-auto bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center whitespace-nowrap"
                     >
                         <Download size={18} />
-                        Import CSV
+                        Import File
                     </Link>
                 </div>
             </div>

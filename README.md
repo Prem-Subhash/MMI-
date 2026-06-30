@@ -116,8 +116,10 @@ moonstar-crm/
 │   │   │   ├── renewals/           # Renewal management
 │   │   │   │   ├── [id]/           # Renewal detail page
 │   │   │   │   ├── commercial/     # Commercial renewals list
+│   │   │   │   │   └── import/     # Native Excel (.xlsx) & CSV Bulk Import
 │   │   │   │   ├── debug/          # Debug/diagnostic view
 │   │   │   │   └── personal/       # Personal renewals list
+│   │   │   │       └── import/     # Native Excel (.xlsx) & CSV Bulk Import
 │   │   │   └── reports/            # CSR-specific reporting
 │   │   ├── admin/                  # Admin role workspace
 │   │   │   ├── assignments/        # Lead assignment management
@@ -185,14 +187,15 @@ moonstar-crm/
 │   │   ├── TopBar.tsx              # Auth state, notifications, user profile
 │   │   ├── Sidebar.tsx             # Role-based navigation
 │   │   └── Footer.tsx
-│   ├── leads/                      # Lead-specific components
+│   ├── leads/                      # Lead management & Profiles
 │   │   ├── DocumentViewer.tsx      # In-app document preview
-│   │   └── EditClientModal.tsx     # Client record edit modal
+│   │   └── EditClientModal.tsx     # Client record edit modal (supports multi-policy editing)
 │   ├── pipeline/                   # Workflow & stage management
 │   │   └── UpdateStageModal.tsx    # Conditional field logic per pipeline type
 │   ├── ui/                         # Atomic design system primitives
 │   │   ├── IntakeUI.tsx            # Input, Select, SectionCard, FieldGrid
 │   │   ├── Loading.tsx             # Standardized loading spinners
+│   │   ├── MultiSelectPolicy.tsx   # Dynamic multi-policy selector
 │   │   └── Toast.tsx               # Toast notification component
 │   └── page.tsx                    # Shared page wrapper
 │

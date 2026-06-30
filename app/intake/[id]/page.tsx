@@ -35,6 +35,7 @@ export default function IntakeFormPage() {
 
   /* ================= STATE ================= */
   const [formType, setFormType] = useState<string | null>(null)
+  const [activePolicies, setActivePolicies] = useState<string[]>([])
   const [leadId, setLeadId] = useState<string | null>(null)
   const [formData, setFormData] = useState<any>({
     primary_applicant: {},
@@ -83,6 +84,13 @@ export default function IntakeFormPage() {
         auto: {},
         ...(data.form_data || {})
       })
+
+      // Use Multi-Policy snapshot from temp_intake_forms
+      const policies = data.active_policies && data.active_policies.length > 0 
+        ? data.active_policies 
+        : [data.form_type];
+      
+      setActivePolicies(policies);
 
       // Fetch existing documents
       const { data: docs } = await supabase
@@ -153,6 +161,21 @@ export default function IntakeFormPage() {
     if (isPreview || !intakeId) return
 
     setError(null)
+    
+    // Multi-Policy Validation: Ensure at least some data exists for the requested sections
+    let validationError = null;
+    if (isHomeLayout && (!formData.home || Object.keys(formData.home).length === 0)) {
+      validationError = "Please complete the Home Insurance section.";
+    }
+    if (isAutoLayout && (!formData.auto || Object.keys(formData.auto).length === 0)) {
+      validationError = "Please complete the Auto Insurance section.";
+    }
+    
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setIsSubmitting(true)
 
     const { error } = await supabase
@@ -315,12 +338,24 @@ export default function IntakeFormPage() {
     home_auto: "home_auto",
 
     auto: "auto",
-    motorcycle: "auto"
+    motorcycle: "auto",
+    commercial_auto: "auto"
   }
 
-  const mappedLayout = formType ? (formLayoutMap[formType] || formType) : null;
-  const isHomeLayout = mappedLayout === 'home' || mappedLayout === 'home_auto';
-  const isAutoLayout = mappedLayout === 'auto' || mappedLayout === 'home_auto';
+  // Multi-Policy Resolution
+  const resolvedLayouts = new Set<string>();
+  activePolicies.forEach(policy => {
+    const layout = formLayoutMap[policy] || policy;
+    if (layout === 'home_auto') {
+      resolvedLayouts.add('home');
+      resolvedLayouts.add('auto');
+    } else {
+      resolvedLayouts.add(layout);
+    }
+  });
+
+  const isHomeLayout = resolvedLayouts.has('home');
+  const isAutoLayout = resolvedLayouts.has('auto');
 
   /* ================= RENDER FORM ================= */
   return (
@@ -350,7 +385,7 @@ export default function IntakeFormPage() {
               data={formData.home}
               onChange={val => updateSection('home', val)}
               disabled={isPreview}
-              formType={formType || 'home'}
+              formType="home"
             />
           )}
 
@@ -359,7 +394,7 @@ export default function IntakeFormPage() {
               data={formData.auto}
               onChange={val => updateSection('auto', val)}
               disabled={isPreview}
-              formType={formType || 'auto'}
+              formType="auto"
             />
           )}
 
