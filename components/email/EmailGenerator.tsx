@@ -10,6 +10,9 @@ type EmailTemplate = {
   name: string
   subject: string
   body: string
+  policy_type?: string
+  policy_flow?: string
+  insurance_category?: string
 }
 
 interface EmailGeneratorProps {
@@ -108,7 +111,7 @@ export default function EmailGenerator({
   // Normalize template name to logic key
   const getTemplateKey = (t: EmailTemplate) => t.name.toLowerCase().replace(/\s+/g, '_')
 
-  // Rule 4: Dependency check (templateId, data)
+  // Dynamic Preview Hook
   useEffect(() => {
     if (composeMode === 'manual') return;
 
@@ -123,6 +126,12 @@ export default function EmailGenerator({
 
     const key = getTemplateKey(template)
 
+    let bodyText = template.body;
+
+    console.log('--- TEMPORARY LOGGING ---');
+    console.log('data.policies before replaceTemplate:', JSON.stringify(data.policies, null, 2));
+    console.log('[EmailGenerator] Final Policies Array before templating:', data.policies.map(p => ({ type: p.type })))
+
     const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData, notes)
     const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData, notes).replace(/\n/g, '<br>')
 
@@ -134,6 +143,12 @@ export default function EmailGenerator({
     if (!type) return 'Home';
     return type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
+
+  const getDynamicTitle = () => {
+    if (data.policies.length === 0) return `${formatFormType(formType)} Insurance Email Preview`;
+    const types = Array.from(new Set(data.policies.map(p => formatFormType(p.type))));
+    return `${types.join(' / ')} Insurance Email Preview`;
+  };
 
   const handleAddDetails = () => {
     if (!draftData.policy.cName && !draftData.policy.a1 && !draftData.policy.oldPremium && !draftData.policy.newPremium && !draftData.defCurrentCarrier) {
@@ -203,7 +218,10 @@ export default function EmailGenerator({
 
   const activeTpl = templates.find(t => t.id === templateId)
   const tplKey = activeTpl ? getTemplateKey(activeTpl) : ''
-  const isMulti = ['renewal_switch', 'new_lead', 'payment_reminder'].includes(tplKey)
+  const isMulti = data.policies.some(p => {
+    const t = templates.find(t => t.id === (p as any).templateId);
+    return t ? ['renewal_switch', 'new_lead', 'payment_reminder'].includes(getTemplateKey(t)) : false;
+  }) || ['renewal_switch', 'new_lead', 'payment_reminder'].includes(tplKey);
 
   const isRenewal = leadData?.policy_flow === 'renewal';
   const isTemplate = composeMode === 'template';
@@ -344,7 +362,7 @@ export default function EmailGenerator({
             )}
 
             {/* POLICY BREAKDOWN */}
-            {templateId && !isPersonalLines && (
+            {(templateId && !isPersonalLines) && (
               <div className="pt-1">
                 <div className="flex items-center justify-between mb-3 bg-[#10B889]/6 border border-[#10B889]/15 rounded-xl px-4 py-2.5">
                   <div className="flex items-center gap-2">
@@ -422,7 +440,7 @@ export default function EmailGenerator({
                     <div className="bg-gray-50/80 border-t border-gray-100 px-4 py-3 flex items-center justify-end gap-3">
                       <button onClick={handleAddDetails}
                         className="flex items-center gap-1.5 text-xs font-bold text-white bg-[#10B889] hover:bg-[#0e9e75] px-4 py-1.5 rounded-lg shadow-sm transition-all transform active:scale-95">
-                        <Plus size={14} /> Add Details 
+                        <Plus size={14} /> Add Details
                       </button>
                     </div>
                   </div>
@@ -502,10 +520,10 @@ export default function EmailGenerator({
                         </select>
                         <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0e8f6a]">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="m6 9 6 6 6-6"/>
-                        </svg>
+                            <path d="m6 9 6 6 6-6" />
+                          </svg>
+                        </div>
                       </div>
-                    </div>
                     )}
                     {!hasTemplateFormLink && (
                       <button
@@ -538,7 +556,7 @@ export default function EmailGenerator({
                   </svg>
                 </div>
                 <span className="text-white font-bold text-sm">
-                  {composeMode === 'manual' ? 'Manual Composer' : `${formatFormType(formType)} Insurance Email Preview`}
+                  {composeMode === 'manual' ? 'Manual Composer' : getDynamicTitle()}
                 </span>
               </div>
               <span className="flex items-center gap-1.5 bg-white/10 text-white/80 text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/15 uppercase tracking-widest">

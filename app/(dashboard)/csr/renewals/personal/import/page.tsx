@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import Papa from 'papaparse'
 import { supabase } from '@/lib/supabaseClient'
+import { parseImportFile } from '@/utils/fileParser'
+import Papa from 'papaparse'
 import Link from 'next/link'
 import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
 import { Spinner } from '@/components/ui/Loading'
@@ -88,23 +89,23 @@ export default function PersonalRenewalImportPage() {
     const handleFileUpload = async (file: File) => {
         setFileName(file.name)
         setMessage({ text: 'Parsing file...', type: 'info' })
-        
+
         const isExcel = file.name.match(/\.(xlsx|xls)$/i)
-        
+
         if (isExcel) {
             try {
                 const ExcelJS = (await import('exceljs')).default
                 const workbook = new ExcelJS.Workbook()
                 await workbook.xlsx.load(await file.arrayBuffer())
                 const worksheet = workbook.worksheets[0]
-                
+
                 if (!worksheet || worksheet.rowCount === 0) {
                     throw new Error('Empty Excel file')
                 }
-                
+
                 const rawData: any[] = []
                 let headers: string[] = []
-                
+
                 worksheet.eachRow((row, rowNumber) => {
                     if (rowNumber === 1) {
                         row.eachCell((cell, colNumber) => {
@@ -121,8 +122,8 @@ export default function PersonalRenewalImportPage() {
                         rawData.push(rowData)
                     }
                 })
-                
-                if (rawData.length > 
+
+                if (rawData.length >
                     0) {
                     console.log("EXCEL RAW RESULTS:", rawData)
                     processParsedData(rawData)
@@ -392,9 +393,9 @@ export default function PersonalRenewalImportPage() {
                             <div className="bg-slate-50 border border-slate-200/60 rounded-2xl p-6 space-y-4">
                                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-widest flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-                                    CSV Header Debugger
+                                    File Header Debugger
                                 </h3>
-                                
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                                     <div className="space-y-1.5">
                                         <p className="font-bold text-slate-500">Detected Headers ({detectedHeaders.length}):</p>
@@ -409,7 +410,7 @@ export default function PersonalRenewalImportPage() {
                                             ))}
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-1.5">
                                         <p className="font-bold text-slate-500">Normalized Headers ({normalizedHeaders.length}):</p>
                                         <div className="bg-white border border-slate-100 rounded-lg p-3 max-h-40 overflow-y-auto font-mono text-[10px] text-slate-700 divide-y divide-slate-100">
@@ -451,7 +452,7 @@ export default function PersonalRenewalImportPage() {
                                             <ul className="list-disc pl-5 font-mono text-[10px] space-y-1">
                                                 {mappingMismatches.map((h, i) => (
                                                     <li key={i}>
-                                                        Raw: <span className="bg-white px-1 py-0.5 rounded border border-amber-200">"{h}"</span> 
+                                                        Raw: <span className="bg-white px-1 py-0.5 rounded border border-amber-200">"{h}"</span>
                                                         &rarr; Cleaned: <span className="bg-white px-1 py-0.5 rounded border border-amber-200 font-bold">"{normalizeKey(h)}"</span>
                                                     </li>
                                                 ))}

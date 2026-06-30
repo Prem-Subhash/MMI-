@@ -13,6 +13,8 @@ export interface PolicyBreakdown {
   vin?: string;
   oldPremium?: string;
   newPremium?: string;
+  templateId?: string;
+  policyFlow?: string;
 }
 
 export interface EmailData {
@@ -104,15 +106,53 @@ export function generatePolicyBreakdown(templateKey: string, policies: PolicyBre
   }).join('<br>');
 }
 
-export function generateDynamicSections(flowType: string): { sections: string, counter: number } {
+export function generateDynamicSections(policies: PolicyBreakdown[]): { sections: string, counter: number } {
+  console.log('--- generateDynamicSections INPUT ---', JSON.stringify(policies, null, 2));
   let sections = '';
   let counter = 1;
+  const processedCategories = new Set<string>();
   
-  if (flowType === 'home') {
-    sections += `<b>${counter}. Property Insurance Details</b><br>• A copy of your current property insurance policy OR<br>• For a new purchase: a copy of the purchase agreement along with your current address<br><br>`;
-    counter++;
+  if (policies && policies.length > 0) {
+    policies.forEach(p => {
+    const type = (p.type || '').toLowerCase();
+    console.log('ITERATING POLICY TYPE:', p.type, '->', type);
+    
+    if (['home', 'condo', 'landlord_home', 'landlord_condo'].includes(type)) {
+      console.log(`MATCHED PROPERTY CASE for type: ${type}`);
+      if (!processedCategories.has('property')) {
+        sections += `<b>${counter}. Property Insurance Details</b><br>• A copy of your current property insurance policy OR<br>• For a new purchase: a copy of the purchase agreement along with your current address<br><br>`;
+        counter++;
+        processedCategories.add('property');
+      } else {
+        console.log(`SKIPPED PROPERTY CASE for type ${type} because 'property' is already processed.`);
+      }
+    } else if (['auto', 'motorcycle'].includes(type)) {
+      console.log(`MATCHED VEHICLE CASE for type: ${type}`);
+      if (!processedCategories.has('vehicle')) {
+        sections += `<b>${counter}. Driver & Vehicle Information</b><br>• Driver’s licenses for all household drivers<br>• Vehicle Identification Numbers (VINs) for all vehicles<br><br>`;
+        counter++;
+        processedCategories.add('vehicle');
+      } else {
+        console.log(`SKIPPED VEHICLE CASE for type ${type} because 'vehicle' is already processed.`);
+      }
+    } else if (type === 'umbrella') {
+      console.log(`MATCHED UMBRELLA CASE for type: ${type}`);
+      if (!processedCategories.has('umbrella')) {
+        sections += `<b>${counter}. Umbrella Coverage Details</b><br>• A copy of your current underlying home and auto insurance declaration pages<br><br>`;
+        counter++;
+        processedCategories.add('umbrella');
+      } else {
+        console.log(`SKIPPED UMBRELLA CASE for type ${type} because 'umbrella' is already processed.`);
+      }
+    } else {
+      console.log(`NO CASE MATCHED for type: ${type}`);
+    }
+  });
   }
-  
+
+  sections += `<b>${counter}. Additional Information Form</b><br>For your convenience, we have provided a link to the intake form that collects additional details needed to ensure quote accuracy.<br><br>`;
+  counter++;
+
   return { sections, counter };
 }
 
@@ -121,12 +161,53 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
   
   // Normalize key for logic matching
   const normalizedKey = templateKey.toLowerCase().replace(/\s+/g, '_');
-  
+
+  let activeTemplateString = templateString;
+
+  if (normalizedKey === 'info_req' && (templateString.includes('Dear') || templateString.includes('\n'))) {
+    let activePolicyTypes = data.policies.map(p => p.type.toLowerCase());
+    if (activePolicyTypes.length === 0) {
+      if (leadData?.lead_policies && leadData.lead_policies.length > 0) {
+        activePolicyTypes = leadData.lead_policies.map((p: any) => (p.policy_type || '').toLowerCase());
+      } else if (leadData?.policy_type) {
+        activePolicyTypes = [leadData.policy_type.toLowerCase()];
+      } else {
+        activePolicyTypes = ['home'];
+      }
+    }
+
+    const hasProperty = activePolicyTypes.some(t => ['home', 'condo', 'landlord_home', 'landlord_condo'].includes(t));
+    const hasVehicle = activePolicyTypes.some(t => ['auto', 'motorcycle'].includes(t));
+    const hasUmbrella = activePolicyTypes.some(t => t === 'umbrella');
+
+    let dynamicBody = `Dear {{client_name}},\n\nThank you for reaching out to Innovative Insurance. We appreciate the opportunity to assist you and look forward to preparing a competitive and accurate insurance quote tailored to your needs.\n\nTo proceed, we kindly request the following items:\n\n`;
+    let counter = 1;
+
+    if (hasProperty) {
+      dynamicBody += `${counter}. Property Insurance Details\n• A copy of your current property insurance policy OR\n• For a new purchase: a copy of the purchase agreement along with your current address\n\n`;
+      counter++;
+    }
+    if (hasVehicle) {
+      dynamicBody += `${counter}. Driver & Vehicle Information\n• Driver’s licenses for all household drivers and insured individuals\n• Vehicle Identification Numbers (VINs) for all vehicles\n*(Note: If you provide your current auto policy declarations page, we can collect VIN information directly from it.)*\n\n`;
+      counter++;
+    }
+    if (hasUmbrella) {
+      dynamicBody += `${counter}. Umbrella Requirements\n• A copy of your current underlying home and auto insurance declaration pages (if not already provided)\n\n`;
+      counter++;
+    }
+
+    dynamicBody += `${counter}. Additional Information Form\nFor your convenience, please complete our secure online intake form to provide the additional details needed to ensure quote accuracy. This form includes a few important information fields and a brief questionnaire that helps us apply all eligible discounts.\n\nComplete your form here: {{form_link}}\n\n`;
+
+    dynamicBody += `Providing these items helps us prepare the most accurate quote and prevents any last-minute changes, as insurance reports are processed only at the time of binding.\n\nThank you once again for considering Innovative Insurance. If you have any questions or need assistance completing the form, please feel free to reach out.`;
+
+    activeTemplateString = dynamicBody;
+  }
+
   const combinedTypes = getCombinedTypes(data.policies);
   const totalSavings = calculateTotalSavings(data.policies);
   const breakdown = generatePolicyBreakdown(normalizedKey, data.policies);
   
-  const { sections: dynamicSections, counter: formCounter } = generateDynamicSections('home');
+  const { sections: dynamicSections, counter: formCounter } = generateDynamicSections(data.policies);
   
   const idText = '';
   const pluralPol = data.policies.length > 1 ? 'policies' : 'policy';
@@ -189,8 +270,8 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     status: leadData?.status || '',
     notes: notes || leadData?.notes || ''
   };
-  
-  let output = templateString;
+
+  let output = activeTemplateString;
 
   // New Generalized Replacement Engine
   // Matches: {{ variable_name }} OR [Variable Name] OR $[Variable Name] etc.

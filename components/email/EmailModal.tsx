@@ -16,25 +16,7 @@ type EmailTemplate = {
   insurance_category?: string
 }
 
-const templateLabels: Record<string, string> = {
-  info_req: "Information Request",
-  new_lead: "Send Quote",
-  renewal_same: "Renewal (Same Carrier)",
-  renewal_switch: "Renewal (Switch Carrier)",
-  congrats_new: "Congratulations (New Client)",
-  congrats_existing: "Congratulations (Existing Client)",
-  follow_up: "Follow-Up",
-  auto_payment: "Automatic Payment Confirmation",
-  payment_reminder: "Payment Reminder"
-}
-
-const templateGroups = [
-  { label: "Lead Stage", items: ["info_req", "new_lead"] },
-  { label: "Renewal", items: ["renewal_same", "renewal_switch"] },
-  { label: "Closing", items: ["congrats_new", "congrats_existing"] },
-  { label: "Follow-Up", items: ["follow_up"] },
-  { label: "Payments", items: ["auto_payment", "payment_reminder"] }
-]
+// Unused template maps removed
 
 interface EmailModalProps {
   leadId: string;
@@ -120,9 +102,6 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
         .from('email_templates')
         .select('*')
         .eq('is_active', true)
-        .eq('policy_flow', dynamicPolicyFlow)
-        .eq('policy_type', dynamicPolicyType)
-        .eq('insurance_category', dynamicCategory)
 
       if (templateError) {
         setError(templateError.message)
@@ -157,25 +136,9 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
         if (profile) setCsrData(profile);
       }
 
-      // Filter out duplicate templates by name
-      const uniqueTemplates = (templateData || []).reduce((acc: EmailTemplate[], current) => {
-        // Skip Umbrella templates
-        if (current.name.toLowerCase().includes('umbrella')) {
-          return acc;
-        }
-
-        // Remove "Personal " prefix
-        const cleanName = current.name.replace(/^Personal\s+/i, '');
-
-        const x = acc.find(item => item.name === cleanName);
-        if (!x) {
-          return acc.concat([{ ...current, name: cleanName }]);
-        } else {
-          return acc;
-        }
-      }, []);
-
-      setTemplates(uniqueTemplates)
+      // Filter out only umbrella templates to maintain parity, but do NOT deduplicate by name
+      const allTemplates = (templateData || []).filter(t => !t.name.toLowerCase().includes('umbrella'))
+      setTemplates(allTemplates)
       
       let policies = [leadData.policy_type || 'home'];
       if (leadData.lead_policies && leadData.lead_policies.length > 0) {
@@ -183,11 +146,10 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       }
       setActivePolicies(policies);
       
-      if (dynamicCategory === 'personal') {
-        const infoReqTemplate = uniqueTemplates.find(t => t.name === 'info_req');
-        if (infoReqTemplate) {
-          setTemplateId(infoReqTemplate.id);
-        }
+      // Auto-assign info_req template
+      const infoReqTpl = allTemplates.find(t => t.name === 'info_req');
+      if (infoReqTpl) {
+        setTemplateId(infoReqTpl.id);
       }
       
       setLoading(false)
@@ -475,158 +437,9 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                 )}
 
                 <div className="space-y-6">
-                  {composeMode === 'template' && lead?.insurence_category !== 'personal' && (
-                    <div className={`grid grid-cols-1 ${lead?.policy_flow !== 'renewal' ? 'md:grid-cols-2' : ''} gap-6`}>
-                      {/* TEMPLATE SELECT */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between ml-1 h-5">
-                          <label className="text-[10px] font-bold text-black uppercase tracking-widest">
-                            {lead?.policy_flow === 'renewal' ? 'Renewal Email' : `Email Purpose (${formatFormType(formType).toUpperCase()} INSURANCE)`}
-                          </label>
-                          {lead?.policy_flow !== 'renewal' && (
-                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-tighter shadow-sm ${getBadgeStyle(formType)}`}>
-                              {formatFormType(formType).toUpperCase()}
-                            </span>
-                          )}
-                        </div>
+                  {/* REMOVED PRIMARY DROPDOWNS: Selection is now handled dynamically per-row inside EmailGenerator */}
 
-                        <div className="relative">
-                          <select
-                            value={templateId}
-                            onChange={e => setTemplateId(e.target.value)}
-                            className="peer w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm text-gray-900"
-                            disabled={templates.length === 0}
-                          >
-                            {templates.length === 0 ? (
-                              <option value="">No templates available</option>
-                            ) : (
-                              <>
-                                <option value="">Select Email Type</option>
-                                {templateGroups.map(group => {
-                                  const groupTemplates = templates.filter(t => group.items.includes(t.name));
-                                  if (groupTemplates.length === 0) return null;
-
-                                  return (
-                                    <optgroup key={group.label} label={group.label}>
-                                      {groupTemplates.map(t => (
-                                        <option key={t.id} value={t.id}>
-                                          {templateLabels[t.name] || t.name}
-                                        </option>
-                                      ))}
-                                    </optgroup>
-                                  );
-                                })}
-                              </>
-                            )}
-                          </select>
-                          {templates.length === 0 ? (
-                            <div className="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2 animate-in fade-in zoom-in-95 duration-200">
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 shrink-0 mt-0.5">
-                                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-                              </svg>
-                              <p className="text-[10px] text-amber-800 font-semibold leading-tight">
-                                No templates found for {formatFormType(formType)}. Try selecting a different form type or check template settings.
-                              </p>
-                            </div>
-                          ) : (
-                            <p className="mt-1.5 text-[10px] text-gray-500 font-medium ml-1 leading-snug">
-                              Select the email purpose to load <strong className="text-gray-700">{formatFormType(formType)}</strong> templates.
-                            </p>
-                          )}
-                          <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
-                            <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                              <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* FORM TYPE SELECT */}
-                      {lead?.policy_flow !== 'renewal' && (
-                        <div className="space-y-2">
-                          <div className="flex items-center ml-1 h-5">
-                            <label className="text-[10px] font-bold text-black uppercase tracking-widest">
-                              Form Type
-                            </label>
-                          </div>
-
-                          <div className="relative">
-                            <select
-                              value={formType}
-                              onChange={e => setFormType(e.target.value)}
-                              className="peer w-full appearance-none border border-gray-200 rounded-xl px-4 py-3 bg-white focus:outline-none focus:ring-2 focus:ring-[#10B889]/20 focus:border-[#10B889] transition-all text-sm font-medium shadow-sm text-gray-900"
-                            >
-                              <option value="">Select Form Type</option>
-                              <option value="home">Home</option>
-                              <option value="auto">Auto</option>
-                              <option value="condo">Condo</option>
-                              <option value="landlord_home">Landlord Home</option>
-                              <option value="landlord_condo">Landlord Condo</option>
-                              <option value="umbrella">Umbrella</option>
-                              <option value="motorcycle">Motorcycle</option>
-                            </select>
-
-                            <div className="pointer-events-none absolute top-3.5 right-0 flex items-center px-4 text-black transition-transform duration-200 peer-focus:rotate-180">
-                              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
-                                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                              </svg>
-                            </div>
-                          </div>
-                          <p className="mt-1.5 text-[10px] text-gray-500 font-medium ml-1 leading-snug">
-                            Form Type selects the specific subtype templates.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {/* METADATA DISPLAY */}
-                  {composeMode === 'template' && templateId && (
-                    <div className="group relative overflow-hidden bg-white border border-gray-200/60 rounded-2xl p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-gray-300 transition-all duration-300 animate-in fade-in zoom-in-95">
-                      {/* Subtle gradient background decoration */}
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#10B889]/10 to-[#2E5C85]/10 blur-2xl -z-0 rounded-full group-hover:scale-125 transition-transform duration-500"></div>
-
-                      <div className="relative z-10 flex gap-4 items-start">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#10B889]/10 to-[#2E5C85]/10 text-[#2E5C85] border border-white shadow-sm flex items-center justify-center shrink-0 mt-0.5 ring-1 ring-black/5 group-hover:from-[#10B889]/20 group-hover:to-[#2E5C85]/20 transition-colors">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                          </svg>
-                        </div>
-                        <div className="flex-1 space-y-2.5">
-                          <div>
-                            <p className="text-[10px] font-black text-black-400 uppercase tracking-[0.2em] mb-1">Loaded Template</p>
-                            <p className="text-base font-bold text-gray-900 leading-tight">
-                              <span className="text-[#2E5C85]">{formatFormType(formType)}</span>
-                              <span className="mx-2 text-gray-300 font-medium">→</span>
-                              {templateLabels[templates.find(t => t.id === templateId)?.name || ''] || templates.find(t => t.id === templateId)?.name}
-                            </p>
-                          </div>
-                          <div className="flex flex-wrap gap-2.5 pt-1">
-                            {templates.find(t => t.id === templateId) && (
-                              <>
-                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                                  <span className="text-slate-400 font-medium">Type:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.policy_type || formType}</span>
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                  <span className="text-slate-400 font-medium">Flow:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.policy_flow}</span>
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200/60 text-slate-600 shadow-sm transition-colors group-hover:bg-white group-hover:border-slate-300">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                                  <span className="text-slate-400 font-medium">Category:</span> <span className="capitalize">{templates.find(t => t.id === templateId)?.insurance_category}</span>
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* REMOVED METADATA DISPLAY: Covered by per-row display in Generator */}
 
                   {/* SECTION DIVIDER */}
                   <div className="flex items-center gap-3 py-1">

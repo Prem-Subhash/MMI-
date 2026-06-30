@@ -131,7 +131,13 @@ export default function SendFormPage() {
       .eq('form_type', formType)
       .maybeSingle()
 
-    if (existing?.id) return existing.id
+    if (existing?.id) {
+      await supabase
+        .from('temp_intake_forms')
+        .update({ active_policies: activePolicies })
+        .eq('id', existing.id)
+      return existing.id
+    }
 
     const { data, error } = await supabase
       .from('temp_intake_forms')
@@ -139,6 +145,7 @@ export default function SendFormPage() {
         lead_id: leadId,
         form_type: formType,
         status: 'sent',
+        active_policies: activePolicies
       })
       .select()
       .single()
