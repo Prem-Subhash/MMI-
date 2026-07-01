@@ -76,6 +76,7 @@ export default function HomePage() {
       {/* Content */}
       <section style={content}>
         <div className="max-w-3xl">
+          <h1 style={heading} className='text-4xl font-extrabold tracking-tight mb-2 drop-shadow-sm'>Welcome,</h1>
           <h1 style={heading}>
             Your Key to a Brighter <br /> Future
           </h1>
