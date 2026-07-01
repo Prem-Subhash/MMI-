@@ -99,6 +99,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh flex flex-col font-sans pb-safe relative overflow-hidden lg:overflow-visible">
+      {/* Mobile Back to Home Link */}
+      <button
+        type="button"
+        onClick={() => router.push('/')}
+        className="lg:hidden absolute top-6 left-6 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 hover:border-white/50 text-white text-sm font-medium transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group"
+      >
+        <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+        <span>Back to Home</span>
+      </button>
       
       {/* Mobile-only background gradient wrapper */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-700 lg:hidden -z-20 overflow-hidden">
@@ -116,6 +125,15 @@ export default function LoginPage() {
 
         {/* LEFT SIDE (40%) - Branding (Desktop Only) */}
         <div className="hidden lg:flex w-full lg:w-[40%] bg-gradient-to-br from-emerald-500 to-teal-700 relative overflow-hidden flex-col justify-center px-12 lg:px-16 text-white shrink-0 shadow-lg lg:shadow-2xl z-10">
+          {/* Back to Home Link */}
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="absolute top-8 left-12 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 hover:border-white/50 text-white text-sm font-medium transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group"
+          >
+            <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+            <span>Back to Home</span>
+          </button>
           {/* Geometric Shapes */}
           <div className="absolute top-0 right-0 w-48 h-full bg-white/10 skew-x-12 translate-x-24 rounded-l-3xl backdrop-blur-sm"></div>
           <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-teal-400/30 rounded-full blur-3xl"></div>
