@@ -157,8 +157,8 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                 }}
             >
                 <img
-                    src="/logo.png"
-                    alt="Moonstar Logo"
+                    src="/innovative_logo_-removebg-preview.png"
+                    alt="Innovative Logo"
                     className="h-10 lg:h-16 w-auto object-contain max-w-[140px] sm:max-w-[200px] lg:max-w-none"
                 />
             </div>

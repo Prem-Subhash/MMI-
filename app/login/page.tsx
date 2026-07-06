@@ -99,6 +99,15 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-dvh flex flex-col font-sans pb-safe relative overflow-hidden lg:overflow-visible">
+      {/* Mobile Back to Home Link */}
+      <button
+        type="button"
+        onClick={() => router.push('/')}
+        className="lg:hidden absolute top-6 left-6 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 hover:border-white/50 text-white text-sm font-medium transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group"
+      >
+        <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+        <span>Back to Home</span>
+      </button>
       
       {/* Mobile-only background gradient wrapper */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-700 lg:hidden -z-20 overflow-hidden">
@@ -116,14 +125,28 @@ export default function LoginPage() {
 
         {/* LEFT SIDE (40%) - Branding (Desktop Only) */}
         <div className="hidden lg:flex w-full lg:w-[40%] bg-gradient-to-br from-emerald-500 to-teal-700 relative overflow-hidden flex-col justify-center px-12 lg:px-16 text-white shrink-0 shadow-lg lg:shadow-2xl z-10">
+          {/* Back to Home Link */}
+          <button
+            type="button"
+            onClick={() => router.push('/')}
+            className="absolute top-8 left-12 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 hover:border-white/50 text-white text-sm font-medium transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group"
+          >
+            <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
+            <span>Back to Home</span>
+          </button>
           {/* Geometric Shapes */}
           <div className="absolute top-0 right-0 w-48 h-full bg-white/10 skew-x-12 translate-x-24 rounded-l-3xl backdrop-blur-sm"></div>
           <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-teal-400/30 rounded-full blur-3xl"></div>
           <div className="absolute top-10 left-1/2 w-32 h-32 bg-emerald-300/20 rounded-full blur-2xl"></div>
 
           <div className="relative z-20 max-w-xl mx-auto lg:mx-0 w-full text-left">
-            <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 drop-shadow-sm">MOONSTAR</h1>
-            <h2 className="text-2xl font-medium text-emerald-50 mb-6">Mortgage</h2>
+            <img
+              src="/innovative_logo_-removebg-preview.png"
+              alt="Innovative Insurance Logo"
+              className="h-16 lg:h-20 w-auto object-contain mb-4 drop-shadow-sm"
+            />
+            <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight mb-2 drop-shadow-sm">INNOVATIVE</h1>
+            <h2 className="text-2xl font-medium text-emerald-50 mb-6">Insurance</h2>
             <div className="w-16 h-1 bg-emerald-300 rounded-full mb-8"></div>
             <p className="text-lg text-emerald-100 max-w-md leading-relaxed drop-shadow-sm">
               Streamline your workflow, manage client relationships effectively, and close more deals with our integrated dashboard solution.
@@ -139,8 +162,13 @@ export default function LoginPage() {
 
           {/* MOBILE BRANDING (Visible only on mobile, centered above the card) */}
           <div className="lg:hidden flex flex-col items-center justify-center text-white mb-6 sm:mb-8 text-center drop-shadow-md z-10 w-full mt-2 sm:mt-6">
-             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-1">MOONSTAR</h1>
-             <h2 className="text-lg sm:text-xl font-medium text-emerald-100">Mortgage</h2>
+             <img
+               src="/innovative_logo_-removebg-preview.png"
+               alt="Innovative Insurance Logo"
+               className="h-12 sm:h-14 w-auto object-contain mb-2 drop-shadow-sm"
+             />
+             <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-1">INNOVATIVE</h1>
+             <h2 className="text-lg sm:text-xl font-medium text-emerald-100">Insurance</h2>
           </div>
 
           <div className="w-full max-w-md bg-white/95 lg:bg-white/70 backdrop-blur-2xl lg:backdrop-blur-xl rounded-[2rem] sm:rounded-[2.5rem] lg:rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] lg:shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/40 lg:border-white/60 p-6 sm:p-8 lg:p-10 relative z-10 transition-all duration-300 lg:hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
