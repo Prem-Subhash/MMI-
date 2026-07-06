@@ -32,9 +32,9 @@ const portalCards: PortalCard[] = [
   {
     id: 'lending',
     title: 'Accurate Lending',
-    logo: '/Accurate%20Lending%20Logo.jpg',
+    logo: '/Accurate_Lending_Logo-removebg-preview.png',
     description: 'Access the Commercial Lending CRM portal to manage lending pipelines, underwriting, and borrower communication.',
-    targetUrl: '#',
+    targetUrl: '/lending/login',
   },
 ]
 
@@ -45,13 +45,31 @@ export default function HomePage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
-        const { data: profile } = await supabase
+        let { data: profile, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, portal_access')
           .eq('id', session.user.id)
           .single()
         
-        if (profile?.role) {
+        if (error) {
+          const fallback = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
+          profile = { ...fallback.data, portal_access: isLending ? ['lending'] : ['insurance'] }
+        }
+        
+        const isLendingRole = profile?.role === 'lending' || profile?.role === 'accurate_lending'
+        const hasLendingPortal = profile?.portal_access?.includes('lending') || profile?.portal_access?.includes('accurate_lending')
+        const hasInsurancePortal = profile?.portal_access?.includes('insurance')
+
+        if (hasLendingPortal && !hasInsurancePortal) {
+          router.push('/lending/dashboard')
+        } else if (isLendingRole) {
+          router.push('/lending/dashboard')
+        } else if (profile?.role) {
           router.push(`/${profile.role}`)
         }
       }
