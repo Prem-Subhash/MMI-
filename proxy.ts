@@ -42,18 +42,28 @@ export async function proxy(request: NextRequest) {
         console.log(`[MIDDLEWARE] No User Session accessing ${pathname}`);
     }
 
-    if (pathname.startsWith('/login') || pathname.startsWith('/unauthorized')) {
+    if (pathname.startsWith('/login') || pathname.startsWith('/lending/login') || pathname.startsWith('/unauthorized')) {
         return response
     }
 
+    // Handle alias route /accurate_lending directly by redirecting to /lending/dashboard
+    if (pathname.startsWith('/accurate_lending')) {
+        const redirectResponse = NextResponse.redirect(new URL('/lending/dashboard', request.url))
+        response.cookies.getAll().forEach(cookie => {
+            redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+        })
+        return redirectResponse
+    }
+
     // Role Route Protections
-    const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin', '/dashboard']
+    const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin', '/dashboard', '/lending', '/accurate_lending']
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute) {
         if (!user) {
-            console.log(`[MIDDLEWARE] Redirecting to /login - No user found`)
-            const redirectResponse = NextResponse.redirect(new URL('/login', request.url))
+            console.log(`[MIDDLEWARE] Redirecting to login - No user found`)
+            const loginUrl = (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) ? '/lending/login' : '/login'
+            const redirectResponse = NextResponse.redirect(new URL(loginUrl, request.url))
             // Copy cookies from our refreshed response object to the redirect response
             response.cookies.getAll().forEach(cookie => {
                 redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
@@ -61,16 +71,29 @@ export async function proxy(request: NextRequest) {
             return redirectResponse
         }
 
-        // Fetch profile with Case-Insensitive fallback
-        const { data: profile, error: profileError } = await supabaseAdmin
+        // Fetch profile with Case-Insensitive fallback and portal_access
+        let { data: profile, error: profileError } = await supabaseAdmin
             .from('profiles')
-            .select('role')
+            .select('role, portal_access')
             .eq('id', user.id)
             .single()
 
-        const role = profile?.role?.toLowerCase()
+        if (profileError) {
+            // Defensive fallback if portal_access column has not been migrated yet
+            const fallback = await supabaseAdmin
+                .from('profiles')
+                .select('role')
+                .eq('id', user.id)
+                .single()
+            const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
+            profile = { ...fallback.data, portal_access: isLending ? ['lending'] : ['insurance'] }
+        }
 
-        if (!role) {
+        const role = profile?.role?.toLowerCase()
+        const isLendingRole = role === 'lending' || role === 'accurate_lending'
+        const portalAccess: string[] = profile?.portal_access || (isLendingRole ? ['lending'] : ['insurance'])
+
+        if (!role && !portalAccess.includes('lending') && !portalAccess.includes('accurate_lending')) {
             console.warn(`[MIDDLEWARE] No role found for user ${user.email} (${user.id})`)
             const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
             response.cookies.getAll().forEach(cookie => {
@@ -79,14 +102,30 @@ export async function proxy(request: NextRequest) {
             return redirectResponse
         }
 
+        // Special RBAC check for Accurate Lending routes
+        if (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) {
+            const hasLendingAccess = portalAccess.includes('lending') || portalAccess.includes('accurate_lending') || isLendingRole || role === 'superadmin'
+            if (!hasLendingAccess) {
+                console.warn(`[MIDDLEWARE] Unauthorized lending access attempt by user ${user.id} with role: ${role}`)
+                const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
+                response.cookies.getAll().forEach(cookie => {
+                    redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+                })
+                return redirectResponse
+            }
+            return response
+        }
+
         const accessMatrix: Record<string, string[]> = {
             csr: ['/csr'],
             admin: ['/admin', '/csr'],
             accounting: ['/accounting'],
-            superadmin: ['/superadmin', '/admin', '/csr', '/accounting']
+            superadmin: ['/superadmin', '/admin', '/csr', '/accounting', '/lending'],
+            lending: ['/lending'],
+            accurate_lending: ['/lending']
         }
 
-        const validPaths = accessMatrix[role] || []
+        const validPaths = accessMatrix[role || ''] || []
         const isAuthorized = validPaths.some((allowedRoute) => pathname.startsWith(allowedRoute))
 
         if (!isAuthorized) {

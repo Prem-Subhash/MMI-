@@ -2,7 +2,7 @@ import { ToastProvider } from '@/lib/ToastContext'
 import './globals.css'
 
 export const metadata = {
-  title: 'Moonstar CRM',
+  title: 'Login',
   description: 'Insurance CSR Dashboard',
   icons: {
     icon: '/image.png',
