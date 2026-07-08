@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Clock, User, ChevronRight, Menu, ShieldCheck } from 'lucide-react'
+import { Bell, Clock, User, ChevronRight, Menu, ShieldCheck, ArrowLeft } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 
@@ -113,7 +113,18 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                     <span>Commercial Lending Portal • Authorized Access</span>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-4 text-white flex-shrink-0 ml-auto">
+                <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0 ml-auto">
+
+                    {/* Back to Home Button */}
+                    <button
+                        onClick={() => router.push('/')}
+                        title="Back to Home"
+                        aria-label="Back to Home"
+                        className="flex items-center justify-center gap-1.5 p-2 md:px-3.5 md:py-1.5 rounded-full md:rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs sm:text-sm font-semibold transition-all shadow-xs hover:shadow-sm group flex-shrink-0"
+                    >
+                        <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-0.5 flex-shrink-0" />
+                        <span className="hidden md:inline">Back to Home</span>
+                    </button>
 
                     {/* Notification Bell */}
                     <div className="relative" ref={notificationsRef}>

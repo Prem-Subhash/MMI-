@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Moonstar Mortgage CRM',
+  title: ' Mortgage CRM',
 }
 
 export default function MortgageLayout({
