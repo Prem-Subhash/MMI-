@@ -13,8 +13,7 @@ import {
   TrendingUp,
   Building2,
   DollarSign,
-  ArrowUpRight,
-  ArrowLeft
+  ArrowUpRight
 } from 'lucide-react'
 
 export default function LendingDashboardPage() {
@@ -48,15 +47,6 @@ export default function LendingDashboardPage() {
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto z-10">
-          <button
-            onClick={() => router.push('/')}
-            title="Back to Home"
-            aria-label="Back to Home"
-            className="flex items-center justify-center gap-1.5 p-3 md:px-4 md:py-3.5 rounded-full md:rounded-xl bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 hover:text-[#10B889] text-xs sm:text-sm font-bold transition-all shadow-sm hover:shadow group flex-shrink-0"
-          >
-            <ArrowLeft size={18} className="transition-transform group-hover:-translate-x-0.5 flex-shrink-0" />
-            <span className="hidden md:inline">Back to Home</span>
-          </button>
           <button
             onClick={() => router.push('/lending/loans/new')}
             className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap"

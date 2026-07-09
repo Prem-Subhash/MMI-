@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { Activity, Clock, FileText, CheckCircle2, ShieldCheck, AlertCircle, ArrowLeft, UserCheck, Banknote } from 'lucide-react'
+import { Activity, Clock, FileText, CheckCircle2, ShieldCheck, AlertCircle, UserCheck, Banknote } from 'lucide-react'
 
 const STATIC_ACTIVITIES = [
   {
@@ -64,13 +64,6 @@ export default function LendingActivityLogPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm">
         <div>
-          <button
-            onClick={() => router.push('/lending/dashboard')}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#10B889] hover:text-[#2E5C85] uppercase tracking-widest mb-2 transition-colors"
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Dashboard</span>
-          </button>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
             <Activity className="text-[#10B889]" />
             <span>Underwriting Activity Feed</span>

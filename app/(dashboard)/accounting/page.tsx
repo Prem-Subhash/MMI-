@@ -15,8 +15,7 @@ import {
   TrendingUp,
   PieChart,
   User,
-  Clock,
-  ArrowLeft
+  Clock
 } from 'lucide-react'
 
 export default async function AccountingDashboard() {
@@ -196,15 +195,6 @@ export default async function AccountingDashboard() {
         </div>
         
         <div className="flex items-center gap-2 w-full md:w-auto">
-          <Link
-            href="/"
-            title="Back to Home"
-            aria-label="Back to Home"
-            className="flex items-center justify-center gap-1.5 p-2 md:px-3.5 md:py-2.5 rounded-full md:rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 hover:text-[#10B889] text-xs md:text-sm font-bold transition-all shadow-sm hover:shadow group flex-shrink-0"
-          >
-            <ArrowLeft size={16} className="transition-transform group-hover:-translate-x-0.5 flex-shrink-0" />
-            <span className="hidden md:inline">Back to Home</span>
-          </Link>
           <Link href="/accounting/all-leads" className="w-full md:w-auto">
             <button className="w-full bg-[#2E5C85] hover:bg-[#2E5C85]/90 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-2 whitespace-nowrap text-xs">
               Manage Reconciliations

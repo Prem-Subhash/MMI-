@@ -7,7 +7,6 @@ import {
   UserPlus,
   Trash2,
   Save,
-  ArrowLeft,
   CheckCircle2,
   DollarSign,
   FileText,
@@ -117,14 +116,6 @@ export default function LendingAddLoanFormPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm">
         <div>
-          <button
-            type="button"
-            onClick={() => router.push('/lending/dashboard')}
-            className="flex items-center gap-1.5 text-xs font-bold text-[#10B889] hover:text-[#2E5C85] uppercase tracking-widest mb-2 transition-colors"
-          >
-            <ArrowLeft size={14} />
-            <span>Back to Dashboard</span>
-          </button>
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#10B889] mb-1">
             <Building2 size={14} />
             <span>Commercial Loan Intake Form</span>
