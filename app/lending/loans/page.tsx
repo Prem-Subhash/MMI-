@@ -219,11 +219,15 @@ export default function LendingLoansDirectoryPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() => router.push('/lending/loans/new')}
+                      onClick={() =>
+                        loan.stage.includes('Term Sheet')
+                          ? router.push('/lending/term-sheet-received')
+                          : router.push('/lending/loans/new')
+                      }
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-[#10B889] text-emerald-700 hover:text-white font-bold rounded-lg transition-all text-xs border border-emerald-200 hover:border-[#10B889] shadow-2xs"
                     >
                       <Eye size={14} />
-                      <span>View Form</span>
+                      <span>{loan.stage.includes('Term Sheet') ? 'Term Sheets UI' : 'View Form'}</span>
                     </button>
                   </td>
                 </tr>

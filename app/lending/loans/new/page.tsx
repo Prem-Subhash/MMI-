@@ -13,9 +13,19 @@ import {
   Users,
   Landmark,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  ChevronDown
 } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import SectionELenderInfo from '@/components/lending/SectionELenderInfo'
+
+export const CITIZENSHIP_OPTIONS = [
+  { label: 'US Citizen', value: 'US Citizen' },
+  { label: 'Permanent Resident', value: 'Permanent Resident' },
+  { label: 'Visa Holder', value: 'Visa Holder' },
+  { label: 'Non-US Citizen', value: 'Non-US Citizen' },
+  { label: 'Other', value: 'Other' }
+]
 
 interface Partner {
   id: string
@@ -23,6 +33,7 @@ interface Partner {
   mobile: string
   email: string
   ownership: string
+  citizenshipStatus?: string
 }
 
 export default function LendingAddLoanFormPage() {
@@ -46,8 +57,8 @@ export default function LendingAddLoanFormPage() {
 
   // Tab 2 State (Partners & Leads)
   const [partners, setPartners] = useState<Partner[]>([
-    { id: '1', fullName: 'Robert Vance', mobile: '(312) 555-0198', email: 'rvance@apexlogistics.com', ownership: '60' },
-    { id: '2', fullName: 'Sarah Vance', mobile: '(312) 555-0199', email: 'svance@apexlogistics.com', ownership: '40' }
+    { id: '1', fullName: 'Robert Vance', mobile: '(312) 555-0198', email: 'rvance@apexlogistics.com', ownership: '60', citizenshipStatus: 'US Citizen' },
+    { id: '2', fullName: 'Sarah Vance', mobile: '(312) 555-0199', email: 'svance@apexlogistics.com', ownership: '40', citizenshipStatus: 'US Citizen' }
   ])
   const [leadSource, setLeadSource] = useState('Loan Officer')
   const [referralName, setReferralName] = useState('David Miller (Senior LO)')
@@ -89,7 +100,7 @@ export default function LendingAddLoanFormPage() {
 
   const handleAddPartner = () => {
     const newId = (partners.length + 1).toString()
-    setPartners([...partners, { id: newId, fullName: '', mobile: '', email: '', ownership: '' }])
+    setPartners([...partners, { id: newId, fullName: '', mobile: '', email: '', ownership: '', citizenshipStatus: '' }])
     toast('Added new partner input section', 'info')
   }
 
@@ -248,70 +259,68 @@ export default function LendingAddLoanFormPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Client Credit Score</label>
-                  <input
-                    type="number"
-                    value={clientCreditScore}
-                    onChange={e => setClientCreditScore(e.target.value)}
-                    placeholder="740"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                  />
-                </div>
-
-                <div>
                   <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Loan Type</label>
-                  <select
-                    value={loanType}
-                    onChange={e => setLoanType(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                  >
-                    <option value="SBA 7a">SBA 7a</option>
-                    <option value="SBA 504">SBA 504</option>
-                    <option value="Conventional">Conventional</option>
-                    <option value="Bridge Loan">Bridge Loan</option>
-                    <option value="Private Loan">Private Loan</option>
-                    <option value="Equipment Financing">Equipment Financing</option>
-                    <option value="Other">Other</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={loanType}
+                      onChange={e => setLoanType(e.target.value)}
+                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    >
+                      <option value="SBA 7a">SBA 7a</option>
+                      <option value="SBA 504">SBA 504</option>
+                      <option value="Conventional">Conventional</option>
+                      <option value="Bridge Loan">Bridge Loan</option>
+                      <option value="Private Loan">Private Loan</option>
+                      <option value="Equipment Financing">Equipment Financing</option>
+                      <option value="Other">Other</option>
+                    </select>
+                    <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Purpose of Loan</label>
-                  <select
-                    value={loanPurpose}
-                    onChange={e => setLoanPurpose(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                  >
-                    <option value="Acquisition">Acquisition</option>
-                    <option value="Refinance">Refinance</option>
-                    <option value="Start-up">Start-up</option>
-                    <option value="Partner Buyout">Partner Buyout</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={loanPurpose}
+                      onChange={e => setLoanPurpose(e.target.value)}
+                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    >
+                      <option value="Acquisition">Acquisition</option>
+                      <option value="Refinance">Refinance</option>
+                      <option value="Start-up">Start-up</option>
+                      <option value="Partner Buyout">Partner Buyout</option>
+                    </select>
+                    <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Nature of Loan (Business Type)</label>
-                  <select
-                    value={natureOfLoan}
-                    onChange={e => setNatureOfLoan(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                  >
-                    <option value="Cannabis Dispensary">Cannabis Dispensary</option>
-                    <option value="Day Care">Day Care</option>
-                    <option value="Doctor's Office">Doctor&apos;s Office</option>
-                    <option value="Franchise - Restaurant">Franchise - Restaurant</option>
-                    <option value="Gas Station">Gas Station</option>
-                    <option value="Grocery Store">Grocery Store</option>
-                    <option value="Hotel/Motel - Flagged">Hotel/Motel - Flagged</option>
-                    <option value="Hotel/Motel - Independent">Hotel/Motel - Independent</option>
-                    <option value="Laundramat">Laundramat</option>
-                    <option value="Liquor Store">Liquor Store</option>
-                    <option value="Multi-Unit">Multi-Unit</option>
-                    <option value="Other">Other</option>
-                    <option value="Strip Mall">Strip Mall</option>
-                    <option value="Truck Stop">Truck Stop</option>
-                    <option value="Warehouse">Warehouse</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={natureOfLoan}
+                      onChange={e => setNatureOfLoan(e.target.value)}
+                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    >
+                      <option value="Cannabis Dispensary">Cannabis Dispensary</option>
+                      <option value="Day Care">Day Care</option>
+                      <option value="Doctor's Office">Doctor&apos;s Office</option>
+                      <option value="Franchise - Restaurant">Franchise - Restaurant</option>
+                      <option value="Gas Station">Gas Station</option>
+                      <option value="Grocery Store">Grocery Store</option>
+                      <option value="Hotel/Motel - Flagged">Hotel/Motel - Flagged</option>
+                      <option value="Hotel/Motel - Independent">Hotel/Motel - Independent</option>
+                      <option value="Laundramat">Laundramat</option>
+                      <option value="Liquor Store">Liquor Store</option>
+                      <option value="Multi-Unit">Multi-Unit</option>
+                      <option value="Other">Other</option>
+                      <option value="Strip Mall">Strip Mall</option>
+                      <option value="Truck Stop">Truck Stop</option>
+                      <option value="Warehouse">Warehouse</option>
+                    </select>
+                    <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div className="sm:col-span-3">
@@ -472,17 +481,38 @@ export default function LendingAddLoanFormPage() {
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">% Ownership</label>
-                        <div className="relative">
-                          <input
-                            type="number"
-                            value={partner.ownership}
-                            onChange={e => handlePartnerChange(partner.id, 'ownership', e.target.value)}
-                            placeholder="50"
-                            className="w-full pl-3.5 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-sm font-extrabold focus:ring-2 focus:ring-purple-500 transition-all"
-                          />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">% Ownership</label>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              value={partner.ownership}
+                              onChange={e => handlePartnerChange(partner.id, 'ownership', e.target.value)}
+                              placeholder="50"
+                              className="w-full pl-3.5 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-sm font-extrabold focus:ring-2 focus:ring-purple-500 transition-all"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">Citizenship Status</label>
+                          <div className="relative">
+                            <select
+                              value={partner.citizenshipStatus || ''}
+                              onChange={e => handlePartnerChange(partner.id, 'citizenshipStatus', e.target.value)}
+                              className="appearance-none w-full pl-3.5 pr-9 py-2 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-2 focus:ring-purple-500 transition-all"
+                            >
+                              <option value="">Select Citizenship Status</option>
+                              {CITIZENSHIP_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </option>
+                              ))}
+                            </select>
+                            <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -504,14 +534,17 @@ export default function LendingAddLoanFormPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Lead Source Channel</label>
-                  <select
-                    value={leadSource}
-                    onChange={e => setLeadSource(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all"
-                  >
-                    <option value="Loan Officer">Loan Officer</option>
-                    <option value="Other Referral">Other Referral</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={leadSource}
+                      onChange={e => setLeadSource(e.target.value)}
+                      className="appearance-none w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all"
+                    >
+                      <option value="Loan Officer">Loan Officer</option>
+                      <option value="Other Referral">Other Referral</option>
+                    </select>
+                    <ChevronDown size={18} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                  </div>
                 </div>
 
                 <div>
@@ -534,7 +567,7 @@ export default function LendingAddLoanFormPage() {
                   setActiveTab('tab1')
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
-                className="bg-gray-200 hover:bg-gray-300 text-slate-800 font-bold py-3 px-6 rounded-xl transition-all text-sm"
+                className="bg-emerald-500 hover:bg-emerald-300 text-white font-bold py-3 px-6 rounded-xl transition-all text-sm"
               >
                 ← Back to Tab 1
               </button>
@@ -557,91 +590,19 @@ export default function LendingAddLoanFormPage() {
         {/* ==================== TAB 3: LENDER & DEPOSITS ==================== */}
         {activeTab === 'tab3' && (
           <div className="space-y-6 animate-fade-in">
-            {/* Section E */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="border-b border-gray-100 pb-4">
-                <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center text-xs font-extrabold">E</span>
-                  <span>Section E — Lender Information</span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Assigned financial institution and bank underwriting contact officer.</p>
-              </div>
+                       {/* Section E - Refactored Dynamic Reusable Component */}
+            <SectionELenderInfo />
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="sm:col-span-2 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold uppercase text-gray-700">Assigned Commercial Lenders (Multi-Select)</label>
-                    <span className="text-xs font-bold text-[#10B889] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      {selectedLenders.length} {selectedLenders.length === 1 ? 'Bank Selected' : 'Banks Selected'}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500">Click to select or deselect all banks this loan file was sent to for visual tracking.</p>
-                  <div className="flex flex-wrap gap-2 pt-1">
-                    {availableBanks.map(bank => {
-                      const isSelected = selectedLenders.includes(bank)
-                      return (
-                        <button
-                          key={bank}
-                          type="button"
-                          onClick={() => toggleLender(bank)}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 ${
-                            isSelected
-                              ? 'bg-[#10B889] text-white border-[#10B889] shadow-sm'
-                              : 'bg-gray-50 text-slate-700 border-gray-200 hover:bg-gray-100'
-                          }`}
-                        >
-                          <span>{bank}</span>
-                          {isSelected && <span className="text-white font-mono">✓</span>}
-                        </button>
-                      )
-                    })}
-                  </div>
-                  <div className="p-3.5 bg-gray-50/80 rounded-xl border border-gray-200 mt-2">
-                    <p className="text-[11px] font-bold uppercase text-slate-500 mb-1.5 flex items-center gap-1.5">
-                      <Landmark size={14} className="text-[#10B889]" />
-                      <span>Visual Tracking — File Sent To:</span>
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {selectedLenders.map(b => (
-                        <span key={b} className="inline-flex items-center gap-1 bg-white px-2.5 py-1 rounded-lg border border-gray-200 text-xs font-extrabold text-slate-800 shadow-2xs">
-                          <span>{b}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Bank Underwriter Officer Name</label>
-                  <input
-                    type="text"
-                    value={lenderContactName}
-                    onChange={e => setLenderContactName(e.target.value)}
-                    placeholder="e.g. Michael Chang (VP Lending)"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Bank Contact Email / Phone</label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="email"
-                      value={lenderContactEmail}
-                      onChange={e => setLenderContactEmail(e.target.value)}
-                      placeholder="mchang@bank.com"
-                      className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                    />
-                    <input
-                      type="text"
-                      value={lenderContactPhone}
-                      onChange={e => setLenderContactPhone(e.target.value)}
-                      placeholder="(312) 888-4321"
-                      className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
+            {/* Quick Link to Stage 5 Term Sheet Received UI */}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => router.push('/lending/term-sheet-received')}
+                className="px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-extrabold shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5"
+              >
+                <Landmark size={15} />
+                <span>Open Stage 5: Term Sheet Received &amp; Multi-Bank Document Uploads →</span>
+              </button>
             </div>
 
             {/* Section F */}
@@ -758,7 +719,7 @@ export default function LendingAddLoanFormPage() {
                   setActiveTab('tab2')
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
-                className="bg-gray-200 hover:bg-gray-300 text-slate-800 font-bold py-3 px-6 rounded-xl transition-all text-sm"
+                className="bg-emerald-500 hover:bg-emerald-300 text-white font-bold py-3 px-6 rounded-xl transition-all text-sm"
               >
                 ← Back to Tab 2
               </button>

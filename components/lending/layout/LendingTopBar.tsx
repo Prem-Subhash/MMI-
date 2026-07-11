@@ -141,7 +141,7 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                                             className={`px-4 py-3 sm:px-5 sm:py-4 hover:bg-blue-50/50 transition-colors cursor-pointer group ${n.unread ? 'bg-blue-50/25' : ''}`}
                                             onClick={() => {
                                                 setNotificationsOpen(false)
-                                                router.push('/lending/pipeline')
+                                                router.push(n.id === '1' ? '/lending/term-sheet-received' : '/lending/pipeline')
                                             }}
                                         >
                                             <div className="flex items-start gap-3">
