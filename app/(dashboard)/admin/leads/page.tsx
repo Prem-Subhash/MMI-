@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, Search, ArrowLeft } from 'lucide-react'
+import { Eye, Search } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -129,11 +129,6 @@ export default function AdminLeadsPage() {
                         className="bg-[#10B889] hover:bg-[#10B889]/80 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center whitespace-nowrap"
                     >
                         + New Lead
-                    </Link>
-                    <Link href="/admin" className="w-full sm:w-auto">
-                        <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full sm:w-auto justify-center h-full">
-                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
-                        </button>
                     </Link>
                 </div>
             </div>

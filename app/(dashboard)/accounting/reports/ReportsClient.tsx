@@ -8,7 +8,7 @@ import { formatCurrency } from '@/lib/currency'
 import {
   DollarSign, Percent, Calendar, Download, Printer, Search,
   BarChart2, User, Clock, ShieldCheck, AlertCircle, Info,
-  ArrowLeft, TrendingUp, Layers, CheckCircle2, SlidersHorizontal,
+  TrendingUp, Layers, CheckCircle2, SlidersHorizontal,
   Activity
 } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
@@ -181,11 +181,6 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 no-print">
         <div>
-          <Link href="/accounting">
-            <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4">
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Financial Dashboard
-            </button>
-          </Link>
           <h1 className="text-2xl font-semibold">Financial & Accounting Reports</h1>
           <p className="text-gray-500 mt-1 text-sm">
             Generate audit statements, track collection rates, and export data.

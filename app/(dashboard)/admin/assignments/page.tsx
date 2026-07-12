@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
-import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity, ArrowLeft } from 'lucide-react'
+import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
@@ -123,16 +123,9 @@ export default function AdminAssignmentsPage() {
     return (
         <div className="w-full max-w-[1600px] mx-auto">
             {/* Page Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">Lead Assignment Console</h1>
-                    <p className="text-gray-500 mt-1 text-sm">Operational control panel for managing lead workloads.</p>
-                </div>
-                <Link href="/admin" className="w-full md:w-auto">
-                    <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full md:w-auto justify-center h-full">
-                        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
-                    </button>
-                </Link>
+            <div className="mb-6">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">Lead Assignment Console</h1>
+                <p className="text-gray-500 mt-1 text-sm">Operational control panel for managing lead workloads.</p>
             </div>
 
             {/* Filter Hub */}

@@ -7,7 +7,6 @@ import { supabase } from '@/lib/supabaseClient'
 import { useToast } from '@/components/ui/Toast'
 import { formatCurrency } from '@/lib/currency'
 import { 
-  ArrowLeft, 
   DollarSign, 
   Percent, 
   Calendar, 
@@ -244,12 +243,7 @@ export default function LeadAccountingClient({
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <Link href="/accounting/all-leads">
-            <button className="flex items-center gap-2 text-sm font-bold text-[#2E5C85] hover:text-[#2E5C85]/80 transition">
-              <ArrowLeft size={16} /> Back to Accounting Leads
-            </button>
-          </Link>
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex items-center gap-3">
             <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight leading-tight">
               {lead.client_name}
             </h1>

@@ -194,7 +194,7 @@ export default async function AccountingDashboard() {
           </p>
         </div>
         
-        <div className="flex gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 w-full md:w-auto">
           <Link href="/accounting/all-leads" className="w-full md:w-auto">
             <button className="w-full bg-[#2E5C85] hover:bg-[#2E5C85]/90 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition flex items-center justify-center gap-2 whitespace-nowrap text-xs">
               Manage Reconciliations

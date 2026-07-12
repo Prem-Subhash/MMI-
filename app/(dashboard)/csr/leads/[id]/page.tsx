@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Send, ExternalLink } from 'lucide-react'
+import { Send, ExternalLink } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
@@ -363,13 +363,6 @@ export default function LeadReviewPage() {
             <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6">
               {/* Primary actions (left group) */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <button
-                  onClick={() => router.back()}
-                  className="px-5 py-2.5 bg-emerald-500 text-white hover:bg-emerald-600 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[120px]"
-                >
-                  <ArrowLeft size={16} />
-                  Back
-                </button>
                 <button
                   onClick={openHistoryModal}
                   className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[140px]"

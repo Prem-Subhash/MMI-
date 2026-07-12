@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
-import { ArrowLeft } from 'lucide-react'
+
 
 /* ── helpers ──────────────────────────────────────────────── */
 
@@ -242,13 +242,6 @@ export default function LeadReviewPage() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
               <div className="flex items-center gap-3">
                 <button
-                  onClick={() => router.back()}
-                  className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2 font-medium"
-                >
-                  <ArrowLeft size={16} />
-                  Back
-                </button>
-                <button
                   onClick={() => {
                     if (!lead.pipeline_id) {
                       alert('Pipeline not assigned to this lead')
@@ -308,13 +301,6 @@ export default function LeadReviewPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.back()}
-              className="px-4 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg shadow-sm transition flex items-center gap-2 font-medium"
-            >
-              <ArrowLeft size={16} />
-              Back
-            </button>
             <button
               onClick={() => {
                 if (!lead.pipeline_id) {

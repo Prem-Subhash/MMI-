@@ -3,9 +3,6 @@
 import { useRouter } from 'next/navigation'
 import {
   PlusCircle,
-  GitBranch,
-  Briefcase,
-  Activity,
   FileText,
   Clock,
   CheckCircle2,
@@ -25,8 +22,8 @@ export default function LendingDashboardPage() {
       <div className="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border-l-4 border-amber-500 p-4 rounded-r-xl flex items-start sm:items-center gap-3 text-slate-800 shadow-sm">
         <AlertCircle className="text-amber-600 flex-shrink-0 mt-0.5 sm:mt-0" size={20} />
         <div className="text-xs sm:text-sm">
-          <span className="font-bold uppercase tracking-wider text-amber-800 mr-1.5">UI Prototype Mode:</span>
-          The figures, cards, and activity summaries below display static demonstration values. Database persistence and underwriting calculations will be connected in Phase 2.
+          <span className="font-bold uppercase tracking-wider text-amber-800 mr-1.5">UI Prototype Mode</span>
+         
         </div>
       </div>
 
@@ -46,13 +43,15 @@ export default function LendingDashboardPage() {
           </p>
         </div>
 
-        <button
-          onClick={() => router.push('/lending/loans/new')}
-          className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap z-10"
-        >
-          <PlusCircle size={20} className="transition-transform group-hover:rotate-90" />
-          <span>New Loan Application</span>
-        </button>
+        <div className="flex items-center gap-3 w-full sm:w-auto z-10">
+          <button
+            onClick={() => router.push('/lending/loans/new')}
+            className="w-full sm:w-auto bg-brand hover:bg-brand-dark text-white font-bold py-3.5 px-6 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap"
+          >
+            <PlusCircle size={20} className="transition-transform group-hover:rotate-90" />
+            <span>New Loan Application</span>
+          </button>
+        </div>
       </div>
 
       {/* Metric Cards Section (Static Placeholders per Spec) */}
@@ -88,7 +87,7 @@ export default function LendingDashboardPage() {
             icon={<FileText size={24} className="text-purple-600" />}
             bgClass="bg-purple-50/60 border-purple-200/80 hover:border-purple-400"
             trend="$6.4M total volume"
-            onClick={() => router.push('/lending/pipeline')}
+            onClick={() => router.push('/lending/term-sheet-received')}
           />
           <MetricCard
             title="Closing in Process"
@@ -102,47 +101,7 @@ export default function LendingDashboardPage() {
         </div>
       </div>
 
-      {/* Quick Actions Grid */}
-      <div>
-        <h2 className="text-base font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Briefcase size={18} className="text-teal-600" />
-          <span>Lending Operations & Workflows</span>
-        </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <ActionCard
-            title="New Loan Application"
-            description="Submit a new commercial borrower inquiry with financial & partner details."
-            icon={<PlusCircle size={28} className="text-blue-600" />}
-            onClick={() => router.push('/lending/loans/new')}
-            badge="Sectioned Form"
-          />
-
-          <ActionCard
-            title="21-Stage Kanban Pipeline"
-            description="Visualize loans across all 21 stages from inquiry to check receipt."
-            icon={<GitBranch size={28} className="text-teal-600" />}
-            onClick={() => router.push('/lending/pipeline')}
-            badge="Horizontal View"
-          />
-
-          <ActionCard
-            title="Loans Directory"
-            description="Search, filter, and export active commercial loan portfolios."
-            icon={<Briefcase size={28} className="text-purple-600" />}
-            onClick={() => router.push('/lending/loans')}
-            badge="Portfolio Table"
-          />
-
-          <ActionCard
-            title="Underwriting Activity Log"
-            description="Track document requests, term sheets, and stage progression history."
-            icon={<Activity size={28} className="text-amber-600" />}
-            onClick={() => router.push('/lending/activity-log')}
-            badge="Audit Trail"
-          />
-        </div>
-      </div>
 
       {/* Recent Sample Loan Applications Table */}
       <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
@@ -187,7 +146,7 @@ export default function LendingDashboardPage() {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <button 
-                    onClick={() => router.push('/lending/loans/new')}
+                    onClick={() => router.push('/lending/term-sheet-received')}
                     className="text-xs font-bold text-blue-600 hover:text-blue-800 uppercase tracking-wide"
                   >
                     View Details
@@ -286,50 +245,4 @@ function MetricCard({
   )
 }
 
-function ActionCard({
-  title,
-  description,
-  icon,
-  onClick,
-  badge
-}: {
-  title: string
-  description: string
-  icon: React.ReactNode
-  onClick: () => void
-  badge: string
-}) {
-  return (
-    <div
-      onClick={onClick}
-      className={`
-        group cursor-pointer rounded-2xl p-6 flex flex-col justify-between
-        shadow-sm transition-all duration-300
-        bg-white text-gray-800 hover:bg-brand-dark hover:text-white
-        border border-gray-200 hover:border-brand-dark
-        hover:-translate-y-1 hover:shadow-xl relative overflow-hidden
-      `}
-    >
-      <div className="flex items-start justify-between gap-4 mb-6">
-        <div className="p-3.5 rounded-2xl bg-slate-50 group-hover:bg-white/10 transition-colors border border-gray-100 group-hover:border-white/20">
-          {icon}
-        </div>
-        <span className="text-[10px] font-extrabold uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-200 group-hover:bg-white/20 group-hover:text-white group-hover:border-white/30 transition-colors">
-          {badge}
-        </span>
-      </div>
 
-      <div>
-        <h3 className="text-lg font-extrabold mb-1.5 tracking-tight group-hover:text-white transition-colors">{title}</h3>
-        <p className="text-xs sm:text-sm text-slate-500 group-hover:text-slate-200 leading-relaxed font-medium transition-colors">
-          {description}
-        </p>
-      </div>
-
-      <div className="mt-6 pt-3 border-t border-gray-100 group-hover:border-white/10 flex items-center justify-between text-xs font-bold text-brand-dark group-hover:text-white transition-colors uppercase tracking-wider">
-        <span>Launch Module</span>
-        <span className="transition-transform group-hover:translate-x-1">→</span>
-      </div>
-    </div>
-  )
-}

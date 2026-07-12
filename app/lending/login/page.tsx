@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, EyeOff, Mail, Lock, CheckSquare } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, CheckSquare, ArrowLeft } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
 import { toast } from '@/lib/toast'
 
@@ -114,10 +114,11 @@ export default function LendingLoginPage() {
       <button
         type="button"
         onClick={() => router.push('/')}
-        className="lg:hidden absolute top-6 left-6 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-900/40 hover:bg-slate-900/60 border border-white/20 hover:border-white/40 text-white text-sm font-medium transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group"
+        title="Back to Home"
+        aria-label="Back to Home"
+        className="lg:hidden absolute top-5 left-5 z-30 p-3 rounded-full bg-slate-900/40 hover:bg-slate-900/60 border border-white/20 hover:border-white/40 text-white transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group flex items-center justify-center"
       >
-        <span className="transition-transform duration-300 group-hover:-translate-x-1">←</span>
-        <span>Back to Home</span>
+        <ArrowLeft size={20} className="transition-transform duration-300 group-hover:-translate-x-0.5" />
       </button>
       
       {/* Mobile-only background gradient wrapper */}

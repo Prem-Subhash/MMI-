@@ -113,8 +113,7 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                     <span>Commercial Lending Portal • Authorized Access</span>
                 </div>
 
-                <div className="flex items-center gap-2 sm:gap-4 text-white flex-shrink-0 ml-auto">
-
+                <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0 ml-auto">
                     {/* Notification Bell */}
                     <div className="relative" ref={notificationsRef}>
                         <button
@@ -142,7 +141,7 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                                             className={`px-4 py-3 sm:px-5 sm:py-4 hover:bg-blue-50/50 transition-colors cursor-pointer group ${n.unread ? 'bg-blue-50/25' : ''}`}
                                             onClick={() => {
                                                 setNotificationsOpen(false)
-                                                router.push('/lending/pipeline')
+                                                router.push(n.id === '1' ? '/lending/term-sheet-received' : '/lending/pipeline')
                                             }}
                                         >
                                             <div className="flex items-start gap-3">

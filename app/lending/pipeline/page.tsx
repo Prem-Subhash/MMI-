@@ -2,7 +2,23 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, Filter, PlusCircle, Building2, DollarSign, ArrowUpRight, ShieldCheck, AlertCircle } from 'lucide-react'
+import {
+  Search,
+  Filter,
+  PlusCircle,
+  Building2,
+  DollarSign,
+  ArrowUpRight,
+  ShieldCheck,
+  AlertCircle,
+  X,
+  FileText,
+  CheckCircle2,
+  Landmark,
+  ChevronDown
+} from 'lucide-react'
+import TermSheetReceivedStageUI from '@/components/lending/TermSheetReceivedStageUI'
+import { toast } from '@/lib/toast'
 
 const LENDING_STAGES = [
   '1. New Loan',
@@ -132,8 +148,13 @@ export default function LendingKanbanPipelinePage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('ALL')
+  const [cards, setCards] = useState<LoanCard[]>(STATIC_LOAN_CARDS)
 
-  const filteredCards = STATIC_LOAN_CARDS.filter(card => {
+  // Interactive modal state
+  const [activeModalCard, setActiveModalCard] = useState<LoanCard | null>(null)
+  const [modalStageIndex, setModalStageIndex] = useState<number>(4)
+
+  const filteredCards = cards.filter(card => {
     const matchesSearch =
       card.borrower.toLowerCase().includes(searchTerm.toLowerCase()) ||
       card.lender.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,6 +164,18 @@ export default function LendingKanbanPipelinePage() {
     const matchesType = selectedType === 'ALL' || card.type === selectedType
     return matchesSearch && matchesType
   })
+
+  const openStageModal = (card: LoanCard) => {
+    setActiveModalCard(card)
+    setModalStageIndex(card.stageIndex)
+  }
+
+  const updateCardStage = (cardId: string, newStageIndex: number) => {
+    setCards(prev =>
+      prev.map(c => (c.id === cardId ? { ...c, stageIndex: newStageIndex } : c))
+    )
+    toast(`Stage updated to ${LENDING_STAGES[newStageIndex]}`, 'success')
+  }
 
   return (
     <div className="w-full h-full flex flex-col space-y-4 animate-fade-in">
@@ -157,7 +190,7 @@ export default function LendingKanbanPipelinePage() {
             Accurate Lending Kanban Board
           </h1>
           <p className="text-xs sm:text-sm text-white/80 mt-0.5">
-            Horizontal scroll view displaying all 21 underwriting milestones from inquiry to check receipt.
+            Horizontal scroll view displaying all 21 underwriting milestones. Click any card to manage stage workflows or multi-bank Term Sheet uploads.
           </p>
         </div>
 
@@ -211,14 +244,21 @@ export default function LendingKanbanPipelinePage() {
         <div className="inline-flex items-start gap-4 pb-4">
           {LENDING_STAGES.map((stageName, index) => {
             const cardsInStage = filteredCards.filter(c => c.stageIndex === index)
+            const isTermSheetStage = index === 4 // 5. Term Sheet Received
 
             return (
               <div
                 key={stageName}
-                className="w-[320px] sm:w-[340px] shrink-0 bg-white/90 backdrop-blur-md rounded-2xl border border-gray-200/90 shadow-sm flex flex-col max-h-[calc(100vh-280px)] overflow-hidden transition-all duration-300 hover:shadow-md hover:border-blue-300/80 group"
+                className={`w-[320px] sm:w-[340px] shrink-0 bg-white/90 backdrop-blur-md rounded-2xl border shadow-sm flex flex-col max-h-[calc(100vh-280px)] overflow-hidden transition-all duration-300 hover:shadow-md group ${
+                  isTermSheetStage ? 'border-[#10B889] ring-2 ring-[#10B889]/30' : 'border-gray-200/90 hover:border-blue-300/80'
+                }`}
               >
                 {/* Column Header */}
-                <div className="p-3.5 bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white rounded-t-2xl flex items-center justify-between border-b border-gray-100 shrink-0">
+                <div className={`p-3.5 text-white rounded-t-2xl flex items-center justify-between border-b border-gray-100 shrink-0 ${
+                  isTermSheetStage
+                    ? 'bg-gradient-to-r from-[#10B889] via-[#10B889] to-[#2E5C85]'
+                    : 'bg-gradient-to-r from-[#10B889] to-[#2E5C85]'
+                }`}>
                   <div className="flex items-center gap-2 min-w-0 pr-2">
                     <span className="w-6 h-6 rounded-lg bg-white/20 text-white font-bold text-xs flex items-center justify-center shrink-0 border border-white/30">
                       {index + 1}
@@ -237,8 +277,10 @@ export default function LendingKanbanPipelinePage() {
                   {cardsInStage.map(card => (
                     <div
                       key={card.id}
-                      onClick={() => router.push('/lending/loans/new')}
-                      className="bg-white p-4 rounded-xl border border-gray-200/90 shadow-xs hover:shadow-lg hover:border-brand-dark transition-all cursor-pointer group/card relative overflow-hidden"
+                      onClick={() => openStageModal(card)}
+                      className={`bg-white p-4 rounded-xl border shadow-xs hover:shadow-lg transition-all cursor-pointer group/card relative overflow-hidden ${
+                        isTermSheetStage ? 'border-emerald-300 hover:border-[#10B889]' : 'border-gray-200/90 hover:border-brand-dark'
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200 font-mono">
@@ -268,13 +310,28 @@ export default function LendingKanbanPipelinePage() {
                         </div>
                       </div>
 
+                      {/* Prominent Multi-Bank Upload Action for Stage 5 */}
+                      {isTermSheetStage && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openStageModal(card)
+                          }}
+                          className="w-full mt-3 py-2 px-3 bg-gradient-to-r from-[#10B889] to-[#2E5C85] hover:opacity-95 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
+                        >
+                          <Landmark size={14} />
+                          <span>Multi-Bank Term Sheets</span>
+                        </button>
+                      )}
+
                       <div className="mt-3 pt-2.5 border-t border-gray-100 flex items-center justify-between">
                         <div>
                           <p className="text-[10px] uppercase font-bold text-slate-400">Loan Amount</p>
                           <p className="font-extrabold text-slate-900 text-sm">{card.amount}</p>
                         </div>
                         <span className="text-[10px] font-bold text-brand-dark group-hover/card:underline uppercase flex items-center gap-0.5">
-                          <span>Details</span>
+                          <span>Stage Workflow</span>
                           <ArrowUpRight size={12} />
                         </span>
                       </div>
@@ -293,6 +350,98 @@ export default function LendingKanbanPipelinePage() {
           })}
         </div>
       </div>
+
+      {/* STAGE WORKFLOW & TERM SHEET RECEIVED MODAL */}
+      {activeModalCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 max-w-5xl w-full max-h-[90vh] overflow-y-auto overflow-x-hidden my-8">
+            {/* Modal Header */}
+            <div className="p-6 bg-slate-50 border-b border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sticky top-0 z-20">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#10B889] mb-1">
+                  <span>Accurate Lending Pipeline Stage Manager</span>
+                  <span>•</span>
+                  <span>{activeModalCard.id}</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+                  {activeModalCard.borrower}
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="relative inline-block">
+                  <select
+                    value={modalStageIndex}
+                    onChange={(e) => {
+                      const newIdx = Number(e.target.value)
+                      setModalStageIndex(newIdx)
+                      updateCardStage(activeModalCard.id, newIdx)
+                    }}
+                    className="appearance-none pl-4 pr-9 py-2 bg-white border-2 border-[#10B889] rounded-xl text-xs font-extrabold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-[#10B889]"
+                  >
+                    {LENDING_STAGES.map((s, idx) => (
+                      <option key={s} value={idx}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 pointer-events-none" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveModalCard(null)}
+                  className="p-2 text-gray-400 hover:text-slate-700 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {modalStageIndex === 4 ? (
+                <TermSheetReceivedStageUI
+                  loanId={activeModalCard.id}
+                  borrowerName={activeModalCard.borrower}
+                  loanAmount={activeModalCard.amount}
+                  loanType={activeModalCard.type}
+                  onClose={() => setActiveModalCard(null)}
+                />
+              ) : (
+                <div className="space-y-6">
+                  <div className="bg-blue-50/70 border border-blue-200 rounded-2xl p-6">
+                    <h3 className="text-base font-extrabold text-slate-900 mb-1">
+                      Stage: {LENDING_STAGES[modalStageIndex]}
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Standard workflow checkpoint for {activeModalCard.borrower}. Select Stage 5 (&quot;Term Sheet Received&quot;) to open the multi-select bank &amp; dynamic document upload manager.
+                    </p>
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={() => setModalStageIndex(4)}
+                      className="px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-bold text-xs rounded-xl shadow transition-all"
+                    >
+                      Switch to Stage 5: Term Sheet Received
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveModalCard(null)}
+                      className="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-slate-700 font-bold text-xs rounded-xl transition-all"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
+

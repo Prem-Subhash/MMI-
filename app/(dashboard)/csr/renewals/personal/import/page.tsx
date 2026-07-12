@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { parseImportFile, normalizeImportDate } from '@/utils/fileParser'
 import Papa from 'papaparse'
 import Link from 'next/link'
-import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
+import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
 import { Spinner } from '@/components/ui/Loading'
 
 export default function PersonalRenewalImportPage() {
@@ -302,13 +302,6 @@ export default function PersonalRenewalImportPage() {
         <div className="p-8 max-w-2xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-                <Link
-                    href="/csr/renewals/personal"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4 text-sm"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Personal Renewals
-                </Link>
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-brand/10 rounded-2xl text-brand">
                         <FileSpreadsheet size={32} />

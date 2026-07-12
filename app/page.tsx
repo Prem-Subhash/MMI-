@@ -25,7 +25,7 @@ const portalCards: PortalCard[] = [
   {
     id: 'mortgage',
     title: 'Moonstar Mortgage',
-    logo: '/Moonstarlogo.jpeg',
+    logo: '/Moonstarlogo-removebg-preview.png',
     description: 'Access the Mortgage CRM portal to manage loan applications, mortgage pipelines, and borrower workflows.',
     targetUrl: '#',
   },
