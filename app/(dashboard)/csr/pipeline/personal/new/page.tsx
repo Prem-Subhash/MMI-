@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { useSearchParams } from 'next/navigation'
+import Loading from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import {
   User,
@@ -14,8 +16,13 @@ import {
   StickyNote,
 } from 'lucide-react'
 import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
+import EmailModal from '@/components/email/EmailModal'
 
-export default function NewLeadPage() {
+function NewLeadContent() {
+  const searchParams = useSearchParams()
+  const initialCategory = searchParams.get('category') || 'personal'
+  const initialFlow = searchParams.get('flow') || 'new'
+
   /* ---------------- STATE ---------------- */
   const [isLocked, setIsLocked] = useState(false)
   
@@ -25,19 +32,36 @@ export default function NewLeadPage() {
   const [isAdditionalQuote, setIsAdditionalQuote] = useState(false)
 
   const [selectedPolicies, setSelectedPolicies] = useState<string[]>([]);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false)
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [createdLeadId, setCreatedLeadId] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     client_name: '',
+    business_name: '',
     phone: '',
     email: '',
     request_type: '',
-    insurence_category: '',
-    policy_flow: '',
+    insurence_category: initialCategory,
+    policy_flow: initialFlow,
     policy_type: '',
     referral: '',
     notes: '',
     send_email_to_client: false,
   })
+
+  // Sync search parameters with local form state
+  useEffect(() => {
+    if (initialCategory) {
+      setForm(prev => ({ ...prev, insurence_category: initialCategory }))
+    }
+  }, [initialCategory])
+
+  useEffect(() => {
+    if (initialFlow) {
+      setForm(prev => ({ ...prev, policy_flow: initialFlow }))
+    }
+  }, [initialFlow])
 
   /* ---------------- VALIDATION ---------------- */
   const isPhoneValid = /^\d{10}$/.test(form.phone)
@@ -168,29 +192,59 @@ export default function NewLeadPage() {
         return
       }
 
-      const primaryPolicy = selectedPolicies[0];
+      const leadGroupId = typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
 
-      
-      const { data: lead, error } = await supabase
-        .from('temp_leads_basics')
-        .insert({
-          policy_type: primaryPolicy,
-          ...form,
+      let finalPipelineId = ''
+      if (form.policy_flow === 'renewal') {
+        const pipelineName = form.insurence_category === 'commercial' 
+          ? 'Commercial Lines Renewal Pipeline' 
+          : 'Personal Lines Renewal'
+        const { data: pData, error: pErr } = await supabase
+          .from('pipelines')
+          .select('id')
+          .eq('name', pipelineName)
+          .maybeSingle()
+        if (pErr || !pData) {
+          setError(`Workflow Error: Renewal pipeline "${pipelineName}" not found. Submission halted to maintain data integrity. Please contact system admin.`)
+          setLoading(false)
+          setIsLocked(false)
+          return
+        }
+        finalPipelineId = pData.id
+      } else {
+        finalPipelineId = 'f77d068d-1754-421b-b2ce-d527ec8bd0f3'
+      }
+
+      const leadsToInsert = selectedPolicies.map((policy) => {
+        const { policy_type: _, ...restForm } = form;
+        return {
+          ...restForm,
+          policy_type: policy,
           send_email_to_client: form.send_email_to_client ?? false,
           is_additional_quote: forceAdditionalQuote,
           client_id: clientId,
           assigned_csr: auth.user.id,
-          pipeline_id: 'f77d068d-1754-421b-b2ce-d527ec8bd0f3',
-        })
-        .select()
-        .single();
+          pipeline_id: finalPipelineId,
+          lead_group_id: leadGroupId
+        };
+      });
 
-      if (error || !lead) throw error;
+      const { data: insertedLeads, error } = await supabase
+        .from('temp_leads_basics')
+        .insert(leadsToInsert)
+        .select();
+
+      if (error || !insertedLeads || insertedLeads.length === 0) throw error;
 
       // Phase 2: Insert into lead_policies
-      const policiesPayload = selectedPolicies.map((p) => ({
-        lead_id: lead.id,
-        policy_type: p
+      const policiesPayload = insertedLeads.map((insertedLead) => ({
+        lead_id: insertedLead.id,
+        policy_type: insertedLead.policy_type
       }));
 
       const { error: policiesError } = await supabase
@@ -202,18 +256,25 @@ export default function NewLeadPage() {
         console.error("Backend Integration Error - Failed to insert into lead_policies:", policiesError);
         toast('Lead was created successfully, but policy records could not be saved. Please contact an administrator.', 'error');
       } else {
-        toast('Lead created successfully!', 'success');
+        if (form.send_email_to_client) {
+            setCreatedLeadId(insertedLeads[0].id);
+            setShowSuccessPopup(true);
+        } else {
+            toast('Lead created successfully!', 'success');
+        }
       }
       setIsAdditionalQuote(false)
       setDuplicateWarning(false)
+      setSelectedPolicies([])
 
       setForm({
         client_name: '',
+        business_name: '',
         phone: '',
         email: '',
         request_type: '',
-        insurence_category: '',
-        policy_flow: '',
+        insurence_category: initialCategory,
+        policy_flow: initialFlow,
         policy_type: '',
         referral: '',
         notes: '',
@@ -221,10 +282,6 @@ export default function NewLeadPage() {
       })
 
       setIsLocked(false)
-
-      if (form.send_email_to_client) {
-        toast('Redirecting to email templates...', 'info')
-      }
     } catch (err: any) {
       setError(err.message || 'Something went wrong')
       setIsLocked(false)
@@ -292,18 +349,14 @@ export default function NewLeadPage() {
                 { value: 'carrier_request', label: 'Carrier Request' },
               ]}
             />
-            <Select name="insurence_category" value={form.insurence_category} onChange={handleChange} placeholder="Insurance Category *"
-              options={[
-                { value: 'personal', label: 'Personal' },
-                { value: 'commercial', label: 'Commercial' },
-              ]}
-            />
-            <Select name="policy_flow" value={form.policy_flow} onChange={handleChange} placeholder="Policy Flow *"
-              options={[
-                { value: 'new', label: 'New' },
-                { value: 'renewal', label: 'Renewal' },
-              ]}
-            />
+            {!initialCategory && (
+              <Select name="insurence_category" value={form.insurence_category} onChange={handleChange} placeholder="Insurance Category *"
+                options={[
+                  { value: 'personal', label: 'Personal' },
+                  { value: 'commercial', label: 'Commercial' },
+                ]}
+              />
+            )}
           </div>
 
           <div className="col-span-1 md:col-span-2">
@@ -344,6 +397,20 @@ export default function NewLeadPage() {
             className="w-full border rounded-xl p-4"
           />
 
+          <div className="flex items-center gap-2 py-2">
+            <input
+              type="checkbox"
+              id="send_email_to_client"
+              name="send_email_to_client"
+              checked={form.send_email_to_client}
+              onChange={(e) => setForm(prev => ({ ...prev, send_email_to_client: e.target.checked }))}
+              className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+            />
+            <label htmlFor="send_email_to_client" className="text-sm font-medium text-gray-700 cursor-pointer select-none">
+              Send Intake Email
+            </label>
+          </div>
+
           <button
             onClick={() => handleCreateClient()}
             disabled={loading}
@@ -355,7 +422,57 @@ export default function NewLeadPage() {
 
         </div>
       </div>
+
+      {showSuccessPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 max-w-md w-full p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Lead Created Successfully</h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Would you like to send the intake email now?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowSuccessPopup(false);
+                  setCreatedLeadId(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                Later
+              </button>
+              <button
+                onClick={() => {
+                  setShowSuccessPopup(false);
+                  setShowEmailModal(true);
+                }}
+                className="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-[#10B889] to-[#2E5C85] rounded-xl hover:opacity-90 transition-opacity"
+              >
+                Send Email
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEmailModal && createdLeadId && (
+        <EmailModal
+          isOpen={showEmailModal}
+          onClose={() => {
+            setShowEmailModal(false);
+            setCreatedLeadId(null);
+          }}
+          leadId={createdLeadId}
+        />
+      )}
     </div>
+  )
+}
+
+export default function NewLeadPage() {
+  return (
+    <Suspense fallback={<Loading message="Initializing form..." fullScreen />}>
+      <NewLeadContent />
+    </Suspense>
   )
 }
 

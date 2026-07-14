@@ -183,6 +183,13 @@ function PersonalRenewalContent() {
                     </div>
 
                     <Link
+                        href="/csr/leads/new?category=personal&flow=renewal"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
+                    >
+                        + Add Client
+                    </Link>
+
+                    <Link
                         href="/csr/renewals/personal/import"
                         className="bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
                     >
@@ -228,7 +235,6 @@ function PersonalRenewalContent() {
                                 <col style={{ width: '180px' }} />
                                 <col style={{ width: '160px' }} />
                                 <col style={{ width: '90px' }} />
-                                <col style={{ width: '140px' }} />
                             </colgroup>
                             <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
@@ -243,14 +249,13 @@ function PersonalRenewalContent() {
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Notes</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold text-center">VIEW</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold text-center">ACTIONS</th>
                                 </tr>
                             </thead>
 
                             <tbody className="divide-y divide-gray-100 bg-white">
                                 {filteredRenewals.length === 0 ? (
                                     <tr>
-                                        <td colSpan={12} className="px-6 py-12 text-center text-gray-500 text-sm">
+                                        <td colSpan={11} className="px-6 py-12 text-center text-gray-500 text-sm">
                                             No renewals found for the selected month or search criteria.
                                         </td>
                                     </tr>
@@ -325,14 +330,6 @@ function PersonalRenewalContent() {
                                                     title="View Renewal Details"
                                                 >
                                                     <Eye size={18} />
-                                                </Link>
-                                            </td>
-                                            <td className="px-4 sm:px-6 py-4 text-center">
-                                                <Link
-                                                    href={`/csr/leads/send-form?id=${r.id}`}
-                                                    className="text-emerald-600 hover:text-emerald-800 font-bold text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
-                                                >
-                                                    SEND EMAIL
                                                 </Link>
                                             </td>
                                         </tr>

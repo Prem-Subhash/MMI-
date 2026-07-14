@@ -7,7 +7,6 @@ import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
-import EmailModal from '@/components/email/EmailModal'
 
 type Lead = {
   id: string
@@ -42,7 +41,6 @@ export default function PersonalLinesPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(0)
-  const [emailModalLeadId, setEmailModalLeadId] = useState<string | null>(null)
 
   useEffect(() => {
     const loadLeads = async () => {
@@ -200,7 +198,6 @@ export default function PersonalLinesPage() {
                 <col style={{ width: '160px' }} />
                 <col style={{ width: '110px' }} />
                 <col style={{ width: '70px' }} />
-                <col style={{ width: '100px' }} />
               </colgroup>
               <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
@@ -212,7 +209,6 @@ export default function PersonalLinesPage() {
                   <th className="px-4 py-4 font-semibold">Stage</th>
                   <th className="px-4 py-4 font-semibold text-center">Created</th>
                   <th className="px-4 py-4 font-semibold text-center">View</th>
-                  <th className="px-4 py-4 font-semibold">Actions</th>
                 </tr>
               </thead>
 
@@ -252,14 +248,6 @@ export default function PersonalLinesPage() {
                         </Link>
                       </td>
 
-                      <td className="px-4 py-4">
-                        <button
-                          onClick={() => setEmailModalLeadId(lead.id)}
-                          className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
-                        >
-                          Send Email
-                        </button>
-                      </td>
                     </tr>
                   )
                 })}
@@ -289,13 +277,6 @@ export default function PersonalLinesPage() {
           </button>
         </div>
       </div>
-
-      {/* EMAIL MODAL */}
-      <EmailModal
-        leadId={emailModalLeadId!}
-        isOpen={!!emailModalLeadId}
-        onClose={() => setEmailModalLeadId(null)}
-      />
     </div>
   )
 }

@@ -7,7 +7,6 @@ import { supabase } from '@/lib/supabaseClient'
 import { Search, Eye } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
-import EmailModal from '@/components/email/EmailModal'
 
 /* ================= TYPES ================= */
 
@@ -50,7 +49,6 @@ export default function CommercialLinesPage() {
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [page, setPage] = useState(0)
-    const [emailModalLeadId, setEmailModalLeadId] = useState<string | null>(null)
 
     useEffect(() => {
         setPage(0)
@@ -213,27 +211,27 @@ export default function CommercialLinesPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1200px' }}>
+                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1350px' }}>
                             <colgroup>
-                                <col style={{ width: '250px' }} />
+                                <col style={{ width: '180px' }} />
+                                <col style={{ width: '180px' }} />
                                 <col style={{ width: '140px' }} />
                                 <col style={{ width: '240px' }} />
                                 <col style={{ width: '120px' }} />
                                 <col style={{ width: '160px' }} />
                                 <col style={{ width: '110px' }} />
                                 <col style={{ width: '80px' }} />
-                                <col style={{ width: '100px' }} />
                             </colgroup>
                             <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
-                                    <th className="px-4 py-4 font-semibold">Business / Client</th>
+                                    <th className="px-4 py-4 font-semibold">Client Name</th>
+                                    <th className="px-4 py-4 font-semibold">Business Name</th>
                                     <th className="px-4 py-4 font-semibold">Phone</th>
                                     <th className="px-4 py-4 font-semibold">Email</th>
                                     <th className="px-4 py-4 font-semibold">Category</th>
                                     <th className="px-4 py-4 font-semibold">Stage</th>
                                     <th className="px-4 py-4 font-semibold text-center">Created</th>
                                     <th className="px-4 py-4 font-semibold text-center">View</th>
-                                    <th className="px-4 py-4 font-semibold">Actions</th>
                                 </tr>
                             </thead>
 
@@ -243,11 +241,13 @@ export default function CommercialLinesPage() {
 
                                     return (
                                         <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-4 py-4 font-medium truncate" title={lead.business_name || lead.client_name}>
-                                                <div className="flex flex-col truncate">
-                                                    <span className="text-gray-900 font-semibold truncate">{lead.business_name || lead.client_name}</span>
-                                                    {lead.business_name && <span className="text-xs text-gray-500 truncate">{lead.client_name}</span>}
-                                                </div>
+                                            <td className="px-4 py-4 font-medium text-gray-900 truncate" title={lead.client_name}>
+                                                {lead.client_name || '—'}
+                                            </td>
+                                            <td className="px-4 py-4 truncate" title={lead.business_name || 'Not Provided'}>
+                                                <span className={lead.business_name ? 'text-gray-900 font-medium' : 'text-gray-400 italic'}>
+                                                    {lead.business_name || 'Not Provided'}
+                                                </span>
                                             </td>
                                             <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
                                             <td className="px-4 py-4 text-gray-600 truncate" title={lead.email}>{lead.email}</td>
@@ -272,15 +272,6 @@ export default function CommercialLinesPage() {
                                                 </Link>
                                             </td>
 
-                                            {/* ACTIONS */}
-                                            <td className="px-4 py-4">
-                                                <button
-                                                    onClick={() => setEmailModalLeadId(lead.id)}
-                                                    className="text-emerald-600 hover:text-emerald-800 font-medium text-xs uppercase tracking-wide transition-colors whitespace-nowrap"
-                                                >
-                                                    Send Email
-                                                </button>
-                                            </td>
                                         </tr>
                                     )
                                 })}
@@ -311,12 +302,6 @@ export default function CommercialLinesPage() {
                 </div>
             </div>
 
-            {/* EMAIL MODAL */}
-            <EmailModal
-                leadId={emailModalLeadId!}
-                isOpen={!!emailModalLeadId}
-                onClose={() => setEmailModalLeadId(null)}
-            />
         </div>
     )
 }

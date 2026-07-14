@@ -70,7 +70,8 @@ export default function SendFormPage() {
           insurence_category,
           policy_type,
           policy_flow,
-          created_at
+          created_at,
+          lead_group_id
         `)
         .eq('id', leadId)
         .single()
@@ -81,14 +82,23 @@ export default function SendFormPage() {
         return
       }
       
-      const { data: lpData } = await supabase
-        .from('lead_policies')
-        .select('policy_type')
-        .eq('lead_id', leadId)
-
       let policies = [leadData.policy_type || 'home'];
-      if (lpData && lpData.length > 0) {
-        policies = lpData.map((p: any) => p.policy_type);
+      if (leadData.lead_group_id) {
+        const { data: siblingData } = await supabase
+          .from('temp_leads_basics')
+          .select('policy_type')
+          .eq('lead_group_id', leadData.lead_group_id)
+        if (siblingData && siblingData.length > 0) {
+          policies = siblingData.map((p: any) => p.policy_type);
+        }
+      } else {
+        const { data: lpData } = await supabase
+          .from('lead_policies')
+          .select('policy_type')
+          .eq('lead_id', leadId)
+        if (lpData && lpData.length > 0) {
+          policies = lpData.map((p: any) => p.policy_type);
+        }
       }
       
       setActivePolicies(policies);

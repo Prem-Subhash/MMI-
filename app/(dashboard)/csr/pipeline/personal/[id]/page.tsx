@@ -223,10 +223,17 @@ export default function LeadReviewPage() {
           <div className="p-8 space-y-8">
 
             {/* DETAILS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${lead.insurence_category === 'commercial' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4`}>
               <KpiCard icon={<IconUser />} label="Client Name">
                 <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
               </KpiCard>
+              {lead.insurence_category === 'commercial' && (
+                <KpiCard icon={<IconUser />} label="Business Name">
+                  <p className={`text-base font-bold truncate ${lead.business_name ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                    {lead.business_name || 'Not Provided'}
+                  </p>
+                </KpiCard>
+              )}
               <KpiCard icon={<IconMail />} label="Email Address">
                 <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
               </KpiCard>
@@ -292,10 +299,17 @@ export default function LeadReviewPage() {
 
         <div className="p-8 space-y-6">
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className={`grid grid-cols-1 ${lead.insurence_category === 'commercial' ? 'md:grid-cols-5' : 'md:grid-cols-4'} gap-4`}>
             <KpiCard icon={<IconUser />} label="Client Name">
               <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
             </KpiCard>
+            {lead.insurence_category === 'commercial' && (
+              <KpiCard icon={<IconUser />} label="Business Name">
+                <p className={`text-base font-bold truncate ${lead.business_name ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                  {lead.business_name || 'Not Provided'}
+                </p>
+              </KpiCard>
+            )}
             <KpiCard icon={<IconMail />} label="Email Address">
               <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
             </KpiCard>

@@ -1,7 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { useSearchParams, useRouter } from 'next/navigation'
+import Loading from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import {
     User,
@@ -10,10 +12,16 @@ import {
     Shield,
     Send,
     ChevronDown,
+    Briefcase,
 } from 'lucide-react'
 import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
 
-export default function AdminNewLeadPage() {
+function AdminNewLeadContent() {
+    const router = useRouter()
+    const searchParams = useSearchParams()
+    const initialCategory = searchParams.get('category') || ''
+    const initialFlow = searchParams.get('flow') || 'new'
+
     /* ---------------- STATE ---------------- */
     const [isLocked, setIsLocked] = useState(false)
     
@@ -25,18 +33,32 @@ export default function AdminNewLeadPage() {
 
     const [selectedPolicies, setSelectedPolicies] = useState<string[]>([]);
 
-  const [form, setForm] = useState({
+    const [form, setForm] = useState({
         client_name: '',
+        business_name: '',
         phone: '',
         email: '',
         request_type: '',
-        insurence_category: '', // keeping exact original typo
-        policy_flow: '',
+        insurence_category: initialCategory, // keeping exact original typo
+        policy_flow: initialFlow,
         policy_type: '',
         referral: '',
         notes: '',
         send_email_to_client: false,
     })
+
+    // Sync search parameters with local form state
+    useEffect(() => {
+        if (initialCategory) {
+            setForm(prev => ({ ...prev, insurence_category: initialCategory }))
+        }
+    }, [initialCategory])
+
+    useEffect(() => {
+        if (initialFlow) {
+            setForm(prev => ({ ...prev, policy_flow: initialFlow }))
+        }
+    }, [initialFlow])
 
     /* ---------------- DUPLICATE CHECK (REAL-TIME) ---------------- */
     useEffect(() => {
@@ -233,21 +255,44 @@ export default function AdminNewLeadPage() {
             const primaryPolicy = selectedPolicies[0];
 
       
-      const { data: lead, error } = await supabase
-        .from('temp_leads_basics')
-        .insert({
-          policy_type: primaryPolicy,
-          ...form,
-          send_email_to_client: form.send_email_to_client ?? false,
-          is_additional_quote: forceAdditionalQuote,
-          client_id: clientId,
-          assigned_csr: null,
-          pipeline_id: form.insurence_category === 'commercial' ? '930d64f7-d10a-4305-9036-67892a6075d3' : 'f77d068d-1754-421b-b2ce-d527ec8bd0f3',
-        })
-        .select()
-        .single();
+            let finalPipelineId = ''
+            if (form.policy_flow === 'renewal') {
+                const pipelineName = form.insurence_category === 'commercial' 
+                    ? 'Commercial Lines Renewal Pipeline' 
+                    : 'Personal Lines Renewal'
+                const { data: pData, error: pErr } = await supabase
+                    .from('pipelines')
+                    .select('id')
+                    .eq('name', pipelineName)
+                    .maybeSingle()
+                if (pErr || !pData) {
+                    setError(`Workflow Error: Renewal pipeline "${pipelineName}" not found. Submission halted to maintain data integrity. Please contact system admin.`)
+                    setLoading(false)
+                    setIsLocked(false)
+                    return
+                }
+                finalPipelineId = pData.id
+            } else {
+                finalPipelineId = form.insurence_category === 'commercial' 
+                    ? '930d64f7-d10a-4305-9036-67892a6075d3' 
+                    : 'f77d068d-1754-421b-b2ce-d527ec8bd0f3'
+            }
 
-      if (error || !lead) throw error;
+            const { data: lead, error } = await supabase
+                .from('temp_leads_basics')
+                .insert({
+                    policy_type: primaryPolicy,
+                    ...form,
+                    send_email_to_client: form.send_email_to_client ?? false,
+                    is_additional_quote: forceAdditionalQuote,
+                    client_id: clientId,
+                    assigned_csr: null,
+                    pipeline_id: finalPipelineId,
+                })
+                .select()
+                .single();
+
+            if (error || !lead) throw error;
 
       // Phase 2: Insert into lead_policies
       const policiesPayload = selectedPolicies.map((p) => ({
@@ -270,11 +315,12 @@ export default function AdminNewLeadPage() {
             setDuplicateWarning(false)
             setForm({
                 client_name: '',
+                business_name: '',
                 phone: '',
                 email: '',
                 request_type: '',
-                insurence_category: '', // Exact typo preserved
-                policy_flow: '',
+                insurence_category: initialCategory,
+                policy_flow: initialFlow,
                 policy_type: '',
                 referral: '',
                 notes: '',
@@ -348,6 +394,9 @@ export default function AdminNewLeadPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <Input icon={<User />} name="client_name" value={form.client_name} onChange={handleChange} placeholder="Client Name *" disabled={isLocked} />
+                        {form.insurence_category === 'commercial' && (
+                            <Input icon={<Briefcase />} name="business_name" value={form.business_name} onChange={handleChange} placeholder="Business Name" disabled={isLocked} />
+                        )}
                         <Input
                             icon={<Phone />}
                             name="phone"
@@ -377,18 +426,14 @@ export default function AdminNewLeadPage() {
                                 { value: 'carrier_request', label: 'Carrier Request' },
                             ]}
                         />
-                        <Select name="insurence_category" value={form.insurence_category} onChange={handleChange} placeholder="Insurance Category *"
-                            options={[
-                                { value: 'personal', label: 'Personal' },
-                                { value: 'commercial', label: 'Commercial' },
-                            ]}
-                        />
-                        <Select name="policy_flow" value={form.policy_flow} onChange={handleChange} placeholder="Policy Flow"
-                            options={[
-                                { value: 'new', label: 'New' },
-                                { value: 'renewal', label: 'Renewal' },
-                            ]}
-                        />
+                        {!initialCategory && (
+                            <Select name="insurence_category" value={form.insurence_category} onChange={handleChange} placeholder="Insurance Category *"
+                                options={[
+                                    { value: 'personal', label: 'Personal' },
+                                    { value: 'commercial', label: 'Commercial' },
+                                ]}
+                            />
+                        )}
                     </div>
 
                     <div className="col-span-1 md:col-span-2">
@@ -441,6 +486,14 @@ export default function AdminNewLeadPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function AdminNewLeadPage() {
+    return (
+        <Suspense fallback={<Loading message="Initializing new lead form..." fullScreen />}>
+            <AdminNewLeadContent />
+        </Suspense>
     )
 }
 

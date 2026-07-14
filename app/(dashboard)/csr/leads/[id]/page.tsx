@@ -288,9 +288,11 @@ export default function LeadReviewPage() {
           {/* HEADER */}
           <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">{lead?.client_name || 'Lead Details'}</h1>
+              <h1 className="text-2xl font-bold text-white">
+                {lead?.client_name || 'Lead Details'}
+              </h1>
               <p className="text-white/80 text-sm mt-1">
-                Review lead information and pipeline status
+                {lead?.business_name ? `${lead.business_name} • Review lead information and pipeline status` : 'Review lead information and pipeline status'}
               </p>
             </div>
             <button
@@ -305,7 +307,7 @@ export default function LeadReviewPage() {
           {/* CONTENT */}
           <div className="p-8">
             {/* 1. INFO GRID LAYOUT */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${lead?.insurence_category === 'commercial' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4 mb-10`}>
               <KpiCard 
                 icon={<IconUser />} 
                 label="Client Name"
@@ -316,6 +318,20 @@ export default function LeadReviewPage() {
               >
                 <p className="text-base font-bold text-gray-800 truncate">{lead?.client_name || '—'}</p>
               </KpiCard>
+              {lead?.insurence_category === 'commercial' && (
+                <KpiCard 
+                  icon={<IconUser />} 
+                  label="Business Name"
+                  accent="from-[#10B889] to-[#0d9470]"
+                  glow="shadow-emerald-200/60"
+                  iconBg="bg-emerald-50 text-emerald-600"
+                  hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+                >
+                  <p className={`text-base font-bold truncate ${lead?.business_name ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                    {lead?.business_name || 'Not Provided'}
+                  </p>
+                </KpiCard>
+              )}
               <KpiCard 
                 icon={<IconMail />} 
                 label="Email Address"
@@ -678,6 +694,7 @@ export default function LeadReviewPage() {
                   client_name: updated.client_name,
                   email: updated.email,
                   phone: updated.phone,
+                  business_name: updated.business_name,
                   ...(updated.selectedPolicies ? {
                     policy_type: updated.selectedPolicies[0],
                     lead_policies: updated.selectedPolicies.map((p: string) => ({ policy_type: p }))

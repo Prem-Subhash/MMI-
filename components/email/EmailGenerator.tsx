@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { EmailData, PolicyBreakdown, replaceTemplate } from '@/lib/emailTemplating'
+import { EmailData, PolicyBreakdown, replaceTemplate, replaceCombinedTemplate } from '@/lib/emailTemplating'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from '@/lib/toast'
 
@@ -132,8 +132,17 @@ export default function EmailGenerator({
     console.log('data.policies before replaceTemplate:', JSON.stringify(data.policies, null, 2));
     console.log('[EmailGenerator] Final Policies Array before templating:', data.policies.map(p => ({ type: p.type })))
 
-    const newSubject = replaceTemplate(key, template.subject, data, leadData, formLink, csrData, notes)
-    const newBody = replaceTemplate(key, template.body, data, leadData, formLink, csrData, notes).replace(/\n/g, '<br>')
+    const { subject: newSubject, body: combinedBody } = replaceCombinedTemplate(
+      template.name,
+      leadData?.policy_flow || template.policy_flow || 'lead',
+      data,
+      leadData,
+      templates,
+      formLink,
+      csrData,
+      notes
+    )
+    const newBody = combinedBody.replace(/\n/g, '<br>')
 
     setCustomSubject(newSubject)
     setGeneratedBody(newBody)

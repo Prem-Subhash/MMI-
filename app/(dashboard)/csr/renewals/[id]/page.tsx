@@ -35,6 +35,8 @@ type Renewal = {
   stage_metadata: Record<string, any>
   pipeline_stage: Stage
   lead_policies?: any[]
+  business_name?: string
+  insurence_category?: string
 }
 
 export default function RenewalDetailPage() {
@@ -175,6 +177,8 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
         pipeline_id,
         current_stage_id,
         stage_metadata,
+        business_name,
+        insurence_category,
         pipeline_stages (
           id,
           stage_name,
@@ -298,9 +302,11 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
           {/* HEADER */}
           <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-bold text-white">{lead.client_name}</h1>
+              <h1 className="text-2xl font-bold text-white">
+                {lead.client_name || 'Renewal Details'}
+              </h1>
               <p className="text-white/80 text-sm mt-1">
-                {formatPolicyType(lead.policy_type)} Renewal
+                {lead.business_name ? `${lead.business_name} • ` : ''}{formatPolicyType(lead.policy_type)} Renewal
               </p>
             </div>
             <button
@@ -314,7 +320,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
 
           {/* CONTENT */}
           <div className="p-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${lead.insurence_category === 'commercial' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4 mb-6`}>
               <KpiCard 
                 icon={<IUser />} 
                 label="Client Name"
@@ -325,6 +331,20 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               >
                 <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
               </KpiCard>
+              {lead.insurence_category === 'commercial' && (
+                <KpiCard 
+                  icon={<IUser />} 
+                  label="Business Name"
+                  accent="from-[#10B889] to-[#0d9470]"
+                  glow="shadow-emerald-200/60"
+                  iconBg="bg-emerald-50 text-emerald-600"
+                  hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+                >
+                  <p className={`text-base font-bold truncate ${lead.business_name ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                    {lead.business_name || 'Not Provided'}
+                  </p>
+                </KpiCard>
+              )}
               <KpiCard 
                 icon={<IMail />} 
                 label="Email Address"
@@ -518,6 +538,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                 client_name: updated.client_name,
                 email: updated.email,
                 phone: updated.phone,
+                business_name: updated.business_name,
               }))
             }
             load()

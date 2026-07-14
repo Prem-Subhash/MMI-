@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
-import { User, Phone, Mail, X } from 'lucide-react'
+import { User, Phone, Mail, X, Briefcase } from 'lucide-react'
 import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
 
 type UpdatedClientFields = {
   client_name: string
   email: string
   phone: string
+  business_name?: string
   selectedPolicies?: string[]
 }
 
@@ -23,7 +24,8 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
   const [formData, setFormData] = useState({
     client_name: lead.client_name || '',
     email: lead.email || '',
-    phone: (lead.phone || '').replace(/\D/g, '').slice(0, 10)
+    phone: (lead.phone || '').replace(/\D/g, '').slice(0, 10),
+    business_name: lead.business_name || ''
   })
   
   const initialPolicies = lead.lead_policies?.length > 0 
@@ -95,6 +97,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
         client_name: formData.client_name,
         email: formData.email,
         phone: formData.phone,
+        business_name: formData.business_name,
         selectedPolicies,
       })
       onClose()
@@ -162,6 +165,26 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
                 />
               </div>
             </div>
+
+            {/* BUSINESS NAME (Commercial Lines only) */}
+            {lead.insurence_category === 'commercial' && (
+              <div className="space-y-2 group">
+                <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
+                  <span className="w-1 h-1 bg-emerald-500 rounded-full"></span>
+                  Business Name
+                </label>
+                <div className="relative group/input">
+                  <Briefcase size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-emerald-600 transition-colors" />
+                  <input
+                    type="text"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-black placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all shadow-sm"
+                    value={formData.business_name}
+                    onChange={e => setFormData(prev => ({ ...prev, business_name: e.target.value }))}
+                    placeholder="Business Name"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* EMAIL */}
             <div className="space-y-2 group">

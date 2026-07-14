@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     /* ================= FETCH LEAD ================= */
     const { data: lead, error: leadError } = await supabaseServer
       .from('temp_leads_basics')
-      .select('id, client_name, email, stage_metadata, status, policy_flow')
+      .select('id, client_name, email, stage_metadata, status, policy_flow, policy_type, lead_group_id')
       .eq('id', leadId)
       .single()
 
@@ -43,6 +43,19 @@ export async function POST(req: Request) {
       )
     }
 
+    /* ================= FETCH SIBLING LEADS FOR GROUP ================= */
+    let siblings = [{ id: lead.id, policy_type: lead.policy_flow === 'renewal' ? lead.policy_flow : (lead.policy_type || 'home') }];
+    if (lead.lead_group_id) {
+      const { data: siblingData, error: siblingError } = await supabaseServer
+        .from('temp_leads_basics')
+        .select('id, policy_type')
+        .eq('lead_group_id', lead.lead_group_id)
+      
+      if (!siblingError && siblingData && siblingData.length > 0) {
+        siblings = siblingData;
+      }
+    }
+
     /* ================= FETCH EMAIL TEMPLATE & PREPARE BODY ================= */
     let finalSubject = customSubject || ''
     let finalBody = customBody || ''
@@ -50,7 +63,7 @@ export async function POST(req: Request) {
     if (!finalBody || !finalSubject) {
       const { data: template, error: templateError } = await supabaseServer
         .from('email_templates')
-        .select('id, name, subject, body')
+        .select('id, name, subject, body, policy_type, policy_flow')
         .eq('id', templateId)
         .eq('is_active', true)
         .single()
@@ -63,8 +76,19 @@ export async function POST(req: Request) {
         )
       }
 
+      // Fetch all sibling templates with the same name to support dynamic combination
+      let allTemplates = [template];
+      const { data: siblingTemplates } = await supabaseServer
+        .from('email_templates')
+        .select('id, name, subject, body, policy_type, policy_flow')
+        .eq('name', template.name)
+        .eq('is_active', true)
+      if (siblingTemplates && siblingTemplates.length > 0) {
+        allTemplates = siblingTemplates;
+      }
+
       /* ================= PREPARE EMAIL BODY ================= */
-      const { replaceTemplate } = await import('@/lib/emailTemplating')
+      const { replaceCombinedTemplate } = await import('@/lib/emailTemplating')
       const dummyData = {
         clientName: lead.client_name || '',
         effDate: '',
@@ -77,8 +101,24 @@ export async function POST(req: Request) {
         policies: []
       }
       
-      finalSubject = customSubject || replaceTemplate(template.name || '', template.subject, dummyData, lead)
-      finalBody = replaceTemplate(template.name || '', template.body, dummyData, lead)
+      const combinedLead = {
+        ...lead,
+        lead_policies: siblings.map(s => ({ policy_type: s.policy_type }))
+      }
+      
+      const { subject: combinedSubject, body: combinedBody } = replaceCombinedTemplate(
+        template.name || '',
+        lead.policy_flow || template.policy_flow || 'lead',
+        dummyData,
+        combinedLead,
+        allTemplates,
+        undefined,
+        undefined,
+        undefined
+      )
+      
+      finalSubject = customSubject || combinedSubject
+      finalBody = combinedBody
     }
 
     /* ================= GENERATE & RESOLVE FORM LINK GLOBALLY ================= */
@@ -130,29 +170,33 @@ export async function POST(req: Request) {
       await sendGraphEmail([lead.email], finalSubject, finalBody);
       console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API');
 
+      const logsToInsert = siblings.map(sibling => ({
+        lead_id: sibling.id,
+        email_type: emailTypeName,
+        recipient: lead.email,
+        status: 'sent',
+        created_at: new Date().toISOString()
+      }));
+
       await supabaseServer
         .from("email_logs")
-        .insert({
-          lead_id: lead.id,
-          email_type: emailTypeName,
-          recipient: lead.email,
-          status: 'sent',
-          created_at: new Date().toISOString()
-        });
+        .insert(logsToInsert);
 
     } catch (emailError: any) {
       console.error('FAILED TO SEND EMAIL VIA GRAPH:', emailError);
 
+      const logsToInsert = siblings.map(sibling => ({
+        lead_id: sibling.id,
+        email_type: emailTypeName,
+        recipient: lead.email,
+        status: 'failed',
+        error_message: emailError.message || String(emailError),
+        created_at: new Date().toISOString()
+      }));
+
       await supabaseServer
         .from("email_logs")
-        .insert({
-          lead_id: lead.id,
-          email_type: emailTypeName,
-          recipient: lead.email,
-          status: 'failed',
-          error_message: emailError.message || String(emailError),
-          created_at: new Date().toISOString()
-        });
+        .insert(logsToInsert);
 
       return NextResponse.json(
         { success: false, message: 'Failed to send email', error: `Email send failed: ${emailError.message}` },
@@ -188,7 +232,7 @@ export async function POST(req: Request) {
         stage_metadata: updatedStageMetadata,
         follow_up_date: followUpDate.toISOString(),
       })
-      .eq('id', lead.id)
+      .in('id', siblings.map(s => s.id))
 
     if (updateError) {
       console.error('FAILED TO UPDATE STAGE METADATA:', updateError)

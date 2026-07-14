@@ -79,7 +79,8 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
           created_at,
           status,
           pipeline_id,
-          current_stage_id
+          current_stage_id,
+          lead_group_id
         `)
         .eq('id', leadId)
         .single()
@@ -117,9 +118,6 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
           .single();
         if (pipelineData) (leadData as any).pipeline_name = pipelineData.name;
       }
-      
-      setLead(leadData)
-
       // Default formType based on policy_type
       if (!isRenewal && dynamicPolicyType) {
         setFormType(dynamicPolicyType);
@@ -141,10 +139,24 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       setTemplates(allTemplates)
       
       let policies = [leadData.policy_type || 'home'];
-      if (leadData.lead_policies && leadData.lead_policies.length > 0) {
+      if (leadData.lead_group_id) {
+        const { data: siblingData } = await supabase
+          .from('temp_leads_basics')
+          .select('policy_type')
+          .eq('lead_group_id', leadData.lead_group_id)
+        if (siblingData && siblingData.length > 0) {
+          policies = siblingData.map((p: any) => p.policy_type);
+        }
+      } else if (leadData.lead_policies && leadData.lead_policies.length > 0) {
         policies = leadData.lead_policies.map((p: any) => p.policy_type);
       }
       setActivePolicies(policies);
+
+      const combinedLead = {
+        ...leadData,
+        lead_policies: policies.map(p => ({ policy_type: p }))
+      };
+      setLead(combinedLead);
       
       // Auto-assign info_req template
       const infoReqTpl = allTemplates.find(t => t.name === 'info_req');
