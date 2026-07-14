@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
         console.log(`[MIDDLEWARE] No User Session accessing ${pathname}`);
     }
 
-    if (pathname.startsWith('/login') || pathname.startsWith('/lending/login') || pathname.startsWith('/unauthorized')) {
+    if (pathname.startsWith('/login') || pathname.startsWith('/lending/login') || pathname.startsWith('/mortgage/login') || pathname.startsWith('/unauthorized')) {
         return response
     }
 
@@ -56,13 +56,13 @@ export async function proxy(request: NextRequest) {
     }
 
     // Role Route Protections
-    const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin', '/dashboard', '/lending', '/accurate_lending']
+    const protectedRoutes = ['/csr', '/admin', '/accounting', '/superadmin', '/dashboard', '/lending', '/accurate_lending', '/mortgage']
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute) {
         if (!user) {
             console.log(`[MIDDLEWARE] Redirecting to login - No user found`)
-            const loginUrl = (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) ? '/lending/login' : '/login'
+            const loginUrl = (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) ? '/lending/login' : (pathname.startsWith('/mortgage') ? '/mortgage/login' : '/login')
             const redirectResponse = NextResponse.redirect(new URL(loginUrl, request.url))
             // Copy cookies from our refreshed response object to the redirect response
             response.cookies.getAll().forEach(cookie => {
@@ -86,14 +86,16 @@ export async function proxy(request: NextRequest) {
                 .eq('id', user.id)
                 .single()
             const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
-            profile = { ...fallback.data, portal_access: isLending ? ['lending'] : ['insurance'] }
+            const isMortgage = fallback.data?.role === 'mortgage'
+            profile = { ...fallback.data, portal_access: isLending ? ['lending'] : (isMortgage ? ['mortgage'] : ['insurance']) }
         }
 
         const role = profile?.role?.toLowerCase()
         const isLendingRole = role === 'lending' || role === 'accurate_lending'
-        const portalAccess: string[] = profile?.portal_access || (isLendingRole ? ['lending'] : ['insurance'])
+        const isMortgageRole = role === 'mortgage'
+        const portalAccess: string[] = profile?.portal_access || (isLendingRole ? ['lending'] : (isMortgageRole ? ['mortgage'] : ['insurance']))
 
-        if (!role && !portalAccess.includes('lending') && !portalAccess.includes('accurate_lending')) {
+        if (!role && !portalAccess.includes('lending') && !portalAccess.includes('accurate_lending') && !portalAccess.includes('mortgage')) {
             console.warn(`[MIDDLEWARE] No role found for user ${user.email} (${user.id})`)
             const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
             response.cookies.getAll().forEach(cookie => {
@@ -116,13 +118,28 @@ export async function proxy(request: NextRequest) {
             return response
         }
 
+        // Special RBAC check for Mortgage routes
+        if (pathname.startsWith('/mortgage')) {
+            const hasMortgageAccess = portalAccess.includes('mortgage') || isMortgageRole || role === 'superadmin' || role === 'admin' || user.email?.toLowerCase().includes('moonstar.com')
+            if (!hasMortgageAccess) {
+                console.warn(`[MIDDLEWARE] Unauthorized mortgage access attempt by user ${user.id} with role: ${role}`)
+                const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
+                response.cookies.getAll().forEach(cookie => {
+                    redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+                })
+                return redirectResponse
+            }
+            return response
+        }
+
         const accessMatrix: Record<string, string[]> = {
             csr: ['/csr'],
-            admin: ['/admin', '/csr'],
+            admin: ['/admin', '/csr', '/mortgage'],
             accounting: ['/accounting'],
-            superadmin: ['/superadmin', '/admin', '/csr', '/accounting', '/lending'],
+            superadmin: ['/superadmin', '/admin', '/csr', '/accounting', '/lending', '/mortgage'],
             lending: ['/lending'],
-            accurate_lending: ['/lending']
+            accurate_lending: ['/lending'],
+            mortgage: ['/mortgage']
         }
 
         const validPaths = accessMatrix[role || ''] || []

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Save, Layers, AlertCircle, User, Phone, Mail, Calendar } from 'lucide-react';
+import { X, Save, Layers, AlertCircle, User, Phone, Mail, Calendar, ChevronDown } from 'lucide-react';
 import { MortgageLoan, PipelineType, StageCode } from '@/app/mortgage/lib/types';
 import { MORTGAGE_STAGES, getStageConfig } from '@/app/mortgage/lib/stageFields';
 import {
@@ -13,6 +13,26 @@ import {
   EXCEL_PROCESSORS,
 } from '@/app/mortgage/lib/excelLookups';
 import StageHistorySection from './StageHistorySection';
+
+const FormSelect = ({
+  className = '',
+  containerClassName = 'relative w-full',
+  children,
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement> & { containerClassName?: string }) => (
+  <div className={containerClassName}>
+    <select
+      className={`${className} appearance-none pr-9 cursor-pointer`}
+      {...props}
+    >
+      {children}
+    </select>
+    <ChevronDown
+      size={16}
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform duration-200"
+    />
+  </div>
+);
 
 interface LoanFormModalProps {
   isOpen: boolean;
@@ -298,41 +318,43 @@ export default function LoanFormModal({
 
   const stageConfig = getStageConfig(stage);
 
-  // Common styling for inputs to guarantee crisp readability & date picker contrast
+  // Common styling for inputs to guarantee crisp readability matching Innovative Insurance CRM
   const inputClass =
-    'w-full h-10 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white font-medium placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all';
+    'w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white transition-all';
   const dateInputClass =
-    'mortgage-date-input w-full h-10 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white font-semibold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none transition-all';
-  const labelClass = 'block text-xs font-semibold text-slate-300 mb-1.5';
+    'mortgage-date-input w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white transition-all';
+  const labelClass = 'block text-gray-700 font-semibold mb-2 text-sm';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden text-white">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200 my-8">
         
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/95 sticky top-0 z-10">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl border ${stageConfig.badgeBg}`}>
+        <div className="p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
+          <div className="flex items-center gap-3.5">
+            <div className={`p-3 rounded-2xl border ${stageConfig.badgeBg} shadow-sm`}>
               <Layers className={`w-5 h-5 ${stageConfig.badgeText}`} />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-white">
-                  {isEditing ? 'Update Stage & Loan Application' : 'New Mortgage Application'}
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-xl font-bold text-[#2E5C85] tracking-tight">
+                  {isEditing ? 'Update Stage & Application' : 'New Mortgage Application'}
                 </h2>
-                <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border ${stageConfig.badgeBg} ${stageConfig.badgeText}`}>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${stageConfig.badgeBg} ${stageConfig.badgeText}`}>
                   {stageConfig.label}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-gray-500 mt-0.5">
                 {stageConfig.description}
               </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -340,18 +362,18 @@ export default function LoanFormModal({
 
         {/* Read-only Borrower Context Header when editing a later stage */}
         {isEditing && (
-          <div className="px-6 py-3 bg-slate-950/90 border-b border-slate-800 flex flex-wrap items-center justify-between text-xs gap-4 text-slate-300">
+          <div className="px-6 py-3.5 bg-gray-50/80 border-b border-gray-100 flex flex-wrap items-center justify-between text-xs gap-4 text-gray-700 font-medium">
             <div className="flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-400" />
-              <span className="font-bold text-white text-sm">{formData.client_name || 'Borrower'}</span>
+              <User className="w-4 h-4 text-[#10B889]" />
+              <span className="font-bold text-gray-900 text-sm">{formData.client_name || 'Borrower'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-slate-400" />
-              <span>{formData.phone || 'N/A'}</span>
+              <Phone className="w-4 h-4 text-gray-400" />
+              <span className="font-semibold">{formData.phone || 'N/A'}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-slate-400" />
-              <span>{formData.email || 'N/A'}</span>
+              <Mail className="w-4 h-4 text-gray-400" />
+              <span className="font-semibold">{formData.email || 'N/A'}</span>
             </div>
           </div>
         )}
@@ -360,29 +382,36 @@ export default function LoanFormModal({
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
           
           {/* Stage Selector Bar */}
-          <div className="pb-4 border-b border-slate-800 space-y-3">
+          <div className="pb-5 border-b border-gray-100 space-y-3.5">
             <div className="flex items-center justify-between">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                <label className="block text-xs font-bold uppercase tracking-widest text-[#10B889] mb-1.5">
                   Selected Pipeline Stage
                 </label>
-                <select
+                <FormSelect
+                  containerClassName="relative inline-block w-full sm:min-w-[260px]"
                   value={stage}
                   onChange={(e) => setStage(e.target.value as StageCode)}
-                  className="h-10 bg-slate-800 border border-slate-700 rounded-lg px-3.5 py-2 text-xs font-bold text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500 bg-white transition-all shadow-sm"
                 >
                   {availableStages.map((s) => (
                     <option key={s.code} value={s.code}>
                       {s.label}
                     </option>
                   ))}
-                </select>
+                </FormSelect>
               </div>
+
+              {isEditing && (
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm">
+                  Editing Live Application
+                </span>
+              )}
             </div>
 
-            {isEditing && stage !== initialLoan?.stage && (
-              <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 space-y-1.5">
-                <label className="block text-xs font-bold text-blue-300 uppercase tracking-wider">
+            {isEditing && (
+              <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-2 shadow-sm">
+                <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider">
                   Stage Transition Remarks (Optional)
                 </label>
                 <textarea
@@ -390,15 +419,15 @@ export default function LoanFormModal({
                   value={stageRemarks}
                   onChange={(e) => setStageRemarks(e.target.value)}
                   placeholder={`Optional remarks when moving to ${getStageConfig(stage).label}...`}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white resize-none"
                 />
               </div>
             )}
           </div>
 
           {error && (
-            <div className="p-3.5 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
+            <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-xs font-bold flex items-center gap-2.5 shadow-2xs">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
               <span>{error}</span>
             </div>
           )}
@@ -409,7 +438,7 @@ export default function LoanFormModal({
           {stage === 'NEW_LOAN' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-2 mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                   Borrower Contact & Inquiry Details
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
@@ -481,14 +510,14 @@ export default function LoanFormModal({
               </div>
 
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-400 border-b border-slate-800 pb-2 mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                   Loan Request & Staff Assignment
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {/* Transaction Type */}
                   <div>
                     <label className={labelClass}>Transaction Type</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.transaction_type
                           ? 'Other (Manual Input)'
@@ -505,14 +534,14 @@ export default function LoanFormModal({
                       {EXCEL_TRANSACTION_TYPES.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.transaction_type || (formData.transaction_type && !EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Transaction Type..."
                         value={formData.transaction_type || ''}
                         onChange={(e) => handleFieldChange('transaction_type', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-blue-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white"
                       />
                     )}
                   </div>
@@ -520,7 +549,7 @@ export default function LoanFormModal({
                   {/* Loan Type */}
                   <div>
                     <label className={labelClass}>Loan Type</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.loan_type
                           ? 'Other (Manual Input)'
@@ -537,14 +566,14 @@ export default function LoanFormModal({
                       {EXCEL_LOAN_TYPES.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.loan_type || (formData.loan_type && !EXCEL_LOAN_TYPES.includes(formData.loan_type as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Loan Type..."
                         value={formData.loan_type || ''}
                         onChange={(e) => handleFieldChange('loan_type', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-blue-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white"
                       />
                     )}
                   </div>
@@ -552,7 +581,7 @@ export default function LoanFormModal({
                   {/* Loan Term */}
                   <div>
                     <label className={labelClass}>Loan Term</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.loan_term
                           ? 'Other (Manual Input)'
@@ -569,14 +598,14 @@ export default function LoanFormModal({
                       {EXCEL_LOAN_TERMS.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.loan_term || (formData.loan_term && !EXCEL_LOAN_TERMS.includes(formData.loan_term as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Loan Term..."
                         value={formData.loan_term || ''}
                         onChange={(e) => handleFieldChange('loan_term', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-blue-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white"
                       />
                     )}
                   </div>
@@ -584,7 +613,7 @@ export default function LoanFormModal({
                   {/* Assigned Loan Officer */}
                   <div>
                     <label className={labelClass}>Assigned Loan Officer</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.loan_officer_name
                           ? 'Other (Manual Input)'
@@ -601,14 +630,14 @@ export default function LoanFormModal({
                       {EXCEL_LOAN_OFFICERS.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.loan_officer_name || (formData.loan_officer_name && !EXCEL_LOAN_OFFICERS.includes(formData.loan_officer_name as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Loan Officer name..."
                         value={formData.loan_officer_name || ''}
                         onChange={(e) => handleFieldChange('loan_officer_name', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-blue-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white"
                       />
                     )}
                   </div>
@@ -616,7 +645,7 @@ export default function LoanFormModal({
                   {/* Assigned Processor */}
                   <div>
                     <label className={labelClass}>Assigned Processor</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.processor_name
                           ? 'Other (Manual Input)'
@@ -633,14 +662,14 @@ export default function LoanFormModal({
                       {EXCEL_PROCESSORS.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.processor_name || (formData.processor_name && !EXCEL_PROCESSORS.includes(formData.processor_name as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Processor name..."
                         value={formData.processor_name || ''}
                         onChange={(e) => handleFieldChange('processor_name', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-blue-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white"
                       />
                     )}
                   </div>
@@ -648,14 +677,14 @@ export default function LoanFormModal({
                   {/* Application Received */}
                   <div>
                     <label className={labelClass}>Application Received?</label>
-                    <select
+                    <FormSelect
                       value={formData.application_received || 'N'}
                       onChange={(e) => handleFieldChange('application_received', e.target.value)}
                       className={inputClass}
                     >
                       <option value="N">No (Pending)</option>
                       <option value="Y">Yes</option>
-                    </select>
+                    </FormSelect>
                   </div>
 
                   {/* Estimated Property Value */}
@@ -721,14 +750,14 @@ export default function LoanFormModal({
                   {/* All Documents Received */}
                   <div>
                     <label className={labelClass}>All Documents Received?</label>
-                    <select
+                    <FormSelect
                       value={formData.all_documents_received || 'N'}
                       onChange={(e) => handleFieldChange('all_documents_received', e.target.value)}
                       className={inputClass}
                     >
                       <option value="N">No (Missing Docs)</option>
                       <option value="Y">Yes (Complete)</option>
-                    </select>
+                    </FormSelect>
                   </div>
                 </div>
 
@@ -750,7 +779,7 @@ export default function LoanFormModal({
                     value={formData.additional_notes || ''}
                     onChange={(e) => handleFieldChange('additional_notes', e.target.value)}
                     placeholder="Internal borrower notes..."
-                    className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white resize-none focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-slate-900 resize-none focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -763,7 +792,7 @@ export default function LoanFormModal({
           {stage === 'PREAPPROVAL_LOAN' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-xs font-bold uppercase tracking-wider text-indigo-400 border-b border-slate-800 pb-2 mb-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                   Pre-Approval Borrower Intake
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
@@ -809,7 +838,7 @@ export default function LoanFormModal({
 
                   <div>
                     <label className={labelClass}>Transaction Type</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.transaction_type
                           ? 'Other (Manual Input)'
@@ -826,21 +855,21 @@ export default function LoanFormModal({
                       {EXCEL_TRANSACTION_TYPES.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.transaction_type || (formData.transaction_type && !EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Transaction Type..."
                         value={formData.transaction_type || ''}
                         onChange={(e) => handleFieldChange('transaction_type', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-indigo-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 px-3.5 py-2 bg-white border border-[#10B889] rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#10B889]/30"
                       />
                     )}
                   </div>
 
                   <div>
                     <label className={labelClass}>Loan Officer</label>
-                    <select
+                    <FormSelect
                       value={
                         manualInputModes.loan_officer_name
                           ? 'Other (Manual Input)'
@@ -857,14 +886,14 @@ export default function LoanFormModal({
                       {EXCEL_LOAN_OFFICERS.map((item) => (
                         <option key={item} value={item}>{item}</option>
                       ))}
-                    </select>
+                    </FormSelect>
                     {(manualInputModes.loan_officer_name || (formData.loan_officer_name && !EXCEL_LOAN_OFFICERS.includes(formData.loan_officer_name as any))) && (
                       <input
                         type="text"
                         placeholder="Enter custom Loan Officer..."
                         value={formData.loan_officer_name || ''}
                         onChange={(e) => handleFieldChange('loan_officer_name', e.target.value)}
-                        className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-indigo-500/60 rounded-lg text-xs text-white focus:outline-none"
+                        className="w-full mt-2 px-3.5 py-2 bg-white border border-[#10B889] rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#10B889]/30"
                       />
                     )}
                   </div>
@@ -889,32 +918,32 @@ export default function LoanFormModal({
           {/* ========================================================= */}
           {stage === 'MANUAL_UW' && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-teal-400 border-b border-slate-800 pb-2 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                 Manual Underwriting Review & Pre-Approval Letter
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>UW Completed?</label>
-                  <select
+                  <FormSelect
                     value={formData.uw_completed || 'N'}
                     onChange={(e) => handleFieldChange('uw_completed', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No (In Review)</option>
                     <option value="Y">Yes (Completed)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Valuation Requested?</label>
-                  <select
+                  <FormSelect
                     value={formData.val_requested || 'N'}
                     onChange={(e) => handleFieldChange('val_requested', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -941,14 +970,14 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Pre-Approval Sent to Client?</label>
-                  <select
+                  <FormSelect
                     value={formData.preapproval_sent_to_client || 'N'}
                     onChange={(e) => handleFieldChange('preapproval_sent_to_client', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes (Sent)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -970,13 +999,13 @@ export default function LoanFormModal({
           {/* ========================================================= */}
           {stage === 'SUBMIT_TO_UW' && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-purple-400 border-b border-slate-800 pb-2 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                 Underwriting Submission & Rate Lock Details
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>Wholesale Lender</label>
-                  <select
+                  <FormSelect
                     value={
                       manualInputModes.lender_name
                         ? 'Other (Manual Input)'
@@ -993,14 +1022,14 @@ export default function LoanFormModal({
                     {EXCEL_WHOLESALE_LENDERS.map((item) => (
                       <option key={item} value={item}>{item}</option>
                     ))}
-                  </select>
+                  </FormSelect>
                   {(manualInputModes.lender_name || (formData.lender_name && !EXCEL_WHOLESALE_LENDERS.includes(formData.lender_name as any))) && (
                     <input
                       type="text"
                       placeholder="Enter custom Wholesale Lender..."
                       value={formData.lender_name || ''}
                       onChange={(e) => handleFieldChange('lender_name', e.target.value)}
-                      className="w-full mt-2 h-9 px-3 py-1.5 bg-slate-950 border border-purple-500/60 rounded-lg text-xs text-white focus:outline-none"
+                      className="w-full mt-2 px-3.5 py-2 bg-white border border-[#10B889] rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#10B889]/30"
                     />
                   )}
                 </div>
@@ -1029,50 +1058,50 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Moonstar Disclosure Sent?</label>
-                  <select
+                  <FormSelect
                     value={formData.moonstar_disclosure_sent || 'N'}
                     onChange={(e) => handleFieldChange('moonstar_disclosure_sent', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Lender Disclosure Sent?</label>
-                  <select
+                  <FormSelect
                     value={formData.lender_disclosure_sent || 'N'}
                     onChange={(e) => handleFieldChange('lender_disclosure_sent', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>All UW Documents Received?</label>
-                  <select
+                  <FormSelect
                     value={formData.received_all_uw_documents || 'N'}
                     onChange={(e) => handleFieldChange('received_all_uw_documents', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Rate Locked?</label>
-                  <select
+                  <FormSelect
                     value={formData.rate_locked || 'N'}
                     onChange={(e) => handleFieldChange('rate_locked', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No (Floating)</option>
                     <option value="Y">Yes (Locked)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1106,20 +1135,20 @@ export default function LoanFormModal({
           {/* ========================================================= */}
           {stage === 'INITIAL_COMPLIANCE' && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 border-b border-slate-800 pb-2 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                 Disclosures, Anti-Predatory Check & Order Tracking
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>Moonstar Disclosure Signed (3-Day)?</label>
-                  <select
+                  <FormSelect
                     value={formData.moonstar_disclosure_signed_3day || 'N'}
                     onChange={(e) => handleFieldChange('moonstar_disclosure_signed_3day', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1135,14 +1164,14 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Lender Disclosure Signed (3-Day)?</label>
-                  <select
+                  <FormSelect
                     value={formData.lender_disclosure_signed_3day || 'N'}
                     onChange={(e) => handleFieldChange('lender_disclosure_signed_3day', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1158,7 +1187,7 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Anti-Predatory Review</label>
-                  <select
+                  <FormSelect
                     value={formData.anti_predatory_completed || 'NA'}
                     onChange={(e) => handleFieldChange('anti_predatory_completed', e.target.value)}
                     className={inputClass}
@@ -1166,7 +1195,7 @@ export default function LoanFormModal({
                     <option value="NA">N/A</option>
                     <option value="N">No (Pending)</option>
                     <option value="Y">Yes (Passed)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1182,14 +1211,14 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Conditionally Approved?</label>
-                  <select
+                  <FormSelect
                     value={formData.conditionally_approved || 'N'}
                     onChange={(e) => handleFieldChange('conditionally_approved', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div className="sm:col-span-2">
@@ -1205,7 +1234,7 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Appraisal Ordered?</label>
-                  <select
+                  <FormSelect
                     value={formData.appraisal_ordered || 'NA'}
                     onChange={(e) => handleFieldChange('appraisal_ordered', e.target.value)}
                     className={inputClass}
@@ -1213,24 +1242,24 @@ export default function LoanFormModal({
                     <option value="NA">N/A (Waiver)</option>
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Title Ordered?</label>
-                  <select
+                  <FormSelect
                     value={formData.title_ordered || 'N'}
                     onChange={(e) => handleFieldChange('title_ordered', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Condo Questionnaire Req?</label>
-                  <select
+                  <FormSelect
                     value={formData.condo_questionnaire_requested || 'NA'}
                     onChange={(e) => handleFieldChange('condo_questionnaire_requested', e.target.value)}
                     className={inputClass}
@@ -1238,12 +1267,12 @@ export default function LoanFormModal({
                     <option value="NA">N/A (Single Family)</option>
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>HOI Requested?</label>
-                  <select
+                  <FormSelect
                     value={formData.hoi_requested || 'NA'}
                     onChange={(e) => handleFieldChange('hoi_requested', e.target.value)}
                     className={inputClass}
@@ -1251,7 +1280,7 @@ export default function LoanFormModal({
                     <option value="NA">N/A</option>
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
               </div>
             </div>
@@ -1262,20 +1291,20 @@ export default function LoanFormModal({
           {/* ========================================================= */}
           {stage === 'FINAL_COMPLIANCE' && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 border-b border-slate-800 pb-2 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                 Second Disclosures, CD Request & Clear to Close (CTC)
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>Moonstar Disclosure 2 Signed?</label>
-                  <select
+                  <FormSelect
                     value={formData.moonstar_disclosure_2_signed || 'N'}
                     onChange={(e) => handleFieldChange('moonstar_disclosure_2_signed', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1291,7 +1320,7 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Appraisal Sent to Client?</label>
-                  <select
+                  <FormSelect
                     value={formData.appraisal_sent_to_client || 'NA'}
                     onChange={(e) => handleFieldChange('appraisal_sent_to_client', e.target.value)}
                     className={inputClass}
@@ -1299,7 +1328,7 @@ export default function LoanFormModal({
                     <option value="NA">N/A (Waiver)</option>
                     <option value="N">No</option>
                     <option value="Y">Yes (Sent)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1326,62 +1355,62 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>CD Requested?</label>
-                  <select
+                  <FormSelect
                     value={formData.cd_requested || 'N'}
                     onChange={(e) => handleFieldChange('cd_requested', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Clear to Close (CTC) Status?</label>
-                  <select
+                  <FormSelect
                     value={formData.ctc_status || 'N'}
                     onChange={(e) => handleFieldChange('ctc_status', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No (Pending)</option>
                     <option value="Y">Yes (CTC Cleared)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>CD Acknowledged by Borrower?</label>
-                  <select
+                  <FormSelect
                     value={formData.cd_acknowledged || 'N'}
                     onChange={(e) => handleFieldChange('cd_acknowledged', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Closing Confirmed?</label>
-                  <select
+                  <FormSelect
                     value={formData.closing_confirmation_received || 'N'}
                     onChange={(e) => handleFieldChange('closing_confirmation_received', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>VOE Cleared?</label>
-                  <select
+                  <FormSelect
                     value={formData.voe_cleared || 'N'}
                     onChange={(e) => handleFieldChange('voe_cleared', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
               </div>
             </div>
@@ -1392,25 +1421,25 @@ export default function LoanFormModal({
           {/* ========================================================= */}
           {stage === 'CLOSING' && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 border-b border-slate-800 pb-2 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                 Invoices, Final Terms & Closing Schedule
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>Credit Report Invoice Submitted?</label>
-                  <select
+                  <FormSelect
                     value={formData.credit_report_invoice_submitted || 'N'}
                     onChange={(e) => handleFieldChange('credit_report_invoice_submitted', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Condo Invoice Submitted?</label>
-                  <select
+                  <FormSelect
                     value={formData.condo_invoice_submitted || 'NA'}
                     onChange={(e) => handleFieldChange('condo_invoice_submitted', e.target.value)}
                     className={inputClass}
@@ -1418,7 +1447,7 @@ export default function LoanFormModal({
                     <option value="NA">N/A</option>
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1446,14 +1475,14 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Final CD Received?</label>
-                  <select
+                  <FormSelect
                     value={formData.final_cd_received || 'N'}
                     onChange={(e) => handleFieldChange('final_cd_received', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1475,68 +1504,68 @@ export default function LoanFormModal({
           {/* ========================================================= */}
           {stage === 'AUDIT' && (
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-pink-400 border-b border-slate-800 pb-2 mb-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
                 Post-Closing Audit, Document Archiving & Reconciliation
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                 <div>
                   <label className={labelClass}>Closing Docs Downloaded?</label>
-                  <select
+                  <FormSelect
                     value={formData.closing_docs_downloaded || 'N'}
                     onChange={(e) => handleFieldChange('closing_docs_downloaded', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Appraisal Downloaded?</label>
-                  <select
+                  <FormSelect
                     value={formData.appraisal_downloaded || 'N'}
                     onChange={(e) => handleFieldChange('appraisal_downloaded', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Title Report Downloaded?</label>
-                  <select
+                  <FormSelect
                     value={formData.title_report_downloaded || 'N'}
                     onChange={(e) => handleFieldChange('title_report_downloaded', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Moonstar Audit Completed?</label>
-                  <select
+                  <FormSelect
                     value={formData.moonstar_audit_completed || 'N'}
                     onChange={(e) => handleFieldChange('moonstar_audit_completed', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes (Audited)</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
                   <label className={labelClass}>Title Check Received?</label>
-                  <select
+                  <FormSelect
                     value={formData.title_check_received || 'N'}
                     onChange={(e) => handleFieldChange('title_check_received', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
 
                 <div>
@@ -1563,14 +1592,14 @@ export default function LoanFormModal({
 
                 <div>
                   <label className={labelClass}>Master Loan Log Updated?</label>
-                  <select
+                  <FormSelect
                     value={formData.loan_log_updated || 'N'}
                     onChange={(e) => handleFieldChange('loan_log_updated', e.target.value)}
                     className={inputClass}
                   >
                     <option value="N">No</option>
                     <option value="Y">Yes</option>
-                  </select>
+                  </FormSelect>
                 </div>
               </div>
             </div>
@@ -1582,19 +1611,19 @@ export default function LoanFormModal({
           )}
 
           {/* Submit / Action Bar */}
-          <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3 sticky bottom-0 bg-slate-900/95 py-3">
+          <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3 sticky bottom-0 bg-white/95 backdrop-blur-md py-4 -mx-6 px-6 z-20 shadow-lg">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-semibold text-slate-300 transition-colors"
+              className="px-6 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-xs sm:text-sm shadow-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 rounded-lg text-xs font-bold text-white shadow-lg shadow-blue-600/30 flex items-center gap-2 transition-all disabled:opacity-50"
+              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md flex items-center gap-2 transition-all disabled:opacity-50"
             >
               <Save className="w-4 h-4" />
               <span>

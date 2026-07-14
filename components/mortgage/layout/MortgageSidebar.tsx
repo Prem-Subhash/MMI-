@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutGrid, GitBranch, Briefcase, Activity, PlusCircle } from 'lucide-react'
+import { LayoutGrid, GitBranch, Briefcase, FileCheck } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -18,20 +18,19 @@ interface MenuItem {
     badge?: string
 }
 
-export default function LendingSidebar({ setIsHovered, isHovered, isMobileOpen, setIsMobileOpen }: SidebarProps) {
+export default function MortgageSidebar({ setIsHovered, isHovered, isMobileOpen, setIsMobileOpen }: SidebarProps) {
     const pathname = usePathname()
 
     const isActive = (path: string) => {
         if (pathname === path) return true
-        if (path !== '/lending/dashboard' && pathname.startsWith(path)) return true
+        if (path !== '/mortgage' && pathname.startsWith(path) && path !== '/') return true
         return false
     }
 
-    const lendingMenu: MenuItem[] = [
-        { label: 'Dashboard', href: '/lending/dashboard', icon: <LayoutGrid size={24} /> },
-        { label: 'Lending Pipeline', href: '/lending/pipeline', icon: <GitBranch size={24} />, badge: '21 Stages' },
-        { label: 'Loans Directory', href: '/lending/loans', icon: <Briefcase size={24} /> },
-        { label: 'Activity Log', href: '/lending/activity-log', icon: <Activity size={24} /> },
+    const mortgageMenu: MenuItem[] = [
+        { label: 'Dashboard', href: '/mortgage', icon: <LayoutGrid size={24} /> },
+        { label: 'New Loan Pipeline', href: '/mortgage/pipeline/new-loan', icon: <GitBranch size={24} />, badge: '6 Stages' },
+        { label: 'Pre-Approval Pipeline', href: '/mortgage/pipeline/pre-approval', icon: <FileCheck size={24} />, badge: '2 Stages' },
     ]
 
     return (
@@ -46,30 +45,8 @@ export default function LendingSidebar({ setIsHovered, isHovered, isMobileOpen, 
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
-            {/* Quick Add Loan Action Button inside Sidebar */}
-            <div className={`w-full pt-4 px-3 mb-2 transition-all duration-300 ${isHovered || isMobileOpen ? 'opacity-100' : 'lg:px-2'}`}>
-                <Link
-                    href="/lending/loans/new"
-                    onClick={() => setIsMobileOpen(false)}
-                    className={`
-                        flex items-center justify-center gap-2.5 bg-brand hover:bg-brand-dark text-white font-bold py-3 px-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group
-                        ${isHovered || isMobileOpen ? 'w-full' : 'w-[56px] h-[56px] mx-auto p-0'}
-                    `}
-                    title="New Loan Application"
-                >
-                    <PlusCircle size={22} className="flex-shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className={`whitespace-nowrap transition-all duration-300 tracking-tight ${isHovered || isMobileOpen ? 'text-sm opacity-100 block' : 'text-[0px] opacity-0 hidden'}`}>
-                        New Loan
-                    </span>
-                </Link>
-            </div>
-
-            <div className="w-full px-4 py-1">
-                <div className="border-t border-white/10 w-full"></div>
-            </div>
-
-            <nav className="flex-1 flex flex-col gap-2 mt-2 w-full px-2 overflow-y-auto pb-8">
-                {lendingMenu.map((item, index) => (
+            <nav className="flex-1 flex flex-col gap-2 mt-4 w-full px-2 overflow-y-auto pb-8">
+                {mortgageMenu.map((item, index) => (
                     <Link 
                         key={index} 
                         href={item.href} 

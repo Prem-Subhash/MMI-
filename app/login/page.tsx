@@ -64,8 +64,8 @@ export default function LoginPage() {
     setLoading(false)
 
     if (error) {
-      setError(error.message)
-      toast(error.message, 'error')
+      setError('Invalid email or password. Please try again.')
+      toast('Invalid email or password. Please try again.', 'error')
       setCaptcha(generateCaptcha())
       setCaptchaInput('')
       return
@@ -74,29 +74,55 @@ export default function LoginPage() {
     const { data: { session } } = await supabase.auth.getSession()
 
     if (session) {
-      const { data: profile } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, portal_access')
         .eq('id', session.user.id)
         .single()
 
-      if (profile?.role) {
+      if (profileError) {
+        const fallback = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+        const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
+        const isMortgage = fallback.data?.role === 'mortgage'
+        profile = { ...fallback.data, portal_access: isLending ? ['lending'] : (isMortgage ? ['mortgage'] : ['insurance']) }
+      }
+
+      const role = profile?.role?.toLowerCase()
+      const hasInsuranceAccess = profile?.portal_access?.includes('insurance') || ['csr', 'admin', 'accounting', 'superadmin'].includes(role || '')
+
+      if (hasInsuranceAccess && role) {
         const roleRoutes: Record<string, string> = {
           csr: '/csr',
           admin: '/admin',
           accounting: '/accounting',
           superadmin: '/superadmin',
-          lending: '/lending/dashboard',
-          accurate_lending: '/lending/dashboard',
         }
-        toast(`Welcome back! Redirecting to your dashboard...`, 'success', 3000)
-        router.push(roleRoutes[profile.role] || '/unauthorized')
-        router.refresh()
-        return
+        if (roleRoutes[role]) {
+          toast(`Welcome back! Redirecting to your dashboard...`, 'success', 3000)
+          router.push(roleRoutes[role])
+          return
+        }
       }
+
+      // If authenticated but lacks permission for Innovative Insurance portal
+      await supabase.auth.signOut()
+      setError('Your account does not have access to this portal.')
+      toast('Your account does not have access to this portal.', 'error')
+      setCaptcha(generateCaptcha())
+      setCaptchaInput('')
+      return
     }
 
-    router.push('/unauthorized')
+    await supabase.auth.signOut()
+    setError('Invalid email or password. Please try again.')
+    toast('Invalid email or password. Please try again.', 'error')
+    setCaptcha(generateCaptcha())
+    setCaptchaInput('')
+    return
   }
 
   return (

@@ -1,27 +1,19 @@
 'use client';
 
 import React from 'react';
-import { User } from 'lucide-react';
+import { Building2 } from 'lucide-react';
 
 export default function MortgageHeader({ title, subtitle }: { title: string; subtitle?: string }) {
   return (
-    <header className="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-8 py-4 flex items-center justify-between sticky top-0 z-30">
+    <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white p-5 rounded-2xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
       <div>
-        <h1 className="text-xl font-bold text-white tracking-tight">{title}</h1>
-        {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
-      </div>
-
-      <div className="flex items-center">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300">
-            <User className="w-4 h-4" />
-          </div>
-          <div className="hidden md:block">
-            <div className="text-xs font-semibold text-white leading-none">Moonstar Officer</div>
-            <div className="text-[10px] text-slate-400 mt-1">Lending Desk</div>
-          </div>
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-100 mb-1">
+          <Building2 size={14} />
+          <span>Moonstar Mortgage Workflow Pipeline</span>
         </div>
+        <h1 className="text-xl sm:text-2xl font-extrabold tracking-tight text-white">{title}</h1>
+        {subtitle && <p className="text-xs sm:text-sm text-white/80 mt-0.5 max-w-2xl">{subtitle}</p>}
       </div>
-    </header>
+    </div>
   );
 }

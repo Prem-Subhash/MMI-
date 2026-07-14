@@ -27,7 +27,7 @@ const portalCards: PortalCard[] = [
     title: 'Moonstar Mortgage',
     logo: '/Moonstarlogo-removebg-preview.png',
     description: 'Access the Mortgage CRM portal to manage loan applications, mortgage pipelines, and borrower workflows.',
-    targetUrl: '#',
+    targetUrl: '/mortgage/login',
   },
   {
     id: 'lending',
@@ -58,15 +58,23 @@ export default function HomePage() {
             .eq('id', session.user.id)
             .single()
           const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
-          profile = { ...fallback.data, portal_access: isLending ? ['lending'] : ['insurance'] }
+          const isMortgage = fallback.data?.role === 'mortgage'
+          profile = { ...fallback.data, portal_access: isLending ? ['lending'] : (isMortgage ? ['mortgage'] : ['insurance']) }
         }
 
         const isLendingRole = profile?.role === 'lending' || profile?.role === 'accurate_lending'
+        const isMortgageRole = profile?.role === 'mortgage'
         const hasLendingPortal = profile?.portal_access?.includes('lending') || profile?.portal_access?.includes('accurate_lending')
+        const hasMortgagePortal = profile?.portal_access?.includes('mortgage')
         const hasInsurancePortal = profile?.portal_access?.includes('insurance')
+        const isMoonstarEmail = session.user.email?.toLowerCase().includes('moonstar.com')
 
-        if (hasLendingPortal && !hasInsurancePortal) {
+        if (isMoonstarEmail || hasMortgagePortal && !hasInsurancePortal && !hasLendingPortal) {
+          router.push('/mortgage')
+        } else if (hasLendingPortal && !hasInsurancePortal) {
           router.push('/lending/dashboard')
+        } else if (isMortgageRole) {
+          router.push('/mortgage')
         } else if (isLendingRole) {
           router.push('/lending/dashboard')
         } else if (profile?.role) {

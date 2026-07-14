@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LayoutDashboard, Layers, FileCheck, LogOut, Home } from 'lucide-react';
+import { LayoutDashboard, Layers, FileCheck, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function MortgageSidebar() {
@@ -94,16 +94,8 @@ export default function MortgageSidebar() {
         })}
       </nav>
 
-      {/* Footer / Portal Switch */}
+      {/* Footer / Logout */}
       <div className="p-4 border-t border-slate-800 space-y-2">
-        <Link
-          href="/"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
-        >
-          <Home className="w-4 h-4" />
-          <span>Switch Product Portal</span>
-        </Link>
-
         <button
           type="button"
           onClick={handleLogout}

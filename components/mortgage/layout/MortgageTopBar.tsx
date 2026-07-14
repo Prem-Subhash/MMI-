@@ -6,7 +6,7 @@ import { Bell, Clock, User, ChevronRight, Menu } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 
-export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void }) {
+export default function MortgageTopBar({ onMenuClick }: { onMenuClick: () => void }) {
     const router = useRouter()
     const [profileOpen, setProfileOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
@@ -63,26 +63,26 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
             localStorage.removeItem('moonstar_mortgage_user_email')
             sessionStorage.clear()
         }
-        toast('Logged out of Commercial Lending Portal', 'info')
-        router.replace('/lending/login')
+        toast('Logged out of Moonstar Mortgage Portal', 'info')
+        router.replace('/mortgage/login')
     }
 
-    const displayName = userProfile?.full_name || userProfile?.email?.split('@')[0] || 'Lending Officer'
+    const displayName = userProfile?.full_name || userProfile?.email?.split('@')[0] || 'Mortgage Officer'
     const initial = displayName.charAt(0).toUpperCase()
 
     const demoNotifications = [
         {
             id: '1',
-            title: 'New Commercial Loan Intake',
-            message: 'Aries Enterprise submitted docs for $1,250,000 Bridge Loan.',
-            time: '12 mins ago',
+            title: 'New Pre-Approval Application',
+            message: 'John Doe submitted initial documentation for $450,000 Purchase pre-approval.',
+            time: '15 mins ago',
             unread: true,
         },
         {
             id: '2',
-            title: 'Stage Progression Required',
-            message: 'Apex Properties ($850K Term Loan) awaiting Credit Committee review.',
-            time: '1 hour ago',
+            title: 'Rate Lock Expiring Soon',
+            message: 'Sarah Jenkins ($380K Conventional Refinance) rate lock expires in 48 hours.',
+            time: '2 hours ago',
             unread: false,
         },
     ]
@@ -102,18 +102,18 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
 
             <div
                 className="flex-1 lg:flex-none lg:w-[260px] h-full flex items-center justify-center px-2 flex-shrink-0 cursor-pointer"
-                onClick={() => router.push('/lending/dashboard')}
+                onClick={() => router.push('/mortgage')}
             >
                 <img
-                    src="/Accurate_Lending_Logo-removebg-preview.png"
-                    alt="Accurate Lending Logo"
-                    className="h-10 lg:h-14 w-auto object-contain max-w-[140px] sm:max-w-[200px] lg:max-w-none transition-transform duration-300 hover:scale-105"
+                    src="/Moonstarlogo-removebg-preview.png"
+                    alt="Moonstar Mortgage Logo"
+                    className="h-10 lg:h-16 w-auto object-contain max-w-[140px] sm:max-w-[200px] lg:max-w-none transition-transform duration-300 hover:scale-105"
                 />
             </div>
 
             {/* Right Side Content */}
             <div className="flex-1 flex items-center justify-end px-3 sm:px-6">
-                <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0 ml-auto">
+                <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0">
                     {/* Notification Bell */}
                     <div className="relative" ref={notificationsRef}>
                         <button
@@ -131,8 +131,8 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                         {notificationsOpen && (
                             <div className="absolute right-0 top-12 lg:top-14 w-[min(340px,calc(100vw-1.5rem))] bg-white rounded-2xl shadow-2xl py-0 text-gray-800 z-50 border border-gray-100 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
                                 <div className="px-4 py-3 sm:px-5 sm:py-4 bg-slate-900 text-white border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-bold text-sm sm:text-base">Lending Activity Alerts</h3>
-                                    <span className="text-[10px] font-bold bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-full uppercase tracking-wider">Demo Feed</span>
+                                    <h3 className="font-bold text-sm sm:text-base">Mortgage Activity Alerts</h3>
+                                    <span className="text-[10px] font-bold bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-full uppercase tracking-wider">Live Feed</span>
                                 </div>
                                 <div className="max-h-[min(400px,55vh)] overflow-y-auto divide-y divide-gray-100">
                                     {demoNotifications.map((n) => (
@@ -141,7 +141,7 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                                             className={`px-4 py-3 sm:px-5 sm:py-4 hover:bg-blue-50/50 transition-colors cursor-pointer group ${n.unread ? 'bg-blue-50/25' : ''}`}
                                             onClick={() => {
                                                 setNotificationsOpen(false)
-                                                router.push(n.id === '1' ? '/lending/term-sheet-received' : '/lending/pipeline')
+                                                router.push(n.id === '1' ? '/mortgage/pipeline/pre-approval' : '/mortgage/pipeline/new-loan')
                                             }}
                                         >
                                             <div className="flex items-start gap-3">
@@ -171,11 +171,11 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                                     <button 
                                         onClick={() => {
                                             setNotificationsOpen(false)
-                                            router.push('/lending/activity-log')
+                                            router.push('/mortgage')
                                         }}
                                         className="text-xs font-bold text-blue-700 hover:text-blue-900 uppercase tracking-widest py-1 block w-full"
                                     >
-                                        View Full Activity Log →
+                                        View Dashboard Pipelines →
                                     </button>
                                 </div>
                             </div>
@@ -199,11 +199,11 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
                         {profileOpen && (
                             <div className="absolute right-0 top-12 lg:top-14 w-[min(260px,calc(100vw-1.5rem))] bg-white rounded-2xl shadow-2xl py-2 text-gray-800 z-50 border border-gray-100 flex flex-col ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
                                 <div className="px-5 py-4 border-b border-gray-100 bg-slate-50">
-                                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider inline-block mb-1.5">Lending Portal</span>
+                                    <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full uppercase tracking-wider inline-block mb-1.5">Mortgage Portal</span>
                                     <p className="font-bold text-gray-900 text-base truncate leading-tight" title={displayName}>
                                         {displayName}
                                     </p>
-                                    <p className="text-xs text-gray-500 mt-1 truncate">{userProfile?.email || 'Authorized Account'}</p>
+                                    <p className="text-xs text-gray-500 mt-1 truncate">{userProfile?.email || 'mortgageadmin@moonstar.com'}</p>
                                 </div>
                                 <div className="p-2">
                                     <button

@@ -64,8 +64,8 @@ export default function LendingLoginPage() {
     setLoading(false)
 
     if (signInError) {
-      setError(signInError.message)
-      toast(signInError.message, 'error')
+      setError('Invalid email or password. Please try again.')
+      toast('Invalid email or password. Please try again.', 'error')
       setCaptcha(generateCaptcha())
       setCaptchaInput('')
       return
@@ -96,16 +96,23 @@ export default function LendingLoginPage() {
       if (hasLendingAccess) {
         toast(`Welcome to Accurate Lending! Redirecting to dashboard...`, 'success', 3000)
         router.push('/lending/dashboard')
-        router.refresh()
         return
       } else {
-        toast(`Unauthorized access. Your account is not permitted in the Accurate Lending portal.`, 'error', 4000)
-        router.push('/unauthorized')
+        await supabase.auth.signOut()
+        setError('Your account does not have access to this portal.')
+        toast('Your account does not have access to this portal.', 'error')
+        setCaptcha(generateCaptcha())
+        setCaptchaInput('')
         return
       }
     }
 
-    router.push('/unauthorized')
+    await supabase.auth.signOut()
+    setError('Invalid email or password. Please try again.')
+    toast('Invalid email or password. Please try again.', 'error')
+    setCaptcha(generateCaptcha())
+    setCaptchaInput('')
+    return
   }
 
   return (

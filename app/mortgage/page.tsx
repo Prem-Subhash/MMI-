@@ -1,28 +1,32 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  DollarSign,
-  Users,
-  FileCheck,
-  TrendingUp,
-  AlertCircle,
-  Calendar,
-  Layers,
-  CheckCircle2,
+  PlusCircle,
+  FileText,
   Clock,
-  ArrowRight,
-  Plus,
+  CheckCircle2,
+  AlertCircle,
+  TrendingUp,
+  Building2,
+  DollarSign,
+  ArrowUpRight,
+  Layers,
+  Calendar,
+  FileCheck,
   RefreshCw,
+  Users
 } from 'lucide-react';
-import MortgageHeader from './components/MortgageHeader';
 import { DashboardStats, MortgageLoan, PipelineType } from './lib/types';
 import { getStageConfig } from './lib/stageFields';
 import LoanFormModal from './components/LoanFormModal';
 import CreateApplicationModal from './components/CreateApplicationModal';
 
 export default function MortgageDashboardPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,338 +55,292 @@ export default function MortgageDashboardPage() {
     fetchDashboardStats();
   }, []);
 
+  // Check query parameter for automatic modal trigger from quick actions
+  useEffect(() => {
+    if (searchParams?.get('action') === 'new_application') {
+      setIsSelectionOpen(true);
+      // Clean up URL parameter cleanly
+      const url = new URL(window.location.href);
+      url.searchParams.delete('action');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
+
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      <MortgageHeader title="Moonstar Mortgage — Executive Lending Dashboard" />
+    <div className="w-full space-y-8 animate-fade-in pb-12">
+      {/* Status Alert Banner */}
+      <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border-l-4 border-[#10B889] p-4 rounded-r-xl flex items-start sm:items-center gap-3 text-gray-800 shadow-sm">
+        <AlertCircle className="text-[#10B889] shrink-0 mt-0.5 sm:mt-0" size={20} />
+        <div className="text-xs sm:text-sm">
+          <span className="font-bold uppercase tracking-wider text-emerald-900 mr-1.5">Mortgage Portal Active</span>
+          <span className="text-gray-600">Executive real-time monitoring across 6-Stage Loan and 2-Stage Pre-Approval pipelines.</span>
+        </div>
+      </div>
 
-      <div className="flex-1 p-8 overflow-y-auto space-y-8">
-        
-        {/* Top Quick Actions & Refresh Bar */}
-        <div className="flex items-center justify-between">
+      {/* Header / Welcome Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 sm:p-8 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-80 h-full bg-gradient-to-l from-[#10B889]/5 to-transparent pointer-events-none" />
+        <div className="relative z-10">
+          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#10B889] mb-1">
+            <Building2 size={14} />
+            <span>Moonstar Lending Module</span>
+          </div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800 tracking-tight">
+            Moonstar Mortgage Dashboard
+          </h1>
+          <p className="text-gray-600 text-sm mt-1">
+            Monitor residential and commercial loan pipelines, pre-approvals, and closing checklists with precision.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 w-full sm:w-auto z-10">
+          <button
+            type="button"
+            onClick={fetchDashboardStats}
+            className="p-3 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-700 transition-colors flex items-center justify-center shadow-sm"
+            title="Refresh statistics"
+          >
+            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-[#10B889]' : ''}`} />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setIsSelectionOpen(true)}
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap"
+          >
+            <PlusCircle size={20} className="transition-transform group-hover:rotate-90" />
+            <span>New Application</span>
+          </button>
+        </div>
+      </div>
+
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm font-medium shadow-sm">
+          {error}
+        </div>
+      )}
+
+      {/* Metric Cards Section */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] flex items-center gap-2">
+            <TrendingUp size={18} className="text-[#10B889]" />
+            <span>Executive KPI Overview</span>
+          </h2>
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 shadow-sm">
+            Projected Revenue: ${(stats?.totalProjectedCommission || 0).toLocaleString()}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 sm:gap-6">
+          <MetricCard
+            title="Total Loans"
+            value={stats?.totalLoans?.toString() ?? '—'}
+            subtitle="All active portfolios"
+            icon={<Layers size={24} className="text-blue-600" />}
+            trend="Active Queue"
+            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+          />
+          <MetricCard
+            title="New Loans"
+            value={stats?.newLoansCount?.toString() ?? '—'}
+            subtitle="6-Stage Loan Workflow"
+            icon={<PlusCircle size={24} className="text-purple-600" />}
+            trend="Origination"
+            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+          />
+          <MetricCard
+            title="Pre-Approvals"
+            value={stats?.preApprovalsCount?.toString() ?? '—'}
+            subtitle="2-Stage Verification"
+            icon={<FileCheck size={24} className="text-indigo-600" />}
+            trend="Screening"
+            onClick={() => router.push('/mortgage/pipeline/pre-approval')}
+          />
+          <MetricCard
+            title="Loans Closing"
+            value={stats?.loansClosingCount?.toString() ?? '—'}
+            subtitle="Stage 5 Closing"
+            icon={<CheckCircle2 size={24} className="text-teal-600" />}
+            trend="Disbursement"
+            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+          />
+          <MetricCard
+            title="Loans in Audit"
+            value={stats?.loansInAuditCount?.toString() ?? '—'}
+            subtitle="Stage 4 Audit"
+            icon={<AlertCircle size={24} className="text-pink-600" />}
+            trend="Compliance"
+            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+          />
+          <MetricCard
+            title="Follow-Ups"
+            value={stats?.upcomingFollowUpsCount?.toString() ?? '—'}
+            subtitle="Scheduled contacts"
+            icon={<Calendar size={24} className="text-amber-600" />}
+            trend="Action Required"
+            onClick={() => {}}
+          />
+        </div>
+      </div>
+
+      {/* Stage Distribution & Revenue Bar */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6 sm:p-8 shadow-sm space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
-            <h2 className="text-lg font-bold text-white">Pipeline Command Center</h2>
-            <p className="text-xs text-slate-400">Monitoring New Loan & Pre-Approval pipelines</p>
+            <h3 className="font-bold text-base text-gray-900">Stage Distribution & Volume Analysis</h3>
+            <p className="text-xs text-gray-500">Breakdown of loans and volume across all pipeline stages</p>
           </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={fetchDashboardStats}
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
-              title="Refresh statistics"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-            </button>
-
-            <button
-              onClick={() => setIsSelectionOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold shadow-lg shadow-blue-600/30 transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Create Application</span>
-            </button>
-          </div>
+          <span className="text-xs font-bold text-[#10B889] bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 inline-block w-fit shadow-sm">
+            Total Pipeline Volume: ${(stats?.stageDistribution || []).reduce((acc, s) => acc + s.volume, 0).toLocaleString()}
+          </span>
         </div>
 
-        {error && (
-          <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl text-red-400 text-sm">
-            {error}
-          </div>
-        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 pt-2">
+          {(stats?.stageDistribution || []).map((stageItem) => {
+            const maxCount = Math.max(
+              ...(stats?.stageDistribution || []).map((s) => s.count),
+              1
+            );
+            const widthPct = Math.max(8, (stageItem.count / maxCount) * 100);
 
-        {/* ==============================================================
-           EXECUTIVE KPI CARDS
-           ============================================================== */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Total Loans
-              </span>
-              <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400">
-                <Layers className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-extrabold text-white">
-                {stats?.totalLoans ?? '—'}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1">All active applications</div>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                New Loans
-              </span>
-              <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400">
-                <TrendingUp className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-extrabold text-white">
-                {stats?.newLoansCount ?? '—'}
-              </div>
-              <div className="text-[11px] text-purple-400 mt-1">6-Stage Loan Workflow</div>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Pre-Approvals
-              </span>
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
-                <FileCheck className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-extrabold text-white">
-                {stats?.preApprovalsCount ?? '—'}
-              </div>
-              <div className="text-[11px] text-indigo-400 mt-1">2-Stage Pre-Approval</div>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Loans Closing
-              </span>
-              <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-extrabold text-cyan-400">
-                {stats?.loansClosingCount ?? '—'}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1">In CLOSING stage</div>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Loans in Audit
-              </span>
-              <div className="p-2 rounded-xl bg-pink-500/10 text-pink-400">
-                <AlertCircle className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-extrabold text-pink-400">
-                {stats?.loansInAuditCount ?? '—'}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1">Final compliance review</div>
-            </div>
-          </div>
-
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col justify-between">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                Upcoming Follow-Ups
-              </span>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                <Calendar className="w-4 h-4" />
-              </div>
-            </div>
-            <div className="mt-3">
-              <div className="text-2xl font-extrabold text-amber-400">
-                {stats?.upcomingFollowUpsCount ?? '—'}
-              </div>
-              <div className="text-[11px] text-slate-400 mt-1">Scheduled reminders</div>
-            </div>
-          </div>
-        </div>
-
-        {/* ==============================================================
-           VISUAL CHARTS & PIPELINE BREAKDOWN
-           ============================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Stage Summary / Pipeline Statistics */}
-          <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-bold text-base text-white">Stage Distribution & Volume</h3>
-                <p className="text-xs text-slate-400">Breakdown of loans across all 8 pipeline stages</p>
-              </div>
-              <span className="text-xs font-semibold text-emerald-400">
-                Projected Revenue: ${(stats?.totalProjectedCommission || 0).toLocaleString()}
-              </span>
-            </div>
-
-            <div className="space-y-3 pt-2">
-              {(stats?.stageDistribution || []).map((stageItem) => {
-                const maxCount = Math.max(
-                  ...(stats?.stageDistribution || []).map((s) => s.count),
-                  1
-                );
-                const widthPct = Math.max(8, (stageItem.count / maxCount) * 100);
-
-                return (
-                  <div key={stageItem.stage} className="space-y-1">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-200">{stageItem.name}</span>
-                      <span className="text-slate-400 font-medium">
-                        {stageItem.count} loans • ${stageItem.volume.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full transition-all duration-500"
-                        style={{ width: `${widthPct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Loan Officer Summary */}
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-            <h3 className="font-bold text-base text-white">Loan Officer Summary</h3>
-            <p className="text-xs text-slate-400">Assigned loan portfolio performance</p>
-
-            <div className="space-y-3 pt-2">
-              {(stats?.loanOfficerSummary || []).map((lo) => (
-                <div
-                  key={lo.name}
-                  className="p-3.5 rounded-xl bg-slate-800/50 border border-slate-800 flex items-center justify-between"
-                >
-                  <div>
-                    <div className="text-sm font-bold text-white">{lo.name}</div>
-                    <div className="text-xs text-slate-400">{lo.count} assigned loans</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-xs font-bold text-emerald-400">
-                      ${lo.commission.toLocaleString()}
-                    </div>
-                    <div className="text-[10px] text-slate-400">Est. Commission</div>
-                  </div>
+            return (
+              <div key={stageItem.stage} className="space-y-1.5 p-3 rounded-lg bg-gray-50 border border-gray-100 hover:border-gray-300 transition-colors">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-gray-800">{stageItem.name}</span>
+                  <span className="text-gray-600 font-semibold">
+                    {stageItem.count} loans • ${stageItem.volume.toLocaleString()}
+                  </span>
                 </div>
-              ))}
-              {(!stats?.loanOfficerSummary || stats.loanOfficerSummary.length === 0) && (
-                <p className="text-xs text-slate-500 text-center py-6">No officers assigned yet</p>
-              )}
+                <div className="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#10B889] to-[#2E5C85] rounded-full transition-all duration-500"
+                    style={{ width: `${widthPct}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Tables Grid: Today's Follow-Ups & Recent Applications */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Upcoming Follow-Ups Table */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-gray-100 bg-slate-50 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-gray-900 text-base">Scheduled Follow-Ups</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Loans requiring loan officer review and contact</p>
             </div>
+            <span className="p-2 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 font-bold text-xs">
+              {stats?.upcomingFollowUps?.length || 0} Scheduled
+            </span>
+          </div>
+
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white text-xs uppercase tracking-wider border-b border-gray-100">
+                <tr>
+                  <th className="px-5 py-3.5 font-semibold">Client Name</th>
+                  <th className="px-5 py-3.5 font-semibold">Follow-Up Date</th>
+                  <th className="px-5 py-3.5 font-semibold">Assigned LO</th>
+                  <th className="px-5 py-3.5 font-semibold">Current Stage</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {(stats?.upcomingFollowUps || []).map((loan) => {
+                  const sc = getStageConfig(loan.stage);
+                  return (
+                    <tr key={loan.id} className="hover:bg-gray-50/80 transition-colors text-gray-800">
+                      <td className="px-5 py-4 font-bold text-gray-900">{loan.client_name}</td>
+                      <td className="px-5 py-4 text-amber-600 font-bold">{loan.follow_up_date}</td>
+                      <td className="px-5 py-4 text-gray-600 font-medium">{loan.loan_officer_name}</td>
+                      <td className="px-5 py-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap border ${sc.badgeBg} ${sc.badgeText} inline-block`}>
+                          {sc.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {(!stats?.upcomingFollowUps || stats.upcomingFollowUps.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center text-gray-500 font-medium">
+                      No upcoming follow-up dates scheduled.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* ==============================================================
-           TABLE SECTION: TODAY'S FOLLOW-UPS & RECENT APPLICATIONS
-           ============================================================== */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          {/* Upcoming Follow-Ups Table */}
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-bold text-base text-white">Today&apos;s & Upcoming Follow-Ups</h3>
-                <p className="text-xs text-slate-400">Loans requiring officer contact or review</p>
-              </div>
+        {/* Recent Applications Table */}
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-gray-100 bg-slate-50 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-gray-900 text-base">Recent Applications</h3>
+              <p className="text-xs text-gray-500 mt-0.5">Latest residential and commercial intakes</p>
             </div>
-
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase">
-                    <th className="pb-2">Client Name</th>
-                    <th className="pb-2">Follow-Up Date</th>
-                    <th className="pb-2">Assigned LO</th>
-                    <th className="pb-2">Stage</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {(stats?.upcomingFollowUps || []).map((loan) => {
-                    const sc = getStageConfig(loan.stage);
-                    return (
-                      <tr key={loan.id} className="hover:bg-slate-800/40">
-                        <td className="py-2.5 font-bold text-white">{loan.client_name}</td>
-                        <td className="py-2.5 text-amber-400 font-semibold">{loan.follow_up_date}</td>
-                        <td className="py-2.5 text-slate-300">{loan.loan_officer_name}</td>
-                        <td className="py-2.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sc.badgeBg} ${sc.badgeText}`}
-                          >
-                            {sc.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {(!stats?.upcomingFollowUps || stats.upcomingFollowUps.length === 0) && (
-                    <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
-                        No upcoming follow-up dates scheduled.
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <button
+              type="button"
+              onClick={() => router.push('/mortgage/pipeline/new-loan')}
+              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 uppercase tracking-wider transition-colors"
+            >
+              <span>Kanban Board</span>
+              <ArrowUpRight size={14} />
+            </button>
           </div>
 
-          {/* Recent Applications Table */}
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="font-bold text-base text-white">Recent Applications</h3>
-                <p className="text-xs text-slate-400">Latest loan and pre-approval intakes</p>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-800 text-slate-400 font-bold uppercase">
-                    <th className="pb-2">Borrower</th>
-                    <th className="pb-2">Loan Type</th>
-                    <th className="pb-2">Value</th>
-                    <th className="pb-2">Stage</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {(stats?.recentApplications || []).map((loan) => {
-                    const sc = getStageConfig(loan.stage);
-                    return (
-                      <tr key={loan.id} className="hover:bg-slate-800/40">
-                        <td className="py-2.5">
-                          <div className="font-bold text-white">{loan.client_name}</div>
-                          <div className="text-[10px] text-slate-400">{loan.phone}</div>
-                        </td>
-                        <td className="py-2.5 text-slate-300">
-                          {loan.transaction_type} • {loan.loan_type}
-                        </td>
-                        <td className="py-2.5 font-bold text-emerald-400">
-                          ${Number(loan.loan_amount || loan.estimated_property_value || 0).toLocaleString()}
-                        </td>
-                        <td className="py-2.5">
-                          <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${sc.badgeBg} ${sc.badgeText}`}
-                          >
-                            {sc.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {(!stats?.recentApplications || stats.recentApplications.length === 0) && (
-                    <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
-                        No applications created yet. Click &quot;Create Application&quot; to begin.
+          <div className="overflow-x-auto flex-1">
+            <table className="w-full text-sm text-left border-collapse">
+              <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white text-xs uppercase tracking-wider border-b border-gray-100">
+                <tr>
+                  <th className="px-5 py-3.5 font-semibold">Borrower</th>
+                  <th className="px-5 py-3.5 font-semibold">Loan Type</th>
+                  <th className="px-5 py-3.5 font-semibold">Value</th>
+                  <th className="px-5 py-3.5 font-semibold">Stage</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 bg-white">
+                {(stats?.recentApplications || []).map((loan) => {
+                  const sc = getStageConfig(loan.stage);
+                  return (
+                    <tr key={loan.id} className="hover:bg-gray-50/80 transition-colors group text-gray-800">
+                      <td className="px-5 py-4">
+                        <div className="font-bold text-gray-900">{loan.client_name}</div>
+                        <div className="text-xs text-gray-500">{loan.phone}</div>
+                      </td>
+                      <td className="px-5 py-4 font-medium text-gray-700">
+                        {loan.transaction_type} • {loan.loan_type}
+                      </td>
+                      <td className="px-5 py-4 font-bold text-gray-900">
+                        ${Number(loan.loan_amount || loan.estimated_property_value || 0).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap border ${sc.badgeBg} ${sc.badgeText} inline-block`}>
+                          {sc.label}
+                        </span>
                       </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+                {(!stats?.recentApplications || stats.recentApplications.length === 0) && (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center text-gray-500 font-medium">
+                      No applications created yet. Click &quot;New Application&quot; to begin.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
 
+      {/* Modals for Loan Creation / Editing */}
       <CreateApplicationModal
         isOpen={isSelectionOpen}
         onClose={() => setIsSelectionOpen(false)}
@@ -399,6 +357,44 @@ export default function MortgageDashboardPage() {
         onSuccess={() => fetchDashboardStats()}
         defaultPipelineType={selectedPipelineType}
       />
+    </div>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  subtitle,
+  icon,
+  trend,
+  onClick
+}: {
+  title: string;
+  value: string;
+  subtitle?: string;
+  icon: React.ReactNode;
+  trend: string;
+  onClick: () => void;
+}) {
+  return (
+    <div
+      onClick={onClick}
+      className="cursor-pointer rounded-xl p-5 flex flex-col justify-between bg-white border border-gray-200 hover:border-[#2E5C85] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
+    >
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">{title}</p>
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{value}</h3>
+        </div>
+        <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100 group-hover:scale-110 transition-transform">
+          {icon}
+        </div>
+      </div>
+
+      <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-medium">
+        <span className="text-gray-600 truncate mr-1">{subtitle}</span>
+        <span className="font-bold text-gray-800 bg-gray-50 px-2 py-0.5 rounded border border-gray-200 shrink-0">{trend}</span>
+      </div>
     </div>
   );
 }
