@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  ArrowLeft, 
   Clock, 
   User, 
   Search, 
@@ -77,20 +76,12 @@ export default function ActivityLogPage() {
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
       {/* Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors shadow-sm text-gray-600"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
-              <Activity className="text-[#10B889]" size={28} />
-              Activity Log
-            </h1>
-            <p className="text-gray-500 mt-1">Full history of lead statuses and pipeline movements.</p>
-          </div>
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <Activity className="text-[#10B889]" size={28} />
+            Activity Log
+          </h1>
+          <p className="text-gray-500 mt-1">Full history of lead statuses and pipeline movements.</p>
         </div>
 
         <div className="flex items-center gap-3">

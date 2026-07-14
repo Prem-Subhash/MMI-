@@ -2,10 +2,10 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { parseImportFile } from '@/utils/fileParser'
+import { parseImportFile, normalizeImportDate } from '@/utils/fileParser'
 import Papa from 'papaparse'
 import Link from 'next/link'
-import { ArrowLeft, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
+import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
 import { Spinner } from '@/components/ui/Loading'
 
 export default function PersonalRenewalImportPage() {
@@ -37,31 +37,7 @@ export default function PersonalRenewalImportPage() {
             .replace(/\s+/g, ' ') // normalize multiple spaces
     }
 
-    const formatDate = (dateString: string) => {
-        if (!dateString) return null
-        if (/^\d{4}-\d{2}-\d{2}$/.test(dateString)) return dateString
-
-        const clean = dateString.trim()
-        if (clean.includes('/')) {
-            const parts = clean.split('/')
-            if (parts.length === 3) {
-                let [m, d, y] = parts
-                m = m.padStart(2, '0')
-                d = d.padStart(2, '0')
-                if (y.length === 2) y = '20' + y
-                return `${y}-${m}-${d}`
-            }
-        }
-        if (clean.includes('-')) {
-            const parts = clean.split('-')
-            if (parts.length === 3) {
-                if (parts[0].length === 4) return clean
-                const [d, m, y] = parts
-                return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
-            }
-        }
-        return null
-    }
+    const formatDate = (input: any) => normalizeImportDate(input)
 
     const processParsedData = (data: any[]) => {
         const rawHeaders = Object.keys(data[0] || {})
@@ -78,7 +54,14 @@ export default function PersonalRenewalImportPage() {
             const newRow: any = {};
             Object.keys(row).forEach(key => {
                 const normalizedKey = normalizeKey(key).toLowerCase();
-                newRow[normalizedKey] = row[key];
+                let val = row[key];
+                if (normalizedKey === 'policy data policy expiration date' || normalizedKey.includes('date') || normalizedKey.includes('expiration')) {
+                    const normDate = formatDate(val);
+                    val = normDate !== null ? normDate : (val !== null && val !== undefined ? String(val) : '');
+                } else if (val !== null && val !== undefined && typeof val !== 'string') {
+                    val = String(val);
+                }
+                newRow[normalizedKey] = val;
             });
             return newRow;
         });
@@ -116,7 +99,19 @@ export default function PersonalRenewalImportPage() {
                         row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
                             const header = headers[colNumber]
                             if (header) {
-                                rowData[header] = cell.text || cell.value?.toString() || ''
+                                let val = cell.value;
+                                if (val && typeof val === 'object') {
+                                    if (val instanceof Date) {
+                                        val = val;
+                                    } else if ('result' in val && val.result !== undefined) {
+                                        val = val.result;
+                                    } else if ('text' in val && val.text !== undefined) {
+                                        val = val.text;
+                                    } else {
+                                        val = cell.text || '';
+                                    }
+                                }
+                                rowData[header] = val !== null && val !== undefined ? val : (cell.text || '');
                             }
                         })
                         rawData.push(rowData)
@@ -307,13 +302,6 @@ export default function PersonalRenewalImportPage() {
         <div className="p-8 max-w-2xl mx-auto">
             {/* Header */}
             <div className="mb-8">
-                <Link
-                    href="/csr/renewals/personal"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4 text-sm"
-                >
-                    <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Personal Renewals
-                </Link>
                 <div className="flex items-center gap-4">
                     <div className="p-3 bg-brand/10 rounded-2xl text-brand">
                         <FileSpreadsheet size={32} />

@@ -1,8 +1,6 @@
 // Lead Accounting Page Wrapper
 import { createServer } from '@/lib/supabaseServer'
 import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import LeadAccountingClient from '@/app/(dashboard)/accounting/leads/[id]/LeadAccountingClient'
 
 export default async function LeadAccountingPage({ params }: { params: { id: string } }) {
@@ -57,11 +55,6 @@ export default async function LeadAccountingPage({ params }: { params: { id: str
   if (leadError || !lead) {
     return (
       <div className="p-8 max-w-3xl mx-auto text-center">
-        <Link href="/accounting/all-leads">
-          <button className="flex items-center gap-2 text-[#2E5C85] hover:text-[#2E5C85]/80 font-medium mb-6 transition">
-            <ArrowLeft size={18} /> Back to Accounting Leads
-          </button>
-        </Link>
         <div className="bg-white rounded-2xl border border-gray-100 p-12 shadow-sm">
           <h1 className="text-2xl font-bold text-red-500 mb-2">Lead Not Found</h1>
           <p className="text-gray-500">The requested lead ID does not exist or you do not have permissions to view it.</p>

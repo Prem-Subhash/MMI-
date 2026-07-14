@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-import { ArrowLeft, Send, Briefcase, Shield, Calendar, DollarSign, Edit2 } from 'lucide-react'
+import { Send, Briefcase, Shield, Calendar, DollarSign, Edit2 } from 'lucide-react'
 import Link from 'next/link'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
@@ -287,9 +287,6 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
     <div className="p-8 text-center">
       <h2 className="text-xl font-semibold text-gray-700">Renewal Not Found</h2>
       <p className="text-gray-500 mt-2">This renewal does not exist or you do not have permission to view it.</p>
-      <Link href="/csr/renewals" className="mt-6 inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mx-auto">
-        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
-      </Link>
     </div>
   )
 
@@ -482,13 +479,6 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               className={`flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-t pt-8 transition-all duration-700 ${isFocused ? 'bg-blue-50/50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10 mx-[-8px]' : ''}`}
             >
               <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-                <button
-                  onClick={() => router.back()}
-                  className="w-full sm:w-auto px-6 py-3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl shadow-sm transition-all flex items-center justify-center gap-2 font-semibold active:scale-95"
-                >
-                  <ArrowLeft size={18} />
-                  Back
-                </button>
                 <button
                   onClick={() => setShowEmailModal(true)}
                   className={`w-full sm:w-auto px-6 py-3 rounded-xl shadow-lg transition-all font-bold flex items-center justify-center gap-2 active:scale-95 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30' : 'bg-[#10B889] hover:bg-[#0e9e75] text-white'}`}

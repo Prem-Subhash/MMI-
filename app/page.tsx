@@ -5,7 +5,38 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Footer from '@/components/layout/Footer'
 import { supabase } from '@/lib/supabaseClient'
-import { Shield, Home as HomeIcon, Building2, ArrowRight } from 'lucide-react'
+
+interface PortalCard {
+  id: string
+  title: string
+  logo: string
+  description: string
+  targetUrl: string
+}
+
+const portalCards: PortalCard[] = [
+  {
+    id: 'insurance',
+    title: 'Innovative Insurance',
+    logo: '/innovative_logo_-removebg-preview.png',
+    description: 'Access the Insurance CRM portal to manage Personal Lines, Commercial Lines, Renewals, and client relationships.',
+    targetUrl: '/login',
+  },
+  {
+    id: 'mortgage',
+    title: 'Moonstar Mortgage',
+    logo: '/Moonstarlogo-removebg-preview.png',
+    description: 'Access the Mortgage CRM portal to manage loan applications, mortgage pipelines, and borrower workflows.',
+    targetUrl: '#',
+  },
+  {
+    id: 'lending',
+    title: 'Accurate Lending',
+    logo: '/Accurate_Lending_Logo-removebg-preview.png',
+    description: 'Access the Commercial Lending CRM portal to manage lending pipelines, underwriting, and borrower communication.',
+    targetUrl: '/lending/login',
+  },
+]
 
 export default function HomePage() {
   const router = useRouter()
@@ -14,13 +45,31 @@ export default function HomePage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       if (session?.user) {
-        const { data: profile } = await supabase
+        let { data: profile, error } = await supabase
           .from('profiles')
-          .select('role')
+          .select('role, portal_access')
           .eq('id', session.user.id)
           .single()
-        
-        if (profile?.role) {
+
+        if (error) {
+          const fallback = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
+          profile = { ...fallback.data, portal_access: isLending ? ['lending'] : ['insurance'] }
+        }
+
+        const isLendingRole = profile?.role === 'lending' || profile?.role === 'accurate_lending'
+        const hasLendingPortal = profile?.portal_access?.includes('lending') || profile?.portal_access?.includes('accurate_lending')
+        const hasInsurancePortal = profile?.portal_access?.includes('insurance')
+
+        if (hasLendingPortal && !hasInsurancePortal) {
+          router.push('/lending/dashboard')
+        } else if (isLendingRole) {
+          router.push('/lending/dashboard')
+        } else if (profile?.role) {
           router.push(`/${profile.role}`)
         }
       }
@@ -44,97 +93,63 @@ export default function HomePage() {
 
       {/* Content */}
       <section style={content}>
-        <Image
-          src="/logo.png"
-          alt="Moonstar Financial Group"
-          width={220}
-          height={80}
-        />
+        <div className="max-w-3xl">
+          <h1 style={heading} className='text-4xl font-extrabold tracking-tight mb-2 drop-shadow-sm'>Welcome,</h1>
+          <h1 style={heading}>
+            Your Key to a Brighter <br /> Future
+          </h1>
 
-        <h1 style={heading}>
-          Your Key to a Brighter <br /> Future
-        </h1>
+          <p style={subheading}>
+            Trusted mortgage solutions built on transparency,
+            speed, and reliability.
+          </p>
+        </div>
 
-        <p style={subheading}>
-          Select your dedicated enterprise product module to access your workspace.
-        </p>
+        {/* Business Portal Selection Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 w-full mt-12 mb-8">
+          {portalCards.map((card) => (
+            <div
+              key={card.id}
+              className="bg-white/95 hover:bg-white backdrop-blur-xl rounded-2xl p-6 sm:p-8 flex flex-col justify-between border border-white/40 shadow-[0_15px_35px_rgba(0,0,0,0.25)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-2 group text-gray-800"
+            >
+              <div>
+                {/* Logo Box */}
+                <div className="h-24 w-full flex items-center justify-center bg-gray-50/90 rounded-xl p-4 mb-6 border border-gray-100 group-hover:border-teal-500/30 transition-colors shadow-inner">
+                  <img
+                    src={card.logo}
+                    alt={`${card.title} Logo`}
+                    className="max-h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
 
-        {/* 3 Product Module Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-10 w-full max-w-4xl">
-          
-          {/* 1. Insurance CRM Card */}
-          <div
-            onClick={() => router.push('/login')}
-            className="p-6 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-700/80 hover:border-blue-500 transition-all duration-300 cursor-pointer shadow-xl group flex flex-col justify-between backdrop-blur-md"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 mb-4 group-hover:scale-105 transition-transform">
-                <Shield className="w-6 h-6" />
+                {/* Card Title */}
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight mb-3">
+                  {card.title}
+                </h3>
+
+                {/* Card Description */}
+                <p className="text-sm sm:text-base text-gray-600 leading-relaxed font-normal mb-8">
+                  {card.description}
+                </p>
               </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-blue-400 transition-colors">
-                Insurance CRM
-              </h3>
-              <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                Personal & Commercial Lines agency management, lead pipelines, renewals & policy tracking.
-              </p>
-            </div>
 
-            <div className="mt-6 flex items-center justify-between text-xs font-semibold text-blue-400 pt-4 border-t border-slate-800">
-              <span>Access Insurance Portal</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {/* Action Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (card.targetUrl && card.targetUrl !== '#') {
+                    router.push(card.targetUrl)
+                  }
+                }}
+                className="w-full bg-brand text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-md hover:shadow-xl flex items-center justify-center gap-2 group-hover:brightness-105"
+              >
+                <span>Enter Portal</span>
+                <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </button>
             </div>
-          </div>
-
-          {/* 2. Moonstar Mortgage CRM Card */}
-          <div
-            onClick={() => router.push('/mortgage/login')}
-            className="p-6 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-700/80 hover:border-emerald-500 transition-all duration-300 cursor-pointer shadow-xl group flex flex-col justify-between backdrop-blur-md relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 px-3 py-1 bg-emerald-500 text-white font-bold text-[10px] uppercase rounded-bl-xl">
-              New Module
-            </div>
-
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 group-hover:scale-105 transition-transform">
-                <HomeIcon className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
-                Moonstar Mortgage
-              </h3>
-              <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                Dedicated residential & pre-approval mortgage origination, milestone compliance & underwriting.
-              </p>
-            </div>
-
-            <div className="mt-6 flex items-center justify-between text-xs font-semibold text-emerald-400 pt-4 border-t border-slate-800">
-              <span>Access Mortgage Portal</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
-          {/* 3. Accurate Lending Card */}
-          <div
-            onClick={() => router.push('/login')}
-            className="p-6 rounded-2xl bg-slate-900/80 hover:bg-slate-900 border border-slate-700/80 hover:border-amber-500 transition-all duration-300 cursor-pointer shadow-xl group flex flex-col justify-between backdrop-blur-md"
-          >
-            <div>
-              <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4 group-hover:scale-105 transition-transform">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <h3 className="text-lg font-bold text-white group-hover:text-amber-400 transition-colors">
-                Accurate Lending
-              </h3>
-              <p className="text-xs text-slate-300 mt-1.5 leading-relaxed">
-                Commercial lending, bridging finance, and multi-family underwriting management portal.
-              </p>
-            </div>
-
-            <div className="mt-6 flex items-center justify-between text-xs font-semibold text-amber-400 pt-4 border-t border-slate-800">
-              <span>Access Lending Portal</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-
+          ))}
         </div>
       </section>
 
@@ -166,6 +181,9 @@ const content = {
   flexDirection: 'column' as const,
   justifyContent: 'center',
   color: '#fff',
+  maxWidth: '1300px',
+  width: '100%',
+  margin: '0 auto',
   zIndex: 1,
 }
 
@@ -179,8 +197,8 @@ const heading = {
 
 const subheading = {
   textShadow: '0 0 10px rgba(0,0,0,0.5)',
-  fontSize: '16px',
-  marginTop: '16px',
-  maxWidth: '560px',
+  fontSize: '18px',
+  marginTop: '20px',
+  maxWidth: '500px',
   opacity: 0.9,
 }

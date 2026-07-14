@@ -5,7 +5,6 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import {
-  ArrowLeft,
   Briefcase,
   CheckCircle2,
   Clock,
@@ -312,9 +311,6 @@ export default function CSRWorkloadPage() {
         <div className="text-center">
           <AlertCircle size={48} className="text-red-400 mx-auto mb-3" />
           <p className="text-gray-700 font-semibold text-lg">CSR not found</p>
-          <Link href="/admin/csrs" className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mt-4">
-            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to CSR Management
-          </Link>
         </div>
       </div>
     )
@@ -323,13 +319,6 @@ export default function CSRWorkloadPage() {
   return (
     <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 min-h-screen">
 
-      {/* ── Back Link ── */}
-      <Link
-        href="/admin/csrs"
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4 sm:mb-5"
-      >
-        <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to CSR Management
-      </Link>
 
       {/* ── Header ── */}
       <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-6 sm:mb-8">

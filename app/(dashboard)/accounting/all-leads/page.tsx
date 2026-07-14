@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import {
-  Eye, Search, AlertCircle, CheckCircle2, ArrowLeft, Info,
+  Eye, Search, AlertCircle, CheckCircle2, Info,
   ChevronLeft, ChevronRight, ShieldCheck, Filter, SlidersHorizontal
 } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
@@ -162,11 +162,6 @@ export default function AccountingAllLeadsPage() {
       {/* ── Page Header ── */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <div>
-          <Link href="/accounting">
-            <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-fit mb-4">
-              <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Financial Dashboard
-            </button>
-          </Link>
           <h1 className="text-2xl font-semibold">All Accounting Leads</h1>
           <p className="text-gray-500 mt-1 text-sm">
             Audit policy premiums, commissions, and reconciliation status across all bound policies.

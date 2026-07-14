@@ -1,6 +1,6 @@
 import { createServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
+
 
 export default async function AdminCSRsPage() {
     const supabase = await createServer()
@@ -15,16 +15,9 @@ export default async function AdminCSRsPage() {
     return (
         <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
             <div className="max-w-7xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">CSR Management</h1>
-                        <p className="text-gray-600 mt-1">View all Customer Success Representatives in the system.</p>
-                    </div>
-                    <Link href="/admin" className="w-full md:w-auto">
-                        <button className="inline-flex items-center gap-2 px-4 py-2 bg-white text-gray-700 hover:text-emerald-700 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-xl font-semibold transition-all shadow-sm group w-full md:w-auto justify-center h-full">
-                            <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Back to Dashboard
-                        </button>
-                    </Link>
+                <div className="mb-8">
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">CSR Management</h1>
+                    <p className="text-gray-600 mt-1">View all Customer Success Representatives in the system.</p>
                 </div>
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

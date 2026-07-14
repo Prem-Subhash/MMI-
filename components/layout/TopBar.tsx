@@ -157,16 +157,15 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                 }}
             >
                 <img
-                    src="/logo.png"
-                    alt="Moonstar Logo"
+                    src="/innovative_logo_-removebg-preview.png"
+                    alt="Innovative Logo"
                     className="h-10 lg:h-16 w-auto object-contain max-w-[140px] sm:max-w-[200px] lg:max-w-none"
                 />
             </div>
 
             {/* Right Side Content */}
             <div className="flex-1 flex items-center justify-end px-3 sm:px-6">
-                <div className="flex items-center gap-2 sm:gap-4 text-white flex-shrink-0">
-
+                <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0">
                     {/* Notification Bell */}
                     <div className="relative" ref={notificationsRef}>
                         <button

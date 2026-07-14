@@ -6,8 +6,8 @@ import {
   UserPlus,
   GitBranch,
   List,
-  RefreshCw,
   Briefcase,
+  RefreshCw,
 } from 'lucide-react'
 import CategorySelectionModal from '@/components/leads/CategorySelectionModal'
 
@@ -17,9 +17,11 @@ export default function DashboardPage() {
 
   return (
     <section className="p-4 sm:p-6 lg:p-8">
-      <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-6">
-        Quick Actions
-      </h2>
+      <div className="mb-6">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+          Quick Actions
+        </h2>
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         <ActionCard
