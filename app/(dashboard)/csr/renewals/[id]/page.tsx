@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
-import { Send, Briefcase, Shield, Calendar, DollarSign, Edit2 } from 'lucide-react'
+import { Send, Briefcase, Shield, Calendar, DollarSign, Edit2, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
@@ -42,6 +42,26 @@ type Renewal = {
 export default function RenewalDetailPage() {
   const { id } = useParams()
   const router = useRouter()
+
+  const handleBackToPipeline = () => {
+    const fromInternalPipeline =
+      typeof window !== 'undefined' &&
+      document.referrer &&
+      document.referrer.includes(window.location.host) &&
+      (document.referrer.includes('/csr/pipeline') ||
+       document.referrer.includes('/csr/renewals') ||
+       document.referrer.includes('/csr/leads') ||
+       document.referrer.includes('/csr'));
+
+    if (fromInternalPipeline && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    const isCommercial = lead?.insurence_category?.toLowerCase() === 'commercial';
+    router.push(isCommercial ? '/csr/renewals/commercial' : '/csr/renewals/personal');
+  };
+
   const searchParams = useSearchParams()
   const viewFocus = searchParams?.get('view')
   const actionSectionRef = useRef<HTMLDivElement>(null)
@@ -478,7 +498,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               ref={actionSectionRef}
               className={`flex flex-col lg:flex-row lg:items-center justify-between gap-6 border-t pt-8 transition-all duration-700 ${isFocused ? 'bg-blue-50/50 p-6 rounded-2xl border-2 border-blue-400 ring-4 ring-blue-400/20 shadow-xl scale-[1.02] z-10 mx-[-8px]' : ''}`}
             >
-              <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+              <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
                 <button
                   onClick={() => setShowEmailModal(true)}
                   className={`w-full sm:w-auto px-6 py-3 rounded-xl shadow-lg transition-all font-bold flex items-center justify-center gap-2 active:scale-95 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30' : 'bg-[#10B889] hover:bg-[#0e9e75] text-white'}`}
@@ -491,6 +511,13 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                   className="w-full sm:w-auto px-6 py-3 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-xl shadow-lg transition-all font-bold active:scale-95 whitespace-nowrap"
                 >
                   Update Status
+                </button>
+                <button
+                  onClick={handleBackToPipeline}
+                  className="w-full sm:w-auto px-6 py-3 bg-[#475569] hover:bg-[#334155] text-white rounded-xl shadow-lg transition-all font-bold active:scale-95 whitespace-nowrap flex items-center justify-center gap-2 group"
+                >
+                  <ArrowLeft size={18} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
+                  <span>Back</span>
                 </button>
               </div>
 
