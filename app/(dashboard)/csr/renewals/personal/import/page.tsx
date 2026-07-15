@@ -3,6 +3,12 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { parseImportFile, normalizeImportDate } from '@/utils/fileParser'
+import {
+    resolveRenewalPipelineAndStage,
+    validateRenewalRecord,
+    buildRenewalPayload,
+    saveRenewalRecords
+} from '@/utils/renewalHelper'
 import Papa from 'papaparse'
 import Link from 'next/link'
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
@@ -161,38 +167,7 @@ export default function PersonalRenewalImportPage() {
 
 
     const validateRowPersonal = (r: any) => {
-        const errors: string[] = []
-        const accountName = r['applicant data account name']?.trim();
-        const policyNumber = r['policy data policy number']?.trim();
-        const expirationDate = r['policy data policy expiration date']?.trim();
-        const premiumStr = r['policy data totalwrittenpremium']?.trim();
-        const policyType = r['policy data policy type']?.trim();
-
-        if (!accountName) {
-            errors.push('Missing Account Name')
-        }
-        if (!policyNumber) {
-            errors.push('Missing Policy Number')
-        }
-
-        const formattedDate = formatDate(expirationDate)
-        if (!expirationDate || !formattedDate) {
-            errors.push('Invalid Renewal Date')
-        }
-
-        const premiumNum = Number(premiumStr)
-        if (!premiumStr || isNaN(premiumNum)) {
-            errors.push('Invalid Premium')
-        }
-
-        if (!policyType || !['personal', 'personal lines'].includes(policyType.toLowerCase())) {
-            errors.push('Invalid Policy Type')
-        }
-
-        return {
-            isValid: errors.length === 0,
-            errors,
-        }
+        return validateRenewalRecord(r, 'personal', true)
     }
 
     const handleImport = async () => {
@@ -206,31 +181,16 @@ export default function PersonalRenewalImportPage() {
             return
         }
 
-        const { data: pipeline, error: pipelineError } = await supabase
-            .from('pipelines')
-            .select('id')
-            .eq('name', 'Personal Lines Renewal')
-            .single()
-
-        if (pipelineError || !pipeline) {
-            setMessage({ text: 'Personal Lines Renewal pipeline not found in system.', type: 'error' })
+        let pipelineResolution
+        try {
+            pipelineResolution = await resolveRenewalPipelineAndStage(supabase, 'personal')
+        } catch (err: any) {
+            setMessage({ text: err.message || 'Failed to resolve renewal pipeline stage.', type: 'error' })
             setLoading(false)
             return
         }
 
-        const { data: stage, error: stageError } = await supabase
-            .from('pipeline_stages')
-            .select('id')
-            .eq('pipeline_id', pipeline.id)
-            .eq('stage_order', 1)
-            .single()
-
-        if (stageError || !stage) {
-            setMessage({ text: 'Initial pipeline stage not found.', type: 'error' })
-            setLoading(false)
-            return
-        }
-
+        const { pipelineId, stageId } = pipelineResolution
         const payload: any[] = []
         const skippedRows: string[] = []
 
@@ -241,25 +201,7 @@ export default function PersonalRenewalImportPage() {
                 return
             }
 
-            payload.push({
-                client_name: r['applicant data account name']?.trim(),
-                business_name: null,
-                phone: null,
-                email: null,
-                policy_type: r['policy data line of business']?.trim(),
-                renewal_date: formatDate(r['policy data policy expiration date']),
-                carrier: r['policy data master company']?.trim(),
-                policy_number: r['policy data policy number']?.trim(),
-                current_premium: Number(r['policy data totalwrittenpremium']),
-                renewal_premium: null,
-                referral: r['applicant data lead source']?.trim() || null,
-                notes: null,
-                policy_flow: 'renewal',
-                insurence_category: 'personal',
-                pipeline_id: pipeline.id,
-                current_stage_id: stage.id,
-                assigned_csr: user.id,
-            })
+            payload.push(buildRenewalPayload(r, 'personal', pipelineId, stageId, user.id, true))
         })
 
         if (payload.length === 0) {
@@ -273,11 +215,7 @@ export default function PersonalRenewalImportPage() {
             return
         }
 
-        const { error } = await supabase
-            .from('temp_leads_basics')
-            .upsert(payload, {
-                onConflict: 'policy_number,renewal_date'
-            })
+        const { error } = await saveRenewalRecords(supabase, payload)
 
         if (error) {
             setMessage({ text: `Import failed: ${error.message}`, type: 'error' })

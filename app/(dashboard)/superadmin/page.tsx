@@ -7,6 +7,7 @@ import {
     ArrowRight, Shield
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
 
 export default async function SuperAdminDashboard() {
     const supabase = await createServer()
@@ -28,6 +29,7 @@ export default async function SuperAdminDashboard() {
         .select(`
             id,
             total_premium,
+            new_premium,
             stage_metadata,
             current_stage:pipeline_stages (
                 stage_name
@@ -38,11 +40,14 @@ export default async function SuperAdminDashboard() {
     let totalQuotesSent = 0
 
     leads?.forEach(lead => {
+        const active = getActivePolicy(lead)
         // @ts-ignore
         const stageName = lead.current_stage?.stage_name || ''
         if (stageName.includes('Completed') || stageName.includes('Bound')) {
             const meta = lead.stage_metadata as any
-            if (meta?.bound_premium) {
+            if (active.activePremium) {
+                totalBoundPremium += Number(active.activePremium) || 0
+            } else if (meta?.bound_premium) {
                 totalBoundPremium += Number(meta.bound_premium) || 0
             } else if (lead.total_premium) {
                 totalBoundPremium += Number(lead.total_premium) || 0

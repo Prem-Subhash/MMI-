@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { EmailData, PolicyBreakdown, replaceTemplate, replaceCombinedTemplate } from '@/lib/emailTemplating'
 import { Plus, Trash2 } from 'lucide-react'
 import { toast } from '@/lib/toast'
+import { PERSONAL_POLICY_TYPES } from '@/constants/policyTypes'
 
 type EmailTemplate = {
   id: string
@@ -519,13 +520,11 @@ export default function EmailGenerator({
                           onChange={(e) => setFormType?.(e.target.value)}
                           className="cursor-pointer font-bold border-2 border-[#10B889]/30 bg-white text-[#0e8f6a] rounded-lg pl-3 pr-8 py-2 outline-none hover:bg-gray-50 transition-colors appearance-none"
                         >
-                          <option value="home">Home</option>
-                          <option value="auto">Auto</option>
-                          <option value="condo">Condo</option>
-                          <option value="landlord_home">Landlord Home</option>
-                          <option value="landlord_condo">Landlord Condo</option>
-                          <option value="umbrella">Umbrella</option>
-                          <option value="motorcycle">Motorcycle</option>
+                          {PERSONAL_POLICY_TYPES.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
                         </select>
                         <div className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#0e8f6a]">
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

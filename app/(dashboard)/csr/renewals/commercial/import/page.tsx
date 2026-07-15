@@ -3,6 +3,12 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { parseImportFile, normalizeImportDate } from '@/utils/fileParser'
+import {
+    resolveRenewalPipelineAndStage,
+    validateRenewalRecord,
+    buildRenewalPayload,
+    saveRenewalRecords
+} from '@/utils/renewalHelper'
 import Papa from 'papaparse'
 import Link from 'next/link'
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info } from 'lucide-react'
@@ -147,38 +153,7 @@ export default function CommercialRenewalImportPage() {
         }
     }
     const validateRowCommercial = (r: any) => {
-        const errors: string[] = []
-        const accountName = r['applicant data account name']?.trim();
-        const policyNumber = r['policy data policy number']?.trim();
-        const expirationDate = r['policy data policy expiration date']?.trim();
-        const premiumStr = r['policy data totalwrittenpremium']?.trim();
-        const policyType = r['policy data policy type']?.trim();
-
-        if (!accountName) {
-            errors.push('Missing Account Name')
-        }
-        if (!policyNumber) {
-            errors.push('Missing Policy Number')
-        }
-
-        const formattedDate = formatDate(expirationDate)
-        if (!expirationDate || !formattedDate) {
-            errors.push('Invalid Renewal Date')
-        }
-
-        const premiumNum = Number(premiumStr)
-        if (!premiumStr || isNaN(premiumNum)) {
-            errors.push('Invalid Premium')
-        }
-
-        if (!policyType || !['commercial', 'commercial lines'].includes(policyType.toLowerCase())) {
-            errors.push('Invalid Policy Type')
-        }
-
-        return {
-            isValid: errors.length === 0,
-            errors,
-        }
+        return validateRenewalRecord(r, 'commercial', true)
     }
 
     const handleImport = async () => {
@@ -192,32 +167,16 @@ export default function CommercialRenewalImportPage() {
             return
         }
 
-        const { data: pipeline, error: pipelineError } = await supabase
-            .from('pipelines')
-            .select('id')
-            .eq('name', 'Commercial Lines Renewal Pipeline')
-            .single()
-
-        if (pipelineError || !pipeline) {
-            setMessage({ text: 'Commercial Lines Renewal Pipeline not found in system.', type: 'error' })
+        let pipelineResolution
+        try {
+            pipelineResolution = await resolveRenewalPipelineAndStage(supabase, 'commercial')
+        } catch (err: any) {
+            setMessage({ text: err.message || 'Failed to resolve renewal pipeline stage.', type: 'error' })
             setLoading(false)
             return
         }
 
-        const { data: stage, error: stageError } = await supabase
-            .from('pipeline_stages')
-            .select('id')
-            .eq('pipeline_id', pipeline.id)
-            .order('stage_order', { ascending: true })
-            .limit(1)
-            .single()
-
-        if (stageError || !stage) {
-            setMessage({ text: 'Initial pipeline stage not found.', type: 'error' })
-            setLoading(false)
-            return
-        }
-
+        const { pipelineId, stageId } = pipelineResolution
         const payload: any[] = []
         const skippedRows: string[] = []
 
@@ -233,27 +192,7 @@ export default function CommercialRenewalImportPage() {
                 return
             }
 
-            const name = r['applicant data account name']?.trim()
-
-            payload.push({
-                business_name: name,
-                client_name: name,
-                phone: null,
-                email: null,
-                policy_type: r['policy data line of business']?.trim(),
-                renewal_date: formatDate(r['policy data policy expiration date']),
-                carrier: r['policy data master company']?.trim(),
-                policy_number: r['policy data policy number']?.trim(),
-                current_premium: Number(r['policy data totalwrittenpremium']),
-                renewal_premium: null,
-                referral: r['applicant data lead source']?.trim() || null,
-                notes: null,
-                policy_flow: 'renewal',
-                insurence_category: 'commercial',
-                pipeline_id: pipeline.id,
-                current_stage_id: stage.id,
-                assigned_csr: user.id,
-            })
+            payload.push(buildRenewalPayload(r, 'commercial', pipelineId, stageId, user.id, true))
         })
 
         if (payload.length === 0) {
@@ -267,11 +206,7 @@ export default function CommercialRenewalImportPage() {
             return
         }
 
-        const { error } = await supabase
-            .from('temp_leads_basics')
-            .upsert(payload, {
-                onConflict: 'policy_number,renewal_date'
-            })
+        const { error } = await saveRenewalRecords(supabase, payload)
 
         if (error) {
             setMessage({ text: `Import failed: ${error.message}`, type: 'error' })

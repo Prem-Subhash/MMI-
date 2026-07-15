@@ -30,7 +30,6 @@ import {
 } from '@/app/mortgage/lib/excelLookups';
 import LoanFormModal from './LoanFormModal';
 import LoanDetailModal from './LoanDetailModal';
-import CreateApplicationModal from './CreateApplicationModal';
 
 interface PipelineViewProps {
   pipelineType: PipelineType;
@@ -61,7 +60,6 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
   const [totalRecords, setTotalRecords] = useState(0);
 
   // Dialog states
-  const [isSelectionOpen, setIsSelectionOpen] = useState(false);
   const [selectedCreatePipeline, setSelectedCreatePipeline] = useState<PipelineType>(pipelineType);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLoan, setEditingLoan] = useState<MortgageLoan | null>(null);
@@ -210,8 +208,9 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
             <button
               type="button"
               onClick={() => {
+                setSelectedCreatePipeline(pipelineType);
                 setEditingLoan(null);
-                setIsSelectionOpen(true);
+                setIsFormOpen(true);
               }}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition-all shadow-sm shrink-0"
             >
@@ -299,8 +298,9 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
             <button
               type="button"
               onClick={() => {
+                setSelectedCreatePipeline(pipelineType);
                 setEditingLoan(null);
-                setIsSelectionOpen(true);
+                setIsFormOpen(true);
               }}
               className="mt-5 flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold shadow-sm transition-all"
             >
@@ -528,18 +528,6 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
           </button>
         </div>
       </div>
-
-      {/* Pipeline Selection Modal */}
-      <CreateApplicationModal
-        isOpen={isSelectionOpen}
-        onClose={() => setIsSelectionOpen(false)}
-        onSelectPipeline={(pipeline) => {
-          setSelectedCreatePipeline(pipeline);
-          setEditingLoan(null);
-          setIsSelectionOpen(false);
-          setIsFormOpen(true);
-        }}
-      />
 
       {/* Dynamic Create/Edit Modal */}
       <LoanFormModal

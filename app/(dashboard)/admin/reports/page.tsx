@@ -6,6 +6,8 @@ import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
+import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 
 export default function AdminReportsPage() {
     const [loading, setLoading] = useState(false)
@@ -19,33 +21,8 @@ export default function AdminReportsPage() {
     ]
 
     const LOB_OPTIONS: Record<string, { label: string, value: string }[]> = {
-        commercial: [
-            { label: 'Business Owners Policy (BOP)', value: 'bop' },
-            { label: 'Commercial Auto', value: 'commercial_auto' },
-            { label: 'Commercial Package', value: 'commercial_package' },
-            { label: 'Umbrella (Excess Liability)', value: 'umbrella' },
-            { label: 'General Liability', value: 'general_liability' },
-            { label: 'Flood', value: 'flood' },
-            { label: 'Builders Risk', value: 'builders_risk' },
-            { label: 'Lessor Risk', value: 'lessor_risk' },
-            { label: 'Surety Bond', value: 'surety_bond' },
-            { label: 'Inland Marine', value: 'inland_marine' },
-            { label: 'Employment Practices Liability', value: 'employment_practices_liability' },
-            { label: 'Cyber Liability', value: 'cyber_liability' },
-            { label: 'Errors & Omissions / Professional Liability', value: 'professional_liability' },
-            { label: 'Liquor Liability', value: 'liquor_liability' },
-            { label: 'Crime Fidelity Bond', value: 'crime_fidelity_bond' },
-            { label: 'Commercial Property', value: 'commercial_property' }
-        ],
-        personal: [
-            { label: 'Home', value: 'home' },
-            { label: 'Auto', value: 'auto' },
-            { label: 'Condo', value: 'condo' },
-            { label: 'Landlord Home', value: 'landlord_home' },
-            { label: 'Landlord Condo', value: 'landlord_condo' },
-            { label: 'Motorcycle', value: 'motorcycle' },
-            { label: 'Umbrella', value: 'umbrella' }
-        ]
+        commercial: COMMERCIAL_POLICY_TYPES,
+        personal: PERSONAL_POLICY_TYPES
     }
 
     // Filters State
@@ -530,7 +507,9 @@ export default function AdminReportsPage() {
                                                 </div>
                                             </td>
                                         </tr>
-                                    ) : (filteredData.map((row: any, index: number) => (
+                                    ) : (filteredData.map((row: any, index: number) => {
+                                        const active = getActivePolicy(row)
+                                        return (
                                         <tr key={row.id} className="hover:bg-blue-50/30 transition-colors group">
                                             <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                                                 {row.client_name}
@@ -554,7 +533,7 @@ export default function AdminReportsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
-                                                {formatCurrency(row.total_premium)}
+                                                {formatCurrency(active.activePremium || row.total_premium)}
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-600">
                                                 <div className="flex items-center gap-2">
@@ -572,7 +551,7 @@ export default function AdminReportsPage() {
                                                     : (row.renewal_date || row.effective_date || '-')}
                                             </td>
                                         </tr>
-                                    )))}
+                                    )}))}
                                 </tbody>
                             </table>
                         </div>

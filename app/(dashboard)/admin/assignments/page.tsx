@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Filter, Users, GitBranch, RefreshCw, Briefcase, Activity } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
+import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 
 // Types
 type Lead = {
@@ -181,10 +182,16 @@ export default function AdminAssignmentsPage() {
                             className="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block w-full p-2.5 outline-none transition-all"
                         >
                             <option value="">All Policy Types</option>
-                            <option value="auto">Auto</option>
-                            <option value="home">Home</option>
-                            <option value="commercial_auto">Comm. Auto</option>
-                            <option value="gl">General Liability</option>
+                            <optgroup label="Personal Lines">
+                                {PERSONAL_POLICY_TYPES.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </optgroup>
+                            <optgroup label="Commercial Lines">
+                                {COMMERCIAL_POLICY_TYPES.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                                ))}
+                            </optgroup>
                         </select>
                     </div>
                 </div>

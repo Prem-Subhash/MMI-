@@ -30,6 +30,9 @@ type Renewal = {
   policy_number?: string
   current_premium?: number
   renewal_premium?: number
+  new_carrier?: string
+  new_policy_number?: string
+  new_premium?: number
   pipeline_id: string
   current_stage_id: string
   stage_metadata: Record<string, any>
@@ -174,6 +177,9 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
         policy_number,
         current_premium,
         renewal_premium,
+        new_carrier,
+        new_policy_number,
+        new_premium,
         pipeline_id,
         current_stage_id,
         stage_metadata,
@@ -374,51 +380,152 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               </KpiCard>
             </div>
 
-            {/* Renewal Details Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-              <KpiCard 
-                icon={<Briefcase size={14} />} 
-                label="Carrier"
-                accent="from-[#10B889] to-[#0d9470]"
-                glow="shadow-emerald-200/60"
-                iconBg="bg-emerald-50 text-emerald-600"
-                hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
-              >
-                <p className="text-sm font-bold text-gray-700">{lead.carrier || '—'}</p>
-              </KpiCard>
-              <KpiCard 
-                icon={<Shield size={14} />} 
-                label="Policy Number"
-                accent="from-[#2E5C85] to-[#1e3f5e]"
-                glow="shadow-blue-200/60"
-                iconBg="bg-blue-50 text-blue-600"
-                hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
-              >
-                <p className="text-sm font-bold text-gray-700 font-mono">{lead.policy_number || '—'}</p>
-              </KpiCard>
-              <KpiCard 
-                icon={<Calendar size={14} />} 
-                label="Renewal Date"
-                accent="from-amber-500 to-orange-500"
-                glow="shadow-amber-200/60"
-                iconBg="bg-amber-50 text-amber-600"
-                hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
-              >
-                <p className="text-sm font-bold text-gray-700">{new Date(lead.renewal_date).toLocaleDateString()}</p>
-              </KpiCard>
-              <KpiCard 
-                icon={<DollarSign size={14} />} 
-                label="Premium"
-                accent="from-purple-600 to-indigo-600"
-                glow="shadow-purple-200/60"
-                iconBg="bg-purple-50 text-purple-600"
-                hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
-              >
-                <p className="text-sm font-bold text-gray-700">
-                  {lead.current_premium ? formatCurrency(lead.current_premium) : '—'}
-                </p>
-              </KpiCard>
-            </div>
+            {/* Renewal Policy Details */}
+            {(lead.pipeline_stage?.stage_name === 'Completed (Switch)' || lead.new_carrier) ? (
+              <div className="space-y-6 mb-8">
+                {/* 1. Original / Expiring Policy Group (Historical) */}
+                <div className="p-5 rounded-2xl bg-gray-50 border border-gray-200">
+                  <h3 className="text-xs font-black text-gray-500 uppercase tracking-widest mb-3 flex items-center justify-between">
+                    <span>Expiring Policy Details (Historical)</span>
+                    <span className="text-[10px] bg-gray-200 text-gray-600 px-2 py-0.5 rounded-full font-bold">Previous Term</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <KpiCard 
+                      icon={<Briefcase size={14} />} 
+                      label="Expiring Carrier"
+                      accent="from-gray-500 to-gray-600"
+                      glow="shadow-gray-100"
+                      iconBg="bg-gray-100 text-gray-600"
+                      hoverIconBg="group-hover/card:bg-gray-600 group-hover/card:text-white"
+                    >
+                      <p className="text-sm font-bold text-gray-700">{lead.carrier || '—'}</p>
+                    </KpiCard>
+                    <KpiCard 
+                      icon={<Shield size={14} />} 
+                      label="Expiring Policy Number"
+                      accent="from-gray-500 to-gray-600"
+                      glow="shadow-gray-100"
+                      iconBg="bg-gray-100 text-gray-600"
+                      hoverIconBg="group-hover/card:bg-gray-600 group-hover/card:text-white"
+                    >
+                      <p className="text-sm font-bold text-gray-700 font-mono">{lead.policy_number || '—'}</p>
+                    </KpiCard>
+                    <KpiCard 
+                      icon={<Calendar size={14} />} 
+                      label="Renewal Date"
+                      accent="from-amber-500 to-orange-500"
+                      glow="shadow-amber-200/60"
+                      iconBg="bg-amber-50 text-amber-600"
+                      hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
+                    >
+                      <p className="text-sm font-bold text-gray-700">{new Date(lead.renewal_date).toLocaleDateString()}</p>
+                    </KpiCard>
+                    <KpiCard 
+                      icon={<DollarSign size={14} />} 
+                      label="Expiring Premium"
+                      accent="from-gray-500 to-gray-600"
+                      glow="shadow-gray-100"
+                      iconBg="bg-gray-100 text-gray-600"
+                      hoverIconBg="group-hover/card:bg-gray-600 group-hover/card:text-white"
+                    >
+                      <p className="text-sm font-bold text-gray-700">
+                        {lead.current_premium ? formatCurrency(lead.current_premium) : '—'}
+                      </p>
+                    </KpiCard>
+                  </div>
+                </div>
+
+                {/* 2. New Switched Policy Card Group (Active) */}
+                <div className="p-5 rounded-2xl bg-emerald-50/70 border-2 border-emerald-300 shadow-md">
+                  <h3 className="text-xs font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center justify-between">
+                    <span className="flex items-center gap-2">
+                      New Bound Policy Details (Switched Carrier)
+                    </span>
+                    <span className="bg-emerald-600 text-white text-[10px] px-2.5 py-0.5 rounded-full font-bold shadow-sm">ACTIVE POLICY</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <KpiCard 
+                      icon={<Briefcase size={14} />} 
+                      label="Active Carrier"
+                      accent="from-[#10B889] to-[#0d9470]"
+                      glow="shadow-emerald-200"
+                      iconBg="bg-emerald-100 text-emerald-700"
+                      hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+                    >
+                      <p className="text-base font-black text-emerald-950">{lead.new_carrier || '—'}</p>
+                    </KpiCard>
+                    <KpiCard 
+                      icon={<Shield size={14} />} 
+                      label="Active Policy Number"
+                      accent="from-[#2E5C85] to-[#1e3f5e]"
+                      glow="shadow-blue-200"
+                      iconBg="bg-blue-100 text-blue-700"
+                      hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
+                    >
+                      <p className="text-base font-black text-emerald-950 font-mono">{lead.new_policy_number || '—'}</p>
+                    </KpiCard>
+                    <KpiCard 
+                      icon={<DollarSign size={14} />} 
+                      label="Active Bound Premium"
+                      accent="from-purple-600 to-indigo-600"
+                      glow="shadow-purple-200"
+                      iconBg="bg-purple-100 text-purple-700"
+                      hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
+                    >
+                      <p className="text-base font-black text-emerald-950">
+                        {lead.new_premium ? formatCurrency(lead.new_premium) : '—'}
+                      </p>
+                    </KpiCard>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Scenario A: Single Row for Same Carrier / In-Progress Renewals */
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <KpiCard 
+                  icon={<Briefcase size={14} />} 
+                  label="Carrier"
+                  accent="from-[#10B889] to-[#0d9470]"
+                  glow="shadow-emerald-200/60"
+                  iconBg="bg-emerald-50 text-emerald-600"
+                  hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+                >
+                  <p className="text-sm font-bold text-gray-700">{lead.carrier || '—'}</p>
+                </KpiCard>
+                <KpiCard 
+                  icon={<Shield size={14} />} 
+                  label="Policy Number"
+                  accent="from-[#2E5C85] to-[#1e3f5e]"
+                  glow="shadow-blue-200/60"
+                  iconBg="bg-blue-50 text-blue-600"
+                  hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
+                >
+                  <p className="text-sm font-bold text-gray-700 font-mono">{lead.policy_number || '—'}</p>
+                </KpiCard>
+                <KpiCard 
+                  icon={<Calendar size={14} />} 
+                  label="Renewal Date"
+                  accent="from-amber-500 to-orange-500"
+                  glow="shadow-amber-200/60"
+                  iconBg="bg-amber-50 text-amber-600"
+                  hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
+                >
+                  <p className="text-sm font-bold text-gray-700">{new Date(lead.renewal_date).toLocaleDateString()}</p>
+                </KpiCard>
+                <KpiCard 
+                  icon={<DollarSign size={14} />} 
+                  label="Premium"
+                  accent="from-purple-600 to-indigo-600"
+                  glow="shadow-purple-200/60"
+                  iconBg="bg-purple-50 text-purple-600"
+                  hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
+                >
+                  <p className="text-sm font-bold text-gray-700">
+                    {lead.current_premium ? formatCurrency(lead.current_premium) : '—'}
+                  </p>
+                </KpiCard>
+              </div>
+            )}
 
             <div className={`mb-8 p-6 rounded-2xl border ${!lead.renewal_premium ? 'bg-cyan-50 border-cyan-100' : 'bg-gray-50 border-gray-100'}`}>
               <h3 className="text-sm font-bold text-gray-700 uppercase tracking-widest mb-4 flex items-center gap-2">

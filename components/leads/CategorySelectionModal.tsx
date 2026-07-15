@@ -52,7 +52,7 @@ export default function CategorySelectionModal({
             </div>
             <div>
               <h4 className="text-lg font-bold text-gray-800">Personal Lines</h4>
-              <p className="text-sm text-gray-500 mt-0.5">Auto, Home, Condo, Landlord Home, Umbrella policies.</p>
+              <p className="text-sm text-gray-500 mt-0.5">Home, Condo, Landlord Home, Motorcycle, Umbrella, Auto policies.</p>
             </div>
           </button>
 
@@ -65,7 +65,7 @@ export default function CategorySelectionModal({
             </div>
             <div>
               <h4 className="text-lg font-bold text-gray-800">Commercial Lines</h4>
-              <p className="text-sm text-gray-500 mt-0.5">Workers Comp, Business Owners Policy, Commercial Auto, Packages.</p>
+              <p className="text-sm text-gray-500 mt-0.5">Business Owners Policy (BOP), Commercial Auto, Packages, Liability & more.</p>
             </div>
           </button>
         </div>

@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
-import { User, Phone, Mail, X, Briefcase } from 'lucide-react'
-import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
+import { User, Phone, Mail, X, Briefcase, Shield } from 'lucide-react'
+import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 
 type UpdatedClientFields = {
   client_name: string
@@ -32,7 +32,18 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
     ? lead.lead_policies.map((p: any) => p.policy_type) 
     : lead.policy_type ? [lead.policy_type] : []
     
-  const [selectedPolicies, setSelectedPolicies] = useState<string[]>(initialPolicies)
+  const defaultPolicy = initialPolicies[0] || (lead.insurence_category === 'commercial' ? 'bop' : 'home')
+  const [selectedPolicy, setSelectedPolicy] = useState<string>(defaultPolicy)
+
+  const baseOptions = lead.insurence_category === 'commercial' 
+    ? COMMERCIAL_POLICY_TYPES
+    : PERSONAL_POLICY_TYPES
+
+  const optionsList = [...baseOptions]
+  if (defaultPolicy && !baseOptions.some(o => o.value.toLowerCase() === defaultPolicy.toLowerCase())) {
+    optionsList.unshift({ value: defaultPolicy, label: defaultPolicy })
+  }
+
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -62,8 +73,8 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
       return
     }
 
-    if (selectedPolicies.length === 0) {
-      setError('Please select at least one policy type')
+    if (!selectedPolicy) {
+      setError('Please select a policy type')
       return
     }
 
@@ -76,7 +87,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
         body: JSON.stringify({
           leadId: lead.id,
           ...formData,
-          selectedPolicies
+          selectedPolicies: [selectedPolicy]
         })
       })
 
@@ -98,7 +109,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
         email: formData.email,
         phone: formData.phone,
         business_name: formData.business_name,
-        selectedPolicies,
+        selectedPolicies: [selectedPolicy],
       })
       onClose()
     } catch (err: any) {
@@ -223,37 +234,28 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
               </div>
             </div>
 
-            {/* POLICIES */}
+            {/* POLICIES (SINGLE SELECT) */}
             <div className="space-y-2 group">
               <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
                 <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
-                Policy Types
+                Policy Type
               </label>
-              <div className="relative z-[110]">
-                <MultiSelectPolicy 
-                  selectedValues={selectedPolicies}
-                  onChange={setSelectedPolicies}
-                  error={selectedPolicies.length === 0 ? "Please select at least one policy type" : false}
-                  options={lead.insurence_category === 'commercial' 
-                    ? [
-                      { value: 'workers_comp', label: 'Workers Comp' },
-                      { value: 'bop', label: 'Business Owners Policy' },
-                      { value: 'commercial_auto', label: 'Commercial Auto' },
-                      { value: 'commercial_package', label: 'Commercial Package' },
-                      { value: 'umbrella', label: 'Umbrella (Excess)' },
-                      { value: 'general_liability', label: 'General Liability' },
-                      { value: 'commercial_property', label: 'Commercial Property' },
-                      { value: 'other', label: 'Other' }
-                    ]
-                    : [
-                      { value: 'home', label: 'Home' },
-                      { value: 'auto', label: 'Auto' },
-                      { value: 'condo', label: 'Condo' },
-                      { value: 'landlord_home', label: 'Landlord Home' },
-                      { value: 'umbrella', label: 'Umbrella' }
-                    ]
-                  }
-                />
+              <div className="relative group/input">
+                <Shield size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-amber-600 transition-colors pointer-events-none" />
+                <select
+                  value={selectedPolicy}
+                  onChange={e => setSelectedPolicy(e.target.value)}
+                  className="w-full pl-12 pr-10 py-4 bg-slate-50 border border-slate-200 rounded-2xl text-base font-bold text-black focus:outline-none focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 focus:bg-white transition-all shadow-sm appearance-none cursor-pointer"
+                >
+                  {optionsList.map(opt => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-bold">
+                  ▼
+                </div>
               </div>
             </div>
           </div>

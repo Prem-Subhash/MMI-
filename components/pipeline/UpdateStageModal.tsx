@@ -90,8 +90,9 @@ const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Switch)': {
-    policy_number: { label: 'Policy Number', type: 'text', required: true },
-    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
+    new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
+    new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
+    new_premium: { label: 'New Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'number', required: true },
     docs_saved_ezlynx: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     docs_sent_to_client: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
@@ -181,8 +182,9 @@ const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Switch)': {
-    policy_number: { label: 'Policy Number', type: 'text', required: true },
-    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
+    new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
+    new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
+    new_premium: { label: 'New Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'number', required: true },
     policy_docs_saved: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     docs_sent_to_client: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
