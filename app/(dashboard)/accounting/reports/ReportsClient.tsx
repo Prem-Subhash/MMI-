@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from '@/components/ui/Toast'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
 import {
   DollarSign, Percent, Calendar, Download, Printer, Search,
   BarChart2, User, Clock, ShieldCheck, AlertCircle, Info,
@@ -53,9 +54,9 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
-        const { data } = await supabase.from('temp_leads_basics').select('carrier, policy_flow')
+        const { data } = await supabase.from('temp_leads_basics').select('carrier, policy_flow, new_carrier')
         if (data) {
-          const carriers = Array.from(new Set(data.map(d => d.carrier).filter(Boolean))) as string[]
+          const carriers = Array.from(new Set(data.flatMap(d => [d.carrier, d.new_carrier]).filter(Boolean))) as string[]
           const flows = Array.from(new Set(data.map(d => d.policy_flow).filter(Boolean))) as string[]
           setAvailableCarriers(carriers.sort())
           setAvailableFlows(flows.sort())
@@ -74,6 +75,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
         id, client_name, policy_number, carrier, policy_flow, insurence_category,
         effective_date, total_premium, expected_commission, actual_commission,
         accounting_status, accounting_verified, created_at, assigned_csr,
+        new_carrier, new_policy_number, new_premium,
         assigned_user_profile:profiles!fk_profile (full_name)
       `)
 
@@ -88,7 +90,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
       }
       if (accountingVerified !== 'all') query = query.eq('accounting_verified', accountingVerified === 'verified')
       if (policyFlow !== 'all') query = query.eq('policy_flow', policyFlow)
-      if (carrier !== 'all') query = query.eq('carrier', carrier)
+      if (carrier !== 'all') query = query.or(`carrier.eq.${carrier},new_carrier.eq.${carrier}`)
       if (assignedCsr !== 'all') query = query.eq('assigned_csr', assignedCsr)
 
       const { data, error } = await query
@@ -117,7 +119,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
   useEffect(() => { fetchReportData() }, [startDate, endDate, accountingStatus, accountingVerified, policyFlow, carrier, assignedCsr])
 
   /* ── Aggregates ── */
-  const totalPremiums = leads.reduce((s, r) => s + (Number(r.total_premium) || 0), 0)
+  const totalPremiums = leads.reduce((s, r) => s + (Number(getActivePolicy(r).activePremium) || 0), 0)
   const averagePremium = leads.length > 0 ? totalPremiums / leads.length : 0
   const expectedCommissions = leads.reduce((s, r) => s + (Number(r.expected_commission) || 0), 0)
   const actualCommissions = leads.reduce((s, r) => s + (Number(r.actual_commission) || 0), 0)
@@ -125,11 +127,12 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
   const collectionPct = expectedCommissions > 0 ? (actualCommissions / expectedCommissions) * 100 : 0
 
   const premiumsByFlow = leads.reduce((acc: Record<string, number>, l) => {
-    const k = l.policy_flow || 'Unspecified'; acc[k] = (acc[k] || 0) + (Number(l.total_premium) || 0); return acc
+    const k = l.policy_flow || 'Unspecified'; acc[k] = (acc[k] || 0) + (Number(getActivePolicy(l).activePremium) || 0); return acc
   }, {})
 
   const premiumsByCarrier = leads.reduce((acc: Record<string, number>, l) => {
-    const k = l.carrier || 'Unspecified'; acc[k] = (acc[k] || 0) + (Number(l.total_premium) || 0); return acc
+    const active = getActivePolicy(l)
+    const k = active.activeCarrier || 'Unspecified'; acc[k] = (acc[k] || 0) + (Number(active.activePremium) || 0); return acc
   }, {})
 
   let reconciledCount = 0, discrepancyCount = 0, unreconciledCount = 0, pendingCount = 0
@@ -145,20 +148,23 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
   const handleExportCSV = () => {
     if (leads.length === 0) { showToast('No data to export.', 'error'); return }
     const headers = ['Client Name', 'Policy Number', 'Carrier', 'Policy Flow', 'Insurance Category', 'Effective Date', 'Total Premium', 'Expected Commission', 'Actual Commission', 'Accounting Status', 'Accounting Verified', 'Created Date']
-    const rows = leads.map(lead => [
-      `"${(lead.client_name || '').replace(/"/g, '""')}"`,
-      `"${(lead.policy_number || '').replace(/"/g, '""')}"`,
-      `"${(lead.carrier || '').replace(/"/g, '""')}"`,
-      `"${(lead.policy_flow || '').replace(/"/g, '""')}"`,
-      `"${(lead.insurence_category || '').replace(/"/g, '""')}"`,
-      lead.effective_date || 'N/A',
-      lead.total_premium ?? 0,
-      lead.expected_commission ?? 0,
-      lead.actual_commission ?? 0,
-      lead.accounting_status || 'unreconciled',
-      lead.accounting_verified ? 'YES' : 'NO',
-      lead.created_at ? new Date(lead.created_at).toLocaleDateString() : 'N/A',
-    ].join(','))
+    const rows = leads.map(lead => {
+      const active = getActivePolicy(lead)
+      return [
+        `"${(lead.client_name || '').replace(/"/g, '""')}"`,
+        `"${(active.activePolicyNumber || '').replace(/"/g, '""')}"`,
+        `"${(active.activeCarrier || '').replace(/"/g, '""')}"`,
+        `"${(lead.policy_flow || '').replace(/"/g, '""')}"`,
+        `"${(lead.insurence_category || '').replace(/"/g, '""')}"`,
+        lead.effective_date || 'N/A',
+        active.activePremium ?? 0,
+        lead.expected_commission ?? 0,
+        lead.actual_commission ?? 0,
+        lead.accounting_status || 'unreconciled',
+        lead.accounting_verified ? 'YES' : 'NO',
+        lead.created_at ? new Date(lead.created_at).toLocaleDateString() : 'N/A',
+      ].join(',')
+    })
     const blob = new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
@@ -503,6 +509,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
                 </thead>
                 <tbody className="divide-y divide-gray-100 bg-white">
                   {leads.map(lead => {
+                    const active = getActivePolicy(lead)
                     const s = lead.accounting_status?.toLowerCase()
                     const sColor =
                       s === 'reconciled' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
@@ -514,14 +521,14 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
                       <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
                         <td className="px-4 py-4">
                           <p className="font-medium text-gray-900 truncate">{lead.client_name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 font-mono">{lead.policy_number || '—'}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 font-mono">{active.activePolicyNumber || '—'}</p>
                         </td>
                         <td className="px-4 py-4">
-                          <p className="font-medium text-gray-900">{lead.carrier || '—'}</p>
+                          <p className="font-medium text-gray-900">{active.activeCarrier || '—'}</p>
                           <p className="text-xs text-gray-500 mt-0.5">{lead.policy_flow}</p>
                         </td>
                         <td className="px-4 py-4 text-right text-gray-900">
-                          {formatCurrency(lead.total_premium)}
+                          {formatCurrency(active.activePremium)}
                         </td>
                         <td className="px-4 py-4 text-right text-gray-900">
                           {formatCurrency(lead.expected_commission)}

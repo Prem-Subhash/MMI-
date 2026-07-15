@@ -7,6 +7,7 @@ import { Calendar, Download, Search, Eye } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
 
 type Renewal = {
     id: string
@@ -16,6 +17,9 @@ type Renewal = {
     carrier?: string
     current_premium?: number
     renewal_premium?: number
+    new_carrier?: string
+    new_policy_number?: string
+    new_premium?: number
     assigned_csr?: string
     policy_number?: string
     referral?: string
@@ -67,6 +71,9 @@ function CommercialRenewalContent() {
       carrier,
       current_premium,
       renewal_premium,
+      new_carrier,
+      new_policy_number,
+      new_premium,
       assigned_csr,
       policy_number,
       referral,
@@ -139,7 +146,9 @@ function CommercialRenewalContent() {
             (r.client_name && r.client_name.toLowerCase().includes(term)) ||
             (r['business_name'] && r['business_name'].toLowerCase().includes(term)) ||
             (r.policy_number && r.policy_number.toLowerCase().includes(term)) ||
-            (r.carrier && r.carrier.toLowerCase().includes(term))
+            (r.new_policy_number && r.new_policy_number.toLowerCase().includes(term)) ||
+            (r.carrier && r.carrier.toLowerCase().includes(term)) ||
+            (r.new_carrier && r.new_carrier.toLowerCase().includes(term))
         )
     })
 
@@ -180,7 +189,7 @@ function CommercialRenewalContent() {
                     </div>
 
                     <Link
-                        href="/csr/leads/new?category=commercial&flow=renewal"
+                        href="/csr/renewals/commercial/new"
                         className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
                     >
                         + Add Client
@@ -258,7 +267,9 @@ function CommercialRenewalContent() {
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredRenewals.map(r => (
+                                    filteredRenewals.map(r => {
+                                        const active = getActivePolicy(r)
+                                        return (
                                         <tr key={r.id} className="hover:bg-gray-50/80 transition-colors group">
                                             <td className="px-4 sm:px-6 py-4 font-bold text-gray-900 truncate" title={r.client_name}>
                                                 {r.client_name || '—'}
@@ -271,20 +282,20 @@ function CommercialRenewalContent() {
                                             <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 truncate">
                                                 {r.policy_type}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono truncate">
-                                                {r.policy_number || '—'}
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono truncate" title={active.activePolicyNumber || undefined}>
+                                                {active.activePolicyNumber || '—'}
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold whitespace-nowrap text-center">
                                                 {new Date(r.renewal_date).toLocaleDateString()}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-700 truncate" title={r.carrier}>
-                                                {r.carrier || '—'}
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 truncate" title={active.activeCarrier || undefined}>
+                                                {active.activeCarrier || '—'}
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-900 font-bold whitespace-nowrap">
                                                 {r.current_premium ? formatCurrency(r.current_premium) : '—'}
                                             </td>
-                                            <td className={`px-4 sm:px-6 py-4 ${!r.renewal_premium ? 'bg-cyan-50/50' : ''}`}>
-                                                {editingId === r.id ? (
+                                            <td className={`px-4 sm:px-6 py-4 ${!active.activePremium && !r.renewal_premium ? 'bg-cyan-50/50' : ''}`}>
+                                                {editingId === r.id && !active.isSwitched ? (
                                                     <div className="flex items-center gap-1">
                                                         <input
                                                             type="number"
@@ -298,18 +309,23 @@ function CommercialRenewalContent() {
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`font-black tracking-tight whitespace-nowrap ${r.renewal_premium ? 'text-gray-900' : 'text-cyan-600'}`}>
-                                                            {r.renewal_premium ? formatCurrency(r.renewal_premium) : 'MISSING'}
+                                                        <span className={`font-black tracking-tight whitespace-nowrap ${active.activePremium || r.renewal_premium ? 'text-gray-900' : 'text-cyan-600'}`}>
+                                                            {active.isSwitched ? formatCurrency(active.activePremium) : (r.renewal_premium ? formatCurrency(r.renewal_premium) : 'MISSING')}
                                                         </span>
-                                                        <button
-                                                            onClick={() => {
-                                                                setEditingId(r.id)
-                                                                setEditValue(r.renewal_premium?.toString() || '')
-                                                            }}
-                                                            className="text-[10px] text-cyan-600 hover:text-cyan-800 font-bold underline whitespace-nowrap"
-                                                        >
-                                                            {r.renewal_premium ? 'Edit' : 'Enter'}
-                                                        </button>
+                                                        {active.isSwitched && (
+                                                            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Switched</span>
+                                                        )}
+                                                        {!active.isSwitched && (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setEditingId(r.id)
+                                                                    setEditValue(r.renewal_premium?.toString() || '')
+                                                                }}
+                                                                className="text-[10px] text-cyan-600 hover:text-cyan-800 font-bold underline whitespace-nowrap"
+                                                            >
+                                                                {r.renewal_premium ? 'Edit' : 'Enter'}
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </td>
@@ -336,7 +352,7 @@ function CommercialRenewalContent() {
                                                 </Link>
                                             </td>
                                         </tr>
-                                    ))
+                                    )})
                                 )}
                             </tbody>
                         </table>

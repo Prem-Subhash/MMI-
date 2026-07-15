@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
 
 type Lead = {
   id: string
@@ -25,6 +26,9 @@ type Lead = {
   accounting_status: string
   accounting_verified: boolean
   carrier: string
+  new_carrier?: string
+  new_policy_number?: string
+  new_premium?: number
   current_stage: { stage_name: string } | null
   assigned_csr_profile: { full_name: string } | null
 }
@@ -85,6 +89,7 @@ export default function AccountingAllLeadsPage() {
           id, client_name, phone, email, insurence_category, policy_flow, created_at,
           total_premium, expected_commission, actual_commission,
           accounting_status, accounting_verified, carrier,
+          new_carrier, new_policy_number, new_premium,
           current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (stage_name),
           assigned_csr_profile:profiles!fk_profile (full_name)
         `)
@@ -112,7 +117,7 @@ export default function AccountingAllLeadsPage() {
       }
 
       if (policyFlowFilter !== 'all') query = query.eq('policy_flow', policyFlowFilter)
-      if (carrierFilter !== 'all') query = query.eq('carrier', carrierFilter)
+      if (carrierFilter !== 'all') query = query.or(`carrier.eq.${carrierFilter},new_carrier.eq.${carrierFilter}`)
 
       const { data, error } = await query
 
@@ -314,6 +319,7 @@ export default function AccountingAllLeadsPage() {
                 {filteredLeads.map(lead => {
                   const stage = lead.current_stage?.stage_name ?? '—'
                   const createdDate = lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '—'
+                  const active = getActivePolicy(lead)
 
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
@@ -329,7 +335,7 @@ export default function AccountingAllLeadsPage() {
                         <StageBadge stage={stage} />
                       </td>
                       <td className="px-4 py-4 text-right text-gray-900">
-                        {formatCurrency(lead.total_premium)}
+                        {formatCurrency(active.activePremium)}
                       </td>
                       <td className="px-4 py-4 text-right text-gray-900">
                         {formatCurrency(lead.expected_commission)}

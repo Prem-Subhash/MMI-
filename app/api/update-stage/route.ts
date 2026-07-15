@@ -65,6 +65,19 @@ export async function POST(req: Request) {
     /* ================= MANDATORY CHECKLIST VALIDATION ================= */
     const missingFields: string[] = []
 
+    if (stage.stage_name === 'Completed (Switch)') {
+      // Enforce mandatory fields for Completed (Switch) stage transition
+      if (!mergedMetadata.new_carrier || mergedMetadata.new_carrier.toString().trim() === '') {
+        missingFields.push('new_carrier')
+      }
+      if (!mergedMetadata.new_policy_number || mergedMetadata.new_policy_number.toString().trim() === '') {
+        missingFields.push('new_policy_number')
+      }
+      if (mergedMetadata.new_premium === undefined || mergedMetadata.new_premium === null || mergedMetadata.new_premium === '') {
+        missingFields.push('new_premium')
+      }
+    }
+
     // If mandatoryFields is an array (JSONB), convert to simple check
     // If it's an object (legacy/compat), iterate keys
     const fieldsToCheck = Array.isArray(mandatoryFields)
@@ -80,6 +93,12 @@ export async function POST(req: Request) {
       const fieldName = key
       
       if (globallyOptionalFields.includes(fieldName.toLowerCase())) {
+        continue
+      }
+
+      // If stage is Completed (Switch), and legacy checklist asks for policy_number or bound_premium,
+      // alias to new_policy_number or new_premium so it doesn't fail
+      if (stage.stage_name === 'Completed (Switch)' && (fieldName === 'policy_number' || fieldName === 'bound_premium')) {
         continue
       }
 
@@ -237,7 +256,7 @@ export async function POST(req: Request) {
     }
 
     /* ================= ACCOUNTING INTEGRATION ================= */
-    const completionStages = ['Completed', 'Policy Bound', 'Completed (Same)', 'Completed (Switch)']
+    const completionStages = ['Completed', 'Policy Bound', 'Completed (Same)']
     if (completionStages.includes(stage.stage_name)) {
       let boundPremium = stageMetadata?.bound_premium !== undefined ? stageMetadata.bound_premium : mergedMetadata.bound_premium
 
@@ -276,6 +295,49 @@ export async function POST(req: Request) {
       const carrierVal = stageMetadata?.carrier !== undefined ? stageMetadata.carrier : mergedMetadata.carrier
       if (carrierVal !== undefined && carrierVal !== null) {
         updatePayload.carrier = String(carrierVal)
+      }
+    } else if (stage.stage_name === 'Completed (Switch)') {
+      // Dedicated handling for Completed (Switch) to populate new active policy columns
+      // while NEVER overwriting original base columns (carrier, policy_number, total_premium/current_premium).
+      const newCarrier = stageMetadata?.new_carrier !== undefined ? stageMetadata.new_carrier : mergedMetadata.new_carrier
+      const newPolicyNum = stageMetadata?.new_policy_number !== undefined ? stageMetadata.new_policy_number : mergedMetadata.new_policy_number
+      const newPremium = stageMetadata?.new_premium !== undefined ? stageMetadata.new_premium : mergedMetadata.new_premium
+      const expectedCommission = stageMetadata?.expected_commission !== undefined ? stageMetadata.expected_commission : mergedMetadata.expected_commission
+
+      if (newCarrier !== undefined && newCarrier !== null && newCarrier.toString().trim() !== '') {
+        updatePayload.new_carrier = String(newCarrier).trim()
+      } else {
+        return NextResponse.json({ error: 'New Carrier Name is required for Completed (Switch)' }, { status: 400 })
+      }
+
+      if (newPolicyNum !== undefined && newPolicyNum !== null && newPolicyNum.toString().trim() !== '') {
+        updatePayload.new_policy_number = String(newPolicyNum).trim()
+      } else {
+        return NextResponse.json({ error: 'New Policy Number is required for Completed (Switch)' }, { status: 400 })
+      }
+
+      if (newPremium !== undefined && newPremium !== null && newPremium !== '') {
+        const val = Number(newPremium)
+        if (!isNaN(val)) {
+          if (val < 0) {
+            return NextResponse.json({ error: 'New Premium value cannot be negative' }, { status: 400 })
+          }
+          updatePayload.new_premium = val
+        } else {
+          return NextResponse.json({ error: 'New Premium must be a valid number' }, { status: 400 })
+        }
+      } else {
+        return NextResponse.json({ error: 'New Bound Premium is required for Completed (Switch)' }, { status: 400 })
+      }
+
+      if (expectedCommission !== undefined && expectedCommission !== null && expectedCommission !== '') {
+        const val = Number(expectedCommission)
+        if (!isNaN(val)) {
+          if (val < 0) {
+            return NextResponse.json({ error: 'Commission value cannot be negative' }, { status: 400 })
+          }
+          updatePayload.expected_commission = val
+        }
       }
     }
 

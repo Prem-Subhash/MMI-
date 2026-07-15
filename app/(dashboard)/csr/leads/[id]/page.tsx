@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { Send, ExternalLink } from 'lucide-react'
+import { Send, ExternalLink, ArrowLeft, Edit2 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
@@ -12,7 +12,6 @@ import EmailModal from '@/components/email/EmailModal'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
-import { Edit2 } from 'lucide-react'
 import { formatCurrency } from '@/lib/currency'
 import { formatPolicies } from '@/utils/formatPolicies'
 
@@ -133,6 +132,31 @@ export default function LeadReviewPage() {
   const params = useParams<{ id: string }>()
   const leadId = params?.id
   const router = useRouter()
+
+  const handleBackToPipeline = () => {
+    const fromInternalPipeline =
+      typeof window !== 'undefined' &&
+      document.referrer &&
+      document.referrer.includes(window.location.host) &&
+      (document.referrer.includes('/csr/pipeline') ||
+       document.referrer.includes('/csr/renewals') ||
+       document.referrer.includes('/csr/leads') ||
+       document.referrer.includes('/csr'));
+
+    if (fromInternalPipeline && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    const isCommercial = lead?.insurence_category?.toLowerCase() === 'commercial';
+    const isRenewal = lead?.policy_flow?.toLowerCase() === 'renewal';
+
+    if (isRenewal) {
+      router.push(isCommercial ? '/csr/renewals/commercial' : '/csr/renewals/personal');
+    } else {
+      router.push(isCommercial ? '/csr/pipeline/commercial' : '/csr/pipeline/personal');
+    }
+  };
 
   const searchParams = useSearchParams()
   const viewFocus = searchParams?.get('view')
@@ -376,48 +400,48 @@ export default function LeadReviewPage() {
             )}
 
             {/* 2. BUTTON GROUP ORGANIZATION */}
-            <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6">
-              {/* Primary actions (left group) */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <button
-                  onClick={openHistoryModal}
-                  className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[140px]"
+            <div className="mt-8 pt-8 border-t border-gray-100 flex flex-wrap items-center justify-start gap-3 w-full">
+              <button
+                onClick={openHistoryModal}
+                className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
+              >
+                View History
+              </button>
+              <button
+                onClick={() => {
+                  if (!lead.pipeline_id) {
+                    toast('Pipeline not assigned to this lead', 'warning')
+                    return
+                  }
+                  setShowUpdateModal(true)
+                }}
+                className="px-5 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
+              >
+                Update Status
+              </button>
+              <button
+                onClick={handleBackToPipeline}
+                className="px-5 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap group"
+              >
+                <ArrowLeft size={16} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
+                <span>Back</span>
+              </button>
+              {lead.insurence_category && lead.insurence_category.toLowerCase() === 'personal' && (
+                <Link
+                  href={`/csr/leads?stage=${encodeURIComponent(lead.current_stage || lead.pipeline_stages?.stage_name || 'New Lead')}`}
+                  className="px-5 py-2.5 bg-rose-500 text-white hover:bg-rose-600 hover:text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
                 >
-                  View History
-                </button>
-                <button
-                  onClick={() => {
-                    if (!lead.pipeline_id) {
-                      toast('Pipeline not assigned to this lead', 'warning')
-                      return
-                    }
-                    setShowUpdateModal(true)
-                  }}
-                  className="px-5 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold min-w-[150px]"
-                >
-                  Update Status
-                </button>
-              </div>
-
-              {/* Secondary actions (right group) */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                {lead.insurence_category && lead.insurence_category.toLowerCase() === 'personal' && (
-                  <Link
-                    href={`/csr/leads?stage=${encodeURIComponent(lead.current_stage || lead.pipeline_stages?.stage_name || 'New Lead')}`}
-                    className="px-5 py-2.5 bg-rose-500 text-white hover:bg-rose-600 hover:text-white border border-gray-200 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
-                  >
-                    <ExternalLink size={16} />
-                    View in Pipeline
-                  </Link>
-                )}
-                <button
-                  onClick={() => setShowEmailModal(true)}
-                  className={`px-6 py-2.5 font-bold tracking-wider rounded-lg shadow-md transition flex items-center justify-center gap-2 ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30 animate-bounce' : 'bg-[#10B889] hover:opacity-90 text-white'}`}
-                >
-                  <Send size={16} />
-                  Send Email
-                </button>
-              </div>
+                  <ExternalLink size={16} />
+                  View in Pipeline
+                </Link>
+              )}
+              <button
+                onClick={() => setShowEmailModal(true)}
+                className={`px-5 py-2.5 font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-2 whitespace-nowrap ${isFocused ? 'bg-blue-600 text-white hover:bg-blue-700 ring-4 ring-blue-600/30' : 'bg-[#10B889] hover:bg-[#0e9e75] text-white'}`}
+              >
+                <Send size={16} />
+                Send Email
+              </button>
             </div>
 
             {/* 3. SUCCESS MESSAGE (PHASE STATUS) */}

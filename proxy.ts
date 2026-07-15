@@ -13,14 +13,19 @@ export async function proxy(request: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
         {
             cookies: {
-                get(name: string) { return request.cookies.get(name)?.value },
-                set(name: string, value: string, options: CookieOptions) {
-                    request.cookies.set({ name, value, ...options })
-                    response.cookies.set({ name, value, ...options })
+                getAll() {
+                    return request.cookies.getAll()
                 },
-                remove(name: string, options: CookieOptions) {
-                    request.cookies.set({ name, value: '', ...options })
-                    response.cookies.set({ name, value: '', ...options })
+                setAll(cookiesToSet) {
+                    cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+                    response = NextResponse.next({
+                        request: {
+                            headers: request.headers,
+                        },
+                    })
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        response.cookies.set(name, value, options)
+                    )
                 },
             },
         }
@@ -33,11 +38,13 @@ export async function proxy(request: NextRequest) {
         { auth: { persistSession: false } }
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     const pathname = request.nextUrl.pathname
     
     if (user) {
         console.log(`[MIDDLEWARE] User Session Active: ${user.id} accessing ${pathname}`);
+    } else if (authError && authError.code === 'refresh_token_not_found') {
+        console.log(`[MIDDLEWARE] Expired/Invalid refresh token on ${pathname} - clearing auth cookies`);
     } else {
         console.log(`[MIDDLEWARE] No User Session accessing ${pathname}`);
     }

@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import ExcelJS from 'exceljs'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
 
 // 1. Zod Input Validation
 const ReportSchema = z.object({
@@ -98,6 +99,9 @@ export async function POST(request: Request) {
             carrier,
             total_premium,
             policy_number,
+            new_carrier,
+            new_policy_number,
+            new_premium,
             policy_flow,
             insurence_category,
             assigned_csr,
@@ -129,9 +133,20 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: error.message }, { status: 500 })
         }
 
+        const transformedData = data?.map(row => {
+            const active = getActivePolicy(row)
+            return {
+                ...row,
+                active_carrier: active.activeCarrier,
+                active_policy_number: active.activePolicyNumber,
+                active_premium: active.activePremium,
+                is_switched: active.isSwitched
+            }
+        }) || []
+
         return NextResponse.json({
             summary: summaryData,
-            data,
+            data: transformedData,
             pagination: { total: count, page, limit }
         })
     }
@@ -179,12 +194,13 @@ export async function POST(request: Request) {
 
         // Add lead data
         data?.forEach((row: any) => {
+            const active = getActivePolicy(row)
             worksheet.addRow([
                 row.client_name || '-',
                 row.policy_type || '-',
                 row.insurence_category || '-',
                 row.policy_flow || '-',
-                row.total_premium ? formatCurrency(row.total_premium) : '$0.00',
+                active.activePremium ? formatCurrency(active.activePremium) : '$0.00',
                 row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || '-',
                 row[dateKey] || row.effective_date || '-'
             ])
@@ -252,12 +268,13 @@ export async function POST(request: Request) {
                 doc.font(fontPathRegular).fontSize(8)
 
                 data?.forEach((row: any) => {
+                    const active = getActivePolicy(row)
                     if (y > 750) {
                         doc.addPage()
                         y = drawHeader(30)
                         doc.font(fontPathRegular).fontSize(8)
                     }
-                    const premium = row.total_premium || 0
+                    const premium = active.activePremium || 0
                     const rowDate = date_type === 'expiration' ? (row.renewal_date || row.effective_date) : row.effective_date
                     
                     doc.text(row.client_name?.substring(0, 25) || '-', 35, y)

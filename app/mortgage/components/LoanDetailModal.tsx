@@ -236,6 +236,34 @@ export default function LoanDetailModal({
             </div>
           </div>
 
+          {/* Intake Dates & Status */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Application Received</div>
+              <div className="text-sm font-bold text-gray-900 mt-1">
+                {loan.application_received === 'Y' ? 'Yes' : 'No'}
+                {loan.application_received === 'Y' && loan.application_received_date ? ` (${loan.application_received_date})` : ''}
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Target Closing Date</div>
+              <div className="text-sm font-bold text-gray-900 mt-1">{loan.target_closing_date || '—'}</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Follow Up Date</div>
+              <div className="text-sm font-bold text-amber-600 mt-1">{loan.follow_up_date || '—'}</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
+              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Expected Commission</div>
+              <div className="text-sm font-bold text-emerald-700 mt-1">
+                {loan.expected_commission ? `$${loan.expected_commission.toLocaleString()}` : '—'}
+              </div>
+            </div>
+          </div>
+
           {/* Missing Docs Box if N */}
           {loan.all_documents_received === 'N' && loan.missing_documents_list && (
             <div className="p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 shadow-sm">

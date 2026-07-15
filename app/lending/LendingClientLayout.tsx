@@ -43,8 +43,11 @@ export default function LendingClientLayout({
     }
 
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError || !session) {
+        if (sessionError && (sessionError.message?.includes('Refresh Token') || sessionError.code === 'refresh_token_not_found')) {
+          await supabase.auth.signOut().catch(() => {})
+        }
         router.replace('/lending/login')
         return
       }

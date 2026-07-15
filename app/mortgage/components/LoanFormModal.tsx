@@ -433,13 +433,15 @@ export default function LoanFormModal({
           )}
 
           {/* ========================================================= */}
-          {/* STAGE 1: NEW LOAN (Intake & Borrower Summary) */}
+          {/* STAGE 1: BORROWER INTAKE & SUMMARY (New Loan & Pre-Approval) */}
           {/* ========================================================= */}
-          {stage === 'NEW_LOAN' && (
+          {(stage === 'NEW_LOAN' || stage === 'PREAPPROVAL_LOAN') && (
             <div className="space-y-6">
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
-                  Borrower Contact & Inquiry Details
+                  {stage === 'PREAPPROVAL_LOAN'
+                    ? 'Pre-Approval Borrower Contact & Inquiry Details'
+                    : 'Borrower Contact & Inquiry Details'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   <div>
@@ -511,7 +513,9 @@ export default function LoanFormModal({
 
               <div>
                 <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
-                  Loan Request & Staff Assignment
+                  {stage === 'PREAPPROVAL_LOAN'
+                    ? 'Pre-Approval Loan Request & Staff Assignment'
+                    : 'Loan Request & Staff Assignment'}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   {/* Transaction Type */}
@@ -687,6 +691,20 @@ export default function LoanFormModal({
                     </FormSelect>
                   </div>
 
+                  {/* Application Received Date (If Yes) */}
+                  {formData.application_received === 'Y' && (
+                    <div>
+                      <label className={labelClass}>Application Received Date</label>
+                      <input
+                        type="date"
+                        style={{ colorScheme: 'dark' }}
+                        value={formData.application_received_date || ''}
+                        onChange={(e) => handleFieldChange('application_received_date', e.target.value)}
+                        className={dateInputClass}
+                      />
+                    </div>
+                  )}
+
                   {/* Estimated Property Value */}
                   <div>
                     <label className={labelClass}>Estimated Property Value ($)</label>
@@ -761,16 +779,19 @@ export default function LoanFormModal({
                   </div>
                 </div>
 
-                <div className="mt-5">
-                  <label className={labelClass}>Missing Documents List</label>
-                  <input
-                    type="text"
-                    value={formData.missing_documents_list || ''}
-                    onChange={(e) => handleFieldChange('missing_documents_list', e.target.value)}
-                    placeholder="e.g. 2024 W2, 2 months bank statements"
-                    className={inputClass}
-                  />
-                </div>
+                {/* Missing Documents List (if No) */}
+                {formData.all_documents_received === 'N' && (
+                  <div className="mt-5">
+                    <label className={labelClass}>Missing Documents List</label>
+                    <input
+                      type="text"
+                      value={formData.missing_documents_list || ''}
+                      onChange={(e) => handleFieldChange('missing_documents_list', e.target.value)}
+                      placeholder="e.g. 2024 W2, 2 months bank statements"
+                      className={inputClass}
+                    />
+                  </div>
+                )}
 
                 <div className="mt-5">
                   <label className={labelClass}>Additional Notes</label>
@@ -781,133 +802,6 @@ export default function LoanFormModal({
                     placeholder="Internal borrower notes..."
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold text-slate-900 resize-none focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================= */}
-          {/* PRE-APPROVAL STAGE 1: PRE-APPROVAL LOAN */}
-          {/* ========================================================= */}
-          {stage === 'PREAPPROVAL_LOAN' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-sm font-bold uppercase tracking-wider text-[#2E5C85] border-b border-gray-100 pb-2 mb-4">
-                  Pre-Approval Borrower Intake
-                </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                  <div>
-                    <label className={labelClass}>
-                      Client Name <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={formData.client_name || ''}
-                      onChange={(e) => handleFieldChange('client_name', e.target.value)}
-                      placeholder="Enter borrower full name..."
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      Phone Number <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="tel"
-                      required
-                      value={formData.phone || ''}
-                      onChange={(e) => handleFieldChange('phone', e.target.value)}
-                      placeholder="(555) 000-0000"
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className={labelClass}>
-                      Email Address <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      required
-                      value={formData.email || ''}
-                      onChange={(e) => handleFieldChange('email', e.target.value)}
-                      placeholder="client@example.com"
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Transaction Type</label>
-                    <FormSelect
-                      value={
-                        manualInputModes.transaction_type
-                          ? 'Other (Manual Input)'
-                          : EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any)
-                          ? formData.transaction_type
-                          : formData.transaction_type
-                          ? 'Other (Manual Input)'
-                          : ''
-                      }
-                      onChange={(e) => handleDropdownChange('transaction_type', e.target.value, EXCEL_TRANSACTION_TYPES)}
-                      className={inputClass}
-                    >
-                      <option value="">Select...</option>
-                      {EXCEL_TRANSACTION_TYPES.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </FormSelect>
-                    {(manualInputModes.transaction_type || (formData.transaction_type && !EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any))) && (
-                      <input
-                        type="text"
-                        placeholder="Enter custom Transaction Type..."
-                        value={formData.transaction_type || ''}
-                        onChange={(e) => handleFieldChange('transaction_type', e.target.value)}
-                        className="w-full mt-2 px-3.5 py-2 bg-white border border-[#10B889] rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#10B889]/30"
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Loan Officer</label>
-                    <FormSelect
-                      value={
-                        manualInputModes.loan_officer_name
-                          ? 'Other (Manual Input)'
-                          : EXCEL_LOAN_OFFICERS.includes(formData.loan_officer_name as any)
-                          ? formData.loan_officer_name
-                          : formData.loan_officer_name
-                          ? 'Other (Manual Input)'
-                          : ''
-                      }
-                      onChange={(e) => handleDropdownChange('loan_officer_name', e.target.value, EXCEL_LOAN_OFFICERS)}
-                      className={inputClass}
-                    >
-                      <option value="">Select...</option>
-                      {EXCEL_LOAN_OFFICERS.map((item) => (
-                        <option key={item} value={item}>{item}</option>
-                      ))}
-                    </FormSelect>
-                    {(manualInputModes.loan_officer_name || (formData.loan_officer_name && !EXCEL_LOAN_OFFICERS.includes(formData.loan_officer_name as any))) && (
-                      <input
-                        type="text"
-                        placeholder="Enter custom Loan Officer..."
-                        value={formData.loan_officer_name || ''}
-                        onChange={(e) => handleFieldChange('loan_officer_name', e.target.value)}
-                        className="w-full mt-2 px-3.5 py-2 bg-white border border-[#10B889] rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-[#10B889]/30"
-                      />
-                    )}
-                  </div>
-
-                  <div>
-                    <label className={labelClass}>Estimated Credit Score</label>
-                    <input
-                      type="number"
-                      value={formData.estimated_credit_score || ''}
-                      onChange={(e) => handleFieldChange('estimated_credit_score', e.target.value)}
-                      placeholder="e.g. 740"
-                      className={inputClass}
-                    />
-                  </div>
                 </div>
               </div>
             </div>

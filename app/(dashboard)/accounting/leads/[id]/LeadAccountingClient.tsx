@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { useToast } from '@/components/ui/Toast'
 import { formatCurrency } from '@/lib/currency'
+import { getActivePolicy } from '@/utils/activePolicyHelper'
 import { 
   DollarSign, 
   Percent, 
@@ -40,6 +41,7 @@ export default function LeadAccountingClient({
 
   // --- State Variables ---
   const [lead, setLead] = useState(initialLead)
+  const active = getActivePolicy(lead)
   const [logs, setLogs] = useState(initialLogs)
   const [refreshing, setRefreshing] = useState(false)
 
@@ -70,6 +72,9 @@ export default function LeadAccountingClient({
           email,
           policy_number,
           carrier,
+          new_policy_number,
+          new_carrier,
+          new_premium,
           policy_flow,
           insurence_category,
           effective_date,
@@ -317,13 +322,16 @@ export default function LeadAccountingClient({
 
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Carrier</p>
-                <p className="text-sm font-bold text-gray-700">{lead.carrier || 'N/A'}</p>
+                <p className="text-sm font-bold text-gray-700">
+                  {active.activeCarrier || 'N/A'}
+                  {active.isSwitched && <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Switched</span>}
+                </p>
               </div>
 
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Policy Number</p>
                 <p className="text-sm font-bold text-gray-700 font-mono flex items-center gap-1">
-                  <Hash size={12} /> {lead.policy_number || 'N/A'}
+                  <Hash size={12} /> {active.activePolicyNumber || 'N/A'}
                 </p>
               </div>
 
@@ -448,7 +456,7 @@ export default function LeadAccountingClient({
               <div className="bg-gray-50 rounded-xl p-3 text-center">
                 <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wide">Bound Premium</p>
                 <p className="text-xs font-black text-gray-900 mt-1">
-                  {formatCurrency(lead.total_premium)}
+                  {formatCurrency(active.activePremium)}
                 </p>
               </div>
               <div className="bg-gray-50 rounded-xl p-3 text-center">

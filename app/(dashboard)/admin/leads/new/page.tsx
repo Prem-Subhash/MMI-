@@ -15,6 +15,7 @@ import {
     Briefcase,
 } from 'lucide-react'
 import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
+import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 
 function AdminNewLeadContent() {
     const router = useRouter()
@@ -442,23 +443,8 @@ function AdminNewLeadContent() {
               onChange={setSelectedPolicies}
               error={selectedPolicies.length === 0 ? "Please select at least one policy type" : false}
               options={form.insurence_category === 'commercial' 
-                ? [
-                  { value: 'workers_comp', label: 'Workers Comp' },
-                  { value: 'bop', label: 'Business Owners Policy' },
-                  { value: 'commercial_auto', label: 'Commercial Auto' },
-                  { value: 'commercial_package', label: 'Commercial Package' },
-                  { value: 'umbrella', label: 'Umbrella (Excess)' },
-                  { value: 'general_liability', label: 'General Liability' },
-                  { value: 'commercial_property', label: 'Commercial Property' },
-                  { value: 'other', label: 'Other' }
-                ]
-                : [
-                  { value: 'home', label: 'Home' },
-                  { value: 'auto', label: 'Auto' },
-                  { value: 'condo', label: 'Condo' },
-                  { value: 'landlord_home', label: 'Landlord Home' },
-                  { value: 'umbrella', label: 'Umbrella' }
-                ]
+                ? COMMERCIAL_POLICY_TYPES
+                : PERSONAL_POLICY_TYPES
               }
             />
           </div>

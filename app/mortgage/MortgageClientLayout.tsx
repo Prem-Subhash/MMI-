@@ -48,8 +48,16 @@ export default function MortgageClientLayout({
     }
 
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError || !session) {
+        if (sessionError && (sessionError.message?.includes('Refresh Token') || sessionError.code === 'refresh_token_not_found')) {
+          await supabase.auth.signOut().catch(() => {})
+          if (typeof window !== 'undefined') {
+            localStorage.removeItem('moonstar_mortgage_authenticated')
+            localStorage.removeItem('moonstar_mortgage_user_email')
+            sessionStorage.clear()
+          }
+        }
         router.replace('/mortgage/login')
         return
       }

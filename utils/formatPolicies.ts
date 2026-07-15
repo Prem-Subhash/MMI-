@@ -1,3 +1,5 @@
+import { POLICY_LABEL_MAP } from '@/constants/policyTypes'
+
 /**
  * Format an array of policy type strings into a readable comma-separated list.
  * Fallbacks to a single string if that's what's provided (for legacy compatibility).
@@ -15,10 +17,12 @@ export function formatPolicies(raw?: string | string[] | null): string {
   if (policies.length === 0) return '—'
 
   return policies
-    .map(p => 
-      p
+    .map(p => {
+      if (POLICY_LABEL_MAP[p]) return POLICY_LABEL_MAP[p]
+      return p
         .replace(/_/g, ' ')
         .replace(/\b\w/g, (c) => c.toUpperCase())
-    )
+    })
     .join(', ')
 }
+
