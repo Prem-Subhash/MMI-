@@ -156,11 +156,11 @@ export default function MortgageLoginPage() {
       </button>
       
       {/* Mobile-only background gradient wrapper */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A] via-[#0F172A] to-[#0F766E] lg:hidden -z-20 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-[#1E3A8A] via-[#1D4ED8] to-[#2563EB] lg:hidden -z-20 overflow-hidden">
         <div className="absolute top-0 right-0 w-64 md:w-96 h-full bg-white/5 skew-x-12 translate-x-32 rounded-l-3xl backdrop-blur-sm pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#2563EB]/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[40rem] h-[40rem] bg-teal-500/10 rounded-full blur-3xl" />
+          <div className="w-[40rem] h-[40rem] bg-[#F59E0B]/15 rounded-full blur-3xl" />
         </div>
       </div>
       
@@ -170,7 +170,7 @@ export default function MortgageLoginPage() {
       <div className="flex-1 flex flex-col lg:flex-row w-full z-10">
 
         {/* LEFT SIDE (40%) - Branding (Desktop Only) */}
-        <div className="hidden lg:flex w-full lg:w-[40%] bg-gradient-to-br from-[#1E3A8A] via-[#0F172A] to-[#0F766E] relative overflow-hidden flex-col justify-center px-12 lg:px-16 text-white shrink-0 shadow-lg lg:shadow-2xl z-10">
+        <div className="hidden lg:flex w-full lg:w-[40%] bg-gradient-to-br from-[#1E3A8A] via-[#1D4ED8] to-[#2563EB] relative overflow-hidden flex-col justify-center px-12 lg:px-16 text-white shrink-0 shadow-lg lg:shadow-2xl z-10">
           {/* Back to Home Link */}
           <button
             type="button"
@@ -182,11 +182,11 @@ export default function MortgageLoginPage() {
           </button>
           {/* Geometric Shapes */}
           <div className="absolute top-0 right-0 w-48 h-full bg-white/5 skew-x-12 translate-x-24 rounded-l-3xl backdrop-blur-sm"></div>
-          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-blue-600/30 rounded-full blur-3xl"></div>
-          <div className="absolute top-10 left-1/2 w-32 h-32 bg-teal-400/20 rounded-full blur-2xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-72 h-72 bg-[#2563EB]/40 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 left-1/2 w-32 h-32 bg-[#F59E0B]/20 rounded-full blur-2xl"></div>
 
           <div className="relative z-20 max-w-xl mx-auto lg:mx-0 w-full text-left">
-            <div className="bg-white/95 p-3 rounded-2xl inline-block mb-6 shadow-md">
+            <div className="bg-white/95 p-3 rounded-2xl inline-block mb-6 shadow-md border border-[#F59E0B]/30">
               <img
                 src="/Moonstarlogo-removebg-preview.png"
                 alt="Moonstar Mortgage Logo"
@@ -194,9 +194,9 @@ export default function MortgageLoginPage() {
               />
             </div>
             <h1 className="text-4xl lg:text-5xl font-extrabold tracking-tight mb-2 drop-shadow-sm text-white">MOONSTAR MORTGAGE</h1>
-            <h2 className="text-xl font-medium text-blue-200 mb-6 tracking-wide uppercase">Dedicated Lending Portal</h2>
-            <div className="w-16 h-1 bg-amber-500 rounded-full mb-8"></div>
-            <p className="text-base lg:text-lg text-slate-300 max-w-md leading-relaxed drop-shadow-sm">
+            <h2 className="text-xl font-semibold text-[#F59E0B] mb-6 tracking-wide uppercase">Premium Lending Portal</h2>
+            <div className="w-16 h-1.5 bg-[#F59E0B] rounded-full mb-8 shadow-[0_0_12px_rgba(245,158,11,0.5)]"></div>
+            <p className="text-base lg:text-lg text-blue-100 max-w-md leading-relaxed drop-shadow-sm">
               Streamlining residential and commercial mortgage origination with precision underwriting, fast pre-approvals, and comprehensive pipeline visibility.
             </p>
           </div>
@@ -205,12 +205,12 @@ export default function MortgageLoginPage() {
         {/* RIGHT SIDE (60%) - Login Form */}
         <div className="w-full lg:w-[60%] flex flex-col items-center justify-center p-4 sm:p-6 lg:p-12 relative flex-1">
           {/* Decorative background blurs for right side */}
-          <div className="hidden lg:block absolute top-10 right-10 w-64 h-64 bg-blue-100/40 rounded-full blur-3xl -z-10"></div>
-          <div className="hidden lg:block absolute bottom-10 left-10 w-64 h-64 bg-teal-100/40 rounded-full blur-3xl -z-10"></div>
+          <div className="hidden lg:block absolute top-10 right-10 w-64 h-64 bg-[#2563EB]/15 rounded-full blur-3xl -z-10"></div>
+          <div className="hidden lg:block absolute bottom-10 left-10 w-64 h-64 bg-[#F59E0B]/15 rounded-full blur-3xl -z-10"></div>
 
           {/* MOBILE BRANDING (Visible only on mobile, centered above the card) */}
           <div className="lg:hidden flex flex-col items-center justify-center text-white mb-6 sm:mb-8 text-center drop-shadow-md z-10 w-full mt-10 sm:mt-12">
-             <div className="bg-white/95 p-2 rounded-xl inline-block mb-3 shadow-md">
+             <div className="bg-white/95 p-2 rounded-xl inline-block mb-3 shadow-md border border-[#F59E0B]/30">
                <img
                  src="/Moonstarlogo-removebg-preview.png"
                  alt="Moonstar Mortgage Logo"
@@ -218,7 +218,7 @@ export default function MortgageLoginPage() {
                />
              </div>
              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1">MOONSTAR MORTGAGE</h1>
-             <h2 className="text-sm sm:text-base font-medium text-blue-200 uppercase tracking-wider">Lending Portal</h2>
+             <h2 className="text-sm sm:text-base font-semibold text-[#F59E0B] uppercase tracking-wider">Premium Lending Portal</h2>
           </div>
 
           <div className="w-full max-w-md bg-white/95 lg:bg-white/80 backdrop-blur-2xl lg:backdrop-blur-xl rounded-[2rem] sm:rounded-[2.5rem] lg:rounded-3xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.25)] lg:shadow-[0_8px_30px_rgb(0,0,0,0.06)] border border-white/40 lg:border-white/60 p-6 sm:p-8 lg:p-10 relative z-10 transition-all duration-300 lg:hover:shadow-[0_8px_40px_rgb(0,0,0,0.08)]">
@@ -232,13 +232,13 @@ export default function MortgageLoginPage() {
               <div className="space-y-1.5">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 block ml-1">Email Address</label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#2563EB] transition-colors">
                     <Mail size={18} />
                   </div>
                   <input
                     type="email"
                     placeholder="mortgageadmin@moonstar.com"
-                    className="w-full pl-10 pr-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600 transition-all duration-300 text-sm shadow-sm"
+                    className="w-full pl-10 pr-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 focus:border-[#1E3A8A] transition-all duration-300 text-sm shadow-sm"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                   />
@@ -249,20 +249,20 @@ export default function MortgageLoginPage() {
               <div className="space-y-1.5">
                 <label className="text-xs sm:text-sm font-semibold text-gray-700 block ml-1">Password</label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-600 transition-colors">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#2563EB] transition-colors">
                     <Lock size={18} />
                   </div>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-12 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600 transition-all duration-300 text-sm shadow-sm"
+                    className="w-full pl-10 pr-12 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 focus:border-[#1E3A8A] transition-all duration-300 text-sm shadow-sm"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-blue-600 transition-colors"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-[#2563EB] transition-colors"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -280,7 +280,7 @@ export default function MortgageLoginPage() {
                 <input
                   type="text"
                   placeholder="Enter Captcha"
-                  className="flex-1 px-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-600 transition-all duration-300 text-sm uppercase shadow-sm text-center sm:text-left font-medium"
+                  className="flex-1 px-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 focus:border-[#1E3A8A] transition-all duration-300 text-sm uppercase shadow-sm text-center sm:text-left font-medium"
                   value={captchaInput}
                   onChange={e => setCaptchaInput(e.target.value.toUpperCase())}
                 />
@@ -297,14 +297,14 @@ export default function MortgageLoginPage() {
                       onChange={() => setRememberMe(!rememberMe)}
                     />
                     <div className={`w-4 h-4 border rounded transition-all duration-200 flex items-center justify-center 
-                                    ${rememberMe ? 'bg-blue-600 border-blue-600 text-white shadow-sm' : 'border-gray-300 bg-gray-50/50 text-transparent group-hover:border-blue-400'}
+                                    ${rememberMe ? 'bg-[#1E3A8A] border-[#1E3A8A] text-[#F59E0B] shadow-sm' : 'border-gray-300 bg-gray-50/50 text-transparent group-hover:border-[#2563EB]'}
                                 `}>
                       <CheckSquare size={12} className={rememberMe ? 'block scale-100' : 'hidden scale-0 transition-transform'} />
                     </div>
                   </div>
                   <span className="text-gray-600 font-medium group-hover:text-gray-800 transition-colors">Remember me</span>
                 </label>
-                <button type="button" className="text-blue-600 hover:text-blue-700 font-semibold transition-colors hover:underline underline-offset-2">
+                <button type="button" className="text-[#1E3A8A] hover:text-[#2563EB] font-semibold transition-colors hover:underline underline-offset-2">
                   Forgot password?
                 </button>
               </div>
@@ -320,7 +320,7 @@ export default function MortgageLoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-[#1E3A8A] to-[#0F766E] hover:from-[#1E40AF] hover:to-[#0D9488] text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(30,58,138,0.39)] hover:shadow-[0_6px_20px_rgba(30,58,138,0.23)] hover:-translate-y-[1px] disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-2"
+                className="w-full bg-gradient-to-r from-[#1E3A8A] via-[#2563EB] to-[#1E3A8A] hover:from-[#1D4ED8] hover:to-[#1E40AF] text-white font-semibold py-3.5 rounded-xl transition-all duration-300 shadow-[0_4px_14px_0_rgba(30,58,138,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.35)] hover:-translate-y-[1px] border border-[#F59E0B]/30 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none mt-2"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
