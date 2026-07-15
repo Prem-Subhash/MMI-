@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
+import { ArrowLeft } from 'lucide-react'
 
 
 /* ── helpers ──────────────────────────────────────────────── */
@@ -84,6 +85,31 @@ export default function LeadReviewPage() {
   const params = useParams<{ id: string }>()
   const leadId = params?.id
   const router = useRouter()
+
+  const handleBackToPipeline = () => {
+    const fromInternalPipeline =
+      typeof window !== 'undefined' &&
+      document.referrer &&
+      document.referrer.includes(window.location.host) &&
+      (document.referrer.includes('/csr/pipeline') ||
+       document.referrer.includes('/csr/renewals') ||
+       document.referrer.includes('/csr/leads') ||
+       document.referrer.includes('/csr'));
+
+    if (fromInternalPipeline && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    const isCommercial = lead?.insurence_category?.toLowerCase() === 'commercial';
+    const isRenewal = lead?.policy_flow?.toLowerCase() === 'renewal';
+
+    if (isRenewal) {
+      router.push(isCommercial ? '/csr/renewals/commercial' : '/csr/renewals/personal');
+    } else {
+      router.push(isCommercial ? '/csr/pipeline/commercial' : '/csr/pipeline/personal');
+    }
+  };
 
   /* ================= STATE ================= */
   const [lead, setLead] = useState<any>(null)
@@ -246,8 +272,8 @@ export default function LeadReviewPage() {
             </div>
 
             {/* ACTIONS */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t pt-6">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-6">
+              <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={() => {
                     if (!lead.pipeline_id) {
@@ -256,9 +282,16 @@ export default function LeadReviewPage() {
                     }
                     setShowUpdateModal(true)
                   }}
-                  className="px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow transition"
+                  className="px-6 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow transition font-medium whitespace-nowrap"
                 >
                   Update Status
+                </button>
+                <button
+                  onClick={handleBackToPipeline}
+                  className="px-6 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow transition font-medium flex items-center justify-center gap-2 group whitespace-nowrap"
+                >
+                  <ArrowLeft size={16} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
+                  <span>Back</span>
                 </button>
               </div>
             </div>
@@ -314,7 +347,7 @@ export default function LeadReviewPage() {
             </KpiCard>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => {
                 if (!lead.pipeline_id) {
@@ -323,9 +356,16 @@ export default function LeadReviewPage() {
                 }
                 setShowUpdateModal(true)
               }}
-              className="px-5 py-2 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow"
+              className="px-5 py-2 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow font-medium whitespace-nowrap"
             >
               Update Status
+            </button>
+            <button
+              onClick={handleBackToPipeline}
+              className="px-5 py-2 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow font-medium flex items-center justify-center gap-2 group whitespace-nowrap"
+            >
+              <ArrowLeft size={16} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
+              <span>Back</span>
             </button>
           </div>
 
