@@ -1,5 +1,15 @@
 import { formatCurrency } from './currency';
 
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  policy_type?: string;
+  policy_flow?: string;
+  insurance_category?: string;
+}
+
 export interface PolicyBreakdown {
   id: string;
   type: string;
@@ -304,3 +314,143 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
   
   return output;
 }
+
+export function replaceCombinedTemplate(
+  templateName: string,
+  policyFlow: string,
+  data: EmailData,
+  leadData: any,
+  allTemplates: EmailTemplate[],
+  formLink?: string,
+  csrData?: CsrData,
+  notes?: string
+): { subject: string; body: string } {
+  if (!templateName) return { subject: '', body: '' };
+
+  const normalizedKey = templateName.toLowerCase().replace(/\s+/g, '_');
+
+  // If it's info_req, keep the existing dynamic replacement logic
+  if (normalizedKey === 'info_req') {
+    const defaultTemplate = allTemplates.find(t => t.name.toLowerCase() === 'info_req') || allTemplates[0];
+    if (!defaultTemplate) return { subject: '', body: '' };
+    const subject = replaceTemplate(templateName, defaultTemplate.subject, data, leadData, formLink, csrData, notes);
+    const body = replaceTemplate(templateName, defaultTemplate.body, data, leadData, formLink, csrData, notes);
+    return { subject, body };
+  }
+
+  // Collect policy types
+  let activePolicyTypes: string[] = [];
+  if (data.policies && data.policies.length > 0) {
+    activePolicyTypes = data.policies.map(p => p.type.toLowerCase());
+  } else if (leadData?.lead_policies && leadData.lead_policies.length > 0) {
+    activePolicyTypes = leadData.lead_policies.map((p: any) => (p.policy_type || '').toLowerCase());
+  } else if (leadData?.policy_type) {
+    activePolicyTypes = [leadData.policy_type.toLowerCase()];
+  } else {
+    activePolicyTypes = ['home'];
+  }
+
+  // Deduplicate policy types
+  const normalizedTypes = Array.from(new Set(activePolicyTypes.map(t => t.trim().toLowerCase())));
+
+  // Retrieve templates for each policy type
+  const matchingTemplates = normalizedTypes.map(pType => {
+    return allTemplates.find(t => 
+      t.name.toLowerCase() === templateName.toLowerCase() &&
+      (t.policy_flow || '').toLowerCase() === (policyFlow || '').toLowerCase() &&
+      (t.policy_type || '').toLowerCase() === pType
+    );
+  }).filter((t): t is EmailTemplate => !!t);
+
+  // If we only have 0 or 1 matching template, proceed as normal
+  if (matchingTemplates.length <= 1) {
+    const template = matchingTemplates[0] || allTemplates.find(t => t.name.toLowerCase() === templateName.toLowerCase()) || allTemplates[0];
+    if (!template) return { subject: '', body: '' };
+    const subject = replaceTemplate(templateName, template.subject, data, leadData, formLink, csrData, notes);
+    const body = replaceTemplate(templateName, template.body, data, leadData, formLink, csrData, notes);
+    return { subject, body };
+  }
+
+  // Extract common prefix/suffix and policy-specific sections
+  const normalizedBodies = matchingTemplates.map(t => {
+    let res = t.body.replace(/\r\n/g, '\n');
+    res = res.replace(/^(Dear\s+[^,\n]+,\n)(?!\n)/i, '$1\n');
+    res = res.replace(/(We hope this email finds you well\.\n)(?!\n)/i, '$1\n');
+    return res;
+  });
+  const paragraphLists = normalizedBodies.map(body => 
+    body.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean)
+  );
+
+  const minParagraphs = Math.min(...paragraphLists.map(list => list.length));
+
+  let commonPrefixCount = 0;
+  for (let i = 0; i < minParagraphs; i++) {
+    const p = paragraphLists[0][i];
+    const allMatch = paragraphLists.every(list => list[i] === p);
+    if (allMatch) {
+      commonPrefixCount++;
+    } else {
+      break;
+    }
+  }
+
+  let commonSuffixCount = 0;
+  for (let i = 1; i <= minParagraphs - commonPrefixCount; i++) {
+    const index0 = paragraphLists[0].length - i;
+    const p = paragraphLists[0][index0];
+    const allMatch = paragraphLists.every(list => list[list.length - i] === p);
+    if (allMatch) {
+      commonSuffixCount++;
+    } else {
+      break;
+    }
+  }
+
+  const unreplacedHeader = paragraphLists[0].slice(0, commonPrefixCount).join('\n\n');
+  const unreplacedFooter = paragraphLists[0].slice(paragraphLists[0].length - commonSuffixCount).join('\n\n');
+
+  const unreplacedSections = paragraphLists.map(list => 
+    list.slice(commonPrefixCount, list.length - commonSuffixCount).join('\n\n')
+  );
+
+  // Perform placeholder replacement on each section using data filtered by policy type
+  const replacedSections = matchingTemplates.map((tpl, index) => {
+    const pType = normalizedTypes[index];
+    
+    // Filter policy breakdowns in data.policies for this specific type
+    const typePolicies = data.policies.filter(p => p.type.toLowerCase() === pType);
+    
+    const sectionData: EmailData = {
+      ...data,
+      policies: typePolicies.length > 0 ? typePolicies : [{
+        id: Math.random().toString(),
+        type: pType,
+        cName: '',
+        nName: '',
+        term: '12 months',
+        a1: '',
+        a2: ''
+      }]
+    };
+
+    const sectionText = unreplacedSections[index];
+    return replaceTemplate(templateName, sectionText, sectionData, leadData, formLink, csrData, notes);
+  });
+
+  // Replaced header and footer with full data
+  const replacedHeader = replaceTemplate(templateName, unreplacedHeader, data, leadData, formLink, csrData, notes);
+  const replacedFooter = replaceTemplate(templateName, unreplacedFooter, data, leadData, formLink, csrData, notes);
+
+  let combinedBody = '';
+  if (replacedHeader) combinedBody += replacedHeader + '\n\n';
+  combinedBody += replacedSections.filter(Boolean).join('\n\n<hr style="border: 0; border-top: 1px solid #ccc; margin: 20px 0;">\n\n');
+  if (replacedFooter) combinedBody += '\n\n' + replacedFooter;
+
+  // Generate subject using the first template
+  const subjectTemplate = matchingTemplates[0];
+  const subject = replaceTemplate(templateName, subjectTemplate.subject, data, leadData, formLink, csrData, notes);
+
+  return { subject, body: combinedBody };
+}
+

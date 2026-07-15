@@ -1,0 +1,31 @@
+/* Dark mode fix for HTML5 date inputs in Moonstar Mortgage CRM */
+input[type="date"].mortgage-date-input {
+  color: #ffffff !important;
+  background-color: #0f172a !important;
+  color-scheme: dark;
+  font-weight: 600;
+}
+
+/* Ensure inner Webkit date edit wrapper text is solid white and fully visible */
+input[type="date"].mortgage-date-input::-webkit-datetime-edit,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-fields-wrapper,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-text,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-month-field,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-day-field,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-year-field {
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Make calendar picker icon bright white and high contrast */
+input[type="date"].mortgage-date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+input[type="date"].mortgage-date-input:focus {
+  outline: none;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}

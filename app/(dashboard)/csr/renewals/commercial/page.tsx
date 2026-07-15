@@ -180,6 +180,13 @@ function CommercialRenewalContent() {
                     </div>
 
                     <Link
+                        href="/csr/leads/new?category=commercial&flow=renewal"
+                        className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
+                    >
+                        + Add Client
+                    </Link>
+
+                    <Link
                         href="/csr/renewals/commercial/import"
                         className="w-full sm:w-auto bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center whitespace-nowrap"
                     >
@@ -211,9 +218,10 @@ function CommercialRenewalContent() {
                     <Loading message="Fetching renewals..." />
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1600px' }}>
+                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1750px' }}>
                             <colgroup>
-                                <col style={{ width: '200px' }} />
+                                <col style={{ width: '180px' }} />
+                                <col style={{ width: '180px' }} />
                                 <col style={{ width: '120px' }} />
                                 <col style={{ width: '140px' }} />
                                 <col style={{ width: '130px' }} />
@@ -227,7 +235,8 @@ function CommercialRenewalContent() {
                             </colgroup>
                             <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Client</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Business Name</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Policy Type</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Policy ID</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold text-center">Renewal Date</th>
@@ -244,15 +253,20 @@ function CommercialRenewalContent() {
                             <tbody className="divide-y divide-gray-100 bg-white">
                                 {filteredRenewals.length === 0 ? (
                                     <tr>
-                                        <td colSpan={11} className="px-6 py-12 text-center text-gray-500 text-sm">
+                                        <td colSpan={12} className="px-6 py-12 text-center text-gray-500 text-sm">
                                             No renewals found for the selected month or search criteria.
                                         </td>
                                     </tr>
                                 ) : (
                                     filteredRenewals.map(r => (
                                         <tr key={r.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-4 sm:px-6 py-4 font-bold text-gray-900 truncate" title={r.business_name || r.client_name}>
-                                                {r['business_name'] || r.client_name}
+                                            <td className="px-4 sm:px-6 py-4 font-bold text-gray-900 truncate" title={r.client_name}>
+                                                {r.client_name || '—'}
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 truncate" title={r.business_name || 'Not Provided'}>
+                                                <span className={r.business_name ? 'text-gray-900 font-medium' : 'text-gray-400 italic'}>
+                                                    {r.business_name || 'Not Provided'}
+                                                </span>
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 truncate">
                                                 {r.policy_type}

@@ -1,7 +1,9 @@
 import { Metadata } from 'next'
+import MortgageClientLayout from './MortgageClientLayout'
+import './mortgage-dates.css'
 
 export const metadata: Metadata = {
-  title: ' Mortgage CRM',
+  title: 'Moonstar Mortgage CRM',
 }
 
 export default function MortgageLayout({
@@ -9,5 +11,5 @@ export default function MortgageLayout({
 }: {
   children: React.ReactNode
 }) {
-  return <>{children}</>
+  return <MortgageClientLayout>{children}</MortgageClientLayout>
 }

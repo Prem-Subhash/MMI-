@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Bell, Clock, User, ChevronRight, Menu, ShieldCheck } from 'lucide-react'
+import { Bell, Clock, User, ChevronRight, Menu } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 
@@ -58,7 +58,12 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
 
     const handleLogout = async () => {
         await supabase.auth.signOut()
-        toast('Logged out of Accurate Lending Portal', 'info')
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('moonstar_mortgage_authenticated')
+            localStorage.removeItem('moonstar_mortgage_user_email')
+            sessionStorage.clear()
+        }
+        toast('Logged out of Commercial Lending Portal', 'info')
         router.replace('/lending/login')
     }
 
@@ -68,15 +73,15 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
     const demoNotifications = [
         {
             id: '1',
-            title: 'Term Sheet Received',
-            message: 'American Commercial Bank & Trust submitted term sheet for Apex Logistics ($1.2M SBA 7a).',
-            time: '10 mins ago',
+            title: 'New Commercial Loan Intake',
+            message: 'Aries Enterprise submitted docs for $1,250,000 Bridge Loan.',
+            time: '12 mins ago',
             unread: true,
         },
         {
             id: '2',
-            title: 'Good Faith Deposit Confirmed',
-            message: 'Received $5,000 good faith deposit from Metro Grocery Store LLC.',
+            title: 'Stage Progression Required',
+            message: 'Apex Properties ($850K Term Loan) awaiting Credit Committee review.',
             time: '1 hour ago',
             unread: false,
         },
@@ -107,12 +112,7 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
             </div>
 
             {/* Right Side Content */}
-            <div className="flex-1 flex items-center justify-between px-3 sm:px-6">
-                <div className="hidden md:flex items-center gap-2 text-blue-100 text-xs sm:text-sm font-semibold bg-white/10 px-3.5 py-1.5 rounded-full border border-white/15 backdrop-blur-sm">
-                    <ShieldCheck size={16} className="text-teal-400" />
-                    <span>Commercial Lending Portal • Authorized Access</span>
-                </div>
-
+            <div className="flex-1 flex items-center justify-end px-3 sm:px-6">
                 <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0 ml-auto">
                     {/* Notification Bell */}
                     <div className="relative" ref={notificationsRef}>

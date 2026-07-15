@@ -1,6 +1,6 @@
 'use client'
 
-import { LayoutGrid, GitBranch, Briefcase, Activity, PlusCircle, ShieldCheck } from 'lucide-react'
+import { LayoutGrid, GitBranch, Briefcase, Activity, PlusCircle } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -86,17 +86,6 @@ export default function LendingSidebar({ setIsHovered, isHovered, isMobileOpen, 
                     </Link>
                 ))}
             </nav>
-
-            {/* Bottom Security Badge */}
-            <div className={`p-4 w-full border-t border-white/10 bg-black/20 transition-all duration-300 ${isHovered || isMobileOpen ? 'block' : 'hidden'}`}>
-                <div className="flex items-center gap-2.5 text-xs text-emerald-100">
-                    <ShieldCheck size={18} className="text-emerald-300 flex-shrink-0" />
-                    <div className="truncate">
-                        <p className="font-bold text-white leading-none">Accurate Lending</p>
-                        <p className="text-[10px] text-emerald-200 mt-0.5">RBAC Portal Protected</p>
-                    </div>
-                </div>
-            </div>
         </aside>
     )
 }

@@ -50,7 +50,7 @@ export default function DashboardClientLayout({
     // 2. Listen for Auth Changes (e.g. logging out in another tab)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log(`[AUTH STATE CHANGE] Event: ${event}, Session: ${session ? session.user.id : 'null'}`)
-      if (event === 'SIGNED_OUT' || !session) {
+      if (event === 'SIGNED_OUT') {
         router.replace('/login')
       }
     })

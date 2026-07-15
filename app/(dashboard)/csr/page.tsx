@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   UserPlus,
@@ -8,9 +9,11 @@ import {
   Briefcase,
   RefreshCw,
 } from 'lucide-react'
+import CategorySelectionModal from '@/components/leads/CategorySelectionModal'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
 
   return (
     <section className="p-4 sm:p-6 lg:p-8">
@@ -24,7 +27,7 @@ export default function DashboardPage() {
         <ActionCard
           title="New Client"
           icon={<UserPlus size={28} />}
-          onClick={() => router.push('/csr/leads/new')}
+          onClick={() => setIsCategoryModalOpen(true)}
         />
 
         <ActionCard
@@ -57,6 +60,15 @@ export default function DashboardPage() {
           onClick={() => router.push('/csr/activity-log')}
         />
       </div>
+
+      <CategorySelectionModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        onSelect={(category) => {
+          setIsCategoryModalOpen(false)
+          router.push(`/csr/leads/new?category=${category}`)
+        }}
+      />
     </section>
   )
 }

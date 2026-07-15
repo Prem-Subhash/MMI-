@@ -84,7 +84,7 @@ export default function LendingClientLayout({
 
     // 2. Listen for Auth Changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
+      if (event === 'SIGNED_OUT') {
         router.replace('/lending/login')
       }
     })

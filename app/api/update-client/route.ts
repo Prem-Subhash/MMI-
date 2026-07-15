@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     }
     const { user } = auth
 
-    const { leadId, client_name, email, phone, selectedPolicies } = await req.json()
+    const { leadId, client_name, email, phone, selectedPolicies, business_name } = await req.json()
 
     if (!leadId) {
       return NextResponse.json({ error: 'Missing leadId' }, { status: 400 })
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     /* ================= 1. FETCH CURRENT DATA ================= */
     const { data: lead, error: leadError } = await supabaseServer
       .from('temp_leads_basics')
-      .select('client_name, email, phone, client_id, policy_type, lead_policies(policy_type)')
+      .select('client_name, email, phone, client_id, policy_type, lead_policies(policy_type), business_name')
       .eq('id', leadId)
       .single()
 
@@ -33,6 +33,7 @@ export async function POST(req: Request) {
     const oldName = lead.client_name || ''
     const oldEmail = lead.email || ''
     const oldPhone = cleanPhone(lead.phone || '')
+    const oldBusinessName = lead.business_name || ''
     const oldPolicies = lead.lead_policies?.length > 0
       ? lead.lead_policies.map((p: any) => p.policy_type)
       : lead.policy_type ? [lead.policy_type] : []
@@ -40,6 +41,7 @@ export async function POST(req: Request) {
     const newName = (client_name || '').trim()
     const newEmail = (email || '').trim()
     const newPhone = cleanPhone(phone || '')
+    const newBusinessName = (business_name || '').trim()
     const newPolicies = Array.isArray(selectedPolicies) ? selectedPolicies : []
 
     const changes: Record<string, { old: string, new: string }> = {}
@@ -47,6 +49,7 @@ export async function POST(req: Request) {
     if (newName && newName !== oldName) changes.client_name = { old: oldName, new: newName }
     if (newEmail !== oldEmail) changes.email = { old: oldEmail, new: newEmail }
     if (newPhone !== oldPhone) changes.phone = { old: oldPhone, new: newPhone }
+    if (newBusinessName !== oldBusinessName) changes.business_name = { old: oldBusinessName, new: newBusinessName }
     
     const sortedOldPolicies = [...oldPolicies].sort()
     const sortedNewPolicies = [...newPolicies].sort()
@@ -65,7 +68,8 @@ export async function POST(req: Request) {
     const updatePayload: any = {
       client_name: newName || oldName,
       email: newEmail,
-      phone: newPhone
+      phone: newPhone,
+      business_name: newBusinessName
     }
 
     if (policiesChanged) {
@@ -143,6 +147,7 @@ export async function POST(req: Request) {
       client_name: 'Name',
       email: 'Email',
       phone: 'Phone',
+      business_name: 'Business Name',
       policies: 'Policies'
     }
     const updatedLabelList = changedFields.map(f => fieldLabels[f] || f).join(', ')
