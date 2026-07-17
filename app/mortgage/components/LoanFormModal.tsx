@@ -22,7 +22,7 @@ const FormSelect = ({
 }: React.SelectHTMLAttributes<HTMLSelectElement> & { containerClassName?: string }) => (
   <div className={containerClassName}>
     <select
-      className={`${className} appearance-none pr-9 cursor-pointer`}
+      className={`${className} appearance-none pr-9 cursor-pointer w-full`}
       {...props}
     >
       {children}
@@ -320,17 +320,17 @@ export default function LoanFormModal({
 
   // Common styling for inputs to guarantee crisp readability matching Innovative Insurance CRM
   const inputClass =
-    'w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white transition-all';
+    'h-10 w-full border border-gray-300 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-800 text-sm bg-white transition-all shadow-2xs';
   const dateInputClass =
-    'mortgage-date-input w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white transition-all';
-  const labelClass = 'block text-gray-700 font-semibold mb-2 text-sm';
+    'mortgage-date-input h-10 w-full border border-gray-300 rounded-xl px-3.5 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-800 text-sm bg-white transition-all shadow-2xs';
+  const labelClass = 'block text-gray-700 font-semibold mb-1.5 text-xs sm:text-sm tracking-tight';
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200 my-8">
         
         {/* Header */}
-        <div className="p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
+        <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             <div className={`p-3 rounded-2xl border ${stageConfig.badgeBg} shadow-sm`}>
               <Layers className={`w-5 h-5 ${stageConfig.badgeText}`} />
@@ -362,7 +362,7 @@ export default function LoanFormModal({
 
         {/* Read-only Borrower Context Header when editing a later stage */}
         {isEditing && (
-          <div className="px-6 py-3.5 bg-gray-50/80 border-b border-gray-100 flex flex-wrap items-center justify-between text-xs gap-4 text-gray-700 font-medium">
+          <div className="shrink-0 px-6 py-3.5 bg-gray-50/80 border-b border-gray-100 flex flex-wrap items-center justify-between text-xs gap-4 text-gray-700 font-medium">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-[#10B889]" />
               <span className="font-bold text-gray-900 text-sm">{formData.client_name || 'Borrower'}</span>
@@ -379,7 +379,8 @@ export default function LoanFormModal({
         )}
 
         {/* Form Content */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
           
           {/* Stage Selector Bar */}
           <div className="pb-5 border-b border-gray-100 space-y-3.5">
@@ -697,7 +698,6 @@ export default function LoanFormModal({
                       <label className={labelClass}>Application Received Date</label>
                       <input
                         type="date"
-                        style={{ colorScheme: 'dark' }}
                         value={formData.application_received_date || ''}
                         onChange={(e) => handleFieldChange('application_received_date', e.target.value)}
                         className={dateInputClass}
@@ -746,7 +746,6 @@ export default function LoanFormModal({
                     <label className={labelClass}>Target Closing Date</label>
                     <input
                       type="date"
-                      style={{ colorScheme: 'dark' }}
                       value={formData.target_closing_date || ''}
                       onChange={(e) => handleFieldChange('target_closing_date', e.target.value)}
                       className={dateInputClass}
@@ -758,7 +757,6 @@ export default function LoanFormModal({
                     <label className={labelClass}>Follow Up Date</label>
                     <input
                       type="date"
-                      style={{ colorScheme: 'dark' }}
                       value={formData.follow_up_date || ''}
                       onChange={(e) => handleFieldChange('follow_up_date', e.target.value)}
                       className={dateInputClass}
@@ -878,7 +876,6 @@ export default function LoanFormModal({
                   <label className={labelClass}>Pre-Approval Sent Date</label>
                   <input
                     type="date"
-                    style={{ colorScheme: 'dark' }}
                     value={formData.preapproval_sent_date || ''}
                     onChange={(e) => handleFieldChange('preapproval_sent_date', e.target.value)}
                     className={dateInputClass}
@@ -932,7 +929,6 @@ export default function LoanFormModal({
                   <label className={labelClass}>Submission Date</label>
                   <input
                     type="date"
-                    style={{ colorScheme: 'dark' }}
                     value={formData.submission_date || ''}
                     onChange={(e) => handleFieldChange('submission_date', e.target.value)}
                     className={dateInputClass}
@@ -998,28 +994,31 @@ export default function LoanFormModal({
                   </FormSelect>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Locked Interest Rate (%)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.interest_rate || ''}
-                    onChange={(e) => handleFieldChange('interest_rate', e.target.value)}
-                    placeholder="e.g. 6.125"
-                    className={inputClass}
-                  />
-                </div>
+                {formData.rate_locked === 'Y' && (
+                  <>
+                    <div>
+                      <label className={labelClass}>Locked Interest Rate (%)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={formData.interest_rate || ''}
+                        onChange={(e) => handleFieldChange('interest_rate', e.target.value)}
+                        placeholder="e.g. 6.125"
+                        className={inputClass}
+                      />
+                    </div>
 
-                <div>
-                  <label className={labelClass}>Lock Expiration Date</label>
-                  <input
-                    type="date"
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.lock_expire_date || ''}
-                    onChange={(e) => handleFieldChange('lock_expire_date', e.target.value)}
-                    className={dateInputClass}
-                  />
-                </div>
+                    <div>
+                      <label className={labelClass}>Lock Expiration Date</label>
+                      <input
+                        type="date"
+                        value={formData.lock_expire_date || ''}
+                        onChange={(e) => handleFieldChange('lock_expire_date', e.target.value)}
+                        className={dateInputClass}
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -1045,16 +1044,17 @@ export default function LoanFormModal({
                   </FormSelect>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Moonstar Signed Date</label>
-                  <input
-                    type="date"
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.moonstar_disclosure_signed_date || ''}
-                    onChange={(e) => handleFieldChange('moonstar_disclosure_signed_date', e.target.value)}
-                    className={dateInputClass}
-                  />
-                </div>
+                {formData.moonstar_disclosure_signed_3day === 'Y' && (
+                  <div>
+                    <label className={labelClass}>Moonstar Signed Date</label>
+                    <input
+                      type="date"
+                      value={formData.moonstar_disclosure_signed_date || ''}
+                      onChange={(e) => handleFieldChange('moonstar_disclosure_signed_date', e.target.value)}
+                      className={dateInputClass}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className={labelClass}>Lender Disclosure Signed (3-Day)?</label>
@@ -1068,16 +1068,17 @@ export default function LoanFormModal({
                   </FormSelect>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Lender Signed Date</label>
-                  <input
-                    type="date"
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.lender_disclosure_signed_date || ''}
-                    onChange={(e) => handleFieldChange('lender_disclosure_signed_date', e.target.value)}
-                    className={dateInputClass}
-                  />
-                </div>
+                {formData.lender_disclosure_signed_3day === 'Y' && (
+                  <div>
+                    <label className={labelClass}>Lender Signed Date</label>
+                    <input
+                      type="date"
+                      value={formData.lender_disclosure_signed_date || ''}
+                      onChange={(e) => handleFieldChange('lender_disclosure_signed_date', e.target.value)}
+                      className={dateInputClass}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className={labelClass}>Anti-Predatory Review</label>
@@ -1092,16 +1093,17 @@ export default function LoanFormModal({
                   </FormSelect>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Anti-Predatory Completed Date</label>
-                  <input
-                    type="date"
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.anti_predatory_completed_date || ''}
-                    onChange={(e) => handleFieldChange('anti_predatory_completed_date', e.target.value)}
-                    className={dateInputClass}
-                  />
-                </div>
+                {formData.anti_predatory_completed === 'Y' && (
+                  <div>
+                    <label className={labelClass}>Anti-Predatory Completed Date</label>
+                    <input
+                      type="date"
+                      value={formData.anti_predatory_completed_date || ''}
+                      onChange={(e) => handleFieldChange('anti_predatory_completed_date', e.target.value)}
+                      className={dateInputClass}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className={labelClass}>Conditionally Approved?</label>
@@ -1201,16 +1203,17 @@ export default function LoanFormModal({
                   </FormSelect>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Signed Date</label>
-                  <input
-                    type="date"
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.moonstar_disclosure_2_signed_date || ''}
-                    onChange={(e) => handleFieldChange('moonstar_disclosure_2_signed_date', e.target.value)}
-                    className={dateInputClass}
-                  />
-                </div>
+                {formData.moonstar_disclosure_2_signed === 'Y' && (
+                  <div>
+                    <label className={labelClass}>Signed Date</label>
+                    <input
+                      type="date"
+                      value={formData.moonstar_disclosure_2_signed_date || ''}
+                      onChange={(e) => handleFieldChange('moonstar_disclosure_2_signed_date', e.target.value)}
+                      className={dateInputClass}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className={labelClass}>Appraisal Sent to Client?</label>
@@ -1225,16 +1228,17 @@ export default function LoanFormModal({
                   </FormSelect>
                 </div>
 
-                <div>
-                  <label className={labelClass}>Appraisal Sent Date</label>
-                  <input
-                    type="date"
-                    style={{ colorScheme: 'dark' }}
-                    value={formData.appraisal_sent_date || ''}
-                    onChange={(e) => handleFieldChange('appraisal_sent_date', e.target.value)}
-                    className={dateInputClass}
-                  />
-                </div>
+                {formData.appraisal_sent_to_client === 'Y' && (
+                  <div>
+                    <label className={labelClass}>Appraisal Sent Date</label>
+                    <input
+                      type="date"
+                      value={formData.appraisal_sent_date || ''}
+                      onChange={(e) => handleFieldChange('appraisal_sent_date', e.target.value)}
+                      className={dateInputClass}
+                    />
+                  </div>
+                )}
 
                 <div>
                   <label className={labelClass}>Appraised Value ($)</label>
@@ -1503,29 +1507,30 @@ export default function LoanFormModal({
           {isEditing && initialLoan && (
             <StageHistorySection loanId={initialLoan.id} currentStage={stage} />
           )}
+          </div>
 
-          {/* Submit / Action Bar */}
-          <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3 sticky bottom-0 bg-white/95 backdrop-blur-md py-4 -mx-6 px-6 z-20 shadow-lg">
+          {/* Submit / Action Bar (Fixed Footer outside scrollable div) */}
+          <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-6 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-xs sm:text-sm shadow-sm"
+              className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 rounded-xl text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow-md flex items-center gap-2 transition-all disabled:opacity-50"
+              className="h-10 min-w-[160px] px-6 py-2 bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
             >
-              <Save className="w-4 h-4" />
+              <Save className="w-4 h-4 shrink-0" />
               <span>
                 {submitting
-                  ? 'Saving Application...'
+                  ? 'Saving...'
                   : isEditing
-                  ? `Save ${stageConfig.label} Updates`
-                  : `Create ${stageConfig.label} Application`}
+                  ? `Save ${stageConfig.label}`
+                  : `Create Application`}
               </span>
             </button>
           </div>

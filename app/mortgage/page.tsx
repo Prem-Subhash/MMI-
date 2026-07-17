@@ -68,14 +68,6 @@ export default function MortgageDashboardPage() {
 
   return (
     <div className="w-full space-y-8 animate-fade-in pb-12">
-      {/* Status Alert Banner */}
-      <div className="bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border-l-4 border-[#10B889] p-4 rounded-r-xl flex items-start sm:items-center gap-3 text-gray-800 shadow-sm">
-        <AlertCircle className="text-[#10B889] shrink-0 mt-0.5 sm:mt-0" size={20} />
-        <div className="text-xs sm:text-sm">
-          <span className="font-bold uppercase tracking-wider text-emerald-900 mr-1.5">Mortgage Portal Active</span>
-          <span className="text-gray-600">Executive real-time monitoring across 6-Stage Loan and 2-Stage Pre-Approval pipelines.</span>
-        </div>
-      </div>
 
       {/* Header / Welcome Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 sm:p-8 rounded-xl border border-gray-200 shadow-sm relative overflow-hidden">
@@ -97,18 +89,18 @@ export default function MortgageDashboardPage() {
           <button
             type="button"
             onClick={fetchDashboardStats}
-            className="p-3 rounded-lg border border-gray-300 hover:bg-gray-50 text-gray-700 transition-colors flex items-center justify-center shadow-sm"
+            className="h-10 w-10 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 transition-all flex items-center justify-center shadow-2xs shrink-0 active:scale-95"
             title="Refresh statistics"
           >
-            <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin text-[#10B889]' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#10B889]' : ''}`} />
           </button>
 
           <button
             type="button"
             onClick={() => setIsSelectionOpen(true)}
-            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 flex items-center justify-center gap-2 group whitespace-nowrap"
+            className="h-10 w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm hover:shadow transition-all duration-200 flex items-center justify-center gap-2 group whitespace-nowrap text-xs sm:text-sm active:scale-95"
           >
-            <PlusCircle size={20} className="transition-transform group-hover:rotate-90" />
+            <PlusCircle size={16} className="transition-transform group-hover:rotate-90 shrink-0" />
             <span>New Application</span>
           </button>
         </div>
@@ -287,10 +279,10 @@ export default function MortgageDashboardPage() {
             <button
               type="button"
               onClick={() => router.push('/mortgage/pipeline/new-loan')}
-              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 uppercase tracking-wider transition-colors"
+              className="h-8 px-3 py-1.5 rounded-lg text-xs font-bold text-[#2E5C85] bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center gap-1 uppercase tracking-wider transition-colors shadow-2xs shrink-0"
             >
               <span>Kanban Board</span>
-              <ArrowUpRight size={14} />
+              <ArrowUpRight size={14} className="shrink-0" />
             </button>
           </div>
 
@@ -379,21 +371,21 @@ function MetricCard({
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer rounded-xl p-5 flex flex-col justify-between bg-white border border-gray-200 hover:border-[#2E5C85] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
+      className="cursor-pointer h-full rounded-xl p-5 flex flex-col justify-between bg-white border border-gray-200 hover:border-[#2E5C85] transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5 group"
     >
       <div className="flex items-start justify-between gap-3 mb-4">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">{title}</p>
-          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">{value}</h3>
+        <div className="min-w-0">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1 truncate">{title}</p>
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight truncate">{value}</h3>
         </div>
-        <div className="p-2.5 rounded-lg bg-gray-50 border border-gray-100 group-hover:scale-110 transition-transform">
+        <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-100 group-hover:scale-110 transition-transform shrink-0">
           {icon}
         </div>
       </div>
 
-      <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-medium">
+      <div className="pt-3 border-t border-gray-100 flex items-center justify-between text-xs font-medium gap-2">
         <span className="text-gray-600 truncate mr-1">{subtitle}</span>
-        <span className="font-bold text-gray-800 bg-gray-50 px-2 py-0.5 rounded border border-gray-200 shrink-0">{trend}</span>
+        <span className="font-bold text-gray-800 bg-gray-50 px-2 py-0.5 rounded-lg border border-gray-200 shrink-0">{trend}</span>
       </div>
     </div>
   );

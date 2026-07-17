@@ -64,7 +64,7 @@ export default function LoanDetailModal({
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="p-6 bg-slate-50 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-20">
+        <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
@@ -80,29 +80,29 @@ export default function LoanDetailModal({
             <h2 className="text-xl sm:text-2xl font-bold text-[#2E5C85] tracking-tight">{loan.client_name}</h2>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto self-end sm:self-center">
             <button
               type="button"
               onClick={() => onEdit(loan)}
-              className="px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+              className="h-10 px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
             >
-              <Edit3 className="w-3.5 h-3.5" />
+              <Edit3 className="w-3.5 h-3.5 shrink-0" />
               <span>Edit Application</span>
             </button>
 
             <button
               type="button"
               onClick={() => onDelete(loan)}
-              className="px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+              className="h-10 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3.5 h-3.5 shrink-0" />
               <span>Delete</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 ml-1"
+              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shrink-0"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -111,7 +111,7 @@ export default function LoanDetailModal({
         </div>
 
         {/* Stage Progression Bar & Update Stage Action */}
-        <div className="px-6 py-5 bg-white border-b border-gray-100">
+        <div className="shrink-0 px-6 py-5 bg-white border-b border-gray-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
             <span className="text-xs font-bold uppercase tracking-wider text-[#10B889] flex items-center gap-1.5">
               <Layers size={14} />
@@ -121,10 +121,10 @@ export default function LoanDetailModal({
               <button
                 type="button"
                 onClick={() => handleUpdateStageClick(nextStage.code)}
-                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm hover:shadow-md flex items-center gap-1.5 transition-all self-start sm:self-auto"
+                className="h-10 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 active:scale-95 w-full sm:w-auto"
               >
                 <span>Advance to {nextStage.label}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
               </button>
             )}
           </div>
@@ -138,7 +138,7 @@ export default function LoanDetailModal({
                   key={s.code}
                   type="button"
                   onClick={() => handleUpdateStageClick(s.code)}
-                  className={`p-3 rounded-xl text-left border transition-all ${
+                  className={`h-full flex flex-col justify-between p-3 rounded-xl text-left border transition-all ${
                     isActive
                       ? 'bg-[#10B889] border-[#10B889] text-white shadow-md ring-2 ring-[#10B889]/30'
                       : isPassed
@@ -146,13 +146,13 @@ export default function LoanDetailModal({
                       : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:border-gray-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between w-full">
                     <span className={`text-[10px] font-bold tracking-wider uppercase ${isActive ? 'text-emerald-100' : isPassed ? 'text-emerald-800' : 'text-gray-400'}`}>
                       Stage {idx + 1}
                     </span>
                     {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
                   </div>
-                  <div className={`text-xs font-bold mt-1 truncate ${isActive ? 'text-white' : ''}`}>
+                  <div className={`text-xs font-bold mt-1.5 truncate w-full ${isActive ? 'text-white' : ''}`}>
                     {s.label}
                   </div>
                 </button>
@@ -289,11 +289,11 @@ export default function LoanDetailModal({
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end">
+        <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
           <button
             type="button"
             onClick={onClose}
-            className="px-6 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-xs sm:text-sm"
+            className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
           >
             Close Window
           </button>
