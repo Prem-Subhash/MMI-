@@ -3,6 +3,7 @@
 import React from 'react';
 import { X, Layers, FileCheck, ArrowRight, Building2 } from 'lucide-react';
 import { PipelineType } from '@/app/mortgage/lib/types';
+import { toast } from '@/lib/toast';
 
 interface CreateApplicationModalProps {
   isOpen: boolean;
@@ -52,7 +53,10 @@ export default function CreateApplicationModal({
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {/* Card 1: New Loan Pipeline */}
               <div
-                onClick={() => onSelectPipeline('NEW_LOAN')}
+                onClick={() => {
+                  toast('Starting New Loan Application intake...', 'info', 2000);
+                  onSelectPipeline('NEW_LOAN');
+                }}
                 className="group cursor-pointer rounded-2xl p-6 flex items-start gap-4 shadow-md transition-all duration-300 bg-white text-gray-800 hover:bg-[#2E5C85] hover:text-white border-2 border-[#2E5C85] hover:scale-[1.02] hover:shadow-xl"
               >
                 <div className="p-3 rounded-xl bg-gray-100 group-hover:bg-white/20 transition-colors text-[#10B889] group-hover:text-white flex-shrink-0">
@@ -75,7 +79,10 @@ export default function CreateApplicationModal({
 
               {/* Card 2: Pre-Approval Pipeline */}
               <div
-                onClick={() => onSelectPipeline('PRE_APPROVAL')}
+                onClick={() => {
+                  toast('Starting Pre-Approval Application intake...', 'info', 2000);
+                  onSelectPipeline('PRE_APPROVAL');
+                }}
                 className="group cursor-pointer rounded-2xl p-6 flex items-start gap-4 shadow-md transition-all duration-300 bg-white text-gray-800 hover:bg-[#2E5C85] hover:text-white border-2 border-[#2E5C85] hover:scale-[1.02] hover:shadow-xl"
               >
                 <div className="p-3 rounded-xl bg-gray-100 group-hover:bg-white/20 transition-colors text-[#2E5C85] group-hover:text-white flex-shrink-0">

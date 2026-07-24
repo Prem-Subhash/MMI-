@@ -12,6 +12,7 @@ import {
   EXCEL_LOAN_OFFICERS,
   EXCEL_PROCESSORS,
 } from '@/app/mortgage/lib/excelLookups';
+import { toast } from '@/lib/toast';
 import StageHistorySection from './StageHistorySection';
 
 const FormSelect = ({
@@ -273,7 +274,9 @@ export default function LoanFormModal({
 
     if (stage === 'NEW_LOAN' || stage === 'PREAPPROVAL_LOAN' || !isEditing) {
       if (!formData.client_name || !formData.phone || !formData.email) {
-        setError('Client Name, Phone, and Email are required.');
+        const msg = 'Client Name, Phone, and Email are required.';
+        setError(msg);
+        toast('Please fill in required borrower fields (Name, Phone, Email).', 'warning');
         return;
       }
     }
@@ -307,10 +310,19 @@ export default function LoanFormModal({
         throw new Error(json.error || 'Failed to save mortgage application');
       }
 
+      const stageCfg = getStageConfig(stage);
+      if (isEditing) {
+        toast(`Saved "${stageCfg.label}" updates for ${formData.client_name || 'Borrower'}!`, 'success', 4000);
+      } else {
+        toast(`Successfully created ${stageCfg.label} application for ${formData.client_name || 'Borrower'}!`, 'success', 4000);
+      }
+
       onSuccess(json.loan);
       onClose();
     } catch (err: any) {
-      setError(err.message || 'An error occurred while saving.');
+      const errMsg = err.message || 'An error occurred while saving.';
+      setError(errMsg);
+      toast(`Save failed: ${errMsg}`, 'error');
     } finally {
       setSubmitting(false);
     }

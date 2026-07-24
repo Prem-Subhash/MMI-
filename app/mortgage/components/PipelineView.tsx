@@ -20,7 +20,9 @@ import {
   DollarSign,
   AlertCircle,
   FolderOpen,
+  RefreshCw,
 } from 'lucide-react';
+import { toast } from '@/lib/toast';
 import { MortgageLoan, PipelineType, StageCode } from '@/app/mortgage/lib/types';
 import { MORTGAGE_STAGES, getStageConfig } from '@/app/mortgage/lib/stageFields';
 import {
@@ -68,7 +70,7 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
   const pipelineStages = MORTGAGE_STAGES.filter((s) => s.pipeline === pipelineType);
 
   // Fetch Loans
-  const fetchLoans = async () => {
+  const fetchLoans = async (showToast = false) => {
     try {
       setLoading(true);
       setError(null);
@@ -98,8 +100,15 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
       setLoans(json.loans || []);
       setTotalPages(json.pagination?.totalPages || 1);
       setTotalRecords(json.pagination?.total || 0);
+      if (showToast) {
+        toast('Pipeline applications refreshed successfully.', 'info', 2500);
+      }
     } catch (err: any) {
-      setError(err.message || 'Error loading pipeline data');
+      const errMsg = err.message || 'Error loading pipeline data';
+      setError(errMsg);
+      if (showToast) {
+        toast(`Failed to load loans: ${errMsg}`, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -134,9 +143,14 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
         if (detailLoan && detailLoan.id === loan.id) {
           setDetailLoan({ ...detailLoan, stage: targetStageCode });
         }
+        const targetLabel = getStageConfig(targetStageCode).label;
+        toast(`Moved "${loan.client_name || 'Borrower'}" to ${targetLabel}`, 'success');
+      } else {
+        toast(json.error || 'Failed to move loan application to new stage.', 'error');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Failed to move stage', e);
+      toast(`Error advancing stage: ${e?.message || 'Unknown error'}`, 'error');
     }
   };
 
@@ -149,9 +163,13 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
       if (res.ok) {
         setLoans((prev) => prev.filter((l) => l.id !== loan.id));
         if (detailLoan?.id === loan.id) setDetailLoan(null);
+        toast(`Deleted application for "${loan.client_name || 'Borrower'}"`, 'success');
+      } else {
+        toast('Failed to delete mortgage application.', 'error');
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error('Delete error', e);
+      toast(`Delete error: ${e?.message || 'Unknown error'}`, 'error');
     }
   };
 
@@ -204,6 +222,15 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
                 <span>Table</span>
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => fetchLoans(true)}
+              className="h-10 w-10 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 transition-all flex items-center justify-center shadow-2xs shrink-0 active:scale-95"
+              title="Refresh pipeline applications"
+            >
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[#10B889]' : ''}`} />
+            </button>
 
             <button
               type="button"
@@ -282,7 +309,7 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
             <p className="font-semibold">{error}</p>
             <button
               type="button"
-              onClick={fetchLoans}
+              onClick={() => fetchLoans(true)}
               className="mt-3 px-5 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-sm transition-all"
             >
               Retry

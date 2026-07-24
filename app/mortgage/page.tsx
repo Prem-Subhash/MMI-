@@ -22,6 +22,7 @@ import { DashboardStats, MortgageLoan, PipelineType } from './lib/types';
 import { getStageConfig } from './lib/stageFields';
 import LoanFormModal from './components/LoanFormModal';
 import CreateApplicationModal from './components/CreateApplicationModal';
+import { toast } from '@/lib/toast';
 
 export default function MortgageDashboardPage() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function MortgageDashboardPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedPipelineType, setSelectedPipelineType] = useState<PipelineType>('NEW_LOAN');
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = async (showToast = false) => {
     try {
       setLoading(true);
       setError(null);
@@ -44,8 +45,15 @@ export default function MortgageDashboardPage() {
         throw new Error(json.error || 'Failed to load dashboard statistics');
       }
       setStats(json.stats);
+      if (showToast) {
+        toast('Dashboard KPI metrics refreshed successfully.', 'info', 2500);
+      }
     } catch (err: any) {
-      setError(err.message || 'Error fetching dashboard data');
+      const errMsg = err.message || 'Error fetching dashboard data';
+      setError(errMsg);
+      if (showToast) {
+        toast(`Failed to refresh metrics: ${errMsg}`, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -88,7 +96,7 @@ export default function MortgageDashboardPage() {
         <div className="flex items-center gap-3 w-full sm:w-auto z-10">
           <button
             type="button"
-            onClick={fetchDashboardStats}
+            onClick={() => fetchDashboardStats(true)}
             className="h-10 w-10 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 transition-all flex items-center justify-center shadow-2xs shrink-0 active:scale-95"
             title="Refresh statistics"
           >
@@ -346,7 +354,7 @@ export default function MortgageDashboardPage() {
       <LoanFormModal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        onSuccess={() => fetchDashboardStats()}
+        onSuccess={() => fetchDashboardStats(false)}
         defaultPipelineType={selectedPipelineType}
       />
     </div>

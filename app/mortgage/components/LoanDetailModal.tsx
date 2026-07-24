@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { MortgageLoan, StageCode } from '@/app/mortgage/lib/types';
 import { getStageConfig, MORTGAGE_STAGES } from '@/app/mortgage/lib/stageFields';
+import { toast } from '@/lib/toast';
 import StageHistorySection from './StageHistorySection';
 
 interface LoanDetailModalProps {
@@ -52,6 +53,8 @@ export default function LoanDetailModal({
       : null;
 
   const handleUpdateStageClick = (targetCode: StageCode) => {
+    const targetStageName = getStageConfig(targetCode).label;
+    toast(`Opening stage update form for "${targetStageName}"...`, 'info', 2000);
     if (onEditStage) {
       onEditStage(loan, targetCode);
     } else {

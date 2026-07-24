@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { History, ArrowDown, User, Calendar, MessageSquare, Eye, X, ShieldCheck, Building2 } from 'lucide-react';
 import { MortgageStageHistory, StageCode } from '@/app/mortgage/lib/types';
 import { getStageConfig } from '@/app/mortgage/lib/stageFields';
+import { toast } from '@/lib/toast';
 
 interface StageHistorySectionProps {
   loanId: string;
@@ -27,6 +28,7 @@ export default function StageHistorySection({ loanId, currentStage }: StageHisto
         }
       } catch (err) {
         console.error('Failed to fetch stage history:', err);
+        if (isMounted) toast('Failed to load stage history.', 'error');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -129,7 +131,10 @@ export default function StageHistorySection({ loanId, currentStage }: StageHisto
 
                   <button
                     type="button"
-                    onClick={() => setSelectedSnapshot(record)}
+                    onClick={() => {
+                      toast(`Viewing snapshot from ${formatTimestamp(record.changed_at)}`, 'info', 2000);
+                      setSelectedSnapshot(record);
+                    }}
                     className="h-9 px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-2xs active:scale-95"
                   >
                     <Eye className="w-3.5 h-3.5 shrink-0" />
