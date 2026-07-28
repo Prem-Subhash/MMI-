@@ -5,6 +5,7 @@ import { X, Save, Layers, AlertCircle, User, Phone, Mail, Calendar, ChevronDown 
 import { MortgageLoan, PipelineType, StageCode } from '@/app/mortgage/lib/types';
 import { MORTGAGE_STAGES, getStageConfig } from '@/app/mortgage/lib/stageFields';
 import { toast } from '@/lib/toast';
+import StageHistorySection from './StageHistorySection';
 import {
   EXCEL_TRANSACTION_TYPES,
   EXCEL_LOAN_TYPES,
@@ -386,25 +387,7 @@ export default function LoanFormModal({
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0 overflow-hidden">
           <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
           
-          {/* Stage Selector Bar */}
-          <div className="pb-5 border-b border-gray-100 space-y-3.5">
-            <div className="flex items-center justify-between">
-              <div className="flex-1 max-w-sm">
-                <label className="block text-emerald-700 font-bold mb-2 text-sm uppercase tracking-wide">
-                  Select New Status
-                </label>
-                <FormSelect
-                  containerClassName="relative inline-block w-full"
-                  value={stage}
-                  onChange={(e) => setStage(e.target.value as StageCode)}
-                  className="w-full border-2 border-emerald-500 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 text-gray-900 font-bold appearance-none bg-white cursor-pointer transition-all shadow-sm"
-                >
-                  {availableStages.map((s) => (
-                    <option key={s.code} value={s.code}>
-                      {s.label}
-                    </option>
-                  ))}
-                </FormSelect>
+
 
             {/* Stage Selector Bar */}
             <div className="pb-5 border-b border-gray-100 space-y-3.5">
@@ -1525,7 +1508,6 @@ export default function LoanFormModal({
                   </div>
                 </div>
               </div>
-            </div>
           )}
 
           
@@ -1533,7 +1515,6 @@ export default function LoanFormModal({
           {isEditing && initialLoan && (
             <StageHistorySection loanId={initialLoan.id} currentStage={stage} />
           )}
-            )}
           </div>
 
           {/* Submit / Action Bar (Fixed Footer outside scrollable div) */}
