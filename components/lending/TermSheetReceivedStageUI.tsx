@@ -323,7 +323,7 @@ export default function TermSheetReceivedStageUI({
                         >
                           {isChecked && <Check size={12} strokeWidth={3} />}
                         </div>
-                        <span className="text-xs truncate">{bank}</span>
+                        <span className="text-xs break-words">{bank}</span>
                       </div>
                       {isChecked && (
                         <span className="text-[10px] font-bold text-emerald-700 uppercase bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
@@ -535,7 +535,7 @@ export default function TermSheetReceivedStageUI({
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <p className="font-extrabold text-slate-900 text-sm truncate">
+                              <p className="font-extrabold text-slate-900 text-sm break-all">
                                 {doc.fileName}
                               </p>
                               <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">

@@ -32,6 +32,7 @@ export interface MortgageLoan {
   target_closing_date?: string;
   loan_officer_name: string;
   processor_name?: string;
+  assigned_mortgage_officer?: string;
   all_documents_received: 'Y' | 'N';
   missing_documents_list?: string;
   follow_up_date?: string;

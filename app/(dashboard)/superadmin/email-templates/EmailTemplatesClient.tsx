@@ -339,8 +339,8 @@ export default function EmailTemplatesClient() {
                                         </div>
                                     </div>
                                     <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                        <p className="font-semibold text-gray-700 text-sm mb-1">{template.subject}</p>
-                                        <p className="text-xs text-gray-500 line-clamp-3">{template.body}</p>
+                                        <p className="font-semibold text-gray-700 text-sm mb-1 break-words">{template.subject}</p>
+                                        <p className="text-xs text-gray-500 break-words whitespace-pre-wrap max-h-40 overflow-y-auto">{template.body}</p>
                                     </div>
                                 </div>
                             )}
@@ -392,15 +392,15 @@ export default function EmailTemplatesClient() {
                                             </button>
                                         </td>
                                         <td className="p-4 align-top w-1/4">
-                                            <p className="font-bold text-gray-800">{template.name}</p>
+                                            <p className="font-bold text-gray-800 break-words">{template.name}</p>
                                             <div className="flex gap-1 mt-1 flex-wrap">
                                                 {template.insurance_category && <span className="text-[10px] bg-slate-100 text-slate-600 px-1.5 rounded">{template.insurance_category}</span>}
                                                 {template.policy_flow && <span className="text-[10px] bg-indigo-50 text-indigo-600 px-1.5 rounded">{template.policy_flow}</span>}
                                             </div>
                                         </td>
                                         <td className="p-4 align-top min-w-[300px]">
-                                            <p className="font-semibold text-gray-700 mb-1">{template.subject}</p>
-                                            <p className="text-sm text-gray-500 line-clamp-2">{template.body}</p>
+                                            <p className="font-semibold text-gray-700 mb-1 break-words">{template.subject}</p>
+                                            <div className="text-sm text-gray-500 break-words whitespace-pre-wrap max-h-40 overflow-y-auto">{template.body}</div>
                                         </td>
                                         <td className="p-4 text-right align-top w-24">
                                             <div className="flex justify-end gap-1">

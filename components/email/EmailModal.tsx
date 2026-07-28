@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import EmailGenerator from '@/components/email/EmailGenerator'
@@ -44,6 +44,10 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activePolicies, setActivePolicies] = useState<string[]>([])
+
+  // Attachment state
+  const [attachments, setAttachments] = useState<File[]>([])
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   /* ================= UTILS ================= */
   const formatFormType = (type: string) => {
@@ -245,6 +249,40 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
     }
   }, [isFormAttached, formType, leadId])
 
+  /* ================= ATTACHMENTS HANDLING ================= */
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const newAttachments = [...attachments];
+    let hasError = false;
+
+    Array.from(files).forEach(file => {
+      if (file.size > 10 * 1024 * 1024) {
+        toast(`File "${file.name}" exceeds 10MB limit.`, 'error');
+        hasError = true;
+        return;
+      }
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        toast(`Invalid file type for "${file.name}". Allowed: PDF, JPG, PNG, DOC, DOCX`, 'error');
+        hasError = true;
+        return;
+      }
+      newAttachments.push(file);
+    });
+
+    if (!hasError && files.length > 0) {
+      toast(`Added ${files.length} attachment(s)`, 'success');
+    }
+    setAttachments(newAttachments);
+    if (e.target) e.target.value = '';
+  };
+
+  const handleRemoveAttachment = (indexToRemove: number) => {
+    setAttachments(prev => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
   /* ================= PREVIEW ================= */
   const handlePreview = async () => {
     if (!formType) {
@@ -311,8 +349,15 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       ? customBody
       : generatedBody;
 
-    const baseFinal = processedBody + (isFormAttached && !hasTemplateFormLink
-      ? `<br><br><b>Complete your form here:</b><br><a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">${formLink}</a>`
+    const bodyHasLink = Boolean(
+      processedBody.includes('{{form_link}}') ||
+      processedBody.includes('Complete your form here:') ||
+      processedBody.includes('Click Here to Fill Form') ||
+      (formLink && processedBody.includes(formLink))
+    );
+
+    const baseFinal = processedBody + (isFormAttached && !hasTemplateFormLink && !bodyHasLink && formLink
+      ? `<br><br><b>Complete your form here:</b><br><a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">Click Here to Fill Form</a>`
       : '');
 
     // Production Final Combination: Only add HR if notes exist (Template mode)
@@ -320,17 +365,21 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
       ? `${baseFinal}<br><br><hr><br>${notes.replace(/\n/g, '<br>')}`
       : baseFinal;
 
+    // Enterprise Transport: Send raw binary files via FormData to prevent browser base64 memory overhead
+    const formData = new FormData();
+    formData.append('leadId', leadId);
+    formData.append('templateId', safeTemplateId);
+    if (finalIntakeId && formType) formData.append('formType', formType);
+    if (finalIntakeId) formData.append('intakeId', finalIntakeId);
+    if (customSubject) formData.append('customSubject', customSubject);
+    if (finalBody) formData.append('customBody', finalBody);
+    attachments.forEach(file => {
+      formData.append('attachments', file);
+    });
+
     const res = await fetch('/api/send-email', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        leadId,
-        templateId: safeTemplateId, // Use Requirement 5 safe ID
-        formType: finalIntakeId ? formType : undefined,
-        intakeId: finalIntakeId,
-        customSubject,
-        customBody: finalBody,
-      }),
+      body: formData,
     })
 
     const result = await res.json()
@@ -493,6 +542,71 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                     csrData={csrData}
                     isPersonalLines={lead?.insurence_category === 'personal'}
                   />
+
+                  {/* ATTACHMENTS SECTION */}
+                  <div className="pt-4 border-t border-slate-200">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#10B889]">
+                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                          </svg>
+                          Email Attachments
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">Attach optional files (PDF, Word, Images) directly to this outgoing email (Max 10MB total)</p>
+                      </div>
+                      <div>
+                        <input
+                          type="file"
+                          multiple
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex items-center justify-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-300 shadow-sm shrink-0"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                          </svg>
+                          Add Attachment
+                        </button>
+                      </div>
+                    </div>
+
+                    {attachments.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 animate-in fade-in duration-200">
+                        {attachments.map((file, idx) => (
+                          <div key={`${file.name}-${idx}`} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg shrink-0">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+                                </svg>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-slate-800 truncate" title={file.name}>{file.name}</p>
+                                <p className="text-[10px] text-slate-500 font-medium mt-0.5">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAttachment(idx)}
+                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0 ml-2"
+                              title="Remove attachment"
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

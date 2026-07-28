@@ -83,7 +83,7 @@ export default function AuditLogsClient() {
                                     <div className="text-sm font-semibold text-gray-700">{log.entity}</div>
                                     <div className="text-[10px] font-mono text-gray-400">{formatDate(log.created_at)}</div>
                                 </div>
-                                {log.entity_id && <div className="text-[10px] font-mono text-gray-400 truncate w-full" title={log.entity_id}>ID: {log.entity_id}</div>}
+                                {log.entity_id && <div className="text-[10px] font-mono text-gray-400 break-all w-full" title={log.entity_id}>ID: {log.entity_id}</div>}
                                 <div className="text-[10px] font-mono text-gray-600 bg-white p-2 rounded border border-gray-200 mt-1 max-h-32 overflow-y-auto w-full overflow-x-hidden whitespace-pre-wrap">
                                     {formatJSON(log.metadata)}
                                 </div>
@@ -117,8 +117,8 @@ export default function AuditLogsClient() {
                                         {formatDate(log.created_at)}
                                     </td>
                                     <td className="p-4 align-top">
-                                        <div className="text-sm font-medium text-gray-800">{log.profiles?.full_name || 'System / Unknown'}</div>
-                                        <div className="text-xs text-gray-500">{log.profiles?.email || 'N/A'}</div>
+                                        <div className="text-sm font-medium text-gray-800 break-words">{log.profiles?.full_name || 'System / Unknown'}</div>
+                                        <div className="text-xs text-gray-500 break-all">{log.profiles?.email || 'N/A'}</div>
                                     </td>
                                     <td className="p-4 align-top">
                                         <span className="px-2 py-1 bg-indigo-50 text-indigo-700 text-[10px] uppercase font-bold tracking-wider rounded border border-indigo-100 whitespace-nowrap">
@@ -126,8 +126,8 @@ export default function AuditLogsClient() {
                                         </span>
                                     </td>
                                     <td className="p-4 align-top">
-                                        <div className="text-sm font-semibold text-gray-700">{log.entity}</div>
-                                        {log.entity_id && <div className="text-xs font-mono text-gray-400 max-w-[120px] truncate" title={log.entity_id}>{log.entity_id}</div>}
+                                        <div className="text-sm font-semibold text-gray-700 break-words">{log.entity}</div>
+                                        {log.entity_id && <div className="text-xs font-mono text-gray-400 break-all" title={log.entity_id}>{log.entity_id}</div>}
                                     </td>
                                     <td className="p-4 align-top">
                                         <div className="bg-gray-50 p-2 rounded border border-gray-100 text-xs font-mono text-gray-600 whitespace-pre-wrap max-h-32 overflow-y-auto w-full max-w-lg">

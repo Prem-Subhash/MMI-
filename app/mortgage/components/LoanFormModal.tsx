@@ -12,7 +12,6 @@ import {
   EXCEL_LOAN_OFFICERS,
   EXCEL_PROCESSORS,
 } from '@/app/mortgage/lib/excelLookups';
-import StageHistorySection from './StageHistorySection';
 
 const FormSelect = ({
   className = '',
@@ -40,6 +39,8 @@ interface LoanFormModalProps {
   onSuccess: (loan: MortgageLoan) => void;
   initialLoan?: MortgageLoan | null;
   defaultPipelineType?: PipelineType;
+  editingHistoryRecord?: any;
+  isHidden?: boolean;
 }
 
 export default function LoanFormModal({
@@ -48,6 +49,8 @@ export default function LoanFormModal({
   onSuccess,
   initialLoan,
   defaultPipelineType = 'NEW_LOAN',
+  editingHistoryRecord,
+  isHidden,
 }: LoanFormModalProps) {
   const isEditing = !!initialLoan;
 
@@ -326,37 +329,26 @@ export default function LoanFormModal({
   const labelClass = 'block text-gray-700 font-semibold mb-2 text-sm';
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true" style={{ display: isHidden ? "none" : "flex" }}>
       <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200 my-8">
         
         {/* Header */}
-        <div className="p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between sticky top-0 z-20">
-          <div className="flex items-center gap-3.5">
-            <div className={`p-3 rounded-2xl border ${stageConfig.badgeBg} shadow-sm`}>
-              <Layers className={`w-5 h-5 ${stageConfig.badgeText}`} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl font-bold text-[#2E5C85] tracking-tight">
-                  {isEditing ? 'Update Stage & Application' : 'New Mortgage Application'}
-                </h2>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${stageConfig.badgeBg} ${stageConfig.badgeText}`}>
-                  {stageConfig.label}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {stageConfig.description}
-              </p>
-            </div>
+        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex items-center justify-between sticky top-0 z-20">
+          <div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              {isEditing ? 'Update Stage' : 'New Mortgage Application'}
+            </h2>
+            <p className="text-white/80 text-sm mt-1">
+              {isEditing ? 'Update the current stage and details' : 'Enter application details'}
+            </p>
           </div>
-
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200"
+            className="p-2 text-white hover:text-white hover:bg-white/20 rounded-full transition-all duration-200"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         </div>
 
@@ -384,15 +376,15 @@ export default function LoanFormModal({
           {/* Stage Selector Bar */}
           <div className="pb-5 border-b border-gray-100 space-y-3.5">
             <div className="flex items-center justify-between">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-[#10B889] mb-1.5">
-                  Selected Pipeline Stage
+              <div className="flex-1 max-w-sm">
+                <label className="block text-emerald-700 font-bold mb-2 text-sm uppercase tracking-wide">
+                  Select New Status
                 </label>
                 <FormSelect
-                  containerClassName="relative inline-block w-full sm:min-w-[260px]"
+                  containerClassName="relative inline-block w-full"
                   value={stage}
                   onChange={(e) => setStage(e.target.value as StageCode)}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-bold text-gray-800 focus:ring-2 focus:ring-emerald-500 bg-white transition-all shadow-sm"
+                  className="w-full border-2 border-emerald-500 rounded-xl p-3 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 text-gray-900 font-bold appearance-none bg-white cursor-pointer transition-all shadow-sm"
                 >
                   {availableStages.map((s) => (
                     <option key={s.code} value={s.code}>
@@ -1499,10 +1491,7 @@ export default function LoanFormModal({
             </div>
           )}
 
-          {/* Stage Transition History */}
-          {isEditing && initialLoan && (
-            <StageHistorySection loanId={initialLoan.id} currentStage={stage} />
-          )}
+          
 
           {/* Submit / Action Bar */}
           <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3 sticky bottom-0 bg-white/95 backdrop-blur-md py-4 -mx-6 px-6 z-20 shadow-lg">

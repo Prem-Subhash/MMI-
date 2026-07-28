@@ -66,6 +66,9 @@ export default function CommercialLinesPage() {
 
             if (!user) return
 
+            const { data: prof } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+            const isGlobalView = prof?.role === 'superadmin' || prof?.role === 'admin'
+
             let query = supabase
                 .from('temp_leads_basics')
                 .select(`
@@ -83,7 +86,12 @@ export default function CommercialLinesPage() {
             stage_name
           )
         `)
-                .eq('assigned_csr', user.id)
+
+            if (!isGlobalView) {
+                query = query.eq('assigned_csr', user.id)
+            }
+
+            query = query
                 .eq('insurence_category', 'commercial') // Filter for Commercial Lines
                 .eq('policy_flow', 'new') // commercial lines is 'New Business' usually
                 .order('created_at', { ascending: false })
@@ -211,16 +219,16 @@ export default function CommercialLinesPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1350px' }}>
+                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1380px' }}>
                             <colgroup>
-                                <col style={{ width: '180px' }} />
-                                <col style={{ width: '180px' }} />
-                                <col style={{ width: '140px' }} />
-                                <col style={{ width: '240px' }} />
-                                <col style={{ width: '120px' }} />
+                                <col style={{ width: '220px' }} />
+                                <col style={{ width: '220px' }} />
+                                <col style={{ width: '130px' }} />
+                                <col style={{ width: '250px' }} />
+                                <col style={{ width: '220px' }} />
                                 <col style={{ width: '160px' }} />
                                 <col style={{ width: '110px' }} />
-                                <col style={{ width: '80px' }} />
+                                <col style={{ width: '70px' }} />
                             </colgroup>
                             <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
@@ -228,7 +236,7 @@ export default function CommercialLinesPage() {
                                     <th className="px-4 py-4 font-semibold">Business Name</th>
                                     <th className="px-4 py-4 font-semibold">Phone</th>
                                     <th className="px-4 py-4 font-semibold">Email</th>
-                                    <th className="px-4 py-4 font-semibold">Category</th>
+                                    <th className="px-4 py-4 font-semibold">Policy Type</th>
                                     <th className="px-4 py-4 font-semibold">Stage</th>
                                     <th className="px-4 py-4 font-semibold text-center">Created</th>
                                     <th className="px-4 py-4 font-semibold text-center">View</th>
@@ -241,28 +249,28 @@ export default function CommercialLinesPage() {
 
                                     return (
                                         <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-4 py-4 font-medium text-gray-900 truncate" title={lead.client_name}>
+                                            <td className="px-4 py-4 font-medium text-gray-900 break-words align-top">
                                                 {lead.client_name || '—'}
                                             </td>
-                                            <td className="px-4 py-4 truncate" title={lead.business_name || 'Not Provided'}>
+                                            <td className="px-4 py-4 break-words align-top">
                                                 <span className={lead.business_name ? 'text-gray-900 font-medium' : 'text-gray-400 italic'}>
                                                     {lead.business_name || 'Not Provided'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
-                                            <td className="px-4 py-4 text-gray-600 truncate" title={lead.email}>{lead.email}</td>
-                                            <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
-                                                {lead.insurence_category}
+                                            <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{lead.phone}</td>
+                                            <td className="px-4 py-4 text-gray-600 break-all align-top">{lead.email}</td>
+                                            <td className="px-4 py-4 capitalize text-gray-700 break-words align-top">
+                                                {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map((p: any) => p.policy_type) : lead.policy_type)}
                                             </td>
-                                            <td className="px-4 py-4">
+                                            <td className="px-4 py-4 align-top">
                                                 <StageBadge stage={stage} />
                                             </td>
-                                            <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center">
+                                            <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center align-top">
                                                 {new Date(lead.created_at).toLocaleDateString()}
                                             </td>
 
                                             {/* VIEW */}
-                                            <td className="px-4 py-4 text-center">
+                                            <td className="px-4 py-4 text-center align-top">
                                                 <Link
                                                     href={`/csr/leads/${lead.id}`}
                                                     className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"

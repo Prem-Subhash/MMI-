@@ -1,5 +1,6 @@
 import { createServer } from '@/lib/supabaseServer'
 import Link from 'next/link'
+import { AdminCsrCreationHeader } from '@/components/users/AdminCsrCreationHeader'
 
 
 export default async function AdminCSRsPage() {
@@ -8,17 +9,14 @@ export default async function AdminCSRsPage() {
     // Fetch CSR profiles
     const { data: csrs } = await supabase
         .from('profiles')
-        .select('id, full_name, email, created_at')
+        .select('id, full_name, email, created_at, insurance_access')
         .eq('role', 'csr')
         .order('created_at', { ascending: false })
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
             <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">CSR Management</h1>
-                    <p className="text-gray-600 mt-1">View all Customer Success Representatives in the system.</p>
-                </div>
+                <AdminCsrCreationHeader />
 
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div className="overflow-x-auto">
@@ -27,6 +25,7 @@ export default async function AdminCSRsPage() {
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white  tracking-wider">
                                     <th className="p-4 font-semibold">CSR</th>
                                     <th className="p-4 font-semibold">Email Address</th>
+                                    <th className="p-4 font-semibold">Insurance Access</th>
                                     <th className="p-4 font-semibold">Joined Date</th>
                                     <th className="p-4 font-semibold text-right">Action</th>
                                 </tr>
@@ -43,6 +42,18 @@ export default async function AdminCSRsPage() {
                                             </div>
                                         </td>
                                         <td className="p-4 text-gray-600 text-sm">{csr.email}</td>
+                                        <td className="p-4">
+                                            {csr.insurance_access && (
+                                                <div className="flex gap-1.5 flex-wrap">
+                                                    {csr.insurance_access.includes('personal') && (
+                                                        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded text-xs font-bold uppercase">Personal</span>
+                                                    )}
+                                                    {csr.insurance_access.includes('commercial') && (
+                                                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded text-xs font-bold uppercase">Commercial</span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="p-4 text-gray-500 text-sm">
                                             {new Date(csr.created_at).toLocaleDateString()}
                                         </td>
@@ -58,7 +69,7 @@ export default async function AdminCSRsPage() {
                                 ))}
                                 {(!csrs || csrs.length === 0) && (
                                     <tr>
-                                        <td colSpan={4} className="p-8 text-center text-gray-500">
+                                        <td colSpan={5} className="p-8 text-center text-gray-500">
                                             No CSRs found in the system.
                                         </td>
                                     </tr>

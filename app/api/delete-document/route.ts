@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { authenticateApiRequest } from '@/utils/auth'
+import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
 
 export async function POST(req: Request) {
     try {
@@ -17,6 +17,30 @@ export async function POST(req: Request) {
         // Allowed: User is signed in OR they have the matching intakeFormId
         if (!user && !intakeFormId) {
              return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+        }
+
+        // 0.5 Authorize Lead Access (if CSR is deleting)
+        if (user) {
+            let authLeadId = null
+            
+            // First we need the intake_form_id of the document if not provided directly
+            let targetIntakeId = intakeFormId
+            if (!targetIntakeId) {
+                const { data: doc } = await supabaseServer.from('uploaded_documents').select('intake_form_id').eq('id', documentId).single()
+                targetIntakeId = doc?.intake_form_id
+            }
+
+            if (targetIntakeId) {
+                const { data: intake } = await supabaseServer.from('temp_intake_forms').select('lead_id').eq('id', targetIntakeId).single()
+                authLeadId = intake?.lead_id
+            }
+
+            if (authLeadId) {
+                const authLead = await authorizeLeadAccess(auth.profile, authLeadId)
+                if (!authLead.authorized) {
+                    return NextResponse.json({ error: authLead.error }, { status: authLead.status })
+                }
+            }
         }
 
         // 1. Delete from Supabase Storage

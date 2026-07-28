@@ -5,6 +5,7 @@ import { z } from 'zod'
 import ExcelJS from 'exceljs'
 import { formatCurrency } from '@/lib/currency'
 import { getActivePolicy } from '@/utils/activePolicyHelper'
+import { formatPolicies } from '@/utils/formatPolicies'
 
 // 1. Zod Input Validation
 const ReportSchema = z.object({
@@ -93,6 +94,7 @@ export async function POST(request: Request) {
             id,
             client_name,
             policy_type,
+            lead_policies(policy_type),
             effective_date,
             renewal_date,
             created_at,
@@ -135,8 +137,10 @@ export async function POST(request: Request) {
 
         const transformedData = data?.map(row => {
             const active = getActivePolicy(row)
+            const policiesFormatted = formatPolicies(row.lead_policies && row.lead_policies.length > 0 ? row.lead_policies.map((p: any) => p.policy_type) : row.policy_type)
             return {
                 ...row,
+                policies_formatted: policiesFormatted,
                 active_carrier: active.activeCarrier,
                 active_policy_number: active.activePolicyNumber,
                 active_premium: active.activePremium,
@@ -197,7 +201,7 @@ export async function POST(request: Request) {
             const active = getActivePolicy(row)
             worksheet.addRow([
                 row.client_name || '-',
-                row.policy_type || '-',
+                formatPolicies(row.lead_policies && row.lead_policies.length > 0 ? row.lead_policies.map((p: any) => p.policy_type) : row.policy_type) || '-',
                 row.insurence_category || '-',
                 row.policy_flow || '-',
                 active.activePremium ? formatCurrency(active.activePremium) : '$0.00',
@@ -278,7 +282,7 @@ export async function POST(request: Request) {
                     const rowDate = date_type === 'expiration' ? (row.renewal_date || row.effective_date) : row.effective_date
                     
                     doc.text(row.client_name?.substring(0, 25) || '-', 35, y)
-                    doc.text(row.policy_type?.substring(0, 20) || '-', 160, y)
+                    doc.text((formatPolicies(row.lead_policies && row.lead_policies.length > 0 ? row.lead_policies.map((p: any) => p.policy_type) : row.policy_type)).substring(0, 20) || '-', 160, y)
                     doc.text(row.insurence_category || '-', 240, y)
                     doc.text(row.policy_flow || '-', 320, y)
                     doc.text(formatCurrency(premium), 380, y)

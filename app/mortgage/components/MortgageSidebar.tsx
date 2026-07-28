@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { LayoutDashboard, Layers, FileCheck, LogOut } from 'lucide-react';
+import { LayoutDashboard, Layers, FileCheck, Activity, LogOut } from 'lucide-react';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function MortgageSidebar() {
@@ -42,6 +42,12 @@ export default function MortgageSidebar() {
       name: 'Pre Approval Pipeline',
       href: '/mortgage/pipeline/pre-approval',
       icon: FileCheck,
+      exact: false,
+    },
+    {
+      name: 'Pipeline Monitoring',
+      href: '/mortgage/pipelines',
+      icon: Activity,
       exact: false,
     },
   ];

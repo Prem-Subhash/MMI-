@@ -456,11 +456,11 @@ export default function IntakeFormPage() {
                         key={idx}
                         className="flex items-center justify-between gap-4 text-gray-700 bg-white px-6 py-5 rounded-2xl border border-black shadow-sm w-full"
                       >
-                        <div className="flex items-center gap-4 flex-1 truncate">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
                           <div className="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
                             <FileText size={20} />
                           </div>
-                          <span className="truncate font-bold tracking-tight text-lg leading-tight">{doc.file_name}</span>
+                          <span className="break-all font-bold tracking-tight text-lg leading-tight">{doc.file_name}</span>
                         </div>
                         <div className="flex items-center ">
                           <a

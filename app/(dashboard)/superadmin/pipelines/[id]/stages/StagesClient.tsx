@@ -167,11 +167,11 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                 </div>
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
                     <p className="text-sm text-gray-500 font-medium mb-1">Initial Stage</p>
-                    <p className="text-lg font-bold text-gray-800 truncate">{stages[0]?.stage_name || 'N/A'}</p>
+                    <p className="text-lg font-bold text-gray-800 break-words">{stages[0]?.stage_name || 'N/A'}</p>
                 </div>
                 <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-center">
                     <p className="text-sm text-gray-500 font-medium mb-1">Final Stage</p>
-                    <p className="text-lg font-bold text-gray-800 truncate">{stages[stages.length - 1]?.stage_name || 'N/A'}</p>
+                    <p className="text-lg font-bold text-gray-800 break-words">{stages[stages.length - 1]?.stage_name || 'N/A'}</p>
                 </div>
             </div>
 
@@ -253,7 +253,7 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                                         {editingId === stage.id ? (
                                             <input type="text" value={editForm.stage_name} onChange={e => setEditForm({ ...editForm, stage_name: e.target.value })} className="border p-2 rounded w-full outline-none font-bold text-gray-800" />
                                         ) : (
-                                            <div className="font-bold text-gray-800 text-base">{stage.stage_name}</div>
+                                            <div className="font-bold text-gray-800 text-base break-words">{stage.stage_name}</div>
                                         )}
                                     </div>
                                 </div>
@@ -312,12 +312,12 @@ export default function StagesClient({ pipelineId }: { pipelineId: string }) {
                                         </div>
                                     )}
                                 </td>
-                                <td className="p-4 text-gray-800 font-medium tracking-tight">
+                                <td className="p-4 text-gray-800 font-medium tracking-tight break-words align-top">
                                     {editingId === stage.id ? (
                                         <input type="text" value={editForm.stage_name} onChange={e => setEditForm({ ...editForm, stage_name: e.target.value })} className="border p-1 rounded w-full outline-none" />
                                     ) : stage.stage_name}
                                 </td>
-                                <td className="p-4 text-xs font-mono text-gray-500 max-w-[200px] truncate">
+                                <td className="p-4 text-xs font-mono text-gray-500 break-all align-top">
                                     {editingId === stage.id ? (
                                         <textarea value={editForm.mandatory_fields} onChange={e => setEditForm({ ...editForm, mandatory_fields: e.target.value })} className="border p-1 rounded w-full h-24 outline-none resize-y" />
                                     ) : (

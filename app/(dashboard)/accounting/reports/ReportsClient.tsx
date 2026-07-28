@@ -357,8 +357,8 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">By Carrier</p>
                     <div className="space-y-1 max-h-32 overflow-y-auto pr-1">
                       {Object.entries(premiumsByCarrier).map(([name, value]) => (
-                        <div key={name} className="flex justify-between items-center py-1">
-                          <span className="text-sm text-gray-600 truncate max-w-[150px]">{name}</span>
+                        <div key={name} className="flex justify-between items-start gap-2 py-1">
+                          <span className="text-sm text-gray-600 break-words">{name}</span>
                           <span className="text-sm font-medium text-gray-900 shrink-0">{formatCurrency(value as number)}</span>
                         </div>
                       ))}
@@ -494,7 +494,17 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1000px' }}>
+              <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1200px' }}>
+                <colgroup>
+                  <col className="w-[240px]" />
+                  <col className="w-[180px]" />
+                  <col className="w-[130px]" />
+                  <col className="w-[140px]" />
+                  <col className="w-[140px]" />
+                  <col className="w-[130px]" />
+                  <col className="w-[120px]" />
+                  <col className="w-[120px]" />
+                </colgroup>
                 <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                   <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
                     <th className="px-4 py-4 font-semibold">Client</th>
@@ -519,29 +529,29 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
 
                     return (
                       <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                        <td className="px-4 py-4">
-                          <p className="font-medium text-gray-900 truncate">{lead.client_name}</p>
-                          <p className="text-xs text-gray-500 mt-0.5 font-mono">{active.activePolicyNumber || '—'}</p>
+                        <td className="px-4 py-4 align-top">
+                          <p className="font-medium text-gray-900 break-words">{lead.client_name}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 font-mono break-all">{active.activePolicyNumber || '—'}</p>
                         </td>
-                        <td className="px-4 py-4">
-                          <p className="font-medium text-gray-900">{active.activeCarrier || '—'}</p>
-                          <p className="text-xs text-gray-500 mt-0.5">{lead.policy_flow}</p>
+                        <td className="px-4 py-4 align-top">
+                          <p className="font-medium text-gray-900 break-words">{active.activeCarrier || '—'}</p>
+                          <p className="text-xs text-gray-500 mt-0.5 break-words">{lead.policy_flow}</p>
                         </td>
-                        <td className="px-4 py-4 text-right text-gray-900">
+                        <td className="px-4 py-4 text-right text-gray-900 align-top">
                           {formatCurrency(active.activePremium)}
                         </td>
-                        <td className="px-4 py-4 text-right text-gray-900">
+                        <td className="px-4 py-4 text-right text-gray-900 align-top">
                           {formatCurrency(lead.expected_commission)}
                         </td>
-                        <td className="px-4 py-4 text-right text-gray-900 font-medium">
+                        <td className="px-4 py-4 text-right text-gray-900 font-medium align-top">
                           {formatCurrency(lead.actual_commission)}
                         </td>
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-4 py-4 text-center align-top">
                           <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${sColor}`}>
                             {lead.accounting_status || 'unreconciled'}
                           </span>
                         </td>
-                        <td className="px-4 py-4 text-center">
+                        <td className="px-4 py-4 text-center align-top">
                           {lead.accounting_verified ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium rounded-full bg-purple-50 text-purple-700 border border-purple-200">
                               <CheckCircle2 size={12} /> Yes
@@ -550,7 +560,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
                             <span className="px-2.5 py-0.5 text-xs font-medium rounded-full bg-gray-50 text-gray-700 border border-gray-200">No</span>
                           )}
                         </td>
-                        <td className="px-4 py-4 text-gray-500 text-center whitespace-nowrap">
+                        <td className="px-4 py-4 text-gray-500 text-center align-top break-words">
                           {lead.effective_date || '—'}
                         </td>
                       </tr>

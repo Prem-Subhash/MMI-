@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { sendGraphEmail } from '@/lib/microsoftGraph'
-import { authenticateApiRequest } from '@/utils/auth'
+import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
 
 export async function POST(req: Request) {
   try {
@@ -10,9 +10,90 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: auth.error }, { status: auth.status })
     }
 
-    const { leadId, templateId, formType, intakeId, customSubject, customBody } = await req.json()
+    const contentType = req.headers.get('content-type') || '';
+    let leadId: string | undefined;
+    let templateId: string | undefined;
+    let formType: string | undefined;
+    let intakeId: string | null | undefined;
+    let customSubject: string | undefined;
+    let customBody: string | undefined;
+    let attachments: Array<{ name: string; contentType: string; contentBytes: string }> = [];
 
-    console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId, hasCustom: !!customBody })
+    if (contentType.includes('multipart/form-data')) {
+      const formData = await req.formData();
+      leadId = (formData.get('leadId') as string) || undefined;
+      templateId = (formData.get('templateId') as string) || undefined;
+      formType = (formData.get('formType') as string) || undefined;
+      intakeId = (formData.get('intakeId') as string) || null;
+      customSubject = (formData.get('customSubject') as string) || undefined;
+      customBody = (formData.get('customBody') as string) || undefined;
+
+      const files = formData.getAll('attachments');
+      if (files && files.length > 0) {
+        if (files.length > 20) {
+          return NextResponse.json({ error: 'Maximum 20 attachments allowed.' }, { status: 400 });
+        }
+        const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        let totalSizeBytes = 0;
+        for (const item of files) {
+          if (item instanceof File && item.size > 0 && item.name) {
+            if (!ALLOWED_MIME_TYPES.includes(item.type)) {
+              return NextResponse.json({ error: `Invalid file type for "${item.name}". Allowed: PDF, JPG, PNG, DOC, DOCX` }, { status: 400 });
+            }
+            if (item.size > 10 * 1024 * 1024) {
+              return NextResponse.json({ error: `Attachment "${item.name}" exceeds 10MB limit.` }, { status: 400 });
+            }
+            totalSizeBytes += item.size;
+            if (totalSizeBytes > 10 * 1024 * 1024) {
+              return NextResponse.json({ error: 'Total attachment size exceeds 10MB limit.' }, { status: 400 });
+            }
+
+            const arrayBuffer = await item.arrayBuffer();
+            const buffer = Buffer.from(arrayBuffer);
+            attachments.push({
+              name: item.name,
+              contentType: item.type || 'application/octet-stream',
+              contentBytes: buffer.toString('base64')
+            });
+          }
+        }
+      }
+    } else {
+      const body = await req.json();
+      leadId = body.leadId;
+      templateId = body.templateId;
+      formType = body.formType;
+      intakeId = body.intakeId;
+      customSubject = body.customSubject;
+      customBody = body.customBody;
+
+      if (body.attachments && Array.isArray(body.attachments) && body.attachments.length > 0) {
+        if (body.attachments.length > 20) {
+          return NextResponse.json({ error: 'Maximum 20 attachments allowed.' }, { status: 400 });
+        }
+        const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        let totalSizeApprox = 0;
+        for (const att of body.attachments) {
+          if (!att || !att.name || !att.contentType || !att.contentBytes) {
+            return NextResponse.json({ error: 'Invalid or empty attachment structure provided.' }, { status: 400 });
+          }
+          if (!ALLOWED_MIME_TYPES.includes(att.contentType)) {
+            return NextResponse.json({ error: `Invalid file type for "${att.name}". Allowed: PDF, JPG, PNG, DOC, DOCX` }, { status: 400 });
+          }
+          const approxBytes = (att.contentBytes.length * 3) / 4;
+          totalSizeApprox += approxBytes;
+          if (approxBytes > 10 * 1024 * 1024) {
+            return NextResponse.json({ error: `Attachment "${att.name}" exceeds 10MB limit.` }, { status: 400 });
+          }
+        }
+        if (totalSizeApprox > 10 * 1024 * 1024) {
+          return NextResponse.json({ error: 'Total attachment size exceeds 10MB limit.' }, { status: 400 });
+        }
+        attachments = body.attachments;
+      }
+    }
+
+    console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId, hasCustom: !!customBody, attachmentsCount: attachments.length })
 
     if (!leadId || !templateId) {
       return NextResponse.json(
@@ -28,18 +109,21 @@ export async function POST(req: Request) {
       )
     }
 
-    /* ================= FETCH LEAD ================= */
-    const { data: lead, error: leadError } = await supabaseServer
-      .from('temp_leads_basics')
-      .select('id, client_name, email, stage_metadata, status, policy_flow, policy_type, lead_group_id')
-      .eq('id', leadId)
-      .single()
-
-    if (leadError || !lead || !lead.email) {
-      console.error('LEAD FETCH ERROR:', leadError)
+    /* ================= AUTHORIZE & FETCH LEAD ================= */
+    const authLead = await authorizeLeadAccess(auth.profile, leadId)
+    if (!authLead.authorized || !authLead.lead) {
       return NextResponse.json(
-        { error: 'Invalid lead or missing email' },
-        { status: 404 }
+        { error: authLead.error || 'Lead not found' },
+        { status: authLead.status || 404 }
+      )
+    }
+    const lead = authLead.lead
+    
+    if (!lead.email) {
+      console.error('LEAD HAS NO EMAIL')
+      return NextResponse.json(
+        { error: 'Lead has no email' },
+        { status: 400 }
       )
     }
 
@@ -126,7 +210,7 @@ export async function POST(req: Request) {
     const formLink = intakeId && baseUrl ? `${baseUrl}/intake/${intakeId}` : ''
     
     if (finalBody && formLink) {
-      const styledLink = `<a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">${formLink}</a>`
+      const styledLink = `<a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">Click Here to Fill Form</a>`
       finalBody = finalBody.replace(/{{\s*form_link\s*}}/g, styledLink)
     }
 
@@ -167,7 +251,7 @@ export async function POST(req: Request) {
     /* ================= SEND EMAIL AND LOG (EXPLICIT) ================= */
     try {
       // Intentionally omitting leadId and emailType to prevent duplicate MS Graph generic hook logging
-      await sendGraphEmail([lead.email], finalSubject, finalBody);
+      await sendGraphEmail([lead.email], finalSubject, finalBody, undefined, undefined, attachments);
       console.log('EMAIL SENT SUCCESSFULLY VIA GRAPH API');
 
       const logsToInsert = siblings.map(sibling => ({

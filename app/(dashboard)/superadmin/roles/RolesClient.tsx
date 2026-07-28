@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * @deprecated REQ-003.2 (Phase 1): All role management features, demotion confirmations,
+ * and permission controls have been consolidated into `UsersClient.tsx` (`/superadmin/users`).
+ * This component is retained temporarily for backward compatibility and can be removed during cleanup.
+ */
+
 import { useState, useEffect } from 'react'
 import { Save, Edit2, ShieldAlert, X } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Eye, Search } from 'lucide-react'
+import { formatPolicies } from '@/utils/formatPolicies'
 
 /* ================= TYPES ================= */
 
@@ -11,6 +12,8 @@ type Lead = {
     client_name: string
     phone: string
     email: string
+    policy_type: string
+    lead_policies?: { policy_type: string }[]
     insurence_category: string
     policy_flow: string
     pipeline_id: string
@@ -105,7 +108,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                                     : 'bg-white hover:border-brand/40 hover:shadow-md'
                                 }`}
                         >
-                            <h3 className={`text-base sm:text-lg font-bold line-clamp-2 ${isSelected ? 'text-brand-dark' : 'text-gray-800'}`}>
+                            <h3 className={`text-base sm:text-lg font-bold break-words ${isSelected ? 'text-brand-dark' : 'text-gray-800'}`}>
                                 {p.name}
                             </h3>
                             <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
@@ -169,12 +172,25 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left min-w-[700px]">
+                                <table className="w-full text-sm text-left table-fixed min-w-[1550px]">
+                                    <colgroup>
+                                        <col className="w-[240px]" />
+                                        <col className="w-[140px]" />
+                                        <col className="w-[220px]" />
+                                        <col className="w-[180px]" />
+                                        <col className="w-[150px]" />
+                                        <col className="w-[140px]" />
+                                        <col className="w-[160px]" />
+                                        <col className="w-[160px]" />
+                                        <col className="w-[110px]" />
+                                        <col className="w-[80px]" />
+                                    </colgroup>
                                     <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                         <tr>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Client Name</th>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Phone</th>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Email</th>
+                                            <th className="px-4 sm:px-6 py-4 font-semibold">Policy Type</th>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
                                             <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
@@ -190,27 +206,30 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
 
                                             return (
                                                 <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                                                    <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{lead.client_name}</td>
-                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
-                                                    <td className="px-4 sm:px-6 py-4 text-gray-600">{lead.email}</td>
-                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">{lead.insurence_category}</td>
-                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 whitespace-nowrap">{lead.policy_flow}</td>
-                                                    <td className="px-4 sm:px-6 py-4">
+                                                    <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 break-words align-top">{lead.client_name}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{lead.phone}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 break-all align-top">{lead.email}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold break-words align-top">
+                                                        {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}
+                                                    </td>
+                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 break-words align-top">{lead.insurence_category}</td>
+                                                    <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 break-words align-top">{lead.policy_flow}</td>
+                                                    <td className="px-4 sm:px-6 py-4 align-top">
                                                         <StageBadge stage={stage} />
                                                     </td>
-                                                    <td className="px-4 sm:px-6 py-4">
+                                                    <td className="px-4 sm:px-6 py-4 align-top">
                                                         {lead.assigned_csr_profile?.full_name ? (
-                                                            <span className="font-semibold text-gray-700 text-sm whitespace-nowrap">
+                                                            <span className="font-semibold text-gray-700 text-sm break-words">
                                                                 {lead.assigned_csr_profile.full_name}
                                                             </span>
                                                         ) : (
                                                             <span className="text-amber-600 font-semibold text-sm">Unassigned</span>
                                                         )}
                                                     </td>
-                                                    <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap">
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap align-top">
                                                         {new Date(lead.created_at).toLocaleDateString()}
                                                     </td>
-                                                    <td className="px-4 sm:px-6 py-4 text-center">
+                                                    <td className="px-4 sm:px-6 py-4 text-center align-top">
                                                         <Link
                                                             href={`/csr/leads/${lead.id}`}
                                                             className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"

@@ -1,3 +1,8 @@
+/**
+ * @deprecated REQ-003.3: This endpoint and the underlying `mortgage_users` database table are legacy.
+ * Authorization across portals is now unified under `profiles.role` and `profiles.portal_access`
+ * evaluated directly during login and within `proxy.ts` Edge Middleware.
+ */
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 

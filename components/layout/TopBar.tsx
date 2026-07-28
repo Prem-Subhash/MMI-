@@ -1,13 +1,15 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { Bell, Clock, User, ChevronRight, Menu } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 
 export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
     const router = useRouter()
+    const pathname = usePathname()
+    const isSuperAdminRoute = pathname?.startsWith('/superadmin')
     const [profileOpen, setProfileOpen] = useState(false)
     const [notificationsOpen, setNotificationsOpen] = useState(false)
     const [activityOpen, setActivityOpen] = useState(false)
@@ -166,6 +168,39 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             {/* Right Side Content */}
             <div className="flex-1 flex items-center justify-end px-3 sm:px-6">
                 <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0">
+                    {userProfile?.role === 'superadmin' && (
+                        <div className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl border border-white/20 transition-all">
+                            <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">Company:</span>
+                            <select
+                                value={
+                                    isSuperAdminRoute
+                                        ? (pathname?.startsWith('/superadmin/mortgage') ? 'mortgage' : pathname?.startsWith('/superadmin/insurance') ? 'insurance' : pathname?.includes('lending') ? 'lending' : 'all')
+                                        : (typeof window !== 'undefined' && window.location.pathname.startsWith('/mortgage') ? 'mortgage' :
+                                           typeof window !== 'undefined' && window.location.pathname.startsWith('/lending') ? 'lending' : 'insurance')
+                                }
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (isSuperAdminRoute) {
+                                        if (val === 'all') router.push('/superadmin');
+                                        else if (val === 'insurance') router.push('/superadmin/insurance/leads');
+                                        else if (val === 'mortgage') router.push('/superadmin/mortgage/applications');
+                                        else if (val === 'lending') router.push('/superadmin#lending');
+                                    } else {
+                                        if (val === 'all') router.push('/superadmin');
+                                        else if (val === 'insurance') router.push('/admin');
+                                        else if (val === 'mortgage') router.push('/mortgage');
+                                        else if (val === 'lending') router.push('/lending');
+                                    }
+                                }}
+                                className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
+                            >
+                                <option value="all" className="text-gray-900">All Companies</option>
+                                <option value="insurance" className="text-gray-900">Innovative Insurance</option>
+                                <option value="mortgage" className="text-gray-900">Moonstar Mortgage</option>
+                                <option value="lending" className="text-gray-900">Accurate Lending</option>
+                            </select>
+                        </div>
+                    )}
                     {/* Notification Bell */}
                     <div className="relative" ref={notificationsRef}>
                         <button

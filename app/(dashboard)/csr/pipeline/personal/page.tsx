@@ -52,6 +52,9 @@ export default function PersonalLinesPage() {
 
       if (!user) return
 
+      const { data: prof } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+      const isGlobalView = prof?.role === 'superadmin' || prof?.role === 'admin'
+
       let query = supabase
         .from('temp_leads_basics')
         .select(`
@@ -68,7 +71,12 @@ export default function PersonalLinesPage() {
             stage_name
           )
         `)
-        .eq('assigned_csr', user.id)
+
+      if (!isGlobalView) {
+        query = query.eq('assigned_csr', user.id)
+      }
+
+      query = query
         .eq('insurence_category', 'personal')
         .eq('policy_flow', 'new')
         .order('created_at', { ascending: false })
@@ -188,12 +196,12 @@ export default function PersonalLinesPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1200px' }}>
+            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1360px' }}>
               <colgroup>
-                <col style={{ width: '180px' }} />
-                <col style={{ width: '130px' }} />
                 <col style={{ width: '220px' }} />
                 <col style={{ width: '130px' }} />
+                <col style={{ width: '250px' }} />
+                <col style={{ width: '220px' }} />
                 <col style={{ width: '100px' }} />
                 <col style={{ width: '160px' }} />
                 <col style={{ width: '110px' }} />
@@ -218,27 +226,27 @@ export default function PersonalLinesPage() {
 
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                      <td className="px-4 py-4 font-medium text-gray-900 truncate" title={lead.client_name}>
+                      <td className="px-4 py-4 font-medium text-gray-900 break-words align-top">
                         {lead.client_name}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
-                      <td className="px-4 py-4 text-gray-600 truncate" title={lead.email}>
+                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{lead.phone}</td>
+                      <td className="px-4 py-4 text-gray-600 break-all align-top">
                         {lead.email}
                       </td>
-                      <td className="px-4 py-4 capitalize text-gray-700 truncate">
+                      <td className="px-4 py-4 capitalize text-gray-700 break-words align-top">
                         {formatPolicies(lead.lead_policies?.length > 0 ? lead.lead_policies.map((p: any) => p.policy_type) : lead.policy_type)}
                       </td>
-                      <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
+                      <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap align-top">
                         {lead.policy_flow}
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 align-top">
                         <StageBadge stage={stage} />
                       </td>
-                      <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center">
+                      <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center align-top">
                         {new Date(lead.created_at).toLocaleDateString()}
                       </td>
 
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center align-top">
                         <Link
                           href={`/csr/leads/${lead.id}`}
                           className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"

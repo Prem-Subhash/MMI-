@@ -68,8 +68,8 @@ export default function DocumentViewer({ documents }: { documents: any[] }) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                   </svg>
                 </div>
-                <div className="overflow-hidden">
-                  <p className="text-sm font-semibold text-slate-800 truncate" title={doc.file_name}>{doc.file_name}</p>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-slate-800 break-all" title={doc.file_name}>{doc.file_name}</p>
                   <p className="text-xs text-slate-500 mt-1 font-medium">{new Date(doc.uploaded_at).toLocaleDateString()}</p>
                 </div>
                 

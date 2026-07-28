@@ -7,6 +7,7 @@ import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 import { getActivePolicy } from '@/utils/activePolicyHelper'
+import { formatPolicies } from '@/utils/formatPolicies'
 import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 
 export default function AdminReportsPage() {
@@ -480,7 +481,16 @@ export default function AdminReportsPage() {
                         <Loading message="Generating report preview..." />
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left min-w-[640px]">
+                            <table className="w-full text-sm text-left table-fixed min-w-[1200px]">
+                                <colgroup>
+                                    <col className="w-[240px]" />
+                                    <col className="w-[180px]" />
+                                    <col className="w-[160px]" />
+                                    <col className="w-[150px]" />
+                                    <col className="w-[130px]" />
+                                    <col className="w-[200px]" />
+                                    <col className="w-[140px]" />
+                                </colgroup>
                                 <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs tracking-wider font-semibold border-b border-gray-200/60">
                                     <tr>
                                         <th className="px-4 sm:px-6 py-4">Client</th>
@@ -511,18 +521,18 @@ export default function AdminReportsPage() {
                                         const active = getActivePolicy(row)
                                         return (
                                         <tr key={row.id} className="hover:bg-blue-50/30 transition-colors group">
-                                            <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 break-words align-top">
                                                 {row.client_name}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4">
-                                                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded text-xs border border-gray-200 font-medium capitalize whitespace-nowrap">
-                                                    {row.policy_type}
+                                            <td className="px-4 sm:px-6 py-4 align-top">
+                                                <span className="px-2.5 py-1 bg-gray-100 text-gray-700 rounded text-xs border border-gray-200 font-medium capitalize break-words inline-block">
+                                                    {formatPolicies(row.lead_policies && row.lead_policies.length > 0 ? row.lead_policies.map((p: any) => p.policy_type) : row.policy_type)}
                                                 </span>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-600 whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-600 break-words align-top">
                                                 {row.insurence_category}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4">
+                                            <td className="px-4 sm:px-6 py-4 align-top">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border capitalize whitespace-nowrap
                                                     ${row.policy_flow === 'new'
                                                         ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
@@ -532,20 +542,20 @@ export default function AdminReportsPage() {
                                                     {row.policy_flow === 'new' ? 'New Business' : 'Renewal'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 font-semibold text-gray-900 align-top">
                                                 {formatCurrency(active.activePremium || row.total_premium)}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-white flex-shrink-0">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">
+                                                <div className="flex items-start gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold ring-2 ring-white flex-shrink-0 mt-0.5">
                                                         {(row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || 'U')[0]}
                                                     </div>
-                                                    <span className="text-sm whitespace-nowrap">
+                                                    <span className="text-sm break-words">
                                                         {row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || 'Unknown'}
                                                     </span>
                                                 </div>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono text-xs whitespace-nowrap align-top">
                                                 {filters.dateType === 'effective'
                                                     ? (row.effective_date || '-')
                                                     : (row.renewal_date || row.effective_date || '-')}

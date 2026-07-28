@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   UserPlus,
@@ -10,10 +10,39 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import CategorySelectionModal from '@/components/leads/CategorySelectionModal'
+import { supabase } from '@/lib/supabaseClient'
 
 export default function DashboardPage() {
   const router = useRouter()
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [insuranceAccess, setInsuranceAccess] = useState<string[]>([])
+
+  useEffect(() => {
+    let mounted = true
+    const fetchAccess = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user && mounted) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('insurance_access')
+          .eq('id', session.user.id)
+          .single()
+        if (data?.insurance_access && mounted) {
+          setInsuranceAccess(data.insurance_access)
+        }
+      }
+    }
+    fetchAccess()
+    return () => { mounted = false }
+  }, [])
+
+  const handleNewClient = () => {
+    if (insuranceAccess.length === 1) {
+      router.push(`/csr/leads/new?category=${insuranceAccess[0]}`)
+    } else {
+      setIsCategoryModalOpen(true)
+    }
+  }
 
   return (
     <section className="p-4 sm:p-6 lg:p-8">
@@ -27,32 +56,38 @@ export default function DashboardPage() {
         <ActionCard
           title="New Client"
           icon={<UserPlus size={28} />}
-          onClick={() => setIsCategoryModalOpen(true)}
+          onClick={handleNewClient}
         />
 
-        <ActionCard
-          title="Personal Pipeline"
-          icon={<GitBranch size={28} />}
-          onClick={() => router.push('/csr/pipeline/personal')}
-        />
+        {insuranceAccess.includes('personal') && (
+          <>
+            <ActionCard
+              title="Personal Pipeline"
+              icon={<GitBranch size={28} />}
+              onClick={() => router.push('/csr/pipeline/personal')}
+            />
+            <ActionCard
+              title="Personal Renewal Pipeline"
+              icon={<RefreshCw size={28} />}
+              onClick={() => router.push('/csr/renewals/personal')}
+            />
+          </>
+        )}
 
-        <ActionCard
-          title="Personal Renewal Pipeline"
-          icon={<RefreshCw size={28} />}
-          onClick={() => router.push('/csr/renewals/personal')}
-        />
-
-        <ActionCard
-          title="Commercial Pipeline"
-          icon={<Briefcase size={28} />}
-          onClick={() => router.push('/csr/pipeline/commercial')}
-        />
-
-        <ActionCard
-          title="Commercial Renewal Pipeline"
-          icon={<RefreshCw size={28} />}
-          onClick={() => router.push('/csr/renewals/commercial')}
-        />
+        {insuranceAccess.includes('commercial') && (
+          <>
+            <ActionCard
+              title="Commercial Pipeline"
+              icon={<Briefcase size={28} />}
+              onClick={() => router.push('/csr/pipeline/commercial')}
+            />
+            <ActionCard
+              title="Commercial Renewal Pipeline"
+              icon={<RefreshCw size={28} />}
+              onClick={() => router.push('/csr/renewals/commercial')}
+            />
+          </>
+        )}
 
         <ActionCard
           title="Activity Log"
