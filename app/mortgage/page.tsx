@@ -185,7 +185,7 @@ export default function MortgageDashboardPage() {
             subtitle="Scheduled contacts"
             icon={<Calendar size={24} className="text-amber-600" />}
             trend="Action Required"
-            onClick={() => {}}
+            onClick={() => { }}
           />
         </div>
       </div>
@@ -232,7 +232,7 @@ export default function MortgageDashboardPage() {
 
       {/* Tables Grid: Today's Follow-Ups & Recent Applications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Upcoming Follow-Ups Table */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="p-5 border-b border-gray-100 bg-slate-50 flex items-center justify-between">

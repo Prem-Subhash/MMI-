@@ -168,25 +168,64 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
                   </button>
                 </div>
 
-                {/* Date & Time & Updated By */}
-                <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 font-medium">
-                  <div className="flex items-center gap-1.5 text-gray-700">
-                    <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                    <span>{formatTimestamp(record.changed_at)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[#2E5C85] font-bold">
-                    <User className="w-3.5 h-3.5 shrink-0" />
-                    <span>Updated by: {record.updated_by || 'Mortgage Admin'}</span>
-                  </div>
-                </div>
+                <div className="p-5 space-y-3 text-gray-800">
+                  {/* Stage Transition & Action */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col items-start gap-1.5">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${prevConfig.badgeBg} ${prevConfig.badgeText}`}
+                      >
+                        Previous: {prevConfig.label || record.previous_stage}
+                      </span>
+                    </div>
 
-                {/* Remarks if provided */}
-                {record.remarks && (
-                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700 font-medium flex items-start gap-2">
-                    <MessageSquare className="w-3.5 h-3.5 text-[#10B889] shrink-0 mt-0.5" />
-                    <span className="whitespace-pre-wrap">{record.remarks}</span>
+                    <div className="flex items-center gap-2">
+                      {onEditHistory && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditHistory(record);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-[#2E5C85] hover:bg-[#2E5C85]/10 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                          title="Edit Historical Stage Data"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSnapshot(record)}
+                        className="p-1.5 text-gray-400 hover:text-[#2E5C85] hover:bg-[#2E5C85]/10 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                        title="View Snapshot"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span className="hidden sm:inline">View</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Date & Time & Updated By */}
+                  <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 font-medium">
+                    <div className="flex items-center gap-1.5 text-gray-700">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span>{formatTimestamp(record.changed_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[#2E5C85] font-bold">
+                      <User className="w-3.5 h-3.5 shrink-0" />
+                      <span>Updated by: {record.updated_by || 'Mortgage Admin'}</span>
+                    </div>
                   </div>
                 )}
+
+                  {/* Remarks if provided */}
+                  {record.remarks && (
+                    <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700 font-medium flex items-start gap-2">
+                      <MessageSquare className="w-3.5 h-3.5 text-[#10B889] shrink-0 mt-0.5" />
+                      <span className="whitespace-pre-wrap">{record.remarks}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
