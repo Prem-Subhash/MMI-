@@ -354,24 +354,6 @@ export default function LoanFormModal({
             <p className="text-white/80 text-sm mt-1">
               {isEditing ? 'Update the current stage and details' : 'Enter application details'}
             </p>
-        <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className={`p-3 rounded-2xl border ${stageConfig.badgeBg} shadow-sm`}>
-              <Layers className={`w-5 h-5 ${stageConfig.badgeText}`} />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl font-bold text-[#2E5C85] tracking-tight">
-                  {isEditing ? 'Update Stage & Application' : 'New Mortgage Application'}
-                </h2>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${stageConfig.badgeBg} ${stageConfig.badgeText}`}>
-                  {stageConfig.label}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 mt-0.5">
-                {stageConfig.description}
-              </p>
-            </div>
           </div>
           <button
             type="button"

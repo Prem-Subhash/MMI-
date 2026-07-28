@@ -155,8 +155,6 @@ export default function LoanDetailModal({
         
         {/* HEADER */}
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 z-20">
-        {/* Header */}
-        <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white">
               {loan.client_name || 'Mortgage Application Details'}
@@ -174,104 +172,6 @@ export default function LoanDetailModal({
           </button>
         </div>
 
-        {/* CONTENT BODY */}
-        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
-          
-          {/* 1. INFO GRID LAYOUT */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-            <KpiCard 
-              icon={<IconUser />} 
-              label="Borrower Name"
-              accent="from-[#10B889] to-[#0d9470]"
-              glow="shadow-emerald-200/60"
-              iconBg="bg-emerald-50 text-emerald-600"
-              hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
-            >
-              <p className="text-base font-bold text-gray-800 break-words">{loan.client_name || '—'}</p>
-            </KpiCard>
-            
-            <KpiCard 
-              icon={<IconMail />} 
-              label="Email Address"
-              accent="from-[#2E5C85] to-[#1e3f5e]"
-              glow="shadow-blue-200/60"
-              iconBg="bg-blue-50 text-blue-600"
-              hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
-            >
-              <p className="text-base font-bold text-gray-800 break-all">{loan.email || '—'}</p>
-            </KpiCard>
-
-            <KpiCard 
-              icon={<IconFile />} 
-              label="Pipeline Type"
-              accent="from-amber-500 to-orange-500"
-              glow="shadow-amber-200/60"
-              iconBg="bg-amber-50 text-amber-600"
-              hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto self-end sm:self-center">
-            <button
-              type="button"
-              onClick={() => onEdit(loan)}
-              className="h-10 px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
-            >
-              <Edit3 className="w-3.5 h-3.5 shrink-0" />
-              <span>Edit Application</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onDelete(loan)}
-              className="h-10 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
-            >
-              <Trash2 className="w-3.5 h-3.5 shrink-0" />
-              <span>Delete</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shrink-0"
-              aria-label="Close modal"
-            >
-              <p className="text-base font-bold text-gray-800 break-words">
-                {loan.pipeline_type === 'NEW_LOAN' ? 'New Loan Pipeline' : 'Pre-Approval Pipeline'}
-              </p>
-            </KpiCard>
-
-            <KpiCard 
-              icon={<IconZap />} 
-              label="Current Status"
-              accent="from-purple-600 to-indigo-600"
-              glow="shadow-purple-200/60"
-              iconBg="bg-purple-50 text-purple-600"
-              hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
-            >
-              <StageBadge stage={loan.stage} config={stageConfig} />
-            </KpiCard>
-          </div>
-
-          {/* 2. MORTGAGE DETAILS GROUPS */}
-          <div className="space-y-6">
-            
-            {/* Loan Details Grid */}
-            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-              <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
-                <DollarSign size={14} />
-                Mortgage Details
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-                <div>
-                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Transaction Type</div>
-                  <div className="text-sm font-bold text-gray-900">{loan.transaction_type || '—'}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Loan Type & Term</div>
-                  <div className="text-sm font-bold text-gray-900">{loan.loan_type || '—'} / {loan.loan_term || '—'}</div>
-                </div>
-                <div>
-                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Property Value</div>
-                  <div className="text-sm font-bold text-emerald-700">
-                    {loan.estimated_property_value ? `$${loan.estimated_property_value.toLocaleString()}` : '—'}
         {/* Stage Progression Bar & Update Stage Action */}
         <div className="shrink-0 px-6 py-5 bg-white border-b border-gray-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
@@ -316,6 +216,87 @@ export default function LoanDetailModal({
                   </div>
                   <div className={`text-xs font-bold mt-1.5 truncate w-full ${isActive ? 'text-white' : ''}`}>
                     {s.label}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* CONTENT BODY */}
+        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
+          
+          {/* 1. INFO GRID LAYOUT */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <KpiCard 
+              icon={<IconUser />} 
+              label="Borrower Name"
+              accent="from-[#10B889] to-[#0d9470]"
+              glow="shadow-emerald-200/60"
+              iconBg="bg-emerald-50 text-emerald-600"
+              hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
+            >
+              <p className="text-base font-bold text-gray-800 break-words">{loan.client_name || '—'}</p>
+            </KpiCard>
+            
+            <KpiCard 
+              icon={<IconMail />} 
+              label="Email Address"
+              accent="from-[#2E5C85] to-[#1e3f5e]"
+              glow="shadow-blue-200/60"
+              iconBg="bg-blue-50 text-blue-600"
+              hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
+            >
+              <p className="text-base font-bold text-gray-800 break-all">{loan.email || '—'}</p>
+            </KpiCard>
+
+            <KpiCard 
+              icon={<IconFile />} 
+              label="Pipeline Type"
+              accent="from-amber-500 to-orange-500"
+              glow="shadow-amber-200/60"
+              iconBg="bg-amber-50 text-amber-600"
+              hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
+            >
+              <p className="text-base font-bold text-gray-800 break-words">
+                {loan.pipeline_type === 'NEW_LOAN' ? 'New Loan Pipeline' : 'Pre-Approval Pipeline'}
+              </p>
+            </KpiCard>
+
+            <KpiCard 
+              icon={<IconZap />} 
+              label="Current Status"
+              accent="from-purple-600 to-indigo-600"
+              glow="shadow-purple-200/60"
+              iconBg="bg-purple-50 text-purple-600"
+              hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
+            >
+              <StageBadge stage={loan.stage} config={stageConfig} />
+            </KpiCard>
+          </div>
+
+          {/* 2. MORTGAGE DETAILS GROUPS */}
+          <div className="space-y-6">
+            
+            {/* Loan Details Grid */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+                <DollarSign size={14} />
+                Mortgage Details
+              </h3>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Transaction Type</div>
+                  <div className="text-sm font-bold text-gray-900">{loan.transaction_type || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Loan Type & Term</div>
+                  <div className="text-sm font-bold text-gray-900">{loan.loan_type || '—'} / {loan.loan_term || '—'}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Property Value</div>
+                  <div className="text-sm font-bold text-emerald-700">
+                    {loan.estimated_property_value ? `$${loan.estimated_property_value.toLocaleString()}` : '—'}
                   </div>
                 </div>
                 <div>
@@ -453,6 +434,12 @@ export default function LoanDetailModal({
               Update Stage
             </button>
             <button
+              onClick={() => onDelete(loan)}
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
+            >
+              <Trash2 size={16} /> Delete
+            </button>
+            <button
               onClick={onClose}
               className="px-5 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap group"
             >
@@ -460,6 +447,7 @@ export default function LoanDetailModal({
               <span>Back</span>
             </button>
           </div>
+        </div>
 
         {/* Footer */}
         <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
