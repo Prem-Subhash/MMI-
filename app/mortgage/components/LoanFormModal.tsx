@@ -1506,13 +1506,12 @@ export default function LoanFormModal({
                 </div>
               </div>
             )}
+          </div>
 
-
-
-            {/* Submit / Action Bar (Fixed Footer outside scrollable div) */}
-            <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
-              <button
-                type="button"
+          {/* Submit / Action Bar (Fixed Footer outside scrollable div) */}
+          <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
+            <button
+              type="button"
                 onClick={onClose}
                 disabled={submitting}
                 className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
