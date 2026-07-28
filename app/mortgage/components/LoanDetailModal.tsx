@@ -294,7 +294,7 @@ export default function LoanDetailModal({
             >
               <StageBadge stage={loan.stage} config={stageConfig} />
             </KpiCard>
-
+          </div>
 
           {/* 2. MORTGAGE DETAILS GROUPS */}
           <div className="space-y-6">
@@ -469,9 +469,6 @@ export default function LoanDetailModal({
             </button>
           </div>
         </div>
-
-
-      </div>
 
       {/* Footer */}
       <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end">
