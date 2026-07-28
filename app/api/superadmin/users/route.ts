@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { authenticateApiRequest } from '@/utils/auth';
+import { validateCompanyRole } from '@/constants/companyRoles';
 
 // Setup Supabase Admin Client using Service Role Key
 const supabaseAdmin = createClient(
@@ -23,12 +24,48 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const auth = await authenticateApiRequest(request, ['superadmin']);
+    const auth = await authenticateApiRequest(request, ['superadmin', 'admin']);
     if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     try {
         const body = await request.json();
-        const { email, password, full_name, role } = body;
+        let { email, password, full_name, role, company, insurance_access } = body;
+
+        // Strict permission check: Admins are ONLY permitted to create CSR accounts
+        if (auth.profile?.role === 'admin') {
+            if (role !== 'csr') {
+                return NextResponse.json({ error: 'Admins are restricted to creating CSR accounts only.' }, { status: 403 });
+            }
+        }
+
+        // Default company for backward compatibility if not provided
+        if (!company) {
+            if (role === 'mortgage') company = 'mortgage';
+            else if (role === 'lending' || role === 'accurate_lending') company = 'lending';
+            else company = 'insurance';
+        }
+
+        // Validate combination
+        if (!validateCompanyRole(company, role)) {
+            return NextResponse.json({ error: `Invalid company and role combination: ${company} / ${role}` }, { status: 400 });
+        }
+
+        const portal_access = [company];
+        
+        let csrInsuranceAccess = null;
+        if (role === 'csr') {
+            if (!Array.isArray(insurance_access) || insurance_access.length === 0) {
+                return NextResponse.json({ error: 'CSR accounts must have at least one insurance access option selected.' }, { status: 400 });
+            }
+            for (const access of insurance_access) {
+                if (!['personal', 'commercial'].includes(access)) {
+                    return NextResponse.json({ error: `Invalid insurance access option: ${access}` }, { status: 400 });
+                }
+            }
+            csrInsuranceAccess = insurance_access;
+        } else if (insurance_access !== undefined) {
+            return NextResponse.json({ error: 'Insurance access can only be set for CSR accounts.' }, { status: 400 });
+        }
 
         // 1. Create User in Supabase Auth
         const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -40,12 +77,18 @@ export async function POST(request: Request) {
         if (authError) throw new Error(authError.message);
 
         // 2. Insert into profiles (Handling case if there is a trigger that already created it)
-        const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
+        const profilePayload: any = {
             id: authUser.user.id,
             email,
             full_name,
             role,
-        });
+            portal_access,
+        };
+        if (role === 'csr' && csrInsuranceAccess) {
+            profilePayload.insurance_access = csrInsuranceAccess;
+        }
+
+        const { error: profileError } = await supabaseAdmin.from('profiles').upsert(profilePayload);
 
         if (profileError) {
             // Rollback auth user creation if profile fails
@@ -59,7 +102,7 @@ export async function POST(request: Request) {
             action: 'CREATE_USER',
             entity: 'profiles',
             entity_id: authUser.user.id,
-            metadata: { email, role }
+            metadata: { email, role, company, portal_access, insurance_access: csrInsuranceAccess }
         });
 
         return NextResponse.json({ success: true, user: authUser.user });
@@ -69,23 +112,58 @@ export async function POST(request: Request) {
 }
 
 export async function PATCH(request: Request) {
-    const auth = await authenticateApiRequest(request, ['superadmin']);
+    const auth = await authenticateApiRequest(request, ['superadmin', 'admin']);
     if (auth.error) return NextResponse.json({ error: auth.error }, { status: auth.status });
 
     try {
         const body = await request.json();
-        const { id, role } = body;
+        const { id, role, insurance_access } = body;
 
-        const { error } = await supabaseAdmin.from('profiles').update({ role }).eq('id', id);
+        if (!id) return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
+
+        if (auth.profile?.role === 'admin') {
+            const { data: targetUser } = await supabaseAdmin.from('profiles').select('role').eq('id', id).single();
+            if (!targetUser || targetUser.role !== 'csr' || (role && role !== 'csr')) {
+                return NextResponse.json({ error: 'Admins are restricted to editing CSR accounts only.' }, { status: 403 });
+            }
+        }
+
+        const updatePayload: any = {};
+        if (role !== undefined) updatePayload.role = role;
+        
+        // Validate insurance access payload
+        if (insurance_access !== undefined) {
+            // Need to know if they are currently a CSR or being changed to a CSR to enforce CSR rules
+            const targetRole = role || (await supabaseAdmin.from('profiles').select('role').eq('id', id).single().then(res => res.data?.role));
+            if (targetRole === 'csr') {
+                if (!Array.isArray(insurance_access) || insurance_access.length === 0) {
+                    return NextResponse.json({ error: 'CSR accounts must have at least one insurance access option selected.' }, { status: 400 });
+                }
+                for (const access of insurance_access) {
+                    if (!['personal', 'commercial'].includes(access)) {
+                        return NextResponse.json({ error: `Invalid insurance access option: ${access}` }, { status: 400 });
+                    }
+                }
+                updatePayload.insurance_access = insurance_access;
+            } else {
+                return NextResponse.json({ error: 'Insurance access can only be set for CSR accounts.' }, { status: 400 });
+            }
+        }
+
+        if (Object.keys(updatePayload).length === 0) {
+            return NextResponse.json({ success: true, message: 'No updates provided' });
+        }
+
+        const { error } = await supabaseAdmin.from('profiles').update(updatePayload).eq('id', id);
         if (error) throw new Error(error.message);
 
         // Audit log
         await supabaseAdmin.from('audit_logs').insert({
             user_id: auth.user.id,
-            action: 'UPDATE_USER_ROLE',
+            action: 'UPDATE_USER',
             entity: 'profiles',
             entity_id: id,
-            metadata: { new_role: role }
+            metadata: updatePayload
         });
 
         return NextResponse.json({ success: true });

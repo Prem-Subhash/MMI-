@@ -1,13 +1,26 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { MORTGAGE_STAGES } from '@/app/mortgage/lib/stageFields';
+import { authenticateApiRequest } from '@/utils/auth';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const { data: allLoans, error } = await supabaseServer
+    const auth = await authenticateApiRequest(request, ['mortgage', 'admin', 'superadmin']);
+    if (auth.error || !auth.user) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
+    }
+
+    const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
+    let query = supabaseServer
       .from('mortgage_loans')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (!isGlobalView) {
+      query = query.eq('assigned_mortgage_officer', auth.user.id);
+    }
+
+    const { data: allLoans, error } = await query;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });

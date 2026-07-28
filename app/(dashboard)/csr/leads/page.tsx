@@ -204,12 +204,12 @@ export default function MyLeadsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1200px' }}>
+            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1270px' }}>
               <colgroup>
-                <col style={{ width: '200px' }} />
+                <col style={{ width: '230px' }} />
                 <col style={{ width: '130px' }} />
-                <col style={{ width: '220px' }} />
-                <col style={{ width: '110px' }} />
+                <col style={{ width: '250px' }} />
+                <col style={{ width: '120px' }} />
                 <col style={{ width: '100px' }} />
                 <col style={{ width: '160px' }} />
                 <col style={{ width: '110px' }} />
@@ -236,28 +236,28 @@ export default function MyLeadsPage() {
 
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                      <td className="px-4 py-4 font-medium text-gray-900 truncate" title={lead.client_name}>
+                      <td className="px-4 py-4 font-medium text-gray-900 break-words align-top">
                         {lead.client_name}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap">{lead.phone}</td>
-                      <td className="px-4 py-4 text-gray-600 truncate" title={lead.email}>
+                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{lead.phone}</td>
+                      <td className="px-4 py-4 text-gray-600 break-all align-top">
                         {lead.email}
                       </td>
-                      <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
+                      <td className="px-4 py-4 capitalize text-gray-700 break-words align-top">
                         {lead.insurence_category}
                       </td>
-                      <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
+                      <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap align-top">
                         {lead.policy_flow}
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 align-top">
                         <StageBadge stage={stage} />
                       </td>
-                      <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center">
+                      <td className="px-4 py-4 text-gray-500 whitespace-nowrap text-center align-top">
                         {new Date(lead.created_at).toLocaleDateString()}
                       </td>
 
                       {/* VIEW */}
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center align-top">
                         <Link
                           href={`/csr/leads/${lead.id}`}
                           className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
@@ -268,7 +268,7 @@ export default function MyLeadsPage() {
                       </td>
 
                       {/* ACTIONS */}
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 align-top">
                         {stage === 'Quoting in Progress' && (
                           <Link
                             href={`/csr/leads/send-form?id=${lead.id}`}

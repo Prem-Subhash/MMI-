@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { History, ArrowDown, User, Calendar, MessageSquare, Eye, X, ShieldCheck, Building2 } from 'lucide-react';
+import { History, ArrowDown, User, Calendar, MessageSquare, Eye, X, ShieldCheck, Building2, Edit3 } from 'lucide-react';
 import { MortgageStageHistory, StageCode } from '@/app/mortgage/lib/types';
 import { getStageConfig } from '@/app/mortgage/lib/stageFields';
 import { toast } from '@/lib/toast';
@@ -9,9 +9,10 @@ import { toast } from '@/lib/toast';
 interface StageHistorySectionProps {
   loanId: string;
   currentStage: StageCode;
+  onEditHistory?: (record: MortgageStageHistory) => void;
 }
 
-export default function StageHistorySection({ loanId, currentStage }: StageHistorySectionProps) {
+export default function StageHistorySection({ loanId, currentStage, onEditHistory }: StageHistorySectionProps) {
   const [history, setHistory] = useState<MortgageStageHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSnapshot, setSelectedSnapshot] = useState<MortgageStageHistory | null>(null);
@@ -109,58 +110,73 @@ export default function StageHistorySection({ loanId, currentStage }: StageHisto
             return (
               <div
                 key={record.id}
-                className="p-4 sm:p-5 rounded-xl bg-white border border-gray-200 shadow-sm space-y-3 transition-all hover:border-[#2E5C85] text-gray-800"
+                className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm"
               >
-                {/* Stage Transition & Action */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex flex-col items-start gap-1.5">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${prevConfig.badgeBg} ${prevConfig.badgeText}`}
-                    >
-                      {prevConfig.label || record.previous_stage}
-                    </span>
-                    <div className="pl-3 py-0.5 text-gray-400 font-bold text-xs flex items-center gap-1">
-                      <ArrowDown className="w-3.5 h-3.5 text-[#10B889]" />
+                <div className="bg-emerald-50/50 px-5 py-3 border-b border-emerald-100 flex items-center justify-between">
+                  <h3 className="font-bold text-emerald-700">{currConfig.label || record.current_stage}</h3>
+                  <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">
+                    {new Date(record.changed_at || Date.now()).toLocaleString()}
+                  </span>
+                </div>
+
+                <div className="p-5 space-y-3 text-gray-800">
+                  {/* Stage Transition & Action */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col items-start gap-1.5">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${prevConfig.badgeBg} ${prevConfig.badgeText}`}
+                      >
+                        Previous: {prevConfig.label || record.previous_stage}
+                      </span>
                     </div>
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${currConfig.badgeBg} ${currConfig.badgeText}`}
-                    >
-                      {currConfig.label || record.current_stage}
-                    </span>
+
+                    <div className="flex items-center gap-2">
+                      {onEditHistory && (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onEditHistory(record);
+                          }}
+                          className="p-1.5 text-gray-400 hover:text-[#2E5C85] hover:bg-[#2E5C85]/10 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                          title="Edit Historical Stage Data"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          <span className="hidden sm:inline">Edit</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSnapshot(record)}
+                        className="p-1.5 text-gray-400 hover:text-[#2E5C85] hover:bg-[#2E5C85]/10 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                        title="View Snapshot"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span className="hidden sm:inline">View</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      toast(`Viewing snapshot from ${formatTimestamp(record.changed_at)}`, 'info', 2000);
-                      setSelectedSnapshot(record);
-                    }}
-                    className="h-9 px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-2xs active:scale-95"
-                  >
-                    <Eye className="w-3.5 h-3.5 shrink-0" />
-                    <span>View Snapshot</span>
-                  </button>
+                  {/* Date & Time & Updated By */}
+                  <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 font-medium">
+                    <div className="flex items-center gap-1.5 text-gray-700">
+                      <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                      <span>{formatTimestamp(record.changed_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[#2E5C85] font-bold">
+                      <User className="w-3.5 h-3.5 shrink-0" />
+                      <span>Updated by: {record.updated_by || 'Mortgage Admin'}</span>
+                    </div>
+                  </div>
+
+                  {/* Remarks if provided */}
+                  {record.remarks && (
+                    <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700 font-medium flex items-start gap-2">
+                      <MessageSquare className="w-3.5 h-3.5 text-[#10B889] shrink-0 mt-0.5" />
+                      <span className="whitespace-pre-wrap">{record.remarks}</span>
+                    </div>
+                  )}
                 </div>
-
-                {/* Date & Time & Updated By */}
-                <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-600 font-medium">
-                  <div className="flex items-center gap-1.5 text-gray-700">
-                    <Calendar className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-                    <span>{formatTimestamp(record.changed_at)}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 text-[#2E5C85] font-bold">
-                    <User className="w-3.5 h-3.5 shrink-0" />
-                    <span>Updated by: {record.updated_by || 'Mortgage Admin'}</span>
-                  </div>
-                </div>
-
-                {/* Remarks if provided */}
-                {record.remarks && (
-                  <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700 font-medium flex items-start gap-2">
-                    <MessageSquare className="w-3.5 h-3.5 text-[#10B889] shrink-0 mt-0.5" />
-                    <span className="whitespace-pre-wrap">{record.remarks}</span>
-                  </div>
-                )}
               </div>
             );
           })}

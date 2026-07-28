@@ -1,22 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, EyeOff, Mail, Lock, CheckSquare, ArrowLeft } from 'lucide-react'
 import Footer from '@/components/layout/Footer'
 import { toast } from '@/lib/toast'
-
-/* ================= CAPTCHA GENERATOR ================= */
-const generateCaptcha = () => {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  let result = ''
-  for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return result
-}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -26,17 +16,8 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
 
-  // Captcha State
-  const [captcha, setCaptcha] = useState('')
-  const [captchaInput, setCaptchaInput] = useState('')
-
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-
-  /* 🔄 Generate captcha on page load */
-  useEffect(() => {
-    setCaptcha(generateCaptcha())
-  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,13 +25,6 @@ export default function LoginPage() {
 
     if (!email || !password) {
       setError('Email and password are required')
-      return
-    }
-
-    if (captchaInput.trim().toUpperCase() !== captcha) {
-      setError('Invalid captcha')
-      setCaptcha(generateCaptcha()) // regenerate
-      setCaptchaInput('')
       return
     }
 
@@ -66,8 +40,6 @@ export default function LoginPage() {
     if (error) {
       setError('Invalid email or password. Please try again.')
       toast('Invalid email or password. Please try again.', 'error')
-      setCaptcha(generateCaptcha())
-      setCaptchaInput('')
       return
     }
 
@@ -112,16 +84,12 @@ export default function LoginPage() {
       await supabase.auth.signOut()
       setError('Your account does not have access to this portal.')
       toast('Your account does not have access to this portal.', 'error')
-      setCaptcha(generateCaptcha())
-      setCaptchaInput('')
       return
     }
 
     await supabase.auth.signOut()
     setError('Invalid email or password. Please try again.')
     toast('Invalid email or password. Please try again.', 'error')
-    setCaptcha(generateCaptcha())
-    setCaptchaInput('')
     return
   }
 
@@ -246,23 +214,6 @@ export default function LoginPage() {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-              </div>
-
-              {/* CAPTCHA */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                <div
-                  className="w-full sm:w-32 h-12 bg-gray-100/80 flex items-center justify-center font-bold tracking-[0.25em] rounded-xl border border-gray-200 text-gray-700 select-none pointer-events-none text-lg shadow-inner shrink-0"
-                  onCopy={e => e.preventDefault()}
-                >
-                  {captcha}
-                </div>
-                <input
-                  type="text"
-                  placeholder="Enter Captcha"
-                  className="flex-1 px-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500/50 focus:border-teal-500 transition-all duration-300 text-sm uppercase shadow-sm text-center sm:text-left font-medium"
-                  value={captchaInput}
-                  onChange={e => setCaptchaInput(e.target.value.toUpperCase())}
-                />
               </div>
 
               {/* Remember Me & Forgot Password */}

@@ -32,6 +32,7 @@ import {
 } from '@/app/mortgage/lib/excelLookups';
 import LoanFormModal from './LoanFormModal';
 import LoanDetailModal from './LoanDetailModal';
+import StageHistoryModal from './StageHistoryModal';
 
 interface PipelineViewProps {
   pipelineType: PipelineType;
@@ -65,6 +66,10 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
   const [selectedCreatePipeline, setSelectedCreatePipeline] = useState<PipelineType>(pipelineType);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingLoan, setEditingLoan] = useState<MortgageLoan | null>(null);
+  const [editingHistoryRecord, setEditingHistoryRecord] = useState<any>(null);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [historyLoanId, setHistoryLoanId] = useState<string | null>(null);
+  const [historyLoanStage, setHistoryLoanStage] = useState<any>(null);
   const [detailLoan, setDetailLoan] = useState<MortgageLoan | null>(null);
 
   const pipelineStages = MORTGAGE_STAGES.filter((s) => s.pipeline === pipelineType);
@@ -175,11 +180,11 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
 
   return (
     <div className="flex-1 flex flex-col min-h-0 space-y-6">
-      
+
       {/* Top Action & Search Bar */}
       <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          
+
           {/* Search Bar */}
           <div className="relative flex-1 min-w-[240px] sm:min-w-[280px] max-w-md w-full sm:w-auto">
             <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -199,11 +204,10 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
               <button
                 type="button"
                 onClick={() => setViewMode('KANBAN')}
-                className={`h-8 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  viewMode === 'KANBAN'
+                className={`h-8 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${viewMode === 'KANBAN'
                     ? 'bg-[#2E5C85] text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 <LayoutGrid className="w-3.5 h-3.5" />
                 <span>Kanban</span>
@@ -212,11 +216,10 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
               <button
                 type="button"
                 onClick={() => setViewMode('TABLE')}
-                className={`h-8 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
-                  viewMode === 'TABLE'
+                className={`h-8 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${viewMode === 'TABLE'
                     ? 'bg-[#2E5C85] text-white shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 <TableIcon className="w-3.5 h-3.5" />
                 <span>Table</span>
@@ -404,14 +407,11 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
                           >
                             <button
                               type="button"
-                              onClick={() => {
-                                setEditingLoan(loan);
-                                setIsFormOpen(true);
-                              }}
-                              className="h-8 w-8 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors inline-flex items-center justify-center"
-                              title="Edit"
+                              onClick={() => setDetailLoan(loan)}
+                              className="p-1.5 rounded-lg hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 transition-colors"
+                              title="View Details"
                             >
-                              <Edit3 className="w-3.5 h-3.5" />
+                              <Eye className="w-3.5 h-3.5" />
                             </button>
                             <button
                               type="button"
@@ -498,14 +498,11 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
                         >
                           <button
                             type="button"
-                            onClick={() => {
-                              setEditingLoan(loan);
-                              setIsFormOpen(true);
-                            }}
-                            className="h-8 w-8 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors inline-flex items-center justify-center"
-                            title="Edit"
+                            onClick={() => setDetailLoan(loan)}
+                            className="p-1.5 rounded-lg hover:bg-indigo-50 text-gray-500 hover:text-indigo-600 transition-colors"
+                            title="View Details"
                           >
-                            <Edit3 className="w-4 h-4" />
+                            <Eye className="w-4 h-4" />
                           </button>
                           <button
                             type="button"
@@ -564,13 +561,24 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
         defaultPipelineType={editingLoan ? editingLoan.pipeline_type : selectedCreatePipeline}
         onSuccess={(savedLoan) => {
           fetchLoans();
+          if (editingHistoryRecord) {
+            setIsHistoryModalOpen(true);
+          }
         }}
+        editingHistoryRecord={editingHistoryRecord}
+        isHidden={isHistoryModalOpen}
       />
 
       {/* Detail Drawer Modal */}
       <LoanDetailModal
         isOpen={!!detailLoan}
         loan={detailLoan}
+        isHidden={isHistoryModalOpen}
+        onViewHistory={() => {
+          setHistoryLoanId(detailLoan?.id || null);
+          setHistoryLoanStage(detailLoan?.stage || null);
+          setIsHistoryModalOpen(true);
+        }}
         onClose={() => setDetailLoan(null)}
         onEdit={(loan) => {
           setDetailLoan(null);

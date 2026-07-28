@@ -146,7 +146,7 @@ export default function ActivityLogPage() {
                 </div>
                 
                 <div className="min-w-0">
-                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#2E5C85] transition-colors truncate">
+                  <h3 className="text-xl font-bold text-gray-900 group-hover:text-[#2E5C85] transition-colors break-words">
                     {item.name}
                   </h3>
                   <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-1">

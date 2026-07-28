@@ -108,14 +108,12 @@ export default function HomePage() {
       {/* Content */}
       <section style={content}>
         <div className="max-w-3xl">
-          <h1 style={heading} className='text-4xl font-extrabold tracking-tight mb-2 drop-shadow-sm'>Welcome,</h1>
-          <h1 style={heading}>
-            Your Key to a Brighter <br /> Future
+          <h1 style={heading} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight drop-shadow-sm">
+            Welcome to Your Workspace
           </h1>
 
           <p style={subheading}>
-            Trusted mortgage solutions built on transparency,
-            speed, and reliability.
+            Select a platform below to manage your clients, pipelines, and daily operations.
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { authenticateApiRequest } from '@/utils/auth'
+import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
 
 export async function POST(req: Request) {
   try {
@@ -16,26 +16,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing leadId' }, { status: 400 })
     }
 
-    /* ================= 1. FETCH CURRENT DATA ================= */
-    const { data: lead, error: leadError } = await supabaseServer
-      .from('temp_leads_basics')
-      .select('client_name, email, phone, client_id, policy_type, lead_policies(policy_type), business_name')
-      .eq('id', leadId)
-      .single()
-
-    if (leadError || !lead) {
-      return NextResponse.json({ error: 'Lead not found' }, { status: 404 })
+    /* ================= 1. AUTHORIZE & FETCH DATA ================= */
+    const authLead = await authorizeLeadAccess(auth.profile, leadId)
+    if (!authLead.authorized || !authLead.lead) {
+      return NextResponse.json(
+        { error: authLead.error || 'Lead not found' },
+        { status: authLead.status || 404 }
+      )
     }
+    const lead = authLead.lead
 
     /* ================= 2. NORMALIZE & COMPARE ================= */
     const cleanPhone = (p: string) => p.replace(/\D/g, '').slice(0, 10)
     
+    // Fetch lead_policies since authorizeLeadAccess only selects '*'
+    const { data: policiesData } = await supabaseServer
+      .from('lead_policies')
+      .select('policy_type')
+      .eq('lead_id', leadId)
+
     const oldName = lead.client_name || ''
     const oldEmail = lead.email || ''
     const oldPhone = cleanPhone(lead.phone || '')
     const oldBusinessName = lead.business_name || ''
-    const oldPolicies = lead.lead_policies?.length > 0
-      ? lead.lead_policies.map((p: any) => p.policy_type)
+    const oldPolicies = policiesData && policiesData.length > 0
+      ? policiesData.map((p: any) => p.policy_type)
       : lead.policy_type ? [lead.policy_type] : []
     
     const newName = (client_name || '').trim()

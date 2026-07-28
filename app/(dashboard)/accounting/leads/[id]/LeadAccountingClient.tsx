@@ -248,8 +248,8 @@ export default function LeadAccountingClient({
       {/* ── Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight leading-tight">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-black text-gray-800 tracking-tight leading-tight break-words">
               {lead.client_name}
             </h1>
             {getStatusBadge(lead.accounting_status)}
@@ -260,14 +260,14 @@ export default function LeadAccountingClient({
             )}
           </div>
           <p className="text-gray-500 text-sm">
-            ID: <span className="font-mono text-xs">{lead.id}</span>
+            ID: <span className="font-mono text-xs break-all">{lead.id}</span>
           </p>
         </div>
 
         <button 
           onClick={fetchLeadAndLogs}
           disabled={refreshing}
-          className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 border border-gray-200 rounded-xl font-bold text-xs shadow-sm transition disabled:opacity-50"
+          className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 border border-gray-200 rounded-xl font-bold text-xs shadow-sm transition disabled:opacity-50 shrink-0 self-start"
         >
           <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
           {refreshing ? 'Syncing...' : 'Sync Database'}
@@ -277,21 +277,21 @@ export default function LeadAccountingClient({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* ── LEFT COLUMN (POLICY INFO & AUDIT TRAIL) ── */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-6 min-w-0">
           
           {/* Section 1: Client / Policy Info */}
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-6 min-w-0">
             <div className="flex items-center gap-2.5 pb-4 border-b border-gray-50">
-              <div className="p-2 bg-blue-50 text-[#2E5C85] rounded-xl">
+              <div className="p-2 bg-blue-50 text-[#2E5C85] rounded-xl shrink-0">
                 <Layers size={18} />
               </div>
               <h2 className="text-lg font-black text-gray-800">Client & Policy Information</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Client Name</p>
-                <p className="text-sm font-black text-gray-700">{lead.client_name || 'N/A'}</p>
+                <p className="text-sm font-black text-gray-700 break-words">{lead.client_name || 'N/A'}</p>
               </div>
 
               <div className="space-y-1">
@@ -313,25 +313,25 @@ export default function LeadAccountingClient({
                 </a>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Email Address</p>
-                <a href={lead.email ? `mailto:${lead.email}` : '#'} className="text-sm font-bold text-[#2E5C85] hover:underline flex items-center gap-1 truncate block max-w-full">
-                  <Mail size={12} className="shrink-0" /> {lead.email || 'N/A'}
+                <a href={lead.email ? `mailto:${lead.email}` : '#'} className="text-sm font-bold text-[#2E5C85] hover:underline flex items-start gap-1.5 break-all">
+                  <Mail size={12} className="shrink-0 mt-1" /> {lead.email || 'N/A'}
                 </a>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Carrier</p>
-                <p className="text-sm font-bold text-gray-700">
+                <p className="text-sm font-bold text-gray-700 break-words">
                   {active.activeCarrier || 'N/A'}
-                  {active.isSwitched && <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">Switched</span>}
+                  {active.isSwitched && <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold inline-block">Switched</span>}
                 </p>
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Policy Number</p>
-                <p className="text-sm font-bold text-gray-700 font-mono flex items-center gap-1">
-                  <Hash size={12} /> {active.activePolicyNumber || 'N/A'}
+                <p className="text-sm font-bold text-gray-700 font-mono flex items-start gap-1.5 break-all">
+                  <Hash size={12} className="shrink-0 mt-1" /> {active.activePolicyNumber || 'N/A'}
                 </p>
               </div>
 

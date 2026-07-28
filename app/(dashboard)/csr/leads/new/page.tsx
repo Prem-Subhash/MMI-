@@ -2,7 +2,8 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { canAccessInsuranceCategory } from '@/utils/authClient'
 import { toast } from '@/lib/toast'
 import Loading from '@/components/ui/Loading'
 import {
@@ -20,8 +21,24 @@ import EmailModal from '@/components/email/EmailModal'
 
 function NewLeadContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const initialCategory = searchParams.get('category') || ''
   const initialFlow = searchParams.get('flow') || 'new'
+
+  useEffect(() => {
+    let mounted = true
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user && mounted) {
+        const { data: prof } = await supabase.from('profiles').select('role, insurance_access').eq('id', user.id).single()
+        if (!canAccessInsuranceCategory(prof, initialCategory)) {
+          router.replace('/unauthorized')
+        }
+      }
+    }
+    if (initialCategory) checkAuth()
+    return () => { mounted = false }
+  }, [initialCategory, router])
 
   /* ---------------- STATE ---------------- */
   const [isLocked, setIsLocked] = useState(false)

@@ -7,19 +7,19 @@ import {
   UserPlus,
   Trash2,
   Save,
-  CheckCircle2,
-  DollarSign,
   FileText,
   Users,
-  Landmark,
-  ShieldCheck,
   AlertCircle,
-  ChevronDown
+  ChevronDown,
+  ShieldAlert,
+  XCircle,
+  CheckCircle2
 } from 'lucide-react'
 import { toast } from '@/lib/toast'
-import SectionELenderInfo from '@/components/lending/SectionELenderInfo'
+import { formatUSPhone } from '@/app/lending/lib/utils'
+import { LENDING_STAGES } from '@/app/lending/lib/constants'
 
-export const CITIZENSHIP_OPTIONS = [
+const CITIZENSHIP_OPTIONS = [
   { label: 'US Citizen', value: 'US Citizen' },
   { label: 'Permanent Resident', value: 'Permanent Resident' },
   { label: 'Visa Holder', value: 'Visa Holder' },
@@ -38,70 +38,38 @@ interface Partner {
 
 export default function LendingAddLoanFormPage() {
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<'tab1' | 'tab2' | 'tab3'>('tab1')
+  const [activeTab, setActiveTab] = useState<'tab1' | 'tab2'>('tab1')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Tab 1 State
   const [inquiryDate, setInquiryDate] = useState(new Date().toISOString().split('T')[0])
-  const [borrowerName, setBorrowerName] = useState('Apex Logistics LLC')
-  const [clientLegalName, setClientLegalName] = useState('Robert Vance')
-  const [clientPhone, setClientPhone] = useState('(312) 555-0198')
-  const [clientEmail, setClientEmail] = useState('rvance@apexlogistics.com')
-  const [clientCreditScore, setClientCreditScore] = useState('740')
+  const [borrowerName, setBorrowerName] = useState('')
+  const [clientLegalName, setClientLegalName] = useState('')
+  const [clientPhone, setClientPhone] = useState('')
+  const [clientEmail, setClientEmail] = useState('')
+  const [clientCreditScore, setClientCreditScore] = useState('')
   const [loanType, setLoanType] = useState('SBA 7a')
   const [loanPurpose, setLoanPurpose] = useState('Acquisition')
   const [natureOfLoan, setNatureOfLoan] = useState('Gas Station')
-  const [address, setAddress] = useState('742 Evergreen Terrace, Chicago, IL 60601')
-  const [loanSummary, setLoanSummary] = useState('Acquisition of operating 12-pump fuel station with convenience store. Strong historical EBITDA and real estate included.')
-  const [purchasePrice, setPurchasePrice] = useState('1450000')
-  const [downPayment, setDownPayment] = useState('20')
+  const [address, setAddress] = useState('')
+  const [loanSummary, setLoanSummary] = useState('')
+  const [purchasePrice, setPurchasePrice] = useState('')
+  const [downPayment, setDownPayment] = useState('')
+  const [brokerCommission, setBrokerCommission] = useState('')
 
   // Tab 2 State (Partners & Leads)
   const [partners, setPartners] = useState<Partner[]>([
-    { id: '1', fullName: 'Robert Vance', mobile: '(312) 555-0198', email: 'rvance@apexlogistics.com', ownership: '60', citizenshipStatus: 'US Citizen' },
-    { id: '2', fullName: 'Sarah Vance', mobile: '(312) 555-0199', email: 'svance@apexlogistics.com', ownership: '40', citizenshipStatus: 'US Citizen' }
+    { id: '1', fullName: '', mobile: '', email: '', ownership: '100', citizenshipStatus: '' }
   ])
+
+  const totalOwnership = partners.reduce((sum, p) => sum + (Number(p.ownership) || 0), 0)
+
   const [leadSource, setLeadSource] = useState('Loan Officer')
-  const [referralName, setReferralName] = useState('David Miller (Senior LO)')
-
-  // Tab 3 State (Lenders & Deposits)
-  const [selectedLenders, setSelectedLenders] = useState<string[]>(['American Commercial Bank & Trust', 'Byline Bank'])
-  const [lenderContactName, setLenderContactName] = useState('Michael Chang (VP Lending)')
-  const [lenderContactEmail, setLenderContactEmail] = useState('mchang@amcombank.com')
-  const [lenderContactPhone, setLenderContactPhone] = useState('(312) 888-4321')
-  const [accutaxAmountReq, setAccutaxAmountReq] = useState('2500')
-  const [accurateLendingAmountReq, setAccurateLendingAmountReq] = useState('2500')
-  const [internalAmountRec, setInternalAmountRec] = useState('5000')
-  const [bankAmountReq, setBankAmountReq] = useState('10000')
-  const [bankAmountRec, setBankAmountRec] = useState('10000')
-
-  const availableBanks = [
-    'American Commercial Bank & Trust',
-    'Byline Bank',
-    'Celtic Bank',
-    'Center Stone SBA Lending',
-    'First Financial Bank',
-    'Harvest Bank',
-    'LakeSide Bank',
-    'Merchants Bank',
-    'US Bank'
-  ]
-
-  const toggleLender = (bank: string) => {
-    if (selectedLenders.includes(bank)) {
-      if (selectedLenders.length <= 1) {
-        toast('At least one bank must remain selected', 'error')
-        return
-      }
-      setSelectedLenders(selectedLenders.filter(l => l !== bank))
-    } else {
-      setSelectedLenders([...selectedLenders, bank])
-    }
-  }
+  const [referralName, setReferralName] = useState('')
 
   const handleAddPartner = () => {
-    const newId = (partners.length + 1).toString()
+    const newId = (Date.now()).toString()
     setPartners([...partners, { id: newId, fullName: '', mobile: '', email: '', ownership: '', citizenshipStatus: '' }])
-    toast('Added new partner input section', 'info')
   }
 
   const handleRemovePartner = (id: string) => {
@@ -113,17 +81,88 @@ export default function LendingAddLoanFormPage() {
   }
 
   const handlePartnerChange = (id: string, field: keyof Partner, value: string) => {
-    setPartners(partners.map(p => p.id === id ? { ...p, [field]: value } : p))
+    let finalValue = field === 'mobile' ? formatUSPhone(value) : value
+
+    if (field === 'ownership') {
+      const numValue = Number(finalValue)
+      if (!isNaN(numValue) && finalValue !== '') {
+        const totalOther = partners.filter(p => p.id !== id).reduce((sum, p) => sum + (Number(p.ownership) || 0), 0)
+        const maxAllowed = 100 - totalOther
+        if (numValue > maxAllowed) {
+          finalValue = maxAllowed.toString()
+        }
+      }
+    }
+
+    setPartners(partners.map(p => p.id === id ? { ...p, [field]: finalValue } : p))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast('Commercial Loan Application saved (UI Prototype Demo)', 'success', 4000)
-    router.push('/lending/pipeline')
+
+    // Validation
+    if (!borrowerName) {
+      toast('Borrower name is required', 'error')
+      setActiveTab('tab1')
+      return
+    }
+
+    if (totalOwnership !== 100) {
+      toast(`The total ownership percentage must equal exactly 100%.`, 'error')
+      setActiveTab('tab2')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      const payload = {
+        inquiry_date: inquiryDate,
+        borrower_name: borrowerName,
+        client_legal_name: clientLegalName,
+        client_phone: clientPhone,
+        client_email: clientEmail,
+        // [Pending DB Update] estimated_credit_score: clientCreditScore,
+        loan_type: loanType,
+        loan_purpose: loanPurpose,
+        nature_of_loan: natureOfLoan,
+        business_address: address,
+        loan_summary: loanSummary,
+        purchase_price: purchasePrice ? Number(purchasePrice) : null,
+        down_payment_percent: downPayment ? Number(downPayment) : null,
+        // [Pending DB Update] broker_commission: brokerCommission,
+        lead_source: leadSource,
+        referral_name: referralName,
+        current_stage: LENDING_STAGES[0],
+        partners: partners.map(p => ({
+          full_name: p.fullName,
+          mobile: p.mobile,
+          email: p.email,
+          ownership_percent: p.ownership
+        }))
+      }
+
+      const res = await fetch('/api/lending/loans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      const json = await res.json()
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to create loan application')
+      }
+
+      toast('Commercial Loan Application saved successfully', 'success')
+      router.push('/lending/pipeline')
+    } catch (err: any) {
+      toast(err.message, 'error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <div className="w-full space-y-6 animate-fade-in max-w-6xl mx-auto">
+    <div className="w-full space-y-6 animate-fade-in max-w-6xl mx-auto mb-16">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm">
         <div>
@@ -138,11 +177,6 @@ export default function LendingAddLoanFormPage() {
             Sectioned tab layout implementing exact business fields for commercial borrower onboarding.
           </p>
         </div>
-
-        <div className="flex items-center gap-2 px-3.5 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-xs font-extrabold shadow-2xs">
-          <AlertCircle size={16} className="text-amber-600" />
-          <span>Prototype Form (No CRUD Persistence)</span>
-        </div>
       </div>
 
       {/* Navigation Tabs */}
@@ -152,7 +186,7 @@ export default function LendingAddLoanFormPage() {
           onClick={() => setActiveTab('tab1')}
           className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-sm transition-all ${
             activeTab === 'tab1'
-              ? 'bg-brand text-white shadow-md'
+              ? 'bg-[#10B889] text-white shadow-md'
               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
           }`}
         >
@@ -165,25 +199,12 @@ export default function LendingAddLoanFormPage() {
           onClick={() => setActiveTab('tab2')}
           className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-sm transition-all ${
             activeTab === 'tab2'
-              ? 'bg-brand text-white shadow-md'
+              ? 'bg-[#10B889] text-white shadow-md'
               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
           }`}
         >
           <Users size={18} />
           <span>Tab 2: Partners &amp; Leads (Sec C–D)</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('tab3')}
-          className={`flex-1 flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-xl font-bold text-sm transition-all ${
-            activeTab === 'tab3'
-              ? 'bg-brand text-white shadow-md'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-          }`}
-        >
-          <Landmark size={18} />
-          <span>Tab 3: Lender &amp; Deposits (Sec E–G)</span>
         </button>
       </div>
 
@@ -210,18 +231,19 @@ export default function LendingAddLoanFormPage() {
                     type="date"
                     value={inquiryDate}
                     onChange={e => setInquiryDate(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Borrower / Company Name</label>
+                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Borrower / Company Name *</label>
                   <input
                     type="text"
+                    required
                     value={borrowerName}
                     onChange={e => setBorrowerName(e.target.value)}
                     placeholder="e.g. Apex Logistics LLC"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
 
@@ -232,7 +254,7 @@ export default function LendingAddLoanFormPage() {
                     value={clientLegalName}
                     onChange={e => setClientLegalName(e.target.value)}
                     placeholder="e.g. Robert Vance"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
 
@@ -241,9 +263,9 @@ export default function LendingAddLoanFormPage() {
                   <input
                     type="text"
                     value={clientPhone}
-                    onChange={e => setClientPhone(e.target.value)}
+                    onChange={e => setClientPhone(formatUSPhone(e.target.value))}
                     placeholder="(312) 555-0198"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
 
@@ -254,7 +276,7 @@ export default function LendingAddLoanFormPage() {
                     value={clientEmail}
                     onChange={e => setClientEmail(e.target.value)}
                     placeholder="rvance@apexlogistics.com"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
 
@@ -264,7 +286,7 @@ export default function LendingAddLoanFormPage() {
                     <select
                       value={loanType}
                       onChange={e => setLoanType(e.target.value)}
-                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                     >
                       <option value="SBA 7a">SBA 7a</option>
                       <option value="SBA 504">SBA 504</option>
@@ -284,7 +306,7 @@ export default function LendingAddLoanFormPage() {
                     <select
                       value={loanPurpose}
                       onChange={e => setLoanPurpose(e.target.value)}
-                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                     >
                       <option value="Acquisition">Acquisition</option>
                       <option value="Refinance">Refinance</option>
@@ -301,7 +323,7 @@ export default function LendingAddLoanFormPage() {
                     <select
                       value={natureOfLoan}
                       onChange={e => setNatureOfLoan(e.target.value)}
-                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                      className="appearance-none w-full pl-4 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                     >
                       <option value="Cannabis Dispensary">Cannabis Dispensary</option>
                       <option value="Day Care">Day Care</option>
@@ -330,7 +352,7 @@ export default function LendingAddLoanFormPage() {
                     value={address}
                     onChange={e => setAddress(e.target.value)}
                     placeholder="742 Evergreen Terrace, Chicago, IL 60601"
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
 
@@ -341,7 +363,7 @@ export default function LendingAddLoanFormPage() {
                     value={loanSummary}
                     onChange={e => setLoanSummary(e.target.value)}
                     placeholder="Provide executive summary of the commercial loan request..."
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#10B889] focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -357,7 +379,7 @@ export default function LendingAddLoanFormPage() {
                 <p className="text-xs text-slate-500 mt-0.5">Capital structure, valuation, and borrower down payment commitments.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Purchase Price / Total Valuation ($)</label>
                   <div className="relative">
@@ -385,6 +407,23 @@ export default function LendingAddLoanFormPage() {
                     <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5 flex items-center gap-2">
+                      <span>Broker Commission ($)</span>
+                      <span className="text-[9px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded uppercase">[Pending DB Update]</span>
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 font-bold">$</span>
+                    <input
+                      type="number"
+                      disabled
+                      value={brokerCommission}
+                      onChange={e => setBrokerCommission(e.target.value)}
+                      className="w-full pl-8 pr-4 py-3 bg-gray-100 border border-gray-200 rounded-xl text-base font-extrabold text-slate-400 cursor-not-allowed transition-all"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -395,7 +434,7 @@ export default function LendingAddLoanFormPage() {
                   setActiveTab('tab2')
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
-                className="bg-brand hover:bg-brand-dark text-white font-bold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm"
+                className="bg-[#10B889] hover:bg-[#0c966f] text-white font-bold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm"
               >
                 <span>Continue to Tab 2: Partners &amp; Leads</span>
                 <span>→</span>
@@ -415,7 +454,7 @@ export default function LendingAddLoanFormPage() {
                     <span className="w-7 h-7 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center text-xs font-extrabold">C</span>
                     <span>Section C — Partner Information ({partners.length} Active)</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">Dynamic visual repetition block for multi-member ownership entities.</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Total ownership must exactly equal 100%.</p>
                 </div>
 
                 <button
@@ -452,6 +491,7 @@ export default function LendingAddLoanFormPage() {
                         <label className="block text-[11px] font-bold uppercase text-gray-600 mb-1">First &amp; Last Name</label>
                         <input
                           type="text"
+                          required
                           value={partner.fullName}
                           onChange={e => handlePartnerChange(partner.id, 'fullName', e.target.value)}
                           placeholder="e.g. Robert Vance"
@@ -487,13 +527,15 @@ export default function LendingAddLoanFormPage() {
                           <div className="relative">
                             <input
                               type="number"
+                              required
                               value={partner.ownership}
                               onChange={e => handlePartnerChange(partner.id, 'ownership', e.target.value)}
                               placeholder="50"
-                              className="w-full pl-3.5 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-sm font-extrabold focus:ring-2 focus:ring-purple-500 transition-all"
+                              className={`w-full pl-3.5 pr-8 py-2 bg-white border rounded-xl text-sm font-extrabold outline-none transition-all ${totalOwnership > 100 ? 'border-rose-500 focus:ring-2 focus:ring-rose-500' : totalOwnership < 100 ? 'border-amber-400 focus:ring-2 focus:ring-amber-500' : 'border-emerald-500 focus:ring-2 focus:ring-emerald-500'}`}
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
                           </div>
+                          <p className="text-[10px] text-gray-500 mt-1 font-semibold">Remaining ownership: {100 - partners.filter(p => p.id !== partner.id).reduce((sum, p) => sum + (Number(p.ownership) || 0), 0)}%</p>
                         </div>
 
                         <div>
@@ -518,6 +560,25 @@ export default function LendingAddLoanFormPage() {
                     </div>
                   </div>
                 ))}
+
+                <div className={`mt-4 p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-colors ${totalOwnership === 100 ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : totalOwnership > 100 ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-amber-50 border-amber-200 text-amber-900'}`}>
+                  <div className="flex items-center gap-2.5 font-bold">
+                    {totalOwnership === 100 ? (
+                      <CheckCircle2 size={20} className="text-emerald-600 shrink-0" />
+                    ) : totalOwnership > 100 ? (
+                      <XCircle size={20} className="text-rose-600 shrink-0" />
+                    ) : (
+                      <AlertCircle size={20} className="text-amber-600 shrink-0" />
+                    )}
+                    <span>
+                      {totalOwnership === 100 
+                        ? '✓ Total ownership is 100%.' 
+                        : totalOwnership > 100 
+                        ? `⚠ Total ownership exceeds 100% by ${totalOwnership - 100}%.`
+                        : `⚠ Remaining ownership: ${100 - totalOwnership}%.`}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -567,169 +628,18 @@ export default function LendingAddLoanFormPage() {
                   setActiveTab('tab1')
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                 }}
-                className="bg-emerald-500 hover:bg-emerald-300 text-white font-bold py-3 px-6 rounded-xl transition-all text-sm"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-xl transition-all text-sm"
               >
                 ← Back to Tab 1
               </button>
 
               <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('tab3')
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
-                className="bg-brand hover:bg-brand-dark text-white font-bold py-3 px-6 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-sm"
-              >
-                <span>Continue to Tab 3: Lender &amp; Deposits</span>
-                <span>→</span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ==================== TAB 3: LENDER & DEPOSITS ==================== */}
-        {activeTab === 'tab3' && (
-          <div className="space-y-6 animate-fade-in">
-                       {/* Section E - Refactored Dynamic Reusable Component */}
-            <SectionELenderInfo />
-
-            {/* Quick Link to Stage 5 Term Sheet Received UI */}
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => router.push('/lending/term-sheet-received')}
-                className="px-4 py-2.5 bg-brand text-white rounded-xl text-xs font-extrabold shadow-sm hover:opacity-95 transition-all flex items-center gap-1.5"
-              >
-                <Landmark size={15} />
-                <span>Open Stage 5: Term Sheet Received &amp; Multi-Bank Document Uploads →</span>
-              </button>
-            </div>
-
-            {/* Section F */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="border-b border-gray-100 pb-4">
-                <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center text-xs font-extrabold">F</span>
-                  <span>Section F — Internal Good Faith Deposit</span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Accurate Lending good faith escrow and commitment verification.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Accutax Amount Requested ($)</label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                    <input
-                      type="number"
-                      value={accutaxAmountReq}
-                      onChange={e => setAccutaxAmountReq(e.target.value)}
-                      placeholder="2500"
-                      className="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Accurate Lending Amount Requested ($)</label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                    <input
-                      type="number"
-                      value={accurateLendingAmountReq}
-                      onChange={e => setAccurateLendingAmountReq(e.target.value)}
-                      placeholder="2500"
-                      className="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Actual Amount Received ($)</label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                    <input
-                      type="number"
-                      value={internalAmountRec}
-                      onChange={e => setInternalAmountRec(e.target.value)}
-                      placeholder="5000"
-                      className="w-full pl-8 pr-4 py-2.5 bg-emerald-50/50 border border-emerald-300 rounded-xl text-sm font-extrabold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Section G */}
-            <div className="bg-white border border-gray-200/80 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="border-b border-gray-100 pb-4">
-                <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center text-xs font-extrabold">G</span>
-                  <span>Section G — Bank Good Faith Deposit</span>
-                </h2>
-                <p className="text-xs text-slate-500 mt-0.5">Financial institution commitment escrow tracking.</p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Assigned Bank(s)</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={selectedLenders.join(', ') || 'None selected'}
-                    className="w-full px-4 py-2.5 bg-gray-100 border border-gray-300 rounded-xl text-sm font-bold text-gray-700 cursor-not-allowed truncate"
-                    title={selectedLenders.join(', ')}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Requested Amount ($)</label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                    <input
-                      type="number"
-                      value={bankAmountReq}
-                      onChange={e => setBankAmountReq(e.target.value)}
-                      placeholder="10000"
-                      className="w-full pl-8 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold uppercase text-gray-700 mb-1.5">Actual Amount Received ($)</label>
-                  <div className="relative">
-                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                    <input
-                      type="number"
-                      value={bankAmountRec}
-                      onChange={e => setBankAmountRec(e.target.value)}
-                      placeholder="10000"
-                      className="w-full pl-8 pr-4 py-2.5 bg-emerald-50/50 border border-emerald-300 rounded-xl text-sm font-extrabold text-emerald-900 focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-between pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveTab('tab2')
-                  window.scrollTo({ top: 0, behavior: 'smooth' })
-                }}
-                className="bg-emerald-500 hover:bg-emerald-300 text-white font-bold py-3 px-6 rounded-xl transition-all text-sm"
-              >
-                ← Back to Tab 2
-              </button>
-
-              <button
                 type="submit"
-                className="bg-brand hover:bg-brand-dark text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-base"
+                disabled={isSubmitting || totalOwnership !== 100}
+                className="bg-[#10B889] hover:bg-[#0c966f] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3.5 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2 text-base"
               >
                 <Save size={20} />
-                <span>Save Loan Application (UI Prototype)</span>
+                <span>{isSubmitting ? 'Saving...' : 'Save Loan Application'}</span>
               </button>
             </div>
           </div>

@@ -253,9 +253,13 @@ function AdminNewLeadContent() {
                 return
             }
 
-            const primaryPolicy = selectedPolicies[0];
+            const leadGroupId = typeof crypto !== 'undefined' && crypto.randomUUID 
+                ? crypto.randomUUID() 
+                : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
 
-      
             let finalPipelineId = ''
             if (form.policy_flow === 'renewal') {
                 const pipelineName = form.insurence_category === 'commercial' 
@@ -279,39 +283,44 @@ function AdminNewLeadContent() {
                     : 'f77d068d-1754-421b-b2ce-d527ec8bd0f3'
             }
 
-            const { data: lead, error } = await supabase
-                .from('temp_leads_basics')
-                .insert({
-                    policy_type: primaryPolicy,
-                    ...form,
+            const leadsToInsert = selectedPolicies.map((policy) => {
+                const { policy_type: _, ...restForm } = form;
+                return {
+                    ...restForm,
+                    policy_type: policy,
                     send_email_to_client: form.send_email_to_client ?? false,
                     is_additional_quote: forceAdditionalQuote,
                     client_id: clientId,
                     assigned_csr: null,
                     pipeline_id: finalPipelineId,
-                })
-                .select()
-                .single();
+                    lead_group_id: leadGroupId
+                };
+            });
 
-            if (error || !lead) throw error;
+            const { data: insertedLeads, error } = await supabase
+                .from('temp_leads_basics')
+                .insert(leadsToInsert)
+                .select();
 
-      // Phase 2: Insert into lead_policies
-      const policiesPayload = selectedPolicies.map((p) => ({
-        lead_id: lead.id,
-        policy_type: p
-      }));
+            if (error || !insertedLeads || insertedLeads.length === 0) throw error;
 
-      const { error: policiesError } = await supabase
-        .from('lead_policies')
-        .insert(policiesPayload);
+            // Phase 2: Insert into lead_policies
+            const policiesPayload = insertedLeads.map((insertedLead) => ({
+                lead_id: insertedLead.id,
+                policy_type: insertedLead.policy_type
+            }));
 
-      // Phase 3: Error Handling with WARNING strategy
-      if (policiesError) {
-        console.error("Backend Integration Error - Failed to insert into lead_policies:", policiesError);
-        toast('Lead was created successfully, but policy records could not be saved. Please contact an administrator.', 'error');
-      } else {
-        toast('Lead created successfully (Unassigned)!', 'success');
-      }
+            const { error: policiesError } = await supabase
+                .from('lead_policies')
+                .insert(policiesPayload);
+
+            // Phase 3: Error Handling with WARNING strategy
+            if (policiesError) {
+                console.error("Backend Integration Error - Failed to insert into lead_policies:", policiesError);
+                toast('Lead was created successfully, but policy records could not be saved. Please contact an administrator.', 'error');
+            } else {
+                toast('Lead created successfully (Unassigned)!', 'success');
+            }
             setIsAdditionalQuote(false)
             setDuplicateWarning(false)
             setForm({

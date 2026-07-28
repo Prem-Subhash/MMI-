@@ -1,108 +1,51 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { PlusCircle, Search, Filter, Eye, ArrowUpRight, Building2, AlertCircle } from 'lucide-react'
-
-const STATIC_LOANS = [
-  {
-    id: 'loan-001',
-    borrower: 'Apex Logistics LLC',
-    type: 'SBA 7a',
-    purpose: 'Acquisition',
-    nature: 'Gas Station',
-    amount: '$1,450,000',
-    downPayment: '20%',
-    lender: 'American Commercial Bank & Trust',
-    stage: '5. Term Sheet Received',
-    date: '2026-06-28',
-    statusColor: 'bg-purple-100 text-purple-800 border-purple-200'
-  },
-  {
-    id: 'loan-002',
-    borrower: 'Midwest Health Partners',
-    type: 'Conventional',
-    purpose: 'Refinance',
-    nature: "Doctor's Office",
-    amount: '$850,000',
-    downPayment: '20%',
-    lender: 'Byline Bank',
-    stage: '14. UW',
-    date: '2026-06-24',
-    statusColor: 'bg-amber-100 text-amber-800 border-amber-200'
-  },
-  {
-    id: 'loan-003',
-    borrower: 'Lakeshore Hospitality Inc',
-    type: 'SBA 504',
-    purpose: 'Construction Loan',
-    nature: 'Hotel/Motel - Flagged',
-    amount: '$3,200,000',
-    downPayment: '20%',
-    lender: 'US Bank',
-    stage: '16. Closing Checklist – In Process',
-    date: '2026-06-18',
-    statusColor: 'bg-teal-100 text-teal-800 border-teal-200'
-  },
-  {
-    id: 'loan-004',
-    borrower: 'GreenLeaf Dispensary Co',
-    type: 'Private Loan',
-    purpose: 'Start-up',
-    nature: 'Cannabis Dispensary',
-    amount: '$650,000',
-    downPayment: '30%',
-    lender: 'Celtic Bank',
-    stage: '3. Initial Screening',
-    date: '2026-07-02',
-    statusColor: 'bg-blue-100 text-blue-800 border-blue-200'
-  },
-  {
-    id: 'loan-005',
-    borrower: 'Sunrise Early Education LLC',
-    type: 'SBA 7a',
-    purpose: 'Acquisition',
-    nature: 'Day Care',
-    amount: '$920,000',
-    downPayment: '20%',
-    lender: 'First Financial Bank',
-    stage: '7. Good Faith Deposit Received',
-    date: '2026-06-30',
-    statusColor: 'bg-emerald-100 text-emerald-800 border-emerald-200'
-  },
-  {
-    id: 'loan-006',
-    borrower: 'Fresh Market Grocery LLC',
-    type: 'Equipment Financing',
-    purpose: 'Refinance',
-    nature: 'Grocery Store',
-    amount: '$410,000',
-    downPayment: '20%',
-    lender: 'Harvest Bank',
-    stage: '18. Loan Closed',
-    date: '2026-06-10',
-    statusColor: 'bg-green-100 text-green-800 border-green-200'
-  }
-]
+import { PlusCircle, Search, Filter, Pencil, Building2 } from 'lucide-react'
+import { toast } from '@/lib/toast'
+import { LENDING_STAGES } from '@/app/lending/lib/constants'
 
 export default function LendingLoansDirectoryPage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedType, setSelectedType] = useState('ALL')
+  const [loans, setLoans] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
-  const filteredLoans = STATIC_LOANS.filter(loan => {
+  useEffect(() => {
+    const fetchLoans = async () => {
+      try {
+        setIsLoading(true)
+        const res = await fetch('/api/lending/loans?limit=500')
+        const json = await res.json()
+        if (json.success) {
+          setLoans(json.loans || [])
+        } else {
+          throw new Error(json.error)
+        }
+      } catch (err: any) {
+        toast(err.message, 'error')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    fetchLoans()
+  }, [])
+
+  const filteredLoans = loans.filter(loan => {
     const matchesSearch = 
-      loan.borrower.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.lender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      loan.nature.toLowerCase().includes(searchTerm.toLowerCase())
+      (loan.borrower_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (loan.loan_type || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (loan.nature_of_loan || '').toLowerCase().includes(searchTerm.toLowerCase())
     
-    const matchesType = selectedType === 'ALL' || loan.type === selectedType
+    const matchesType = selectedType === 'ALL' || loan.loan_type === selectedType
 
     return matchesSearch && matchesType
   })
 
   return (
-    <div className="w-full space-y-6 animate-fade-in">
+    <div className="w-full space-y-6 animate-fade-in pb-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-sm">
         <div>
@@ -114,7 +57,7 @@ export default function LendingLoansDirectoryPage() {
             Active Loan Portfolio
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            Static UI prototype showing borrower applications, bank assignments, and stage status.
+            View all borrower applications, assigned lenders, and current stage statuses.
           </p>
         </div>
 
@@ -145,100 +88,102 @@ export default function LendingLoansDirectoryPage() {
             <Filter size={14} />
             Loan Type:
           </span>
-          {['ALL', 'SBA 7a', 'SBA 504', 'Conventional', 'Bridge Loan', 'Equipment Financing'].map(type => (
-            <button
-              key={type}
-              onClick={() => setSelectedType(type)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                selectedType === type
-                  ? 'bg-brand-dark text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {type === 'ALL' ? 'All Types' : type}
-            </button>
-          ))}
+          <select 
+              value={selectedType}
+              onChange={e => setSelectedType(e.target.value)}
+              className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-gray-100 text-gray-700 border border-gray-200"
+          >
+              <option value="ALL">All Types</option>
+              <option value="SBA 7a">SBA 7a</option>
+              <option value="SBA 504">SBA 504</option>
+              <option value="Conventional">Conventional</option>
+              <option value="Bridge Loan">Bridge Loan</option>
+              <option value="Private Loan">Private Loan</option>
+              <option value="Equipment Financing">Equipment Financing</option>
+          </select>
         </div>
       </div>
 
       {/* Table Section */}
-      <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden">
+      <div className="bg-white border border-gray-200/80 rounded-2xl shadow-sm overflow-hidden flex-1">
         <div className="p-4 bg-slate-50/70 border-b border-gray-100 flex items-center justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-600">
-            Showing {filteredLoans.length} of {STATIC_LOANS.length} Prototype Loans
-          </span>
-          <span className="text-xs font-extrabold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200">
-            UI Prototype Preview
+            Showing {filteredLoans.length} Loans
           </span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white text-xs uppercase tracking-wider border-b border-gray-100">
+          <table className="w-full text-sm text-left table-fixed min-w-[1200px]">
+             <colgroup>
+                <col className="w-[200px]" />
+                <col className="w-[120px]" />
+                <col className="w-[200px]" />
+                <col className="w-[140px]" />
+                <col className="w-[240px]" />
+                <col className="w-[120px]" />
+                <col className="w-[100px]" />
+            </colgroup>
+            <thead className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white text-[10px] uppercase tracking-wider border-b border-gray-100">
               <tr>
                 <th className="px-6 py-4 font-semibold">Borrower Name</th>
                 <th className="px-6 py-4 font-semibold">Loan Type</th>
                 <th className="px-6 py-4 font-semibold">Purpose & Nature</th>
-                <th className="px-6 py-4 font-semibold">Purchase Price / Amount</th>
-                <th className="px-6 py-4 font-semibold">Assigned Lender</th>
+                <th className="px-6 py-4 font-semibold">Amount / Down</th>
                 <th className="px-6 py-4 font-semibold">Pipeline Stage</th>
                 <th className="px-6 py-4 font-semibold text-center">Inquiry Date</th>
                 <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
-              {filteredLoans.map(loan => (
+              {isLoading ? (
+                  <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-slate-500">Loading directory...</td>
+                  </tr>
+              ) : filteredLoans.length === 0 ? (
+                  <tr>
+                      <td colSpan={7} className="px-6 py-12 text-center text-slate-500">No loans found matching your criteria.</td>
+                  </tr>
+              ) : (
+                filteredLoans.map(loan => (
                 <tr key={loan.id} className="hover:bg-gray-50/80 transition-colors group">
                   <td className="px-6 py-4">
-                    <p className="font-extrabold text-slate-900">{loan.borrower}</p>
-                    <p className="text-[11px] text-slate-400 font-mono mt-0.5">ID: {loan.id}</p>
+                    <p className="font-extrabold text-slate-900 truncate">{loan.borrower_name}</p>
+                    <p className="text-[11px] text-slate-400 font-mono mt-0.5 truncate">ID: {loan.id.split('-').pop()}</p>
                   </td>
                   <td className="px-6 py-4">
                     <span className="font-bold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md text-xs border border-slate-200">
-                      {loan.type}
+                      {loan.loan_type}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="font-bold text-slate-800">{loan.purpose}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{loan.nature}</p>
+                    <p className="font-bold text-slate-800 truncate">{loan.loan_purpose}</p>
+                    <p className="text-xs text-slate-500 mt-0.5 truncate">{loan.nature_of_loan}</p>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="font-extrabold text-slate-900 text-base">{loan.amount}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">Down: {loan.downPayment}</p>
-                  </td>
-                  <td className="px-6 py-4 font-semibold text-slate-700">
-                    {loan.lender}
+                    <p className="font-extrabold text-slate-900 text-base">
+                        {loan.purchase_price ? `$${Number(loan.purchase_price).toLocaleString()}` : '—'}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">Down: {loan.down_payment_percent}%</p>
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap border inline-block ${loan.statusColor}`}>
-                      {loan.stage}
+                    <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase whitespace-nowrap border inline-block bg-gray-100 border-gray-200 text-gray-700`}>
+                      {loan.current_stage || LENDING_STAGES[0]}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center text-slate-500 font-medium whitespace-nowrap">
-                    {loan.date}
+                    {loan.inquiry_date ? loan.inquiry_date : '—'}
                   </td>
                   <td className="px-6 py-4 text-right">
                     <button
-                      onClick={() =>
-                        loan.stage.includes('Term Sheet')
-                          ? router.push('/lending/term-sheet-received')
-                          : router.push('/lending/loans/new')
-                      }
+                      onClick={() => router.push(`/lending/loans/${loan.id}`)}
                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-[#10B889] text-emerald-700 hover:text-white font-bold rounded-lg transition-all text-xs border border-emerald-200 hover:border-[#10B889] shadow-2xs"
                     >
-                      <Eye size={14} />
-                      <span>{loan.stage.includes('Term Sheet') ? 'Term Sheets UI' : 'View Form'}</span>
+                      <Pencil size={14} />
+                      <span>Edit</span>
                     </button>
                   </td>
                 </tr>
-              ))}
-              {filteredLoans.length === 0 && (
-                <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-slate-500">
-                    No commercial loans found matching your filter criteria.
-                  </td>
-                </tr>
-              )}
+              )))}
             </tbody>
           </table>
         </div>

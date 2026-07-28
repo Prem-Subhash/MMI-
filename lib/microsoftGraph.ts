@@ -30,12 +30,19 @@ export async function getAccessToken() {
 
 import { supabaseServer } from '@/lib/supabaseServer'
 
+export interface GraphAttachment {
+    name: string;
+    contentType: string;
+    contentBytes: string;
+}
+
 export async function sendGraphEmail(
     to: string[],
     subject: string,
     body: string,
     leadId?: string,
-    emailType?: string
+    emailType?: string,
+    attachments?: GraphAttachment[]
 ) {
     const recipientList = to.join(', ')
 
@@ -43,6 +50,26 @@ export async function sendGraphEmail(
         const token = await getAccessToken()
 
         const sender = process.env.MICROSOFT_SENDER_EMAIL
+
+        const messagePayload: any = {
+            subject,
+            body: {
+                contentType: "HTML",
+                content: body,
+            },
+            toRecipients: to.map(email => ({
+                emailAddress: { address: email },
+            })),
+        };
+
+        if (attachments && attachments.length > 0) {
+            messagePayload.attachments = attachments.map(att => ({
+                "@odata.type": "#microsoft.graph.fileAttachment",
+                name: att.name,
+                contentType: att.contentType,
+                contentBytes: att.contentBytes,
+            }));
+        }
 
         const response = await fetch(
             `https://graph.microsoft.com/v1.0/users/${sender}/sendMail`,
@@ -53,16 +80,7 @@ export async function sendGraphEmail(
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    message: {
-                        subject,
-                        body: {
-                            contentType: "HTML",
-                            content: body,
-                        },
-                        toRecipients: to.map(email => ({
-                            emailAddress: { address: email },
-                        })),
-                    },
+                    message: messagePayload,
                     saveToSentItems: true,
                 }),
             }

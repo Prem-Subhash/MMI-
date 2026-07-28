@@ -264,8 +264,8 @@ export function replaceTemplate(templateKey: string, templateString: string, dat
     renewal_premium: leadData?.renewal_premium ? formatCurrency(leadData.renewal_premium) : (firstPolicy?.newPremium || firstPolicy?.a2 ? formatCurrency(firstPolicy?.newPremium || firstPolicy?.a2) : ''),
     carrier: activeCarrier || '',
     term: activeTerm,
-    form_link: formLink || '{{form_link}}',
-    form_links: formLink || '{{form_link}}',
+    form_link: formLink ? `<a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">Click Here to Fill Form</a>` : '{{form_link}}',
+    form_links: formLink ? `<a href="${formLink}" style="color: #10B889; font-weight: bold; text-decoration: underline;">Click Here to Fill Form</a>` : '{{form_link}}',
 
     // CSR Data
     csr_name: csrData?.full_name || '',

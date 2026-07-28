@@ -323,7 +323,7 @@ export default function CommercialRenewalImportPage() {
                                         <div className="bg-white border border-slate-100 rounded-lg p-3 max-h-40 overflow-y-auto font-mono text-[10px] text-slate-700 divide-y divide-slate-100">
                                             {detectedHeaders.map((h, i) => (
                                                 <div key={i} className="py-1 flex justify-between gap-2">
-                                                    <span className="truncate" title={h}>{h || ' [Empty] '}</span>
+                                                    <span className="break-all" title={h}>{h || ' [Empty] '}</span>
                                                     {normalizeKey(h) !== h && (
                                                         <span className="text-[9px] bg-amber-50 text-amber-700 px-1 rounded font-sans shrink-0 font-bold">Has Whitespace/BOM</span>
                                                     )}
@@ -337,7 +337,7 @@ export default function CommercialRenewalImportPage() {
                                         <div className="bg-white border border-slate-100 rounded-lg p-3 max-h-40 overflow-y-auto font-mono text-[10px] text-slate-700 divide-y divide-slate-100">
                                             {normalizedHeaders.map((h, i) => (
                                                 <div key={i} className="py-1">
-                                                    <span className="truncate" title={h}>{h || ' [Empty] '}</span>
+                                                    <span className="break-all" title={h}>{h || ' [Empty] '}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -391,8 +391,8 @@ export default function CommercialRenewalImportPage() {
                                     <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Loaded Data Preview</h3>
                                     <span className="text-xs text-gray-500 font-semibold bg-gray-100 px-2 py-1 rounded">{rows.length} rows loaded</span>
                                 </div>
-                                <div className="border border-gray-200 rounded-xl overflow-hidden shadow-sm max-h-72 overflow-y-auto">
-                                    <table className="w-full text-left text-xs border-collapse">
+                                <div className="border border-gray-200 rounded-xl overflow-auto shadow-sm max-h-72">
+                                    <table className="w-full text-left text-xs border-collapse min-w-[900px]">
                                         <thead className="bg-gray-50 text-gray-700 font-bold uppercase sticky top-0 border-b border-gray-200">
                                             <tr>
                                                 <th className="p-3">Client / Account</th>
@@ -409,25 +409,25 @@ export default function CommercialRenewalImportPage() {
                                                 const validation = validateRowCommercial(r);
                                                 return (
                                                     <tr key={idx} className={`hover:bg-gray-50/50 ${validation.isValid ? '' : 'bg-red-50/20'}`}>
-                                                        <td className="p-3 font-semibold text-gray-800 truncate max-w-[140px]" title={r['applicant data account name']}>
+                                                        <td className="p-3 font-semibold text-gray-800 break-words align-top" title={r['applicant data account name']}>
                                                             {r['applicant data account name'] || '—'}
                                                         </td>
-                                                        <td className="p-3 text-gray-600 truncate max-w-[100px]" title={r['policy data line of business']}>
+                                                        <td className="p-3 text-gray-600 break-words align-top" title={r['policy data line of business']}>
                                                             {r['policy data line of business'] || '—'}
                                                         </td>
-                                                        <td className="p-3 text-gray-500 font-mono truncate max-w-[100px]" title={r['policy data policy number']}>
+                                                        <td className="p-3 text-gray-500 font-mono break-all align-top" title={r['policy data policy number']}>
                                                             {r['policy data policy number'] || '—'}
                                                         </td>
-                                                        <td className="p-3 text-gray-600 truncate max-w-[100px]" title={r['policy data master company']}>
+                                                        <td className="p-3 text-gray-600 break-words align-top" title={r['policy data master company']}>
                                                             {r['policy data master company'] || '—'}
                                                         </td>
-                                                        <td className="p-3 text-gray-700 whitespace-nowrap" title={r['policy data policy expiration date']}>
+                                                        <td className="p-3 text-gray-700 whitespace-nowrap align-top" title={r['policy data policy expiration date']}>
                                                             {r['policy data policy expiration date'] || '—'}
                                                         </td>
-                                                        <td className="p-3 text-gray-900 font-semibold whitespace-nowrap">
+                                                        <td className="p-3 text-gray-900 font-semibold whitespace-nowrap align-top">
                                                             {r['policy data totalwrittenpremium'] ? `$${Number(r['policy data totalwrittenpremium']).toLocaleString()}` : '—'}
                                                         </td>
-                                                        <td className="p-3 text-center whitespace-nowrap">
+                                                        <td className="p-3 text-center whitespace-nowrap align-top">
                                                             {validation.isValid ? (
                                                                 <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                                     Valid

@@ -15,10 +15,11 @@ import {
   CheckCircle2,
   Layers,
   Building2,
+  ArrowLeft,
+  Zap,
 } from 'lucide-react';
 import { MortgageLoan, StageCode } from '@/app/mortgage/lib/types';
 import { getStageConfig, MORTGAGE_STAGES } from '@/app/mortgage/lib/stageFields';
-import { toast } from '@/lib/toast';
 import StageHistorySection from './StageHistorySection';
 
 interface LoanDetailModalProps {
@@ -29,6 +30,8 @@ interface LoanDetailModalProps {
   onEditStage?: (loan: MortgageLoan, targetStage: StageCode) => void;
   onDelete: (loan: MortgageLoan) => void;
   onMoveStage: (loan: MortgageLoan, newStage: any) => void;
+  isHidden?: boolean;
+  onViewHistory?: () => void;
 }
 
 export default function LoanDetailModal({
@@ -39,6 +42,8 @@ export default function LoanDetailModal({
   onEditStage,
   onDelete,
   onMoveStage,
+  isHidden,
+  onViewHistory,
 }: LoanDetailModalProps) {
   if (!isOpen || !loan) return null;
 
@@ -53,8 +58,6 @@ export default function LoanDetailModal({
       : null;
 
   const handleUpdateStageClick = (targetCode: StageCode) => {
-    const targetStageName = getStageConfig(targetCode).label;
-    toast(`Opening stage update form for "${targetStageName}"...`, 'info', 2000);
     if (onEditStage) {
       onEditStage(loan, targetCode);
     } else {
@@ -63,49 +66,43 @@ export default function LoanDetailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200">
-        
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true" style={{ display: isHidden ? "none" : "flex" }}>
+      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-5xl w-full max-h-[95vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200">
+
         {/* Header */}
-        <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-6 bg-slate-50 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-20">
           <div>
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
-                <Building2 size={13} />
-                <span>
-                  {loan.pipeline_type === 'NEW_LOAN' ? 'New Loan Pipeline (6 Stages)' : 'Pre-Approval Pipeline (2 Stages)'}
-                </span>
-              </span>
-              <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border ${stageConfig.badgeBg} ${stageConfig.badgeText}`}>
-                {stageConfig.label}
-              </span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-[#2E5C85] tracking-tight">{loan.client_name}</h2>
+            <h1 className="text-2xl font-bold text-white">
+              {loan.client_name || 'Mortgage Application Details'}
+            </h1>
+            <p className="text-white/80 text-sm mt-1">
+              Review mortgage information and pipeline status
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto self-end sm:self-center">
+          <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
             <button
               type="button"
               onClick={() => onEdit(loan)}
-              className="h-10 px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
+              className="px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
             >
-              <Edit3 className="w-3.5 h-3.5 shrink-0" />
+              <Edit3 className="w-3.5 h-3.5" />
               <span>Edit Application</span>
             </button>
 
             <button
               type="button"
               onClick={() => onDelete(loan)}
-              className="h-10 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
+              className="px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
             >
-              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+              <Trash2 className="w-3.5 h-3.5" />
               <span>Delete</span>
             </button>
 
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shrink-0"
+              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 ml-1"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -114,7 +111,7 @@ export default function LoanDetailModal({
         </div>
 
         {/* Stage Progression Bar & Update Stage Action */}
-        <div className="shrink-0 px-6 py-5 bg-white border-b border-gray-100">
+        <div className="px-6 py-5 bg-white border-b border-gray-100">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
             <span className="text-xs font-bold uppercase tracking-wider text-[#10B889] flex items-center gap-1.5">
               <Layers size={14} />
@@ -124,10 +121,10 @@ export default function LoanDetailModal({
               <button
                 type="button"
                 onClick={() => handleUpdateStageClick(nextStage.code)}
-                className="h-10 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 active:scale-95 w-full sm:w-auto"
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm hover:shadow-md flex items-center gap-1.5 transition-all self-start sm:self-auto"
               >
                 <span>Advance to {nextStage.label}</span>
-                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
           </div>
@@ -141,7 +138,7 @@ export default function LoanDetailModal({
                   key={s.code}
                   type="button"
                   onClick={() => handleUpdateStageClick(s.code)}
-                  className={`h-full flex flex-col justify-between p-3 rounded-xl text-left border transition-all ${
+                  className={`p-3 rounded-xl text-left border transition-all ${
                     isActive
                       ? 'bg-[#10B889] border-[#10B889] text-white shadow-md ring-2 ring-[#10B889]/30'
                       : isPassed
@@ -149,13 +146,13 @@ export default function LoanDetailModal({
                       : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:border-gray-300'
                   }`}
                 >
-                  <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center justify-between">
                     <span className={`text-[10px] font-bold tracking-wider uppercase ${isActive ? 'text-emerald-100' : isPassed ? 'text-emerald-800' : 'text-gray-400'}`}>
                       Stage {idx + 1}
                     </span>
                     {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
                   </div>
-                  <div className={`text-xs font-bold mt-1.5 truncate w-full ${isActive ? 'text-white' : ''}`}>
+                  <div className={`text-xs font-bold mt-1 truncate ${isActive ? 'text-white' : ''}`}>
                     {s.label}
                   </div>
                 </button>
@@ -166,142 +163,157 @@ export default function LoanDetailModal({
 
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
-          {/* Key Metrics Row */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Transaction Type</div>
-              <div className="text-sm font-bold text-gray-900 mt-1">{loan.transaction_type || '—'}</div>
-            </div>
 
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Loan Type & Term</div>
-              <div className="text-sm font-bold text-gray-900 mt-1">
-                {loan.loan_type || '—'} • {loan.loan_term || '—'}
+          {/* Mortgage Details Grid */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+              <DollarSign size={14} />
+              Mortgage Details
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Transaction Type</div>
+                <div className="text-sm font-bold text-gray-900">{loan.transaction_type || '—'}</div>
               </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Est. Property Value</div>
-              <div className="text-sm font-bold text-emerald-700 mt-1">
-                {loan.estimated_property_value
-                  ? `$${loan.estimated_property_value.toLocaleString()}`
-                  : '—'}
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Loan Type & Term</div>
+                <div className="text-sm font-bold text-gray-900">{loan.loan_type || '—'} / {loan.loan_term || '—'}</div>
               </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Est. Credit Score</div>
-              <div className="text-sm font-bold text-blue-700 mt-1">
-                {loan.estimated_credit_score || '—'}
-              </div>
-            </div>
-          </div>
-
-          {/* Borrower Contact Info */}
-          <div className="p-5 rounded-xl bg-gray-50/80 border border-gray-200 space-y-3.5 shadow-sm">
-            <div className="text-xs font-bold uppercase tracking-widest text-[#10B889] flex items-center gap-1.5">
-              <UserCheck size={15} />
-              <span>Borrower Contact Details</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
-              <div className="flex items-center gap-2.5 text-gray-700 font-medium">
-                <div className="p-2 rounded-lg bg-white border border-gray-200 text-gray-500 shrink-0 shadow-2xs">
-                  <Phone className="w-4 h-4" />
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Property Value</div>
+                <div className="text-sm font-bold text-emerald-700">
+                  {loan.estimated_property_value ? `$${loan.estimated_property_value.toLocaleString()}` : '—'}
                 </div>
-                <span>{loan.phone || '—'}</span>
               </div>
-              <div className="flex items-center gap-2.5 text-gray-700 font-medium">
-                <div className="p-2 rounded-lg bg-white border border-gray-200 text-gray-500 shrink-0 shadow-2xs">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <span className="truncate">{loan.email || '—'}</span>
-              </div>
-              <div className="flex items-center gap-2.5 text-gray-700 font-medium">
-                <div className="p-2 rounded-lg bg-white border border-gray-200 text-gray-500 shrink-0 shadow-2xs">
-                  <MapPin className="w-4 h-4" />
-                </div>
-                <span>{loan.address ? `${loan.address}, ${loan.state}` : loan.state}</span>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Est. Credit Score</div>
+                <div className="text-sm font-bold text-blue-700">{loan.estimated_credit_score || '—'}</div>
               </div>
             </div>
           </div>
 
-          {/* Assigned Staff */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Assigned Loan Officer</div>
-              <div className="text-sm font-bold text-gray-900 mt-1">{loan.loan_officer_name || '—'}</div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Assigned Processor</div>
-              <div className="text-sm font-bold text-gray-900 mt-1">{loan.processor_name || 'Unassigned'}</div>
-            </div>
-          </div>
-
-          {/* Intake Dates & Status */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Application Received</div>
-              <div className="text-sm font-bold text-gray-900 mt-1">
-                {loan.application_received === 'Y' ? 'Yes' : 'No'}
-                {loan.application_received === 'Y' && loan.application_received_date ? ` (${loan.application_received_date})` : ''}
+        {/* Borrower Contact Grid */}
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+          <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+            <UserCheck size={14} />
+            Borrower Contact
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gray-50 border border-gray-100 text-gray-500 shrink-0">
+                <Phone size={14} />
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Phone</div>
+                <div className="text-sm font-medium text-gray-900">{loan.phone || '—'}</div>
               </div>
             </div>
-
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Target Closing Date</div>
-              <div className="text-sm font-bold text-gray-900 mt-1">{loan.target_closing_date || '—'}</div>
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gray-50 border border-gray-100 text-gray-500 shrink-0">
+                <Mail size={14} />
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Email</div>
+                <div className="text-sm font-medium text-gray-900 truncate">{loan.email || '—'}</div>
+              </div>
             </div>
-
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Follow Up Date</div>
-              <div className="text-sm font-bold text-amber-600 mt-1">{loan.follow_up_date || '—'}</div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs text-gray-500 font-bold uppercase tracking-wider">Expected Commission</div>
-              <div className="text-sm font-bold text-emerald-700 mt-1">
-                {loan.expected_commission ? `$${loan.expected_commission.toLocaleString()}` : '—'}
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-gray-50 border border-gray-100 text-gray-500 shrink-0">
+                <MapPin size={14} />
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Location</div>
+                <div className="text-sm font-medium text-gray-900">{loan.address ? `${loan.address}, ${loan.state}` : (loan.state || '—')}</div>
               </div>
             </div>
           </div>
-
-          {/* Missing Docs Box if N */}
-          {loan.all_documents_received === 'N' && loan.missing_documents_list && (
-            <div className="p-5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 shadow-sm">
-              <div className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">
-                Missing Documents Checklist
-              </div>
-              <p className="text-sm font-medium text-amber-900 whitespace-pre-wrap">{loan.missing_documents_list}</p>
-            </div>
-          )}
-
-          {/* Additional Notes */}
-          {loan.additional_notes && (
-            <div className="p-5 rounded-xl bg-gray-50/80 border border-gray-200 shadow-sm">
-              <div className="text-xs font-bold text-gray-700 uppercase tracking-widest mb-1">
-                Additional Notes
-              </div>
-              <p className="text-sm text-gray-700 font-medium whitespace-pre-wrap">{loan.additional_notes}</p>
-            </div>
-          )}
-
-          {/* Stage Transition History */}
-          <StageHistorySection loanId={loan.id} currentStage={loan.stage} />
         </div>
 
-        {/* Footer */}
-        <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
-          >
-            Close Window
-          </button>
+        {/* Timeline & Assignments */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+              <Calendar size={14} />
+              Key Dates & Commission
+            </h3>
+            <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">App Received</div>
+                <div className="text-sm font-bold text-gray-900">
+                  {loan.application_received === 'Y' ? 'Yes' : 'No'}
+                  {loan.application_received === 'Y' && loan.application_received_date ? ` (${loan.application_received_date})` : ''}
+                </div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Target Closing</div>
+                <div className="text-sm font-bold text-gray-900">{loan.target_closing_date || '—'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Follow Up Date</div>
+                <div className="text-sm font-bold text-amber-600">{loan.follow_up_date || '—'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Expected Commission</div>
+                <div className="text-sm font-bold text-emerald-700">
+                  {loan.expected_commission ? `$${loan.expected_commission.toLocaleString()}` : '—'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+              <UserCheck size={14} />
+              Staff Assignment
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Assigned Loan Officer</div>
+                <div className="text-sm font-bold text-gray-900">{loan.loan_officer_name || '—'}</div>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Assigned Processor</div>
+                <div className="text-sm font-bold text-gray-900">{loan.processor_name || 'Unassigned'}</div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Missing Docs Box if N */}
+        {loan.all_documents_received === 'N' && loan.missing_documents_list && (
+          <div className="mb-6 bg-amber-50 rounded-2xl border-2 border-amber-200 p-6 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-wider text-amber-800 mb-2 flex items-center gap-2">
+              <CheckCircle2 size={13} />
+              Missing Documents Checklist
+            </h3>
+            <p className="text-sm text-amber-900 whitespace-pre-wrap font-medium leading-relaxed">{loan.missing_documents_list}</p>
+          </div>
+        )}
+
+        {/* Additional Notes */}
+        {loan.additional_notes && (
+          <div className="mb-6 bg-slate-100 rounded-2xl border-2 border-slate-200 p-6 shadow-sm">
+            <h3 className="text-xs font-black uppercase tracking-wider text-black mb-2 flex items-center gap-2">
+              <Layers size={13} />
+              Additional Notes
+            </h3>
+            <p className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed">{loan.additional_notes}</p>
+          </div>
+        )}
+
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-6 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-xs sm:text-sm"
+        >
+          Close Window
+        </button>
       </div>
     </div>
+    </div >
   );
 }

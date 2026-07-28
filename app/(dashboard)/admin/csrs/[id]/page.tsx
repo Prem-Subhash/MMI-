@@ -10,6 +10,7 @@ import {
   Clock,
   Mail,
   FileSignature,
+  FileText,
   XCircle,
   AlertCircle,
   RefreshCw,
@@ -31,6 +32,7 @@ type CSRProfile = {
   full_name: string
   email: string
   created_at: string
+  insurance_access?: string[]
 }
 
 type Lead = {
@@ -41,6 +43,7 @@ type Lead = {
   insurence_category: string
   policy_flow: string
   policy_type: string
+  lead_policies?: { policy_type: string }[]
   created_at: string
   stage_name: string
 }
@@ -165,9 +168,9 @@ function LeadCard({ lead }: { lead: Lead }) {
     <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm space-y-3">
       {/* Top row: name + stage */}
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="font-semibold text-gray-900 text-sm truncate">{lead.client_name}</p>
-          <p className="text-xs text-gray-400 truncate mt-0.5">{lead.email}</p>
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-gray-900 text-sm break-words">{lead.client_name}</p>
+          <p className="text-xs text-gray-400 break-all mt-0.5">{lead.email}</p>
         </div>
         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap flex-shrink-0 ${cfg.bg} ${cfg.color} ${cfg.border}`}>
           {cfg.icon}
@@ -183,6 +186,10 @@ function LeadCard({ lead }: { lead: Lead }) {
             {lead.phone}
           </span>
         )}
+        <span className="flex items-center gap-1 font-semibold text-gray-700 break-words">
+          <FileText size={11} className="text-gray-400" />
+          {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}
+        </span>
         {lead.insurence_category && (
           <span className="flex items-center gap-1 capitalize">
             <Tag size={11} className="text-gray-400" />
@@ -222,7 +229,7 @@ export default function CSRWorkloadPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, full_name, email, created_at')
+      .select('id, full_name, email, created_at, insurance_access')
       .eq('id', csrId)
       .single()
 
@@ -327,20 +334,33 @@ export default function CSRWorkloadPage() {
           <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg shadow-emerald-100 flex-shrink-0">
             {csr.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
           </div>
-          <div className="min-w-0">
-            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 tracking-tight truncate">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 tracking-tight break-words">
               {csr.full_name}
             </h1>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
-              <span className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 truncate">
+              <span className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 break-all">
                 <Mail size={11} className="flex-shrink-0" />
-                <span className="truncate max-w-[180px] sm:max-w-none">{csr.email}</span>
+                <span className="break-all">{csr.email}</span>
               </span>
               <span className="text-gray-300 hidden xs:inline">·</span>
               <span className="flex items-center gap-1 text-xs sm:text-sm text-gray-500 whitespace-nowrap">
                 <Calendar size={11} className="flex-shrink-0" />
                 Joined {new Date(csr.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
               </span>
+              {csr.insurance_access && csr.insurance_access.length > 0 && (
+                <>
+                  <span className="text-gray-300 hidden xs:inline">·</span>
+                  <div className="flex items-center gap-1">
+                    {csr.insurance_access.includes('personal') && (
+                      <span className="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded text-[10px] font-bold uppercase tracking-wider">Personal</span>
+                    )}
+                    {csr.insurance_access.includes('commercial') && (
+                      <span className="px-1.5 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded text-[10px] font-bold uppercase tracking-wider">Commercial</span>
+                    )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -493,10 +513,19 @@ export default function CSRWorkloadPage() {
 
             {/* ── Desktop table (≥ md) ── */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm text-left min-w-[700px]">
+              <table className="w-full text-sm text-left table-fixed min-w-[1280px]">
+                <colgroup>
+                  <col className="w-[260px]" />
+                  <col className="w-[130px]" />
+                  <col className="w-[160px]" />
+                  <col className="w-[180px]" />
+                  <col className="w-[150px]" />
+                  <col className="w-[180px]" />
+                  <col className="w-[120px]" />
+                </colgroup>
                 <thead>
                   <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white">
-                    {['Client Name', 'Phone', 'Category', 'Flow', 'Stage', 'Date'].map((h) => (
+                    {['Client Name', 'Phone', 'Category', 'Policy Type', 'Flow', 'Stage', 'Date'].map((h) => (
                       <th key={h} className="px-5 py-4 font-semibold text-xs uppercase tracking-wider">
                         {h}
                       </th>
@@ -508,15 +537,18 @@ export default function CSRWorkloadPage() {
                     const cfg = getStageCfg(lead.stage_name)
                     return (
                       <tr key={lead.id} className="hover:bg-gray-50/70 transition-colors">
-                        <td className="px-5 py-4">
-                          <div className="font-semibold text-gray-900">{lead.client_name}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{lead.email}</div>
+                        <td className="px-5 py-4 align-top">
+                          <div className="font-semibold text-gray-900 break-words">{lead.client_name}</div>
+                          <div className="text-xs text-gray-400 mt-0.5 break-all">{lead.email}</div>
                         </td>
-                        <td className="px-5 py-4 text-gray-600 whitespace-nowrap">{lead.phone || '—'}</td>
-                        <td className="px-5 py-4 capitalize text-gray-700 whitespace-nowrap">
+                        <td className="px-5 py-4 text-gray-600 align-top">{lead.phone || '—'}</td>
+                        <td className="px-5 py-4 capitalize text-gray-700 break-words align-top">
                           {lead.insurence_category || '—'}
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 font-semibold text-gray-700 break-words align-top">
+                          {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}
+                        </td>
+                        <td className="px-5 py-4 align-top">
                           <span className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold border whitespace-nowrap ${
                             lead.policy_flow === 'new'
                               ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
@@ -525,13 +557,13 @@ export default function CSRWorkloadPage() {
                             {lead.policy_flow === 'new' ? 'New Business' : 'Renewal'}
                           </span>
                         </td>
-                        <td className="px-5 py-4">
+                        <td className="px-5 py-4 align-top">
                           <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold border whitespace-nowrap ${cfg.bg} ${cfg.color} ${cfg.border}`}>
                             {cfg.icon}
                             {lead.stage_name}
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-gray-500 whitespace-nowrap text-xs font-mono">
+                        <td className="px-5 py-4 text-gray-500 whitespace-nowrap text-xs font-mono align-top">
                           {new Date(lead.created_at).toLocaleDateString('en-US', {
                             month: 'short', day: 'numeric', year: 'numeric',
                           })}

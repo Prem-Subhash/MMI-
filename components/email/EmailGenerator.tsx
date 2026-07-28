@@ -251,9 +251,15 @@ export default function EmailGenerator({
     return raw.replace(/<br\s*\/?>/gi, '\n');
   };
 
-  const shouldAppendFooter = isFormAttached && !hasTemplateFormLink && formLink;
+  const bodyHasLink = Boolean(
+    getPreviewText().includes('{{form_link}}') ||
+    getPreviewText().includes('Complete your form here:') ||
+    getPreviewText().includes('Click Here to Fill Form') ||
+    (formLink && getPreviewText().includes(formLink))
+  );
+  const shouldAppendFooter = Boolean(isFormAttached && !hasTemplateFormLink && !bodyHasLink && formLink);
   const footerContent = shouldAppendFooter
-    ? `\n\nComplete your form here:\n${formLink}`
+    ? `\n\nComplete your form here:\nClick Here to Fill Form`
     : '';
 
   const displayContent = getPreviewText() + footerContent;
@@ -611,9 +617,9 @@ export default function EmailGenerator({
                     <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center shrink-0 shadow-sm">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
                     </div>
-                    <div className="overflow-hidden">
+                    <div className="min-w-0 flex-1">
                       <p className="text-[10px] font-bold text-blue-600 uppercase tracking-widest mb-1">Intake Link (Appended Automatically)</p>
-                      <p className="text-xs text-blue-800 font-mono truncate">{formLink}</p>
+                      <p className="text-xs text-blue-800 font-semibold">Click Here to Fill Form <span className="font-mono font-normal text-blue-600 break-all">({formLink})</span></p>
                     </div>
                   </div>
                 )}

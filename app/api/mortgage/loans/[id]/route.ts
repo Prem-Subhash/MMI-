@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { STAGE_FIELD_GROUPS, getStageConfig } from '@/app/mortgage/lib/stageFields';
 import { StageCode } from '@/app/mortgage/lib/types';
+import { authenticateApiRequest } from '@/utils/auth';
 
 function sanitizePayloadForPostgres(payload: Record<string, any>): Record<string, any> {
   const DATE_FIELDS = [
@@ -63,15 +64,26 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authenticateApiRequest(request, ['mortgage', 'admin', 'superadmin']);
+    if (auth.error || !auth.user) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
+    }
+
     const { id } = await params;
-    const { data, error } = await supabaseServer
+    const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
+    let query = supabaseServer
       .from('mortgage_loans')
       .select('*')
-      .eq('id', id)
-      .single();
+      .eq('id', id);
+
+    if (!isGlobalView) {
+      query = query.eq('assigned_mortgage_officer', auth.user.id);
+    }
+
+    const { data, error } = await query.single();
 
     if (error || !data) {
-      return NextResponse.json({ error: error?.message || 'Loan not found' }, { status: 404 });
+      return NextResponse.json({ error: error?.message || 'Unauthorized or Loan not found' }, { status: 404 });
     }
 
     let historyData = [];
@@ -95,23 +107,41 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authenticateApiRequest(request, ['mortgage', 'admin', 'superadmin']);
+    if (auth.error || !auth.user) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
 
     const stageRemarks = body._stage_remarks || null;
-    const updatedBy = body._updated_by || 'Mortgage Admin';
+    const updatedBy = body._updated_by || auth.user.email || 'Mortgage Officer';
     delete body._stage_remarks;
     delete body._updated_by;
 
-    // Prevent overwriting immutable primary key
+    // Prevent overwriting immutable primary key or ownership
     delete body.id;
     delete body.created_at;
+    const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
+    if (!isGlobalView) {
+      delete body.assigned_mortgage_officer;
+    }
 
-    const { data: currentLoan } = await supabaseServer
+    let checkQuery = supabaseServer
       .from('mortgage_loans')
       .select('*')
-      .eq('id', id)
-      .single();
+      .eq('id', id);
+
+    if (!isGlobalView) {
+      checkQuery = checkQuery.eq('assigned_mortgage_officer', auth.user.id);
+    }
+
+    const { data: currentLoan, error: checkError } = await checkQuery.single();
+
+    if (checkError || !currentLoan) {
+      return NextResponse.json({ error: 'Unauthorized or Loan not found' }, { status: 404 });
+    }
 
     const rawPayload = {
       ...body,
@@ -120,12 +150,16 @@ export async function PUT(
 
     const sanitizedPayload = sanitizePayloadForPostgres(rawPayload);
 
-    const { data, error } = await supabaseServer
+    let updateQuery = supabaseServer
       .from('mortgage_loans')
       .update(sanitizedPayload)
-      .eq('id', id)
-      .select()
-      .single();
+      .eq('id', id);
+
+    if (!isGlobalView) {
+      updateQuery = updateQuery.eq('assigned_mortgage_officer', auth.user.id);
+    }
+
+    const { data, error } = await updateQuery.select().single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -178,11 +212,38 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await authenticateApiRequest(request, ['mortgage', 'admin', 'superadmin']);
+    if (auth.error || !auth.user) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
+    }
+
     const { id } = await params;
-    const { error } = await supabaseServer
+    const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
+    let checkQuery = supabaseServer
+      .from('mortgage_loans')
+      .select('id')
+      .eq('id', id);
+
+    if (!isGlobalView) {
+      checkQuery = checkQuery.eq('assigned_mortgage_officer', auth.user.id);
+    }
+
+    const { data: existingLoan, error: checkError } = await checkQuery.single();
+
+    if (checkError || !existingLoan) {
+      return NextResponse.json({ error: 'Unauthorized or Loan not found' }, { status: 404 });
+    }
+
+    let deleteQuery = supabaseServer
       .from('mortgage_loans')
       .delete()
       .eq('id', id);
+
+    if (!isGlobalView) {
+      deleteQuery = deleteQuery.eq('assigned_mortgage_officer', auth.user.id);
+    }
+
+    const { error } = await deleteQuery;
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

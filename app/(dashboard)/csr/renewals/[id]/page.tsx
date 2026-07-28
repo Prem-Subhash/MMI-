@@ -11,6 +11,7 @@ import EditClientModal from '@/components/leads/EditClientModal'
 import EmailGenerator from '@/components/email/EmailGenerator'
 import { toast } from '@/lib/toast'
 import { formatCurrency } from '@/lib/currency'
+import { canAccessInsuranceCategory } from '@/utils/authClient'
 
 type Stage = {
   id: string
@@ -222,6 +223,12 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
       return
     }
 
+    const { data: prof } = await supabase.from('profiles').select('role, insurance_access').eq('id', user.id).single()
+    if (!canAccessInsuranceCategory(prof, data.insurence_category)) {
+      router.replace('/unauthorized')
+      return
+    }
+
     const stage = Array.isArray(data.pipeline_stages)
       ? data.pipeline_stages[0]
       : data.pipeline_stages
@@ -352,7 +359,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                 iconBg="bg-emerald-50 text-emerald-600"
                 hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
               >
-                <p className="text-base font-bold text-gray-800 truncate">{lead.client_name || '—'}</p>
+                <p className="text-base font-bold text-gray-800 break-words">{lead.client_name || '—'}</p>
               </KpiCard>
               {lead.insurence_category === 'commercial' && (
                 <KpiCard 
@@ -363,7 +370,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                   iconBg="bg-emerald-50 text-emerald-600"
                   hoverIconBg="group-hover/card:bg-[#10B889] group-hover/card:text-white"
                 >
-                  <p className={`text-base font-bold truncate ${lead.business_name ? 'text-gray-800' : 'text-gray-400 italic'}`}>
+                  <p className={`text-base font-bold break-words ${lead.business_name ? 'text-gray-800' : 'text-gray-400 italic'}`}>
                     {lead.business_name || 'Not Provided'}
                   </p>
                 </KpiCard>
@@ -376,7 +383,7 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
                 iconBg="bg-blue-50 text-blue-600"
                 hoverIconBg="group-hover/card:bg-[#2E5C85] group-hover/card:text-white"
               >
-                <p className="text-base font-bold text-gray-800 truncate" title={lead.email}>{lead.email || '—'}</p>
+                <p className="text-base font-bold text-gray-800 break-all">{lead.email || '—'}</p>
               </KpiCard>
               <KpiCard 
                 icon={<IFile />} 

@@ -23,6 +23,8 @@ export default async function AdminPipelinesPage() {
         client_name,
         phone,
         email,
+        policy_type,
+        lead_policies(policy_type),
         insurence_category,
         policy_flow,
         pipeline_id,

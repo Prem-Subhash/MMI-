@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import {
   PlusCircle,
   FileText,
@@ -16,10 +16,13 @@ import {
   Calendar,
   FileCheck,
   RefreshCw,
-  Users
+  Users,
+  PhoneCall,
+  Activity
 } from 'lucide-react';
 import { DashboardStats, MortgageLoan, PipelineType } from './lib/types';
 import { getStageConfig } from './lib/stageFields';
+import { formatPhoneNumber } from './lib/phoneUtils';
 import LoanFormModal from './components/LoanFormModal';
 import CreateApplicationModal from './components/CreateApplicationModal';
 import { toast } from '@/lib/toast';
@@ -27,6 +30,9 @@ import { toast } from '@/lib/toast';
 export default function MortgageDashboardPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const isSuperAdminRoute = pathname?.startsWith('/superadmin');
+  const basePath = isSuperAdminRoute ? '/superadmin/mortgage' : '/mortgage/pipeline';
 
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -139,7 +145,7 @@ export default function MortgageDashboardPage() {
             subtitle="All active portfolios"
             icon={<Layers size={24} className="text-blue-600" />}
             trend="Active Queue"
-            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+            onClick={() => router.push(`${basePath}/new-loan`)}
           />
           <MetricCard
             title="New Loans"
@@ -147,7 +153,7 @@ export default function MortgageDashboardPage() {
             subtitle="6-Stage Loan Workflow"
             icon={<PlusCircle size={24} className="text-purple-600" />}
             trend="Origination"
-            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+            onClick={() => router.push(`${basePath}/new-loan`)}
           />
           <MetricCard
             title="Pre-Approvals"
@@ -155,7 +161,7 @@ export default function MortgageDashboardPage() {
             subtitle="2-Stage Verification"
             icon={<FileCheck size={24} className="text-indigo-600" />}
             trend="Screening"
-            onClick={() => router.push('/mortgage/pipeline/pre-approval')}
+            onClick={() => router.push(`${basePath}/pre-approval`)}
           />
           <MetricCard
             title="Loans Closing"
@@ -163,7 +169,7 @@ export default function MortgageDashboardPage() {
             subtitle="Stage 5 Closing"
             icon={<CheckCircle2 size={24} className="text-teal-600" />}
             trend="Disbursement"
-            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+            onClick={() => router.push(`${basePath}/new-loan`)}
           />
           <MetricCard
             title="Loans in Audit"
@@ -171,7 +177,7 @@ export default function MortgageDashboardPage() {
             subtitle="Stage 4 Audit"
             icon={<AlertCircle size={24} className="text-pink-600" />}
             trend="Compliance"
-            onClick={() => router.push('/mortgage/pipeline/new-loan')}
+            onClick={() => router.push(`${basePath}/new-loan`)}
           />
           <MetricCard
             title="Follow-Ups"
@@ -179,7 +185,7 @@ export default function MortgageDashboardPage() {
             subtitle="Scheduled contacts"
             icon={<Calendar size={24} className="text-amber-600" />}
             trend="Action Required"
-            onClick={() => {}}
+            onClick={() => { }}
           />
         </div>
       </div>
@@ -226,7 +232,7 @@ export default function MortgageDashboardPage() {
 
       {/* Tables Grid: Today's Follow-Ups & Recent Applications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
+
         {/* Upcoming Follow-Ups Table */}
         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="p-5 border-b border-gray-100 bg-slate-50 flex items-center justify-between">
@@ -286,8 +292,8 @@ export default function MortgageDashboardPage() {
             </div>
             <button
               type="button"
-              onClick={() => router.push('/mortgage/pipeline/new-loan')}
-              className="h-8 px-3 py-1.5 rounded-lg text-xs font-bold text-[#2E5C85] bg-blue-50 hover:bg-blue-100 border border-blue-200 flex items-center gap-1 uppercase tracking-wider transition-colors shadow-2xs shrink-0"
+              onClick={() => router.push(`${basePath}/new-loan`)}
+              className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 uppercase tracking-wider transition-colors"
             >
               <span>Kanban Board</span>
               <ArrowUpRight size={14} className="shrink-0" />
@@ -311,7 +317,7 @@ export default function MortgageDashboardPage() {
                     <tr key={loan.id} className="hover:bg-gray-50/80 transition-colors group text-gray-800">
                       <td className="px-5 py-4">
                         <div className="font-bold text-gray-900">{loan.client_name}</div>
-                        <div className="text-xs text-gray-500">{loan.phone}</div>
+                        <div className="text-xs text-gray-500">{formatPhoneNumber(loan.phone)}</div>
                       </td>
                       <td className="px-5 py-4 font-medium text-gray-700">
                         {loan.transaction_type} • {loan.loan_type}

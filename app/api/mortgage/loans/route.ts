@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabaseServer';
 import { STAGE_FIELD_GROUPS, getStageConfig } from '@/app/mortgage/lib/stageFields';
 import { StageCode } from '@/app/mortgage/lib/types';
+import { authenticateApiRequest } from '@/utils/auth';
 
 function sanitizePayloadForPostgres(payload: Record<string, any>): Record<string, any> {
   const DATE_FIELDS = [
@@ -60,6 +61,11 @@ function sanitizePayloadForPostgres(payload: Record<string, any>): Record<string
 
 export async function GET(request: NextRequest) {
   try {
+    const auth = await authenticateApiRequest(request, ['mortgage', 'admin', 'superadmin']);
+    if (auth.error || !auth.user) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const pipelineType = searchParams.get('pipeline_type');
     const stage = searchParams.get('stage');
@@ -74,9 +80,14 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const offset = (page - 1) * limit;
 
+    const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
     let query = supabaseServer
       .from('mortgage_loans')
       .select('*', { count: 'exact' });
+
+    if (!isGlobalView) {
+      query = query.eq('assigned_mortgage_officer', auth.user.id);
+    }
 
     if (pipelineType) {
       query = query.eq('pipeline_type', pipelineType);
@@ -128,12 +139,18 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const auth = await authenticateApiRequest(request, ['mortgage', 'admin', 'superadmin']);
+    if (auth.error || !auth.user) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
+    }
+
     const body = await request.json();
 
     const stageRemarks = body._stage_remarks || null;
-    const updatedBy = body._updated_by || 'Mortgage Admin';
+    const updatedBy = body._updated_by || auth.user.email || 'Mortgage Officer';
     delete body._stage_remarks;
     delete body._updated_by;
+    delete body.assigned_mortgage_officer; // Never trust frontend
 
     const rawPayload = {
       pipeline_type: body.pipeline_type || 'NEW_LOAN',
@@ -152,7 +169,7 @@ export async function POST(request: NextRequest) {
       estimated_credit_score: body.estimated_credit_score,
       loan_term: body.loan_term || '30_YRS',
       target_closing_date: body.target_closing_date || null,
-      loan_officer_name: body.loan_officer_name || 'Kunal Majmundar',
+      loan_officer_name: body.loan_officer_name || auth.profile?.full_name || 'Kunal Majmundar',
       processor_name: body.processor_name || null,
       all_documents_received: body.all_documents_received || 'N',
       missing_documents_list: body.missing_documents_list || null,
@@ -160,6 +177,7 @@ export async function POST(request: NextRequest) {
       expected_commission: body.expected_commission,
       additional_notes: body.additional_notes || null,
       ...body,
+      assigned_mortgage_officer: body.assigned_mortgage_officer || auth.user.id,
       updated_at: new Date().toISOString(),
     };
 

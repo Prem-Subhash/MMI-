@@ -300,7 +300,19 @@ export default function AccountingAllLeadsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1200px' }}>
+            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1400px' }}>
+              <colgroup>
+                <col className="w-[260px]" />
+                <col className="w-[180px]" />
+                <col className="w-[160px]" />
+                <col className="w-[130px]" />
+                <col className="w-[150px]" />
+                <col className="w-[140px]" />
+                <col className="w-[140px]" />
+                <col className="w-[110px]" />
+                <col className="w-[120px]" />
+                <col className="w-[80px]" />
+              </colgroup>
               <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
                   <th className="px-4 py-4 font-semibold">Client</th>
@@ -323,36 +335,36 @@ export default function AccountingAllLeadsPage() {
 
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                      <td className="px-4 py-4">
-                        <p className="font-medium text-gray-900 truncate">{lead.client_name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 truncate">{lead.email}</p>
+                      <td className="px-4 py-4 align-top">
+                        <p className="font-medium text-gray-900 break-words">{lead.client_name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 break-all">{lead.email}</p>
                       </td>
-                      <td className="px-4 py-4 capitalize text-gray-700 whitespace-nowrap">
-                        <p className="font-medium">{lead.insurence_category}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">{lead.policy_flow}</p>
+                      <td className="px-4 py-4 capitalize text-gray-700 align-top">
+                        <p className="font-medium break-words">{lead.insurence_category}</p>
+                        <p className="text-xs text-gray-500 mt-0.5 break-words">{lead.policy_flow}</p>
                       </td>
-                      <td className="px-4 py-4">
+                      <td className="px-4 py-4 align-top">
                         <StageBadge stage={stage} />
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-900">
+                      <td className="px-4 py-4 text-right text-gray-900 align-top">
                         {formatCurrency(active.activePremium)}
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-900">
+                      <td className="px-4 py-4 text-right text-gray-900 align-top">
                         {formatCurrency(lead.expected_commission)}
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-900 font-medium">
+                      <td className="px-4 py-4 text-right text-gray-900 font-medium align-top">
                         {formatCurrency(lead.actual_commission)}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center align-top">
                         <StatusBadge status={lead.accounting_status} />
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center align-top">
                         <VerificationBadge verified={lead.accounting_verified} />
                       </td>
-                      <td className="px-4 py-4 text-center text-gray-500 whitespace-nowrap">
+                      <td className="px-4 py-4 text-center text-gray-500 whitespace-nowrap align-top">
                         {createdDate}
                       </td>
-                      <td className="px-4 py-4 text-center">
+                      <td className="px-4 py-4 text-center align-top">
                         <Link
                           href={`/accounting/leads/${lead.id}`}
                           className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"

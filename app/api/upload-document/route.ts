@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { authenticateApiRequest } from '@/utils/auth'
+import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
@@ -28,6 +28,21 @@ export async function POST(req: Request) {
 
         if (!leadId && !intakeFormId) {
             return NextResponse.json({ error: 'Missing leadId or intakeFormId' }, { status: 400 })
+        }
+
+        // 2.5 Authorize Lead Access (if CSR is uploading)
+        if (user) {
+            let authLeadId = leadId
+            if (!authLeadId && intakeFormId) {
+                const { data: intake } = await supabaseServer.from('temp_intake_forms').select('lead_id').eq('id', intakeFormId).single()
+                authLeadId = intake?.lead_id
+            }
+            if (authLeadId) {
+                const authLead = await authorizeLeadAccess(auth.profile, authLeadId)
+                if (!authLead.authorized) {
+                    return NextResponse.json({ error: authLead.error }, { status: authLead.status })
+                }
+            }
         }
 
         // 3. File Validation

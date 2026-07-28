@@ -60,6 +60,9 @@ function CommercialRenewalContent() {
         } = await supabase.auth.getUser()
         if (!user) return
 
+        const { data: prof } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+        const isGlobalView = prof?.role === 'superadmin' || prof?.role === 'admin'
+
         let query = supabase
             .from('temp_leads_basics')
             .select(`
@@ -87,7 +90,12 @@ function CommercialRenewalContent() {
     `)
             .eq('policy_flow', 'renewal')
             .eq('insurence_category', 'commercial')
-            .eq('assigned_csr', user.id)
+
+        if (!isGlobalView) {
+            query = query.eq('assigned_csr', user.id)
+        }
+
+        query = query
             .order('renewal_date', { ascending: true })
             .range(page * 10, (page + 1) * 10 - 1)
 
@@ -227,20 +235,20 @@ function CommercialRenewalContent() {
                     <Loading message="Fetching renewals..." />
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1750px' }}>
+                        <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '2040px' }}>
                             <colgroup>
-                                <col style={{ width: '180px' }} />
-                                <col style={{ width: '180px' }} />
-                                <col style={{ width: '120px' }} />
-                                <col style={{ width: '140px' }} />
-                                <col style={{ width: '130px' }} />
+                                <col style={{ width: '220px' }} />
+                                <col style={{ width: '220px' }} />
+                                <col style={{ width: '200px' }} />
                                 <col style={{ width: '160px' }} />
+                                <col style={{ width: '130px' }} />
+                                <col style={{ width: '200px' }} />
                                 <col style={{ width: '110px' }} />
                                 <col style={{ width: '180px' }} />
-                                <col style={{ width: '130px' }} />
-                                <col style={{ width: '180px' }} />
                                 <col style={{ width: '160px' }} />
-                                <col style={{ width: '100px' }} />
+                                <col style={{ width: '220px' }} />
+                                <col style={{ width: '160px' }} />
+                                <col style={{ width: '80px' }} />
                             </colgroup>
                             <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
@@ -271,30 +279,30 @@ function CommercialRenewalContent() {
                                         const active = getActivePolicy(r)
                                         return (
                                         <tr key={r.id} className="hover:bg-gray-50/80 transition-colors group">
-                                            <td className="px-4 sm:px-6 py-4 font-bold text-gray-900 truncate" title={r.client_name}>
+                                            <td className="px-4 sm:px-6 py-4 font-bold text-gray-900 break-words align-top">
                                                 {r.client_name || '—'}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 truncate" title={r.business_name || 'Not Provided'}>
+                                            <td className="px-4 sm:px-6 py-4 break-words align-top">
                                                 <span className={r.business_name ? 'text-gray-900 font-medium' : 'text-gray-400 italic'}>
                                                     {r.business_name || 'Not Provided'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 truncate">
+                                            <td className="px-4 sm:px-6 py-4 capitalize text-gray-700 break-words align-top">
                                                 {r.policy_type}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono truncate" title={active.activePolicyNumber || undefined}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 font-mono break-all align-top">
                                                 {active.activePolicyNumber || '—'}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold whitespace-nowrap text-center">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold whitespace-nowrap text-center align-top">
                                                 {new Date(r.renewal_date).toLocaleDateString()}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-700 truncate" title={active.activeCarrier || undefined}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-700 break-words align-top">
                                                 {active.activeCarrier || '—'}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-900 font-bold whitespace-nowrap">
+                                            <td className="px-4 sm:px-6 py-4 text-gray-900 font-bold whitespace-nowrap align-top">
                                                 {r.current_premium ? formatCurrency(r.current_premium) : '—'}
                                             </td>
-                                            <td className={`px-4 sm:px-6 py-4 ${!active.activePremium && !r.renewal_premium ? 'bg-cyan-50/50' : ''}`}>
+                                            <td className={`px-4 sm:px-6 py-4 align-top ${!active.activePremium && !r.renewal_premium ? 'bg-cyan-50/50' : ''}`}>
                                                 {editingId === r.id && !active.isSwitched ? (
                                                     <div className="flex items-center gap-1">
                                                         <input
@@ -329,20 +337,20 @@ function CommercialRenewalContent() {
                                                     </div>
                                                 )}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-600 truncate" title={r.referral || ''}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600 break-words align-top">
                                                 {r.referral || '—'}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-500 truncate" title={r.notes || ''}>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-500 break-words align-top">
                                                 {r.notes || '—'}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4">
+                                            <td className="px-4 sm:px-6 py-4 align-top">
                                                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border whitespace-nowrap
                                                     ${!r.pipeline_stage ? 'bg-gray-100 text-gray-600 border-gray-200' : 'bg-blue-50 text-blue-700 border-blue-200'}
                                                 `}>
                                                     {r.pipeline_stage?.stage_name || 'New'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-center">
+                                            <td className="px-4 sm:px-6 py-4 text-center align-top">
                                                 <Link
                                                     href={`/csr/renewals/${r.id}`}
                                                     className="text-[#E07A5F] hover:text-[#E07A5F]/80 transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"

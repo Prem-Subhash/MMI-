@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { authenticateApiRequest } from '@/utils/auth'
+import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
 
 export async function POST(req: Request) {
   try {
@@ -18,19 +18,15 @@ export async function POST(req: Request) {
       )
     }
 
-    /* ================= FETCH LEAD ================= */
-    const { data: lead, error: leadError } = await supabaseServer
-      .from('temp_leads_basics')
-      .select('id, stage_metadata, effective_date, renewal_date, renewal_premium')
-      .eq('id', leadId)
-      .single()
-
-    if (leadError || !lead) {
+    /* ================= AUTHORIZE & FETCH LEAD ================= */
+    const authLead = await authorizeLeadAccess(auth.profile, leadId)
+    if (!authLead.authorized || !authLead.lead) {
       return NextResponse.json(
-        { error: 'Invalid lead' },
-        { status: 404 }
+        { error: authLead.error || 'Invalid lead' },
+        { status: authLead.status || 404 }
       )
     }
+    const lead = authLead.lead
 
     /* ================= FETCH STAGE ================= */
     const { data: stage, error: stageError } = await supabaseServer
