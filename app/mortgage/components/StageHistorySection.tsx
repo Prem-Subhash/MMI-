@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { History, ArrowDown, User, Calendar, MessageSquare, Eye, X, ShieldCheck, Building2, Edit3 } from 'lucide-react';
 import { MortgageStageHistory, StageCode } from '@/app/mortgage/lib/types';
 import { getStageConfig } from '@/app/mortgage/lib/stageFields';
+import { toast } from '@/lib/toast';
 
 interface StageHistorySectionProps {
   loanId: string;
@@ -28,6 +29,7 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
         }
       } catch (err) {
         console.error('Failed to fetch stage history:', err);
+        if (isMounted) toast('Failed to load stage history.', 'error');
       } finally {
         if (isMounted) setLoading(false);
       }
@@ -153,6 +155,17 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
                       <span className="hidden sm:inline">View</span>
                     </button>
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toast(`Viewing snapshot from ${formatTimestamp(record.changed_at)}`, 'info', 2000);
+                      setSelectedSnapshot(record);
+                    }}
+                    className="h-9 px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-2xs active:scale-95"
+                  >
+                    <Eye className="w-3.5 h-3.5 shrink-0" />
+                    <span>View Snapshot</span>
+                  </button>
                 </div>
 
                 {/* Date & Time & Updated By */}
@@ -186,7 +199,7 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
         <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
           <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[85vh] flex flex-col shadow-2xl overflow-hidden border border-gray-100 text-gray-800 animate-in fade-in zoom-in-95 duration-200">
             {/* Header */}
-            <div className="p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between gap-4 sticky top-0 z-10">
+            <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
@@ -243,11 +256,11 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end">
+            <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
               <button
                 type="button"
                 onClick={() => setSelectedSnapshot(null)}
-                className="px-6 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-xs sm:text-sm"
+                className="h-10 min-w-[160px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
               >
                 Close Snapshot View
               </button>

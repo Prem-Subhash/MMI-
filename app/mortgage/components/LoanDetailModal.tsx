@@ -101,6 +101,8 @@ const IconZap = () => (
     <path d="M13 10V3L4 14h7v7l9-11h-7z" />
   </svg>
 );
+import { toast } from '@/lib/toast';
+import StageHistorySection from './StageHistorySection';
 
 interface LoanDetailModalProps {
   isOpen: boolean;
@@ -128,6 +130,24 @@ export default function LoanDetailModal({
   if (!isOpen || !loan) return null;
 
   const stageConfig = getStageConfig(loan.stage);
+  const availableStages = MORTGAGE_STAGES.filter((s) => s.pipeline === loan.pipeline_type);
+
+  // Find current stage index and next stage
+  const currentIndex = availableStages.findIndex((s) => s.code === loan.stage);
+  const nextStage =
+    currentIndex >= 0 && currentIndex < availableStages.length - 1
+      ? availableStages[currentIndex + 1]
+      : null;
+
+  const handleUpdateStageClick = (targetCode: StageCode) => {
+    const targetStageName = getStageConfig(targetCode).label;
+    toast(`Opening stage update form for "${targetStageName}"...`, 'info', 2000);
+    if (onEditStage) {
+      onEditStage(loan, targetCode);
+    } else {
+      onEdit({ ...loan, stage: targetCode });
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true" style={{ display: isHidden ? "none" : "flex" }}>
@@ -135,6 +155,8 @@ export default function LoanDetailModal({
         
         {/* HEADER */}
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 z-20">
+        {/* Header */}
+        <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-white">
               {loan.client_name || 'Mortgage Application Details'}
@@ -186,6 +208,30 @@ export default function LoanDetailModal({
               glow="shadow-amber-200/60"
               iconBg="bg-amber-50 text-amber-600"
               hoverIconBg="group-hover/card:bg-amber-500 group-hover/card:text-white"
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto self-end sm:self-center">
+            <button
+              type="button"
+              onClick={() => onEdit(loan)}
+              className="h-10 px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
+            >
+              <Edit3 className="w-3.5 h-3.5 shrink-0" />
+              <span>Edit Application</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onDelete(loan)}
+              className="h-10 px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-95 flex-1 sm:flex-initial"
+            >
+              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Delete</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shrink-0"
+              aria-label="Close modal"
             >
               <p className="text-base font-bold text-gray-800 break-words">
                 {loan.pipeline_type === 'NEW_LOAN' ? 'New Loan Pipeline' : 'Pre-Approval Pipeline'}
@@ -226,6 +272,50 @@ export default function LoanDetailModal({
                   <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Property Value</div>
                   <div className="text-sm font-bold text-emerald-700">
                     {loan.estimated_property_value ? `$${loan.estimated_property_value.toLocaleString()}` : '—'}
+        {/* Stage Progression Bar & Update Stage Action */}
+        <div className="shrink-0 px-6 py-5 bg-white border-b border-gray-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3.5">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#10B889] flex items-center gap-1.5">
+              <Layers size={14} />
+              <span>Pipeline Stage Progression</span>
+            </span>
+            {nextStage && (
+              <button
+                type="button"
+                onClick={() => handleUpdateStageClick(nextStage.code)}
+                className="h-10 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm hover:shadow transition-all flex items-center justify-center gap-2 active:scale-95 w-full sm:w-auto"
+              >
+                <span>Advance to {nextStage.label}</span>
+                <ArrowRight className="w-3.5 h-3.5 shrink-0" />
+              </button>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+            {availableStages.map((s, idx) => {
+              const isActive = s.code === loan.stage;
+              const isPassed = idx < currentIndex;
+              return (
+                <button
+                  key={s.code}
+                  type="button"
+                  onClick={() => handleUpdateStageClick(s.code)}
+                  className={`h-full flex flex-col justify-between p-3 rounded-xl text-left border transition-all ${
+                    isActive
+                      ? 'bg-[#10B889] border-[#10B889] text-white shadow-md ring-2 ring-[#10B889]/30'
+                      : isPassed
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-900 hover:bg-emerald-100 font-bold'
+                      : 'bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <span className={`text-[10px] font-bold tracking-wider uppercase ${isActive ? 'text-emerald-100' : isPassed ? 'text-emerald-800' : 'text-gray-400'}`}>
+                      Stage {idx + 1}
+                    </span>
+                    {isPassed && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                  </div>
+                  <div className={`text-xs font-bold mt-1.5 truncate w-full ${isActive ? 'text-white' : ''}`}>
+                    {s.label}
                   </div>
                 </div>
                 <div>
@@ -371,6 +461,15 @@ export default function LoanDetailModal({
             </button>
           </div>
 
+        {/* Footer */}
+        <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
+          <button
+            type="button"
+            onClick={onClose}
+            className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
+          >
+            Close Window
+          </button>
         </div>
       </div>
     </div>

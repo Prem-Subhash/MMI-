@@ -185,7 +185,7 @@ export default function MortgageLoginPage() {
                   </div>
                   <input
                     type="email"
-                    placeholder="mortgageadmin@moonstar.com"
+                    placeholder="Enter Your Email"
                     className="w-full pl-10 pr-4 py-3 bg-gray-50/50 hover:bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 focus:border-[#1E3A8A] transition-all duration-300 text-sm shadow-sm"
                     value={email}
                     onChange={e => setEmail(e.target.value)}

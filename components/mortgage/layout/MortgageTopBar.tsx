@@ -141,6 +141,7 @@ export default function MortgageTopBar({ onMenuClick }: { onMenuClick: () => voi
                                             className={`px-4 py-3 sm:px-5 sm:py-4 hover:bg-blue-50/50 transition-colors cursor-pointer group ${n.unread ? 'bg-blue-50/25' : ''}`}
                                             onClick={() => {
                                                 setNotificationsOpen(false)
+                                                toast(`Opened alert: ${n.title}`, 'info', 2500)
                                                 router.push(n.id === '1' ? '/mortgage/pipeline/pre-approval' : '/mortgage/pipeline/new-loan')
                                             }}
                                         >

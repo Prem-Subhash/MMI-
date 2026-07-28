@@ -1,31 +1,61 @@
-/* Dark mode fix for HTML5 date inputs in Moonstar Mortgage CRM */
+/* Pristine light-mode styling for HTML5 date inputs in Moonstar Mortgage CRM */
 input[type="date"].mortgage-date-input {
-  color: #ffffff !important;
-  background-color: #0f172a !important;
-  color-scheme: dark;
-  font-weight: 600;
+  color: #334155 !important; /* text-slate-700 matching regular inputs */
+  background-color: #ffffff !important;
+  color-scheme: light !important;
+  font-weight: 500;
+  border: 1px solid #d1d5db !important; /* border-gray-300 */
+  border-radius: 0.5rem !important; /* rounded-lg */
+  padding: 0.625rem 0.875rem !important; /* p-2.5 */
+  font-size: 0.875rem !important; /* text-sm */
+  line-height: 1.25rem !important;
+  transition: all 0.2s ease-in-out !important;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-/* Ensure inner Webkit date edit wrapper text is solid white and fully visible */
+input[type="date"].mortgage-date-input:hover {
+  border-color: #9ca3af !important; /* border-gray-400 */
+}
+
+input[type="date"].mortgage-date-input:focus {
+  outline: none !important;
+  border-color: #10B889 !important;
+  box-shadow: 0 0 0 3px rgba(16, 184, 137, 0.18) !important;
+}
+
+/* Ensure inner Webkit date edit wrapper text is crisp and fully readable */
 input[type="date"].mortgage-date-input::-webkit-datetime-edit,
 input[type="date"].mortgage-date-input::-webkit-datetime-edit-fields-wrapper,
 input[type="date"].mortgage-date-input::-webkit-datetime-edit-text,
 input[type="date"].mortgage-date-input::-webkit-datetime-edit-month-field,
 input[type="date"].mortgage-date-input::-webkit-datetime-edit-day-field,
 input[type="date"].mortgage-date-input::-webkit-datetime-edit-year-field {
-  color: #ffffff !important;
+  color: #334155 !important;
   opacity: 1 !important;
+  padding: 0 !important;
 }
 
-/* Make calendar picker icon bright white and high contrast */
-input[type="date"].mortgage-date-input::-webkit-calendar-picker-indicator {
-  filter: invert(1);
-  opacity: 0.9;
-  cursor: pointer;
-}
-
-input[type="date"].mortgage-date-input:focus {
+/* Style individual date segments when focused/selected */
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-month-field:focus,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-day-field:focus,
+input[type="date"].mortgage-date-input::-webkit-datetime-edit-year-field:focus {
+  background-color: #10B889 !important;
+  color: #ffffff !important;
+  border-radius: 3px;
   outline: none;
-  border-color: #3b82f6 !important;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
+/* Calendar picker indicator (calendar icon) styling */
+input[type="date"].mortgage-date-input::-webkit-calendar-picker-indicator {
+  filter: none !important;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  padding: 2px;
+  margin-left: 8px;
+}
+
+input[type="date"].mortgage-date-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+  transform: scale(1.15);
 }
