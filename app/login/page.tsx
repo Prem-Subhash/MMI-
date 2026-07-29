@@ -159,10 +159,10 @@ export default function LoginPage() {
             onClick={() => router.push("/")}
             className="absolute top-8 left-12 z-30 flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 hover:border-white/50 text-white text-sm font-medium transition-all duration-300 backdrop-blur-md shadow-sm hover:shadow group"
           >
-            <span>Back to Home</span>
             <span className="transition-transform duration-300 group-hover:-translate-x-1">
               ←
             </span>
+            <span>Back to Home</span>
           </button>
           {/* Geometric Shapes */}
           <div className="absolute top-0 right-0 w-48 h-full bg-white/10 skew-x-12 translate-x-24 rounded-l-3xl backdrop-blur-sm"></div>
