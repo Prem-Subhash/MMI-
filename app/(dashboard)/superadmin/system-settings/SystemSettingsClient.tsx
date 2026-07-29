@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Save, CheckCircle2, Building2, Mail, Clock, GitBranch, ChevronDown } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
+import { Select } from '@/components/ui/Select'
 
 const SETTING_KEYS = {
     COMPANY_NAME: 'COMPANY_NAME',
@@ -141,38 +142,32 @@ export default function SystemSettingsClient() {
                 <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">System Timezone</label>
-                        <div className="relative">
-                            <select
-                                required
-                                value={settings[SETTING_KEYS.TIMEZONE] || 'America/New_York'}
-                                onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.TIMEZONE]: e.target.value })}
-                                className={`${inputClass} appearance-none pr-10`}
-                            >
-                                <option value="America/New_York">Eastern Time (ET)</option>
-                                <option value="America/Chicago">Central Time (CT)</option>
-                                <option value="America/Denver">Mountain Time (MT)</option>
-                                <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                                <option value="UTC">UTC</option>
-                            </select>
-                            <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                        </div>
+                        <Select
+                            required
+                            value={settings[SETTING_KEYS.TIMEZONE] || 'America/New_York'}
+                            onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.TIMEZONE]: e.target.value })}
+                            className={inputClass}
+                        >
+                            <option value="America/New_York">Eastern Time (ET)</option>
+                            <option value="America/Chicago">Central Time (CT)</option>
+                            <option value="America/Denver">Mountain Time (MT)</option>
+                            <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                            <option value="UTC">UTC</option>
+                        </Select>
                     </div>
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-gray-500 uppercase tracking-widest">Default Pipeline</label>
-                        <div className="relative">
-                            <select
-                                required
-                                value={settings[SETTING_KEYS.DEFAULT_PIPELINE] || ''}
-                                onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.DEFAULT_PIPELINE]: e.target.value })}
-                                className={`${inputClass} appearance-none pr-10`}
-                            >
-                                <option value="" disabled>Select a default pipeline...</option>
-                                {pipelines.map(p => (
-                                    <option key={p.id} value={p.id}>{p.name} ({p.category})</option>
-                                ))}
-                            </select>
-                            <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                        </div>
+                        <Select
+                            required
+                            value={settings[SETTING_KEYS.DEFAULT_PIPELINE] || ''}
+                            onChange={(e) => setSettings({ ...settings, [SETTING_KEYS.DEFAULT_PIPELINE]: e.target.value })}
+                            className={inputClass}
+                        >
+                            <option value="" disabled>Select a default pipeline...</option>
+                            {pipelines.map(p => (
+                                <option key={p.id} value={p.id}>{p.name} ({p.category})</option>
+                            ))}
+                        </Select>
                     </div>
                 </div>
             </div>

@@ -76,12 +76,26 @@ export default function MortgageClientLayout({
           .select('role')
           .eq('id', session.user.id)
           .single()
-        const isMortgage = fallback.data?.role === 'mortgage' || fallback.data?.role === 'admin'
-        profile = { ...fallback.data, portal_access: isMortgage ? ['mortgage'] : ['insurance'] }
+        profile = { ...fallback.data, portal_access: [] }
       }
 
-      const isMortgageRole = profile?.role === 'mortgage'
-      const hasMortgageAccess = profile?.portal_access?.includes('mortgage') || isMortgageRole || profile?.role === 'superadmin' || profile?.role === 'admin' || session.user.email?.toLowerCase().includes('moonstar.com')
+      const role = profile?.role?.toLowerCase()
+      const isLendingRole = role === 'lending' || role === 'accurate_lending'
+      const isMortgageRole = role === 'mortgage'
+      
+      let portalAccess: string[] = profile?.portal_access || []
+      
+      if (portalAccess.length === 0 || (portalAccess.length === 1 && portalAccess[0] === 'insurance')) {
+          if (session.user.email?.toLowerCase().includes('moonstar.com') || isMortgageRole) {
+              portalAccess = ['mortgage']
+          } else if (session.user.email?.toLowerCase().includes('accuratelending.com') || isLendingRole) {
+              portalAccess = ['lending']
+          } else if (portalAccess.length === 0) {
+              portalAccess = ['insurance']
+          }
+      }
+
+      const hasMortgageAccess = portalAccess.includes('mortgage') || role === 'superadmin'
 
       if (!hasMortgageAccess) {
         console.warn(`[MORTGAGE LAYOUT] Unauthorized access attempt by user ${session.user.id}`)

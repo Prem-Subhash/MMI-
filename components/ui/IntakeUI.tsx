@@ -148,7 +148,7 @@ export const Select: React.FC<SelectProps> = ({ label, icon: Icon, options, clas
         <select
           id={id}
           className={`
-            w-full bg-white border border-black rounded-2xl py-4 pr-12 appearance-none outline-none transition-all
+            w-full bg-white border border-black rounded-2xl py-4 pr-12 appearance-none outline-none transition-all peer
             ${Icon ? 'pl-12' : 'pl-5'}
             focus:border-red-300 focus:ring-4 focus:ring-red-50 focus:shadow-[0_0_20px_rgba(220,38,38,0.05)]
             font-semibold text-gray-900 text-lg cursor-pointer
@@ -164,7 +164,7 @@ export const Select: React.FC<SelectProps> = ({ label, icon: Icon, options, clas
             return <option key={val} value={val}>{lab}</option>
           })}
         </select>
-        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-red-500 transition-all duration-300 group-focus-within:rotate-180">
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-focus-within:text-red-500 peer-focus:rotate-180 transition-all duration-300">
           <ChevronDown size={20} strokeWidth={2.5} />
         </div>
       </div>

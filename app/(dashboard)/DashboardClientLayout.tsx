@@ -36,14 +36,41 @@ export default function DashboardClientLayout({
 
     const checkSession = async () => {
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError || !session) {
-        if (sessionError && (sessionError.message?.includes('Refresh Token') || sessionError.code === 'refresh_token_not_found')) {
-          await supabase.auth.signOut().catch(() => {})
+        if (sessionError || !session) {
+          if (sessionError && (sessionError.message?.includes('Refresh Token') || sessionError.code === 'refresh_token_not_found')) {
+            await supabase.auth.signOut().catch(() => {})
+          }
+          router.replace('/login')
+          return
         }
-        router.replace('/login')
-        return
-      }
-      setCheckingAuth(false)
+
+        // Perform RBAC validation for Insurance portal access
+        let { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role, portal_access')
+          .eq('id', session.user.id)
+          .single()
+
+        if (error) {
+          const fallback = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', session.user.id)
+            .single()
+          const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
+          const isMortgage = fallback.data?.role === 'mortgage' || fallback.data?.role === 'admin'
+          profile = { ...fallback.data, portal_access: isLending ? ['lending'] : (isMortgage ? ['mortgage'] : ['insurance']) }
+        }
+
+        const hasInsuranceAccess = profile?.portal_access?.includes('insurance') || profile?.role === 'superadmin'
+
+        if (!hasInsuranceAccess) {
+          console.warn(`[DASHBOARD LAYOUT] Unauthorized access attempt by user ${session.user.id}`)
+          router.replace('/unauthorized')
+          return
+        }
+
+        setCheckingAuth(false)
       resetTimer()
     }
 

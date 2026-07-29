@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { Bell, Clock, User, ChevronRight, Menu } from 'lucide-react'
+import { Bell, Clock, User, ChevronRight, Menu, ChevronDown } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 
@@ -169,7 +169,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
             <div className="flex-1 flex items-center justify-end px-3 sm:px-6">
                 <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0">
                     {userProfile?.role === 'superadmin' && (
-                        <div className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl border border-white/20 transition-all">
+                        <div className="hidden sm:flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-xl border border-white/20 transition-all relative">
                             <span className="text-xs font-bold uppercase tracking-wider text-emerald-200">Company:</span>
                             <select
                                 value={
@@ -192,29 +192,31 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                                         else if (val === 'lending') router.push('/lending');
                                     }
                                 }}
-                                className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer"
+                                className="bg-transparent text-white font-bold text-xs focus:outline-none cursor-pointer appearance-none pr-5 peer"
                             >
                                 <option value="all" className="text-gray-900">All Companies</option>
                                 <option value="insurance" className="text-gray-900">Innovative Insurance</option>
                                 <option value="mortgage" className="text-gray-900">Moonstar Mortgage</option>
                                 <option value="lending" className="text-gray-900">Accurate Lending</option>
                             </select>
+                            <ChevronDown size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-emerald-200 pointer-events-none peer-focus:rotate-180 transition-transform duration-300" />
                         </div>
                     )}
                     {/* Notification Bell */}
-                    <div className="relative" ref={notificationsRef}>
+                    {!(pathname?.includes('mortgage') || pathname?.includes('lending')) && (
+                        <div className="relative" ref={notificationsRef}>
                         <button
                             onClick={() => {
                                 setNotificationsOpen(!notificationsOpen)
                                 setActivityOpen(false)
                                 setProfileOpen(false)
                             }}
-                            className={`p-2 rounded-full transition-all relative ${notificationsOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                            className={`p-2 rounded-full transition-all relative flex items-center gap-1 ${notificationsOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
                             aria-label="Notifications"
                         >
                             <Bell size={22} />
                             {notifications.some((n) => !n.is_read) && (
-                                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-[#10B889] rounded-full"></span>
+                                <span className="absolute top-1.5 left-5 w-2.5 h-2.5 bg-red-500 border-2 border-[#10B889] rounded-full"></span>
                             )}
                         </button>
 
@@ -279,16 +281,18 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                             </div>
                         )}
                     </div>
+                    )}
 
                     {/* Recent Activity Clock */}
-                    <div className="relative" ref={activityRef}>
+                    {!(pathname?.includes('mortgage') || pathname?.includes('lending')) && (
+                        <div className="relative" ref={activityRef}>
                         <button
                             onClick={() => {
                                 setActivityOpen(!activityOpen)
                                 setNotificationsOpen(false)
                                 setProfileOpen(false)
                             }}
-                            className={`p-2 rounded-full transition-all relative ${activityOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
+                            className={`p-2 rounded-full transition-all relative flex items-center gap-1 ${activityOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
                             aria-label="Recent Activity"
                         >
                             <Clock size={22} />
@@ -354,6 +358,7 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                             </div>
                         )}
                     </div>
+                    )}
 
                     {/* Profile Dropdown */}
                     <div className="relative" ref={profileRef}>

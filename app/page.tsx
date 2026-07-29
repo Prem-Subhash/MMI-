@@ -1,95 +1,119 @@
-'use client'
+"use client";
 
-import Image from 'next/image'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Footer from '@/components/layout/Footer'
-import { supabase } from '@/lib/supabaseClient'
+import Image from "next/image";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Footer from "@/components/layout/Footer";
+import { supabase } from "@/lib/supabaseClient";
 
 interface PortalCard {
-  id: string
-  title: string
-  logo: string
-  description: string
-  targetUrl: string
+  id: string;
+  title: string;
+  logo: string;
+  description: string;
+  targetUrl: string;
 }
 
 const portalCards: PortalCard[] = [
   {
-    id: 'insurance',
-    title: 'Innovative Insurance',
-    logo: '/innovative_logo_-removebg-preview.png',
-    description: 'Access the Insurance CRM portal to manage Personal Lines, Commercial Lines, Renewals, and client relationships.',
-    targetUrl: '/login',
+    id: "insurance",
+    title: "Innovative Insurance",
+    logo: "/innovative_logo_-removebg-preview.png",
+    description:
+      "Access the Insurance CRM portal to manage Personal Lines, Commercial Lines, Renewals, and client relationships.",
+    targetUrl: "/login",
   },
   {
-    id: 'mortgage',
-    title: 'Moonstar Mortgage',
-    logo: '/Moonstarlogo-removebg-preview.png',
-    description: 'Access the Mortgage CRM portal to manage loan applications, mortgage pipelines, and borrower workflows.',
-    targetUrl: '/mortgage/login',
+    id: "mortgage",
+    title: "Moonstar Mortgage",
+    logo: "/Moonstarlogo-removebg-preview.png",
+    description:
+      "Access the Mortgage CRM portal to manage loan applications, mortgage pipelines, and borrower workflows.",
+    targetUrl: "/mortgage/login",
   },
   {
-    id: 'lending',
-    title: 'Accurate Lending',
-    logo: '/Accurate_Lending_Logo-removebg-preview.png',
-    description: 'Access the Commercial Lending CRM portal to manage lending pipelines, underwriting, and borrower communication.',
-    targetUrl: '/lending/login',
+    id: "lending",
+    title: "Accurate Lending",
+    logo: "/Accurate_Lending_Logo-removebg-preview.png",
+    description:
+      "Access the Commercial Lending CRM portal to manage lending pipelines, underwriting, and borrower communication.",
+    targetUrl: "/lending/login",
   },
-]
+];
 
 export default function HomePage() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
       if (sessionError || !session) {
-        if (sessionError && (sessionError.message?.includes('Refresh Token') || sessionError.code === 'refresh_token_not_found')) {
-          await supabase.auth.signOut().catch(() => {})
+        if (
+          sessionError &&
+          (sessionError.message?.includes("Refresh Token") ||
+            sessionError.code === "refresh_token_not_found")
+        ) {
+          await supabase.auth.signOut().catch(() => {});
         }
-        return
+        return;
       }
       if (session?.user) {
         let { data: profile, error } = await supabase
-          .from('profiles')
-          .select('role, portal_access')
-          .eq('id', session.user.id)
-          .single()
+          .from("profiles")
+          .select("role, portal_access")
+          .eq("id", session.user.id)
+          .single();
 
         if (error) {
           const fallback = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
-            .single()
-          const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
-          const isMortgage = fallback.data?.role === 'mortgage'
-          profile = { ...fallback.data, portal_access: isLending ? ['lending'] : (isMortgage ? ['mortgage'] : ['insurance']) }
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
+            .single();
+          profile = {
+            ...fallback.data,
+            portal_access: [],
+          };
         }
 
-        const isLendingRole = profile?.role === 'lending' || profile?.role === 'accurate_lending'
-        const isMortgageRole = profile?.role === 'mortgage'
-        const hasLendingPortal = profile?.portal_access?.includes('lending') || profile?.portal_access?.includes('accurate_lending')
-        const hasMortgagePortal = profile?.portal_access?.includes('mortgage')
-        const hasInsurancePortal = profile?.portal_access?.includes('insurance')
-        const isMoonstarEmail = session.user.email?.toLowerCase().includes('moonstar.com')
+        const role = profile?.role?.toLowerCase();
+        const isLendingRole = role === "lending" || role === "accurate_lending";
+        const isMortgageRole = role === "mortgage";
+        
+        let portalAccess: string[] = profile?.portal_access || [];
+        
+        if (portalAccess.length === 0 || (portalAccess.length === 1 && portalAccess[0] === 'insurance')) {
+            if (session.user.email?.toLowerCase().includes('moonstar.com') || isMortgageRole) {
+                portalAccess = ['mortgage'];
+            } else if (session.user.email?.toLowerCase().includes('accuratelending.com') || isLendingRole) {
+                portalAccess = ['lending'];
+            } else if (portalAccess.length === 0) {
+                portalAccess = ['insurance'];
+            }
+        }
 
-        if (isMoonstarEmail || hasMortgagePortal && !hasInsurancePortal && !hasLendingPortal) {
-          router.push('/mortgage')
+        const hasLendingPortal = portalAccess.includes("lending") || portalAccess.includes("accurate_lending");
+        const hasMortgagePortal = portalAccess.includes("mortgage");
+        const hasInsurancePortal = portalAccess.includes("insurance");
+
+        if (hasMortgagePortal && !hasInsurancePortal && !hasLendingPortal) {
+          router.push("/mortgage");
         } else if (hasLendingPortal && !hasInsurancePortal) {
-          router.push('/lending/dashboard')
+          router.push("/lending/dashboard");
         } else if (isMortgageRole) {
-          router.push('/mortgage')
+          router.push("/mortgage");
         } else if (isLendingRole) {
-          router.push('/lending/dashboard')
+          router.push("/lending/dashboard");
         } else if (profile?.role) {
-          router.push(`/${profile.role}`)
+          router.push(`/${profile.role}`);
         }
       }
-    }
-    checkSession()
-  }, [router])
+    };
+    checkSession();
+  }, [router]);
 
   return (
     <main style={container}>
@@ -99,7 +123,7 @@ export default function HomePage() {
         alt="Moonstar Lending Portal"
         fill
         priority
-        style={{ objectFit: 'cover', zIndex: -2 }}
+        style={{ objectFit: "cover", zIndex: -2 }}
       />
 
       {/* Overlay */}
@@ -108,12 +132,16 @@ export default function HomePage() {
       {/* Content */}
       <section style={content}>
         <div className="max-w-3xl">
-          <h1 style={heading} className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight drop-shadow-sm">
+          <h1
+            style={heading}
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight drop-shadow-sm"
+          >
             Welcome to Your Workspace
           </h1>
 
           <p style={subheading}>
-            Select a platform below to manage your clients, pipelines, and daily operations.
+            Select a platform below to manage your clients, pipelines, and daily
+            operations.
           </p>
         </div>
 
@@ -149,15 +177,25 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (card.targetUrl && card.targetUrl !== '#') {
-                    router.push(card.targetUrl)
+                  if (card.targetUrl && card.targetUrl !== "#") {
+                    router.push(card.targetUrl);
                   }
                 }}
                 className="w-full bg-brand text-white font-semibold py-3.5 px-6 rounded-xl transition-all duration-300 shadow-md hover:shadow-xl flex items-center justify-center gap-2 group-hover:brightness-105"
               >
                 <span>Enter Portal</span>
-                <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                <svg
+                  className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
                 </svg>
               </button>
             </div>
@@ -167,50 +205,50 @@ export default function HomePage() {
 
       <Footer />
     </main>
-  )
+  );
 }
 
 /* Styles */
 const container = {
-  minHeight: '100dvh',
-  position: 'relative' as const,
-  display: 'flex',
-  flexDirection: 'column' as const,
-  overflowX: 'hidden' as const,
-}
+  minHeight: "100dvh",
+  position: "relative" as const,
+  display: "flex",
+  flexDirection: "column" as const,
+  overflowX: "hidden" as const,
+};
 
 const overlay = {
-  position: 'absolute' as const,
+  position: "absolute" as const,
   inset: 0,
-  backgroundColor: 'rgba(0,0,0,0.65)',
+  backgroundColor: "rgba(0,0,0,0.65)",
   zIndex: -1,
-}
+};
 
 const content = {
   flex: 1,
-  padding: '8vh 5%',
-  display: 'flex',
-  flexDirection: 'column' as const,
-  justifyContent: 'center',
-  color: '#fff',
-  maxWidth: '1300px',
-  width: '100%',
-  margin: '0 auto',
+  padding: "8vh 5%",
+  display: "flex",
+  flexDirection: "column" as const,
+  justifyContent: "center",
+  color: "#fff",
+  maxWidth: "1300px",
+  width: "100%",
+  margin: "0 auto",
   zIndex: 1,
-}
+};
 
 const heading = {
-  textShadow: '0 0 10px rgba(0,0,0,0.5)',
-  fontSize: '52px',
+  textShadow: "0 0 10px rgba(0,0,0,0.5)",
+  fontSize: "52px",
   fontWeight: 700,
-  marginTop: '24px',
-  lineHeight: '1.1',
-}
+  marginTop: "24px",
+  lineHeight: "1.1",
+};
 
 const subheading = {
-  textShadow: '0 0 10px rgba(0,0,0,0.5)',
-  fontSize: '18px',
-  marginTop: '20px',
-  maxWidth: '500px',
+  textShadow: "0 0 10px rgba(0,0,0,0.5)",
+  fontSize: "18px",
+  marginTop: "20px",
+  maxWidth: "500px",
   opacity: 0.9,
-}
+};

@@ -58,11 +58,26 @@ export default function MortgageLoginPage() {
             .select('role')
             .eq('id', authData.session.user.id)
             .single()
-          const isMortgage = fallback.data?.role === 'mortgage' || fallback.data?.role === 'admin'
-          profile = { ...fallback.data, portal_access: isMortgage ? ['mortgage'] : ['insurance'] }
+          profile = { ...fallback.data, portal_access: [] }
         }
 
-        const hasMortgageAccess = profile?.portal_access?.includes('mortgage') || profile?.role === 'mortgage' || profile?.role === 'superadmin' || profile?.role === 'admin' || email.toLowerCase().includes('moonstar.com')
+        const role = profile?.role?.toLowerCase()
+        const isLendingRole = role === 'lending' || role === 'accurate_lending'
+        const isMortgageRole = role === 'mortgage'
+        
+        let portalAccess: string[] = profile?.portal_access || []
+        
+        if (portalAccess.length === 0 || (portalAccess.length === 1 && portalAccess[0] === 'insurance')) {
+            if (authData.session.user.email?.toLowerCase().includes('moonstar.com') || isMortgageRole) {
+                portalAccess = ['mortgage']
+            } else if (authData.session.user.email?.toLowerCase().includes('accuratelending.com') || isLendingRole) {
+                portalAccess = ['lending']
+            } else if (portalAccess.length === 0) {
+                portalAccess = ['insurance']
+            }
+        }
+
+        const hasMortgageAccess = portalAccess.includes('mortgage') || role === 'superadmin'
 
         if (!hasMortgageAccess) {
           await supabase.auth.signOut()
