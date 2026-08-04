@@ -362,7 +362,7 @@ export default function IntakeFormPage() {
     <div className="min-h-dvh flex flex-col bg-gray-50 font-sans selection:bg-red-100 selection:text-red-900 overflow-x-hidden pb-safe">
       <FormHeader
         title="Insurance Application"
-        subtitle="Secure intake portal for Moonstar Mortgage"
+        subtitle="Secure intake portal for Innovative Insurance"
         logoSrc="/innovative_logo_-removebg-preview.png"
       />
 

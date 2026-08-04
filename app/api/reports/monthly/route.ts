@@ -107,7 +107,7 @@ export async function POST(request: Request) {
             policy_flow,
             insurence_category,
             assigned_csr,
-            assigned_csr_profile:csrs!temp_leads_assigned_csr_fkey (name),
+            assigned_csr_profile:profiles!temp_leads_assigned_csr_fkey (full_name),
             assigned_user_profile:profiles!fk_profile (full_name)
         `, { count: 'exact' })
         .gte(dateField, start_date)
@@ -205,7 +205,7 @@ export async function POST(request: Request) {
                 row.insurence_category || '-',
                 row.policy_flow || '-',
                 active.activePremium ? formatCurrency(active.activePremium) : '$0.00',
-                row.assigned_csr_profile?.name || row.assigned_user_profile?.full_name || row.assigned_csr || '-',
+                row.assigned_csr_profile?.full_name || row.assigned_user_profile?.full_name || row.assigned_csr || '-',
                 row[dateKey] || row.effective_date || '-'
             ])
         })
@@ -286,7 +286,7 @@ export async function POST(request: Request) {
                     doc.text(row.insurence_category || '-', 240, y)
                     doc.text(row.policy_flow || '-', 320, y)
                     doc.text(formatCurrency(premium), 380, y)
-                    doc.text(row.assigned_csr_profile?.name?.substring(0, 15) || row.assigned_user_profile?.full_name?.substring(0, 15) || '-', 460, y)
+                    doc.text(row.assigned_csr_profile?.full_name?.substring(0, 15) || row.assigned_user_profile?.full_name?.substring(0, 15) || '-', 460, y)
                     doc.text(rowDate || '-', 530, y)
                     y += 18
                     doc.moveTo(30, y - 5).lineTo(570, y - 5).strokeColor('#E5E7EB').lineWidth(0.5).stroke().strokeColor('black')

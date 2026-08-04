@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, Layers, AlertCircle, User, Phone, Mail, Calendar, ChevronDown } from 'lucide-react';
 import { MortgageLoan, PipelineType, StageCode } from '@/app/mortgage/lib/types';
 import { MORTGAGE_STAGES, getStageConfig } from '@/app/mortgage/lib/stageFields';
+import { formatPhoneNumber } from '@/app/mortgage/lib/phoneUtils';
 import { toast } from '@/lib/toast';
-import StageHistorySection from './StageHistorySection';
 import {
   EXCEL_TRANSACTION_TYPES,
   EXCEL_LOAN_TYPES,
@@ -70,6 +70,10 @@ export default function LoanFormModal({
   // Track if "Other (Manual Input)" mode is active for each dropdown
   const [manualInputModes, setManualInputModes] = useState<Record<string, boolean>>({});
 
+  // Local state for formatted ROI fields
+  const [localInterestRate, setLocalInterestRate] = useState('');
+  const [localFinalInterestRate, setLocalFinalInterestRate] = useState('');
+
   // Form Fields State (no automatic dropdown defaults!)
   const [formData, setFormData] = useState<Partial<MortgageLoan>>({
     client_name: '',
@@ -92,6 +96,8 @@ export default function LoanFormModal({
     missing_documents_list: '',
     follow_up_date: '',
     expected_commission: undefined,
+    expected_commission_type: 'AMOUNT',
+    commission_source: undefined,
     additional_notes: '',
 
     // Pre-Approval Stage 2
@@ -156,13 +162,25 @@ export default function LoanFormModal({
     check_wire_amount_received: undefined,
     client_refund_amount: undefined,
     loan_log_updated: 'N',
+    borrowers: [{ client_name: '', phone: '', email: '', is_primary: true, display_order: 0 }],
   });
 
   useEffect(() => {
     if (initialLoan) {
       setPipelineType(initialLoan.pipeline_type);
       setStage(initialLoan.stage);
-      setFormData({ ...initialLoan });
+      
+      let loadedBorrowers = initialLoan.borrowers;
+      if (!loadedBorrowers || loadedBorrowers.length === 0) {
+        loadedBorrowers = [{
+          client_name: initialLoan.client_name || '',
+          phone: initialLoan.phone || '',
+          email: initialLoan.email || '',
+          is_primary: true,
+          display_order: 0
+        }];
+      }
+      setFormData({ ...initialLoan, borrowers: loadedBorrowers });
 
       const modes: Record<string, boolean> = {};
       if (initialLoan.transaction_type && !EXCEL_TRANSACTION_TYPES.includes(initialLoan.transaction_type as any)) {
@@ -184,6 +202,16 @@ export default function LoanFormModal({
         modes.lender_name = true;
       }
       setManualInputModes(modes);
+
+      // Initialize local formatted state
+      const initRate = initialLoan.interest_rate !== undefined && initialLoan.interest_rate !== null
+        ? Number(initialLoan.interest_rate).toFixed(3)
+        : '';
+      const initFinal = initialLoan.final_interest_rate !== undefined && initialLoan.final_interest_rate !== null
+        ? Number(initialLoan.final_interest_rate).toFixed(3)
+        : '';
+      setLocalInterestRate(initRate);
+      setLocalFinalInterestRate(initFinal);
     } else {
       const initPipeline = defaultPipelineType;
       setPipelineType(initPipeline);
@@ -198,27 +226,29 @@ export default function LoanFormModal({
         application_received: 'N',
         application_received_date: '',
         inquiry_date: new Date().toISOString().split('T')[0],
-        transaction_type: '',
+        transaction_type: initPipeline === 'PRE_APPROVAL' ? 'Pre-approval' : '',
         loan_type: '',
         estimated_property_value: undefined,
         estimated_credit_score: undefined,
-        loan_term: '',
+        expected_commission: undefined,
+        expected_commission_type: 'AMOUNT',
+        commission_source: undefined,
+        loan_term: '30_YRS',
         target_closing_date: '',
         loan_officer_name: '',
         processor_name: '',
         all_documents_received: 'N',
         missing_documents_list: '',
         follow_up_date: '',
-        expected_commission: undefined,
         additional_notes: '',
         uw_completed: 'N',
         val_requested: 'N',
         preapproval_sent_to_client: 'N',
         lender_name: '',
-        moonstar_disclosure_sent: 'N',
-        lender_disclosure_sent: 'N',
-        received_all_uw_documents: 'N',
-        rate_locked: 'N',
+        moonstar_disclosure_sent: undefined,
+        lender_disclosure_sent: undefined,
+        received_all_uw_documents: undefined,
+        rate_locked: undefined,
         moonstar_disclosure_signed_3day: 'N',
         lender_disclosure_signed_3day: 'N',
         anti_predatory_completed: 'NA',
@@ -243,7 +273,10 @@ export default function LoanFormModal({
         moonstar_audit_completed: 'N',
         title_check_received: 'N',
         loan_log_updated: 'N',
+        borrowers: [{ client_name: '', phone: '', email: '', is_primary: true, display_order: 0 }],
       });
+      setLocalInterestRate('');
+      setLocalFinalInterestRate('');
     }
   }, [initialLoan, defaultPipelineType, isOpen]);
 
@@ -256,6 +289,76 @@ export default function LoanFormModal({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const oldSelectionStart = input.selectionStart;
+    const oldLength = input.value.length;
+
+    const formatted = formatPhoneNumber(input.value);
+    handleFieldChange('phone', formatted);
+
+    requestAnimationFrame(() => {
+      if (input && oldSelectionStart !== null) {
+        const diff = formatted.length - oldLength;
+        const newCursor = Math.max(0, oldSelectionStart + diff);
+        input.setSelectionRange(newCursor, newCursor);
+      }
+    });
+  };
+
+  const handleBorrowerChange = (index: number, field: string, value: string) => {
+    setFormData((prev) => {
+      const newBorrowers = [...(prev.borrowers || [])];
+      if (newBorrowers[index]) {
+        newBorrowers[index] = { ...newBorrowers[index], [field]: value };
+      }
+      if (index === 0) {
+        return {
+          ...prev,
+          borrowers: newBorrowers,
+          [field]: value
+        };
+      }
+      return { ...prev, borrowers: newBorrowers };
+    });
+  };
+
+  const handleBorrowerPhoneChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const oldSelectionStart = input.selectionStart;
+    const oldLength = input.value.length;
+
+    const formatted = formatPhoneNumber(input.value);
+    handleBorrowerChange(index, 'phone', formatted);
+
+    requestAnimationFrame(() => {
+      if (input && oldSelectionStart !== null) {
+        const diff = formatted.length - oldLength;
+        const newCursor = Math.max(0, oldSelectionStart + diff);
+        input.setSelectionRange(newCursor, newCursor);
+      }
+    });
+  };
+
+  const addBorrower = () => {
+    setFormData((prev) => ({
+      ...prev,
+      borrowers: [
+        ...(prev.borrowers || []),
+        { client_name: '', phone: '', email: '', is_primary: false, display_order: (prev.borrowers?.length || 0) }
+      ]
+    }));
+  };
+
+  const removeBorrower = (index: number) => {
+    if (index === 0) return;
+    setFormData((prev) => {
+      const newBorrowers = [...(prev.borrowers || [])];
+      newBorrowers.splice(index, 1);
+      return { ...prev, borrowers: newBorrowers };
+    });
   };
 
   const handleDropdownChange = (
@@ -276,11 +379,74 @@ export default function LoanFormModal({
     e.preventDefault();
     setError(null);
 
-    if (stage === 'NEW_LOAN' || stage === 'PREAPPROVAL_LOAN' || !isEditing) {
-      if (!formData.client_name || !formData.phone || !formData.email) {
-        const msg = 'Client Name, Phone, and Email are required.';
+    if (pipelineType === 'PRE_APPROVAL' || stage === 'PREAPPROVAL_LOAN') {
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+      
+      if (isMissing(formData.client_name)) missing.push('Client Name');
+      if (isMissing(formData.phone)) missing.push('Phone Number');
+      if (isMissing(formData.email)) missing.push('Email Address');
+      if (isMissing(formData.loan_type)) missing.push('Loan Type');
+      if (isMissing(formData.loan_term)) missing.push('Loan Term');
+      if (isMissing(formData.estimated_property_value)) missing.push('Estimated Property Value');
+      if (isMissing(formData.estimated_credit_score)) missing.push('Estimated Credit Score');
+      if (isMissing(formData.expected_commission)) missing.push('Expected Commission');
+      if (isMissing(formData.loan_officer_name)) missing.push('Assigned Loan Officer');
+      if (isMissing(formData.processor_name)) missing.push('Assigned Processor');
+      if (isMissing(formData.state)) missing.push('State');
+      if (formData.application_received === 'Y' && isMissing(formData.application_received_date)) {
+        missing.push('Application Received Date');
+      }
+
+      if (missing.length > 0) {
+        const msg = `Please complete all required fields before creating the application. Missing: ${missing.join(', ')}`;
         setError(msg);
-        toast('Please fill in required borrower fields (Name, Phone, Email).', 'warning');
+        toast(`Validation failed. ${missing.length} fields missing.`, 'warning');
+        return;
+      }
+    } else if (stage === 'NEW_LOAN' || !isEditing) {
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+      
+      if (isMissing(formData.client_name)) missing.push('Primary Client Name');
+      if (isMissing(formData.phone)) missing.push('Primary Phone Number');
+      if (isMissing(formData.email)) missing.push('Primary Email Address');
+      
+      formData.borrowers?.forEach((b, idx) => {
+        if (isMissing(b.client_name)) missing.push(`Co-Borrower ${idx} Name`);
+      });
+
+      if (isMissing(formData.expected_commission)) missing.push('Expected Commission');
+      if (isMissing(formData.expected_commission_type)) missing.push('Commission Type');
+      if (isMissing(formData.commission_source)) missing.push('Commission Source');
+
+      if (missing.length > 0) {
+        const msg = `Please complete all required fields. Missing: ${missing.join(', ')}`;
+        setError(msg);
+        toast(`Validation failed. ${missing.length} fields missing.`, 'warning');
+        return;
+      }
+    } else if (stage === 'SUBMIT_TO_UW') {
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+
+      if (isMissing(formData.lender_name)) missing.push('Wholesale Lender');
+      if (isMissing(formData.submission_date)) missing.push('Submission Date');
+      if (isMissing(formData.loan_amount)) missing.push('Submitted Loan Amount');
+      if (isMissing(formData.moonstar_disclosure_sent)) missing.push('Moonstar Disclosure Sent');
+      if (isMissing(formData.lender_disclosure_sent)) missing.push('Lender Disclosure Sent');
+      if (isMissing(formData.received_all_uw_documents)) missing.push('All UW Documents Received');
+      if (isMissing(formData.rate_locked)) missing.push('Rate Locked');
+
+      if (formData.rate_locked === 'Y') {
+        if (isMissing(formData.interest_rate)) missing.push('Locked Interest Rate');
+        if (isMissing(formData.lock_expire_date)) missing.push('Lock Expiration Date');
+      }
+
+      if (missing.length > 0) {
+        const msg = `Please complete all required fields for SUBMIT TO UW stage. Missing: ${missing.join(', ')}`;
+        setError(msg);
+        toast(`Validation failed. ${missing.length} fields missing.`, 'warning');
         return;
       }
     }
@@ -452,46 +618,73 @@ export default function LoanFormModal({
                       : 'Borrower Contact & Inquiry Details'}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
-                    <div>
-                      <label className={labelClass}>
-                        Client Name <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={formData.client_name || ''}
-                        onChange={(e) => handleFieldChange('client_name', e.target.value)}
-                        placeholder="Enter borrower full name..."
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>
-                        Phone Number <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={formData.phone || ''}
-                        onChange={(e) => handleFieldChange('phone', e.target.value)}
-                        placeholder="(555) 000-0000"
-                        className={inputClass}
-                      />
-                    </div>
-
-                    <div>
-                      <label className={labelClass}>
-                        Email Address <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={formData.email || ''}
-                        onChange={(e) => handleFieldChange('email', e.target.value)}
-                        placeholder="client@example.com"
-                        className={inputClass}
-                      />
+                    <div className="sm:col-span-3 space-y-4">
+                      {formData.borrowers?.map((b, idx) => (
+                        <div key={idx} className="p-4 rounded-xl border border-gray-200 bg-gray-50/50 relative group">
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => removeBorrower(idx)}
+                              className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              <X size={16} />
+                            </button>
+                          )}
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${idx === 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                              {idx === 0 ? 'Primary Borrower' : `Co-Borrower ${idx}`}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                              <label className={labelClass}>
+                                Client Name <span className="text-red-400">*</span>
+                              </label>
+                              <input
+                                type="text"
+                                required
+                                value={b.client_name}
+                                onChange={(e) => handleBorrowerChange(idx, 'client_name', e.target.value)}
+                                placeholder="Enter borrower full name..."
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className={labelClass}>
+                                Phone Number {idx === 0 && <span className="text-red-400">*</span>}
+                              </label>
+                              <input
+                                type="tel"
+                                required={idx === 0}
+                                value={b.phone}
+                                onChange={(e) => handleBorrowerPhoneChange(idx, e)}
+                                placeholder="(555) 000-0000"
+                                className={inputClass}
+                              />
+                            </div>
+                            <div>
+                              <label className={labelClass}>
+                                Email Address {idx === 0 && <span className="text-red-400">*</span>}
+                              </label>
+                              <input
+                                type="email"
+                                required={idx === 0}
+                                value={b.email}
+                                onChange={(e) => handleBorrowerChange(idx, 'email', e.target.value)}
+                                placeholder="client@example.com"
+                                className={inputClass}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={addBorrower}
+                        className="text-sm font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-1.5"
+                      >
+                        + Add Borrower
+                      </button>
                     </div>
 
                     <div className="sm:col-span-2">
@@ -529,32 +722,44 @@ export default function LoanFormModal({
                     {/* Transaction Type */}
                     <div>
                       <label className={labelClass}>Transaction Type</label>
-                      <FormSelect
-                        value={
-                          manualInputModes.transaction_type
-                            ? 'Other (Manual Input)'
-                            : EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any)
-                              ? formData.transaction_type
-                              : formData.transaction_type
+                      {pipelineType === 'PRE_APPROVAL' ? (
+                         <input 
+                           type="text" 
+                           readOnly 
+                           value="Pre-approval" 
+                           className={`${inputClass} bg-gray-50 text-gray-500 cursor-not-allowed select-none`} 
+                         />
+                      ) : (
+                        <>
+                          <FormSelect
+                            value={
+                              manualInputModes.transaction_type
                                 ? 'Other (Manual Input)'
-                                : ''
-                        }
-                        onChange={(e) => handleDropdownChange('transaction_type', e.target.value, EXCEL_TRANSACTION_TYPES)}
-                        className={inputClass}
-                      >
-                        <option value="">Select...</option>
-                        {EXCEL_TRANSACTION_TYPES.map((item) => (
-                          <option key={item} value={item}>{item}</option>
-                        ))}
-                      </FormSelect>
-                      {(manualInputModes.transaction_type || (formData.transaction_type && !EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any))) && (
-                        <input
-                          type="text"
-                          placeholder="Enter custom Transaction Type..."
-                          value={formData.transaction_type || ''}
-                          onChange={(e) => handleFieldChange('transaction_type', e.target.value)}
-                          className="w-full mt-2 border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white"
-                        />
+                                : EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any)
+                                  ? formData.transaction_type
+                                  : formData.transaction_type
+                                    ? 'Other (Manual Input)'
+                                    : ''
+                            }
+                            onChange={(e) => handleDropdownChange('transaction_type', e.target.value, EXCEL_TRANSACTION_TYPES)}
+                            className={inputClass}
+                          >
+                            <option value="">Select...</option>
+                            {EXCEL_TRANSACTION_TYPES.map((item) => (
+                              <option key={item} value={item}>{item}</option>
+                            ))}
+                          </FormSelect>
+                          {(manualInputModes.transaction_type || (formData.transaction_type && !EXCEL_TRANSACTION_TYPES.includes(formData.transaction_type as any))) && (
+                            <input
+                              type="text"
+                              placeholder="Enter custom Transaction Type..."
+                              value={formData.transaction_type || ''}
+                              onChange={(e) => handleFieldChange('transaction_type', e.target.value)}
+                              className={`${inputClass} mt-2`}
+                              required
+                            />
+                          )}
+                        </>
                       )}
                     </div>
 
@@ -736,28 +941,69 @@ export default function LoanFormModal({
                       />
                     </div>
 
-                    {/* Expected Commission */}
-                    <div>
-                      <label className={labelClass}>Expected Commission ($)</label>
-                      <input
-                        type="number"
-                        value={formData.expected_commission || ''}
-                        onChange={(e) => handleFieldChange('expected_commission', e.target.value)}
-                        placeholder="e.g. 5000"
-                        className={inputClass}
-                      />
+                    {/* Expected Commission Group */}
+                    <div className="col-span-1 sm:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      {/* Commission Type */}
+                      <div>
+                        <label className={labelClass}>Commission Type <span className="text-red-400">*</span></label>
+                        <FormSelect
+                          value={formData.expected_commission_type || 'AMOUNT'}
+                          onChange={(e) => handleFieldChange('expected_commission_type', e.target.value)}
+                          className={inputClass}
+                        >
+                          <option value="AMOUNT">Amount ($)</option>
+                          <option value="PERCENTAGE">Percentage (%)</option>
+                        </FormSelect>
+                      </div>
+
+                      {/* Expected Commission Value */}
+                      <div>
+                        <label className={labelClass}>
+                          Expected Commission ({formData.expected_commission_type === 'PERCENTAGE' ? '%' : '$'}) <span className="text-red-400">*</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 sm:text-sm font-medium">
+                              {formData.expected_commission_type === 'PERCENTAGE' ? '%' : '$'}
+                            </span>
+                          </div>
+                          <input
+                            type="number"
+                            value={formData.expected_commission || ''}
+                            onChange={(e) => handleFieldChange('expected_commission', e.target.value)}
+                            placeholder={formData.expected_commission_type === 'PERCENTAGE' ? 'e.g. 2' : 'e.g. 5000'}
+                            className={`${inputClass} pl-8`}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Commission Source */}
+                      <div>
+                        <label className={labelClass}>Commission Source <span className="text-red-400">*</span></label>
+                        <FormSelect
+                          value={formData.commission_source || ''}
+                          onChange={(e) => handleFieldChange('commission_source', e.target.value)}
+                          className={inputClass}
+                        >
+                          <option value="" disabled>Select Source...</option>
+                          <option value="LENDER_PAID">LENDER_PAID</option>
+                          <option value="BORROWER_PAID">BORROWER_PAID</option>
+                        </FormSelect>
+                      </div>
                     </div>
 
                     {/* Target Closing Date (Fixed Datepicker UI) */}
-                    <div>
-                      <label className={labelClass}>Target Closing Date</label>
-                      <input
-                        type="date"
-                        value={formData.target_closing_date || ''}
-                        onChange={(e) => handleFieldChange('target_closing_date', e.target.value)}
-                        className={dateInputClass}
-                      />
-                    </div>
+                    {!((pipelineType === 'PRE_APPROVAL' || stage === 'PREAPPROVAL_LOAN') && !isEditing) && (
+                      <div>
+                        <label className={labelClass}>Target Closing Date</label>
+                        <input
+                          type="date"
+                          value={formData.target_closing_date || ''}
+                          onChange={(e) => handleFieldChange('target_closing_date', e.target.value)}
+                          className={dateInputClass}
+                        />
+                      </div>
+                    )}
 
                     {/* Follow Up Date (Fixed Datepicker UI) */}
                     <div>
@@ -834,18 +1080,6 @@ export default function LoanFormModal({
                   </div>
 
                   <div>
-                    <label className={labelClass}>Valuation Requested?</label>
-                    <FormSelect
-                      value={formData.val_requested || 'N'}
-                      onChange={(e) => handleFieldChange('val_requested', e.target.value)}
-                      className={inputClass}
-                    >
-                      <option value="N">No</option>
-                      <option value="Y">Yes</option>
-                    </FormSelect>
-                  </div>
-
-                  <div>
                     <label className={labelClass}>Approved Preapproval Amount ($)</label>
                     <input
                       type="number"
@@ -902,7 +1136,7 @@ export default function LoanFormModal({
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
                   <div>
-                    <label className={labelClass}>Wholesale Lender</label>
+                    <label className={labelClass}>Wholesale Lender <span className="text-red-400">*</span></label>
                     <FormSelect
                       value={
                         manualInputModes.lender_name
@@ -933,7 +1167,7 @@ export default function LoanFormModal({
                   </div>
 
                   <div>
-                    <label className={labelClass}>Submission Date</label>
+                    <label className={labelClass}>Submission Date <span className="text-red-400">*</span></label>
                     <input
                       type="date"
                       value={formData.submission_date || ''}
@@ -943,7 +1177,7 @@ export default function LoanFormModal({
                   </div>
 
                   <div>
-                    <label className={labelClass}>Submitted Loan Amount ($)</label>
+                    <label className={labelClass}>Submitted Loan Amount ($) <span className="text-red-400">*</span></label>
                     <input
                       type="number"
                       value={formData.loan_amount || ''}
@@ -954,48 +1188,52 @@ export default function LoanFormModal({
                   </div>
 
                   <div>
-                    <label className={labelClass}>Moonstar Disclosure Sent?</label>
+                    <label className={labelClass}>Moonstar Disclosure Sent? <span className="text-red-400">*</span></label>
                     <FormSelect
-                      value={formData.moonstar_disclosure_sent || 'N'}
+                      value={formData.moonstar_disclosure_sent || ''}
                       onChange={(e) => handleFieldChange('moonstar_disclosure_sent', e.target.value)}
                       className={inputClass}
                     >
+                      <option value="" disabled>Select...</option>
                       <option value="N">No</option>
                       <option value="Y">Yes</option>
                     </FormSelect>
                   </div>
 
                   <div>
-                    <label className={labelClass}>Lender Disclosure Sent?</label>
+                    <label className={labelClass}>Lender Disclosure Sent? <span className="text-red-400">*</span></label>
                     <FormSelect
-                      value={formData.lender_disclosure_sent || 'N'}
+                      value={formData.lender_disclosure_sent || ''}
                       onChange={(e) => handleFieldChange('lender_disclosure_sent', e.target.value)}
                       className={inputClass}
                     >
+                      <option value="" disabled>Select...</option>
                       <option value="N">No</option>
                       <option value="Y">Yes</option>
                     </FormSelect>
                   </div>
 
                   <div>
-                    <label className={labelClass}>All UW Documents Received?</label>
+                    <label className={labelClass}>All UW Documents Received? <span className="text-red-400">*</span></label>
                     <FormSelect
-                      value={formData.received_all_uw_documents || 'N'}
+                      value={formData.received_all_uw_documents || ''}
                       onChange={(e) => handleFieldChange('received_all_uw_documents', e.target.value)}
                       className={inputClass}
                     >
+                      <option value="" disabled>Select...</option>
                       <option value="N">No</option>
                       <option value="Y">Yes</option>
                     </FormSelect>
                   </div>
 
                   <div>
-                    <label className={labelClass}>Rate Locked?</label>
+                    <label className={labelClass}>Rate Locked? <span className="text-red-400">*</span></label>
                     <FormSelect
-                      value={formData.rate_locked || 'N'}
+                      value={formData.rate_locked || ''}
                       onChange={(e) => handleFieldChange('rate_locked', e.target.value)}
                       className={inputClass}
                     >
+                      <option value="" disabled>Select...</option>
                       <option value="N">No (Floating)</option>
                       <option value="Y">Yes (Locked)</option>
                     </FormSelect>
@@ -1004,19 +1242,30 @@ export default function LoanFormModal({
                   {formData.rate_locked === 'Y' && (
                     <>
                       <div>
-                        <label className={labelClass}>Locked Interest Rate (%)</label>
+                        <label className={labelClass}>Locked Interest Rate (%) <span className="text-red-400">*</span></label>
                         <input
-                          type="number"
-                          step="0.01"
-                          value={formData.interest_rate || ''}
-                          onChange={(e) => handleFieldChange('interest_rate', e.target.value)}
+                          type="text"
+                          value={localInterestRate}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                            if ((val.match(/\./g) || []).length > 1) return;
+                            setLocalInterestRate(val);
+                            handleFieldChange('interest_rate', val === '' ? undefined : Number(val));
+                          }}
+                          onBlur={() => {
+                            if (localInterestRate && !isNaN(Number(localInterestRate))) {
+                              const formatted = Number(localInterestRate).toFixed(3);
+                              setLocalInterestRate(formatted);
+                              handleFieldChange('interest_rate', Number(formatted));
+                            }
+                          }}
                           placeholder="e.g. 6.125"
                           className={inputClass}
                         />
                       </div>
 
                       <div>
-                        <label className={labelClass}>Lock Expiration Date</label>
+                        <label className={labelClass}>Lock Expiration Date <span className="text-red-400">*</span></label>
                         <input
                           type="date"
                           value={formData.lock_expire_date || ''}
@@ -1358,10 +1607,21 @@ export default function LoanFormModal({
                   <div>
                     <label className={labelClass}>Final Interest Rate (%)</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      value={formData.final_interest_rate || ''}
-                      onChange={(e) => handleFieldChange('final_interest_rate', e.target.value)}
+                      type="text"
+                      value={localFinalInterestRate}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '');
+                        if ((val.match(/\./g) || []).length > 1) return;
+                        setLocalFinalInterestRate(val);
+                        handleFieldChange('final_interest_rate', val === '' ? undefined : Number(val));
+                      }}
+                      onBlur={() => {
+                        if (localFinalInterestRate && !isNaN(Number(localFinalInterestRate))) {
+                          const formatted = Number(localFinalInterestRate).toFixed(3);
+                          setLocalFinalInterestRate(formatted);
+                          handleFieldChange('final_interest_rate', Number(formatted));
+                        }
+                      }}
                       placeholder="e.g. 6.125"
                       className={inputClass}
                     />
@@ -1508,12 +1768,6 @@ export default function LoanFormModal({
                   </div>
                 </div>
               </div>
-          )}
-
-          
-          {/* Stage Transition History */}
-          {isEditing && initialLoan && (
-            <StageHistorySection loanId={initialLoan.id} currentStage={stage} />
           )}
           </div>
 

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Eye, Search } from 'lucide-react'
+import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 
 /* ================= TYPES ================= */
@@ -65,10 +66,13 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
 
     const filteredLeads = stagedLeads.filter((lead: any) => {
         const term = searchTerm.toLowerCase()
+        const normalizedSearchTerm = normalizePhoneSearch(searchTerm)
+        const dbPhoneStr = lead.phone || ''
+
         return (
             lead.client_name?.toLowerCase().includes(term) ||
             lead.email?.toLowerCase().includes(term) ||
-            lead.phone?.includes(term) ||
+            (dbPhoneStr.includes(term) || extractDigits(dbPhoneStr).includes(extractDigits(term))) ||
             lead.assigned_csr_profile?.full_name?.toLowerCase().includes(term)
         )
     })

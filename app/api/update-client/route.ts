@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
 import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
+import { formatPhoneInput } from '@/utils/phoneFormatter'
 
 export async function POST(req: Request) {
   try {
@@ -27,7 +28,7 @@ export async function POST(req: Request) {
     const lead = authLead.lead
 
     /* ================= 2. NORMALIZE & COMPARE ================= */
-    const cleanPhone = (p: string) => p.replace(/\D/g, '').slice(0, 10)
+    const cleanPhone = (p: string) => formatPhoneInput(p)
     
     // Fetch lead_policies since authorizeLeadAccess only selects '*'
     const { data: policiesData } = await supabaseServer

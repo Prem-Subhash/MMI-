@@ -299,6 +299,63 @@ export default function LoanDetailModal({
           {/* 2. MORTGAGE DETAILS GROUPS */}
           <div className="space-y-6">
             
+            {/* Borrowers Grid */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
+              <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
+                <UserCheck size={14} />
+                Borrower Information
+              </h3>
+              <div className="space-y-4">
+                {loan.borrowers && loan.borrowers.length > 0 ? (
+                  loan.borrowers.map((b, idx) => (
+                    <div key={b.id || idx} className="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${b.is_primary ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}`}>
+                          {b.is_primary ? 'Primary Borrower' : `Co-Borrower ${idx}`}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Name</div>
+                          <div className="text-sm font-bold text-gray-900">{b.client_name || '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Phone</div>
+                          <div className="text-sm font-bold text-gray-900">{b.phone || '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Email</div>
+                          <div className="text-sm font-bold text-gray-900">{b.email || '—'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-4 rounded-xl border border-gray-100 bg-gray-50/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase bg-emerald-100 text-emerald-800">
+                        Primary Borrower
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Name</div>
+                        <div className="text-sm font-bold text-gray-900">{loan.client_name || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Phone</div>
+                        <div className="text-sm font-bold text-gray-900">{loan.phone || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Email</div>
+                        <div className="text-sm font-bold text-gray-900">{loan.email || '—'}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Loan Details Grid */}
             <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
               <h3 className="text-xs font-black uppercase tracking-wider text-gray-500 mb-4 flex items-center gap-2">
@@ -390,8 +447,16 @@ export default function LoanDetailModal({
                   <div>
                     <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Expected Commission</div>
                     <div className="text-sm font-bold text-emerald-700">
-                      {loan.expected_commission ? `$${loan.expected_commission.toLocaleString()}` : '—'}
+                      {loan.expected_commission 
+                        ? loan.expected_commission_type === 'PERCENTAGE' 
+                          ? `${loan.expected_commission}%` 
+                          : `$${loan.expected_commission.toLocaleString()}` 
+                        : '—'}
                     </div>
+                  </div>
+                  <div>
+                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">Commission Source</div>
+                    <div className="text-sm font-bold text-gray-900">{loan.commission_source || '—'}</div>
                   </div>
                 </div>
               </div>
@@ -442,6 +507,7 @@ export default function LoanDetailModal({
           <div className="mt-8 pt-8 border-t border-gray-200 flex flex-wrap items-center justify-start gap-3 w-full">
             {onViewHistory && (
               <button
+                type="button"
                 onClick={onViewHistory}
                 className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
               >
@@ -449,18 +515,21 @@ export default function LoanDetailModal({
               </button>
             )}
             <button
+              type="button"
               onClick={() => onEdit(loan)}
               className="px-5 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
             >
               Update Stage
             </button>
             <button
+              type="button"
               onClick={() => onDelete(loan)}
               className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
             >
               <Trash2 size={16} /> Delete
             </button>
             <button
+              type="button"
               onClick={onClose}
               className="px-5 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap group"
             >
