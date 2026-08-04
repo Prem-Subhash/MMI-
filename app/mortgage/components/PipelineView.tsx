@@ -415,17 +415,6 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
                             </button>
                             <button
                               type="button"
-                              onClick={() => {
-                                setEditingLoan(loan);
-                                setIsFormOpen(true);
-                              }}
-                              className="h-8 w-8 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors inline-flex items-center justify-center"
-                              title="Edit"
-                            >
-                              <Eye className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              type="button"
                               onClick={() => handleDelete(loan)}
                               className="h-8 w-8 p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors inline-flex items-center justify-center"
                               title="Delete"
@@ -517,17 +506,6 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
-                              setEditingLoan(loan);
-                              setIsFormOpen(true);
-                            }}
-                            className="h-8 w-8 p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-gray-800 transition-colors inline-flex items-center justify-center"
-                            title="Edit"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            type="button"
                             onClick={() => handleDelete(loan)}
                             className="h-8 w-8 p-1.5 rounded-lg hover:bg-red-50 text-gray-500 hover:text-red-600 transition-colors inline-flex items-center justify-center"
                             title="Delete"
@@ -588,14 +566,28 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
           }
         }}
         editingHistoryRecord={editingHistoryRecord}
-        isHidden={isHistoryModalOpen}
+      />
+
+      {/* Stage History Modal */}
+      <StageHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => {
+          setIsHistoryModalOpen(false);
+          setEditingHistoryRecord(null);
+        }}
+        loanId={historyLoanId}
+        currentStage={historyLoanStage}
+        onEditHistory={(record) => {
+          setIsHistoryModalOpen(false);
+          setEditingHistoryRecord(record);
+          setIsFormOpen(true);
+        }}
       />
 
       {/* Detail Drawer Modal */}
       <LoanDetailModal
         isOpen={!!detailLoan}
         loan={detailLoan}
-        isHidden={isHistoryModalOpen}
         onViewHistory={() => {
           setHistoryLoanId(detailLoan?.id || null);
           setHistoryLoanStage(detailLoan?.stage || null);
@@ -603,12 +595,10 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
         }}
         onClose={() => setDetailLoan(null)}
         onEdit={(loan) => {
-          setDetailLoan(null);
           setEditingLoan(loan);
           setIsFormOpen(true);
         }}
         onEditStage={(loan, targetStageCode) => {
-          setDetailLoan(null);
           setEditingLoan({ ...loan, stage: targetStageCode });
           setIsFormOpen(true);
         }}

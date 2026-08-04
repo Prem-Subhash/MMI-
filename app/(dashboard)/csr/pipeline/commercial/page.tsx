@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Search, Eye } from 'lucide-react'
+import { Eye, Search, Briefcase, FileText, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
+import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -139,11 +140,14 @@ export default function CommercialLinesPage() {
     // Client-side search filtering
     const filteredLeads = leads.filter(lead => {
         const term = searchTerm.toLowerCase()
+        const normalizedSearchTerm = normalizePhoneSearch(searchTerm)
+        const dbPhoneStr = lead.phone || ''
+
         return (
             (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
             (lead.business_name && lead.business_name.toLowerCase().includes(term)) ||
             (lead.email && lead.email.toLowerCase().includes(term)) ||
-            (lead.phone && lead.phone.includes(term))
+            (dbPhoneStr.includes(term) || extractDigits(dbPhoneStr).includes(extractDigits(term)))
         )
     })
 

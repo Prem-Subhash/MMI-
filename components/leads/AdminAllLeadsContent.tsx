@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
+import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
 import Loading from '@/components/ui/Loading'
 
 type Lead = {
@@ -122,10 +123,13 @@ export function AdminAllLeadsContent({ categoryProp, flowProp }: { categoryProp?
 
     const filteredLeads = leads.filter(lead => {
         const term = searchTerm.toLowerCase()
+        const normalizedSearchTerm = normalizePhoneSearch(searchTerm)
+        const dbPhoneStr = lead.phone || ''
+        
         return (
             (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
             (lead.email && lead.email.toLowerCase().includes(term)) ||
-            (lead.phone && lead.phone.includes(term)) ||
+            (dbPhoneStr.includes(term) || extractDigits(dbPhoneStr).includes(extractDigits(term))) ||
             (lead.assigned_csr_profile && lead.assigned_csr_profile.full_name && lead.assigned_csr_profile.full_name.toLowerCase().includes(term))
         )
     })

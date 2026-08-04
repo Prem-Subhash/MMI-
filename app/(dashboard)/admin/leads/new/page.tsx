@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react'
 import { supabase } from '@/lib/supabaseClient'
+import { formatPhoneInput, PHONE_REGEX } from '@/utils/phoneFormatter'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Loading from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
@@ -127,7 +128,7 @@ function AdminNewLeadContent() {
     }, [form.phone, form.email])
 
     /* ---------------- VALIDATION ---------------- */
-    const isPhoneValid = /^\d{10}$/.test(form.phone)
+    const isPhoneValid = PHONE_REGEX.test(form.phone)
     const isEmailValid =
         !form.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)
 
@@ -138,8 +139,7 @@ function AdminNewLeadContent() {
         const { name, value } = e.target
 
         if (name === 'phone') {
-            const digitsOnly = value.replace(/\D/g, '').slice(0, 10)
-            setForm(prev => ({ ...prev, phone: digitsOnly }))
+            setForm(prev => ({ ...prev, phone: formatPhoneInput(value) }))
             return
         }
 
@@ -222,7 +222,7 @@ function AdminNewLeadContent() {
         }
 
         if (!isPhoneValid) {
-            setError('Phone number must be exactly 10 digits')
+            setError('Enter a valid 10-digit mobile number')
             return
         }
 
@@ -415,7 +415,7 @@ function AdminNewLeadContent() {
                             placeholder="Phone *"
                             disabled={isLocked}
                             inputMode="numeric"
-                            maxLength={10}
+                            maxLength={14}
                             error={form.phone.length > 0 && !isPhoneValid ? "Enter valid mobile number" : undefined}
                         />
 

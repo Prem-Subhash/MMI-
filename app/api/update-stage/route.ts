@@ -261,6 +261,15 @@ export async function POST(req: Request) {
         boundPremium = lead.renewal_premium
       }
 
+      // Enforce backend percentage calculation
+      if (stageMetadata?.expected_commission_type === 'PERCENTAGE') {
+        const premium = Number(boundPremium)
+        const pct = Number(stageMetadata.expected_commission_percentage)
+        if (!isNaN(premium) && !isNaN(pct)) {
+           stageMetadata.expected_commission = Number(((premium * pct) / 100).toFixed(2))
+        }
+      }
+
       const expectedCommission = stageMetadata?.expected_commission !== undefined ? stageMetadata.expected_commission : mergedMetadata.expected_commission
 
       if (boundPremium !== undefined && boundPremium !== null && boundPremium !== '') {
@@ -298,6 +307,16 @@ export async function POST(req: Request) {
       const newCarrier = stageMetadata?.new_carrier !== undefined ? stageMetadata.new_carrier : mergedMetadata.new_carrier
       const newPolicyNum = stageMetadata?.new_policy_number !== undefined ? stageMetadata.new_policy_number : mergedMetadata.new_policy_number
       const newPremium = stageMetadata?.new_premium !== undefined ? stageMetadata.new_premium : mergedMetadata.new_premium
+
+      // Enforce backend percentage calculation
+      if (stageMetadata?.expected_commission_type === 'PERCENTAGE') {
+        const premium = Number(newPremium)
+        const pct = Number(stageMetadata.expected_commission_percentage)
+        if (!isNaN(premium) && !isNaN(pct)) {
+           stageMetadata.expected_commission = Number(((premium * pct) / 100).toFixed(2))
+        }
+      }
+
       const expectedCommission = stageMetadata?.expected_commission !== undefined ? stageMetadata.expected_commission : mergedMetadata.expected_commission
 
       if (newCarrier !== undefined && newCarrier !== null && newCarrier.toString().trim() !== '') {

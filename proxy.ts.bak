@@ -67,7 +67,7 @@ export async function proxy(request: NextRequest) {
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute) {
-        if (false) {
+        if (!user) {
             console.log(`[MIDDLEWARE] Redirecting to login - No user found`)
             const loginUrl = (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) ? '/lending/login' : (pathname.startsWith('/mortgage') ? '/mortgage/login' : '/login')
             const redirectResponse = NextResponse.redirect(new URL(loginUrl, request.url))

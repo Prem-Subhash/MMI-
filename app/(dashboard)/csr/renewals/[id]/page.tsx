@@ -8,7 +8,9 @@ import Link from 'next/link'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
+import EditHistoryModal from '@/components/pipeline/EditHistoryModal'
 import EmailGenerator from '@/components/email/EmailGenerator'
+import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import { formatCurrency } from '@/lib/currency'
 import { canAccessInsuranceCategory } from '@/utils/authClient'
@@ -157,6 +159,11 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
   const [tempPremium, setTempPremium] = useState('')
   const [savingPremium, setSavingPremium] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
+  
+  const [history, setHistory] = useState<any[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [editingHistoryItem, setEditingHistoryItem] = useState<any>(null)
 
   /* ================= AUTO FOCUS ================= */
   useEffect(() => {
@@ -259,6 +266,35 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
       setIsEditingPremium(false)
     }
     setSavingPremium(false)
+  }
+
+  /* ================= FETCH HISTORY ================= */
+  const openHistoryModal = async () => {
+    setHistoryLoading(true)
+    setShowHistory(true)
+    const { data, error } = await supabase
+      .from('lead_stage_history')
+      .select('*')
+      .eq('lead_id', id)
+      .order('created_at', { ascending: false }) // Newest first
+
+    if (!error && data) {
+      setHistory(data)
+    }
+    setHistoryLoading(false)
+  }
+
+  const refreshHistory = async () => {
+    if (!id) return
+    const { data, error } = await supabase
+      .from('lead_stage_history')
+      .select('*')
+      .eq('lead_id', id)
+      .order('created_at', { ascending: false })
+
+    if (!error && data) {
+      setHistory(data)
+    }
   }
 
   useEffect(() => {
@@ -636,8 +672,20 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
               </div>
 
               <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto bg-blue-50/50 lg:bg-transparent p-3 lg:p-0 rounded-xl border border-blue-100 lg:border-none">
-                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mr-3">Current Status</span>
-                <StageBadge stage={lead.pipeline_stage.stage_name} />
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center">
+                    <span className="text-xs font-bold text-gray-400 uppercase tracking-widest mr-3 hidden sm:inline">Current Status</span>
+                    <StageBadge stage={lead.pipeline_stage.stage_name} />
+                  </div>
+                  <div className="w-px h-8 bg-gray-200 hidden sm:block mx-1"></div>
+                  <button 
+                    onClick={openHistoryModal}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-emerald-50 text-emerald-700 rounded-xl shadow-sm border border-emerald-200 transition-all font-bold text-sm"
+                  >
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    View History
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -653,6 +701,121 @@ const IZap = () => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" s
           onClose={() => setShowUpdateModal(false)}
           onSuccess={() => {
             load() // Reload data to show new stage
+          }}
+        />
+      )}
+
+      {/* VIEW HISTORY MODAL */}
+      {showHistory && (
+        <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 my-auto relative">
+            <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
+              <div>
+                <h2 className="text-xl font-bold text-white">Stage History</h2>
+                <p className="text-sm text-white">Previous updates for this renewal</p>
+              </div>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shadow-sm"
+                title="Close"
+              >
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50 space-y-4">
+              {historyLoading ? (
+                <div className="py-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
+                  <Spinner size={32} />
+                  <p className="font-medium">Loading history...</p>
+                </div>
+              ) : history.length === 0 ? (
+                <div className="py-12 text-center text-emerald-500 bg-white rounded-xl border border-dashed border-slate-300">
+                  No stage history found for this renewal.
+                </div>
+              ) : (
+                history.map((item) => (
+                  <div key={item.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                    <div className="bg-emerald-50/50 px-5 py-3 border-b border-emerald-100 flex items-center justify-between">
+                      <h3 className="font-bold text-emerald-700">{item.stage_name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">
+                          {new Date(item.created_at).toLocaleString()}
+                        </span>
+                        <button
+                          onClick={() => {
+                            setShowHistory(false)
+                            setEditingHistoryItem(item)
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
+                          title="Edit History"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    {item.stage_metadata && Object.keys(item.stage_metadata).length > 0 ? (
+                      <div className="p-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
+                          {Object.entries(item.stage_metadata).map(([k, v]) => {
+                            const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                            
+                            let displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
+                            
+                            if (k === 'expected_commission_type' || k === 'expected_commission_percentage') return null;
+
+                            const lowerK = k.toLowerCase();
+                            if (k === 'expected_commission') {
+                              const cType = item.stage_metadata?.expected_commission_type;
+                              const cPercentage = item.stage_metadata?.expected_commission_percentage;
+                              if (cType === 'PERCENTAGE' && cPercentage !== undefined) {
+                                displayValue = `${cPercentage}% (${formatCurrency(v as number | string)})`;
+                              } else {
+                                displayValue = formatCurrency(v as number | string);
+                              }
+                            } else if (lowerK.includes('premium') || lowerK.includes('fee') || lowerK.includes('amount') || lowerK.includes('commission') || lowerK.includes('savings')) {
+                              displayValue = formatCurrency(v as number | string);
+                            }
+
+                            return (
+                              <div key={k}>
+                                <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{formatLabel(k)}</span>
+                                <span className="font-medium text-slate-800">{displayValue}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-4 text-sm text-slate-400 italic text-center">
+                        No additional metadata recorded for this stage
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+      </div>
+      )}
+
+      {/* EDIT HISTORY MODAL */}
+      {editingHistoryItem && (
+        <EditHistoryModal
+          historyItem={editingHistoryItem}
+          pipelineType={lead?.insurence_category?.toLowerCase().includes('commercial') ? 'CommercialRenewal' : 'PersonalRenewal'}
+          onClose={() => {
+            setEditingHistoryItem(null)
+            setShowHistory(true)
+          }}
+          onSuccess={() => {
+            setEditingHistoryItem(null)
+            refreshHistory().then(() => setShowHistory(true))
           }}
         />
       )}

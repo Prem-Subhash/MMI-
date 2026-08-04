@@ -5,6 +5,7 @@ import { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 import { User, Phone, Mail, X, Briefcase, Shield } from 'lucide-react'
 import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
+import { formatPhoneInput, formatDatabasePhone, PHONE_REGEX } from '@/utils/phoneFormatter'
 
 type UpdatedClientFields = {
   client_name: string
@@ -24,7 +25,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
   const [formData, setFormData] = useState({
     client_name: lead.client_name || '',
     email: lead.email || '',
-    phone: (lead.phone || '').replace(/\D/g, '').slice(0, 10),
+    phone: formatDatabasePhone(lead.phone),
     business_name: lead.business_name || ''
   })
   
@@ -48,11 +49,10 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const isEmailValid = !formData.email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
-  const isPhoneValid = formData.phone.length === 10
+  const isPhoneValid = PHONE_REGEX.test(formData.phone)
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, '').slice(0, 10)
-    setFormData(prev => ({ ...prev, phone: digits }))
+    setFormData(prev => ({ ...prev, phone: formatPhoneInput(e.target.value) }))
   }
 
   const handleSave = async () => {
@@ -69,7 +69,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
     }
 
     if (!isPhoneValid) {
-      setError('Phone number must be exactly 10 digits')
+      setError('Enter a valid 10-digit mobile number')
       return
     }
 
@@ -229,7 +229,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
                   value={formData.phone}
                   onChange={handlePhoneChange}
                   placeholder="000 000 0000"
-                  maxLength={10}
+                  maxLength={14}
                 />
               </div>
             </div>

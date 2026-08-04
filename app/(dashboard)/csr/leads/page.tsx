@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Send, Search } from 'lucide-react'
+import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -124,13 +125,15 @@ export default function MyLeadsPage() {
     }
   }
 
-  // Client-side search filtering
   const filteredLeads = leads.filter(lead => {
     const term = searchTerm.toLowerCase()
+    const normalizedSearchTerm = normalizePhoneSearch(searchTerm)
+    const dbPhoneStr = lead.phone || ''
+
     return (
       (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
       (lead.email && lead.email.toLowerCase().includes(term)) ||
-      (lead.phone && lead.phone.includes(term))
+      (dbPhoneStr.includes(term) || extractDigits(dbPhoneStr).includes(extractDigits(term)))
     )
   })
 
