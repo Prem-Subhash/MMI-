@@ -149,12 +149,15 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
                       )}
                       <button
                         type="button"
-                        onClick={() => setSelectedSnapshot(record)}
-                        className="p-1.5 text-gray-400 hover:text-[#2E5C85] hover:bg-[#2E5C85]/10 rounded-lg transition-colors flex items-center gap-1.5 text-xs font-medium"
+                        onClick={() => {
+                          toast(`Viewing snapshot from ${formatTimestamp(record.changed_at)}`, 'info', 2000);
+                          setSelectedSnapshot(record);
+                        }}
+                        className="h-9 px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 shadow-2xs active:scale-95"
                         title="View Snapshot"
                       >
-                        <Eye className="w-4 h-4" />
-                        <span className="hidden sm:inline">View</span>
+                        <Eye className="w-3.5 h-3.5 shrink-0" />
+                        <span className="hidden sm:inline">View Snapshot</span>
                       </button>
                     </div>
                   </div>

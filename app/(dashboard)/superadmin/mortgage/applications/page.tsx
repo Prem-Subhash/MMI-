@@ -1,7 +1,5 @@
-'use client'
-
-import MortgageDashboardPage from '@/app/mortgage/page'
+import MortgagePipelinesPage from '@/app/mortgage/pipelines/page'
 
 export default function SuperAdminMortgageApplicationsWrapper() {
-    return <MortgageDashboardPage />
+    return <MortgagePipelinesPage isSuperAdmin={true} />
 }
