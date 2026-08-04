@@ -195,7 +195,7 @@ export function MultiSelectPolicy({
         />
         
         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-          <ChevronDown size={18} />
+          <ChevronDown size={18} className={`transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
         </div>
       </div>
 

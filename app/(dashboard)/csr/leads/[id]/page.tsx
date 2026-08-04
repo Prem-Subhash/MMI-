@@ -425,7 +425,7 @@ export default function LeadReviewPage() {
             )}
 
             {/* 2. BUTTON GROUP ORGANIZATION */}
-            <div className="mt-8 pt-8 border-t border-gray-100 flex flex-wrap items-center justify-start gap-3 w-full">
+            <div className="mt-8 pt-8 border-t border-gray-100 flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-start gap-3 w-full">
               <button
                 onClick={openHistoryModal}
                 className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"

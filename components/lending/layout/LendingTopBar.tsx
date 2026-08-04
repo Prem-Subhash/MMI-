@@ -114,73 +114,7 @@ export default function LendingTopBar({ onMenuClick }: { onMenuClick: () => void
             {/* Right Side Content */}
             <div className="flex-1 flex items-center justify-end px-3 sm:px-6">
                 <div className="flex items-center gap-1.5 sm:gap-3 text-white flex-shrink-0 ml-auto">
-                    {/* Notification Bell */}
-                    <div className="relative" ref={notificationsRef}>
-                        <button
-                            onClick={() => {
-                                setNotificationsOpen(!notificationsOpen)
-                                setProfileOpen(false)
-                            }}
-                            className={`p-2 rounded-full transition-all relative ${notificationsOpen ? 'bg-white/20' : 'hover:bg-white/10'}`}
-                            aria-label="Notifications"
-                        >
-                            <Bell size={22} />
-                            <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 border-2 border-[#10B889] rounded-full"></span>
-                        </button>
-
-                        {notificationsOpen && (
-                            <div className="absolute right-0 top-12 lg:top-14 w-[min(340px,calc(100vw-1.5rem))] bg-white rounded-2xl shadow-2xl py-0 text-gray-800 z-50 border border-gray-100 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="px-4 py-3 sm:px-5 sm:py-4 bg-slate-900 text-white border-b border-gray-100 flex items-center justify-between">
-                                    <h3 className="font-bold text-sm sm:text-base">Lending Activity Alerts</h3>
-                                    <span className="text-[10px] font-bold bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-full uppercase tracking-wider">Demo Feed</span>
-                                </div>
-                                <div className="max-h-[min(400px,55vh)] overflow-y-auto divide-y divide-gray-100">
-                                    {demoNotifications.map((n) => (
-                                        <div 
-                                            key={n.id} 
-                                            className={`px-4 py-3 sm:px-5 sm:py-4 hover:bg-blue-50/50 transition-colors cursor-pointer group ${n.unread ? 'bg-blue-50/25' : ''}`}
-                                            onClick={() => {
-                                                setNotificationsOpen(false)
-                                                router.push(n.id === '1' ? '/lending/term-sheet-received' : '/lending/pipeline')
-                                            }}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                                    <Bell size={16} />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-start justify-between gap-2">
-                                                        <p className="text-sm font-bold text-gray-900 group-hover:text-blue-700 transition-colors truncate leading-tight">
-                                                            {n.title}
-                                                        </p>
-                                                        {n.unread && <span className="w-2 h-2 rounded-full bg-amber-500 mt-1 flex-shrink-0"></span>}
-                                                    </div>
-                                                    <p className="text-xs text-gray-600 mt-1 font-medium break-words leading-relaxed">
-                                                        {n.message}
-                                                    </p>
-                                                    <div className="flex items-center gap-1.5 mt-2 text-[10px] text-gray-400 font-medium">
-                                                        <Clock size={11} />
-                                                        {n.time}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="p-2 bg-gray-50 text-center border-t border-gray-100">
-                                    <button 
-                                        onClick={() => {
-                                            setNotificationsOpen(false)
-                                            router.push('/lending/activity-log')
-                                        }}
-                                        className="text-xs font-bold text-blue-700 hover:text-blue-900 uppercase tracking-widest py-1 block w-full"
-                                    >
-                                        View Full Activity Log →
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    {/* Removed Notification Bell per request */}
 
                     {/* Profile Dropdown */}
                     <div className="relative" ref={profileRef}>

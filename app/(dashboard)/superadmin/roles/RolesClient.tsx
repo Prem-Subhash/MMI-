@@ -10,6 +10,7 @@ import { useState, useEffect } from 'react'
 import { Save, Edit2, ShieldAlert, X } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
+import { Select } from '@/components/ui/Select'
 
 type UserProfile = {
     id: string
@@ -100,16 +101,16 @@ export default function RolesClient() {
                                 <div className="flex items-center gap-2">
                                     <span className="text-xs font-bold text-gray-500 uppercase">Role:</span>
                                     {editingUserId === user.id ? (
-                                        <select
+                                        <Select
                                             value={editingRole}
                                             onChange={e => setEditingRole(e.target.value)}
-                                            className="border-2 border-indigo-400 rounded-md p-1.5 text-xs bg-indigo-50 outline-none w-full font-bold"
+                                            className="border-2 border-indigo-400 bg-indigo-50 font-bold"
                                         >
                                             <option value="csr">CSR</option>
                                             <option value="admin">Admin</option>
                                             <option value="accounting">Accounting</option>
                                             <option value="superadmin">Super Admin</option>
-                                        </select>
+                                        </Select>
                                     ) : (
                                         <div className="flex items-center gap-2">
                                             <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border
@@ -176,16 +177,16 @@ export default function RolesClient() {
                                 <td className="p-4 text-gray-600 text-sm">{user.email}</td>
                                 <td className="p-4 text-sm w-48">
                                     {editingUserId === user.id ? (
-                                        <select
+                                        <Select
                                             value={editingRole}
                                             onChange={e => setEditingRole(e.target.value)}
-                                            className="border-2 border-indigo-400 rounded-md p-2 text-sm bg-indigo-50 outline-none w-full"
+                                            className="border-2 border-indigo-400 bg-indigo-50"
                                         >
                                             <option value="csr">CSR</option>
                                             <option value="admin">Admin</option>
                                             <option value="accounting">Accounting</option>
                                             <option value="superadmin">Super Admin</option>
-                                        </select>
+                                        </Select>
                                     ) : (
                                         <div className="flex items-center gap-2">
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider border

@@ -24,7 +24,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-gray-50 text-gray-900">
+      <body className="bg-gray-50 text-gray-900" suppressHydrationWarning>
         <ToastProvider>
           {children}
         </ToastProvider>

@@ -67,7 +67,7 @@ export async function proxy(request: NextRequest) {
     const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
 
     if (isProtectedRoute) {
-        if (false) {
+        if (!user) {
             console.log(`[MIDDLEWARE] Redirecting to login - No user found`)
             const loginUrl = (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) ? '/lending/login' : (pathname.startsWith('/mortgage') ? '/mortgage/login' : '/login')
             const redirectResponse = NextResponse.redirect(new URL(loginUrl, request.url))
@@ -92,15 +92,25 @@ export async function proxy(request: NextRequest) {
                 .select('role')
                 .eq('id', user.id)
                 .single()
-            const isLending = fallback.data?.role === 'lending' || fallback.data?.role === 'accurate_lending'
-            const isMortgage = fallback.data?.role === 'mortgage'
-            profile = { ...fallback.data, portal_access: isLending ? ['lending'] : (isMortgage ? ['mortgage'] : ['insurance']) }
+            profile = { ...fallback.data, portal_access: [] }
         }
 
         const role = profile?.role?.toLowerCase()
         const isLendingRole = role === 'lending' || role === 'accurate_lending'
         const isMortgageRole = role === 'mortgage'
-        const portalAccess: string[] = profile?.portal_access || (isLendingRole ? ['lending'] : (isMortgageRole ? ['mortgage'] : ['insurance']))
+        
+        let portalAccess: string[] = profile?.portal_access || []
+        
+        // Securely infer portal_access if it's missing or incorrectly defaulted to just 'insurance'
+        if (portalAccess.length === 0 || (portalAccess.length === 1 && portalAccess[0] === 'insurance')) {
+            if (user.email?.toLowerCase().includes('moonstar.com') || isMortgageRole) {
+                portalAccess = ['mortgage']
+            } else if (user.email?.toLowerCase().includes('accuratelending.com') || isLendingRole) {
+                portalAccess = ['lending']
+            } else if (portalAccess.length === 0) {
+                portalAccess = ['insurance']
+            }
+        }
 
         if (!role && !portalAccess.includes('lending') && !portalAccess.includes('accurate_lending') && !portalAccess.includes('mortgage')) {
             console.warn(`[MIDDLEWARE] No role found for user ${user.email} (${user.id})`)
@@ -113,7 +123,7 @@ export async function proxy(request: NextRequest) {
 
         // Special RBAC check for Accurate Lending routes
         if (pathname.startsWith('/lending') || pathname.startsWith('/accurate_lending')) {
-            const hasLendingAccess = portalAccess.includes('lending') || portalAccess.includes('accurate_lending') || isLendingRole || role === 'superadmin'
+            const hasLendingAccess = portalAccess.includes('lending') || role === 'superadmin'
             if (!hasLendingAccess) {
                 console.warn(`[MIDDLEWARE] Unauthorized lending access attempt by user ${user.id} with role: ${role}`)
                 const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
@@ -127,7 +137,7 @@ export async function proxy(request: NextRequest) {
 
         // Special RBAC check for Mortgage routes
         if (pathname.startsWith('/mortgage')) {
-            const hasMortgageAccess = portalAccess.includes('mortgage') || isMortgageRole || role === 'superadmin' || role === 'admin' || user.email?.toLowerCase().includes('moonstar.com')
+            const hasMortgageAccess = portalAccess.includes('mortgage') || role === 'superadmin'
             if (!hasMortgageAccess) {
                 console.warn(`[MIDDLEWARE] Unauthorized mortgage access attempt by user ${user.id} with role: ${role}`)
                 const redirectResponse = NextResponse.redirect(new URL('/unauthorized', request.url))
