@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@playwright/test": "^1.62.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.99.1",
     "dotenv": "^17.3.1",

@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
     let query = supabaseServer
       .from('mortgage_loans')
-      .select('*', { count: 'exact' });
+      .select('*, borrowers:mortgage_borrowers(*)', { count: 'exact' });
 
     if (!isGlobalView) {
       query = query.eq('assigned_mortgage_officer', auth.user.id);
@@ -148,9 +148,71 @@ export async function POST(request: NextRequest) {
 
     const stageRemarks = body._stage_remarks || null;
     const updatedBy = body._updated_by || auth.user.email || 'Mortgage Officer';
+    
+    // Extract borrowers array and remove from body to prevent column errors
+    const borrowers = body.borrowers || [];
+    delete body.borrowers;
+    
     delete body._stage_remarks;
     delete body._updated_by;
     delete body.assigned_mortgage_officer; // Never trust frontend
+
+    if (body.pipeline_type === 'PRE_APPROVAL' || body.stage === 'PREAPPROVAL_LOAN') {
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+      
+      if (isMissing(body.client_name)) missing.push('Primary Client Name');
+      if (isMissing(body.phone)) missing.push('Primary Phone Number');
+      if (isMissing(body.email)) missing.push('Primary Email Address');
+      
+      borrowers.forEach((b: any, idx: number) => {
+        if (isMissing(b.client_name)) missing.push(`Co-Borrower ${idx} Name`);
+      });
+
+      if (isMissing(body.loan_type)) missing.push('Loan Type');
+      if (isMissing(body.loan_term)) missing.push('Loan Term');
+      if (isMissing(body.estimated_property_value)) missing.push('Estimated Property Value');
+      if (isMissing(body.estimated_credit_score)) missing.push('Estimated Credit Score');
+      if (isMissing(body.expected_commission)) missing.push('Expected Commission');
+      if (isMissing(body.expected_commission_type)) missing.push('Commission Type');
+      if (isMissing(body.commission_source)) missing.push('Commission Source');
+      if (isMissing(body.loan_officer_name)) missing.push('Assigned Loan Officer');
+      if (isMissing(body.processor_name)) missing.push('Assigned Processor');
+      if (isMissing(body.state)) missing.push('State');
+      if (body.application_received === 'Y' && isMissing(body.application_received_date)) {
+        missing.push('Application Received Date');
+      }
+
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Missing required fields: ${missing.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    } else {
+      // NEW_LOAN Validation
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+      
+      if (isMissing(body.client_name)) missing.push('Primary Client Name');
+      if (isMissing(body.phone)) missing.push('Primary Phone Number');
+      if (isMissing(body.email)) missing.push('Primary Email Address');
+      
+      borrowers.forEach((b: any, idx: number) => {
+        if (isMissing(b.client_name)) missing.push(`Co-Borrower ${idx} Name`);
+      });
+
+      if (isMissing(body.expected_commission)) missing.push('Expected Commission');
+      if (isMissing(body.expected_commission_type)) missing.push('Commission Type');
+      if (isMissing(body.commission_source)) missing.push('Commission Source');
+
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Missing required fields: ${missing.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    }
 
     const rawPayload = {
       pipeline_type: body.pipeline_type || 'NEW_LOAN',
@@ -163,7 +225,7 @@ export async function POST(request: NextRequest) {
       application_received: body.application_received || 'N',
       application_received_date: body.application_received_date || null,
       inquiry_date: body.inquiry_date || new Date().toISOString().split('T')[0],
-      transaction_type: body.transaction_type || 'PURCHASE',
+      transaction_type: body.pipeline_type === 'PRE_APPROVAL' ? 'Pre-approval' : (body.transaction_type || 'PURCHASE'),
       loan_type: body.loan_type || 'CONVENTIONAL',
       estimated_property_value: body.estimated_property_value,
       estimated_credit_score: body.estimated_credit_score,
@@ -191,6 +253,22 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    if (borrowers.length > 0) {
+      const borrowersPayload = borrowers.map((b: any, idx: number) => ({
+        loan_id: data.id,
+        client_name: b.client_name,
+        phone: b.phone?.trim() || null,
+        email: b.email?.trim() || null,
+        is_primary: b.is_primary || idx === 0,
+        display_order: b.display_order || idx,
+      }));
+      try {
+        await supabaseServer.from('mortgage_borrowers').insert(borrowersPayload);
+      } catch (bErr) {
+        console.error('Failed to insert borrowers:', bErr);
+      }
     }
 
     const targetStage = (data.stage || 'NEW_LOAN') as StageCode;

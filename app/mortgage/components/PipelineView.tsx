@@ -588,14 +588,28 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
           }
         }}
         editingHistoryRecord={editingHistoryRecord}
-        isHidden={isHistoryModalOpen}
+      />
+
+      {/* Stage History Modal */}
+      <StageHistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => {
+          setIsHistoryModalOpen(false);
+          setEditingHistoryRecord(null);
+        }}
+        loanId={historyLoanId}
+        currentStage={historyLoanStage}
+        onEditHistory={(record) => {
+          setIsHistoryModalOpen(false);
+          setEditingHistoryRecord(record);
+          setIsFormOpen(true);
+        }}
       />
 
       {/* Detail Drawer Modal */}
       <LoanDetailModal
         isOpen={!!detailLoan}
         loan={detailLoan}
-        isHidden={isHistoryModalOpen}
         onViewHistory={() => {
           setHistoryLoanId(detailLoan?.id || null);
           setHistoryLoanStage(detailLoan?.stage || null);
@@ -603,12 +617,10 @@ export default function PipelineView({ pipelineType, title, subtitle }: Pipeline
         }}
         onClose={() => setDetailLoan(null)}
         onEdit={(loan) => {
-          setDetailLoan(null);
           setEditingLoan(loan);
           setIsFormOpen(true);
         }}
         onEditStage={(loan, targetStageCode) => {
-          setDetailLoan(null);
           setEditingLoan({ ...loan, stage: targetStageCode });
           setIsFormOpen(true);
         }}

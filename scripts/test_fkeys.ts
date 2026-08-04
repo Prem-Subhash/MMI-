@@ -9,7 +9,7 @@ async function testFetch() {
         .from('temp_leads_basics')
         .select(`
             id,
-            csr1:csrs!temp_leads_basics_assigned_csr_fkey (name)
+            csr1:profiles!temp_leads_basics_assigned_csr_fkey (full_name)
         `)
         .not('assigned_csr', 'is', null)
         .limit(1);
@@ -22,7 +22,7 @@ async function testFetch() {
         .from('temp_leads_basics')
         .select(`
             id,
-            csr2:csrs!temp_leads_assigned_csr_fkey (name)
+            csr2:profiles!temp_leads_assigned_csr_fkey (full_name)
         `)
         .not('assigned_csr', 'is', null)
         .limit(1);

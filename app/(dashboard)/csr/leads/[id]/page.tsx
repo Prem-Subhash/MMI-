@@ -7,6 +7,7 @@ import { Send, ExternalLink, ArrowLeft, Edit2 } from 'lucide-react'
 import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
+import EditHistoryModal from '@/components/pipeline/EditHistoryModal'
 import DocumentViewer from '@/components/leads/DocumentViewer'
 import EmailModal from '@/components/email/EmailModal'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
@@ -173,6 +174,7 @@ export default function LeadReviewPage() {
   const [history, setHistory] = useState<any[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [editingHistoryItem, setEditingHistoryItem] = useState<any>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showEmailModal, setShowEmailModal] = useState(false)
 
@@ -284,6 +286,19 @@ export default function LeadReviewPage() {
       setHistory(data)
     }
     setHistoryLoading(false)
+  }
+
+  const refreshHistory = async () => {
+    if (!leadId) return
+    const { data, error } = await supabase
+      .from('lead_stage_history')
+      .select('*')
+      .eq('lead_id', leadId)
+      .order('created_at', { ascending: false })
+
+    if (!error && data) {
+      setHistory(data)
+    }
   }
 
 
@@ -666,9 +681,21 @@ export default function LeadReviewPage() {
                     <div key={item.id} className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                       <div className="bg-emerald-50/50 px-5 py-3 border-b border-emerald-100 flex items-center justify-between">
                         <h3 className="font-bold text-emerald-700">{item.stage_name}</h3>
-                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">
-                          {new Date(item.created_at).toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">
+                            {new Date(item.created_at).toLocaleString()}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setShowHistory(false)
+                              setEditingHistoryItem(item)
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors border border-transparent hover:border-emerald-100"
+                            title="Edit History"
+                          >
+                            <Edit2 size={16} />
+                          </button>
+                        </div>
                       </div>
                       {item.stage_metadata && Object.keys(item.stage_metadata).length > 0 ? (
                         <div className="p-5">
@@ -678,9 +705,20 @@ export default function LeadReviewPage() {
                               
                               let displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
                               
+                              // Hide raw metadata for commission type/percentage, we'll format it inside expected_commission
+                              if (k === 'expected_commission_type' || k === 'expected_commission_percentage') return null;
+
                               // Check if the key implies a monetary value
                               const lowerK = k.toLowerCase();
-                              if (lowerK.includes('premium') || lowerK.includes('fee') || lowerK.includes('amount') || lowerK.includes('commission') || lowerK.includes('savings')) {
+                              if (k === 'expected_commission') {
+                                const cType = item.stage_metadata?.expected_commission_type;
+                                const cPercentage = item.stage_metadata?.expected_commission_percentage;
+                                if (cType === 'PERCENTAGE' && cPercentage !== undefined) {
+                                  displayValue = `${cPercentage}% (${formatCurrency(v as number | string)})`;
+                                } else {
+                                  displayValue = formatCurrency(v as number | string);
+                                }
+                              } else if (lowerK.includes('premium') || lowerK.includes('fee') || lowerK.includes('amount') || lowerK.includes('commission') || lowerK.includes('savings')) {
                                 displayValue = formatCurrency(v as number | string);
                               }
 
@@ -706,6 +744,29 @@ export default function LeadReviewPage() {
           </div>
         </div>
         </div>
+        )}
+
+        {/* EDIT HISTORY MODAL */}
+        {editingHistoryItem && (
+          <EditHistoryModal
+            historyItem={editingHistoryItem}
+            pipelineType={
+              // Best guess for pipeline type based on current lead info
+              lead?.pipeline_stages?.pipeline_id ? (
+                lead.insurence_category?.toLowerCase().includes('commercial') 
+                  ? (lead.policy_flow?.toLowerCase() === 'renewal' ? 'CommercialRenewal' : 'Commercial')
+                  : (lead.policy_flow?.toLowerCase() === 'renewal' ? 'PersonalRenewal' : 'PersonalNewBusiness')
+              ) : 'PersonalNewBusiness'
+            }
+            onClose={() => {
+              setEditingHistoryItem(null)
+              setShowHistory(true)
+            }}
+            onSuccess={() => {
+              setEditingHistoryItem(null)
+              refreshHistory().then(() => setShowHistory(true))
+            }}
+          />
         )}
 
         {/* EDIT CLIENT MODAL */}

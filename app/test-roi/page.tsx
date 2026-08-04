@@ -1,0 +1,1 @@
+"use client"; import React, { useState } from "react"; import LoanFormModal from "@/app/mortgage/components/LoanFormModal"; export default function TestPage() { const [isOpen, setIsOpen] = useState(true); return <div className="p-10"><LoanFormModal isOpen={isOpen} onClose={() => setIsOpen(false)} onSuccess={() => {}} initialLoan={null} defaultPipelineType="NEW_LOAN" /></div>; }

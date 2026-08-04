@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import { Spinner } from '@/components/ui/Loading'
+import { getFutureWorkingDate } from '@/utils/dateHelper'
 
 type Props = {
   leadId: string
@@ -14,188 +15,15 @@ type Props = {
   onSuccess: (newStageId?: string, newStageName?: string) => void
 }
 
-type FieldConfig = {
-  label: string
-  type: string
-  required?: boolean
-  options?: string[]
-}
-
-// ==========================================
-// PERSONAL LINES (NEW BUSINESS) FIELDS
-// ==========================================
-const PERSONAL_NEW_BUSINESS_FIELDS: Record<string, Record<string, FieldConfig>> = {
-  'Quoting in Progress': {
-    target_completion_date: { label: 'Target Date', type: 'date', required: true },
-    docs_saved: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    info_received: { label: 'Docs Received?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Quote Has Been Emailed': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    finalized_quote: { label: 'Quote Finalized?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    carrier_quote_sent: { label: 'Quoted Carrier', type: 'text', required: true },
-    quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Consent Letter Sent': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    payment_method: { label: 'Payment Method', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
-    payment_frequency: { label: 'Payment Frequency', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Completed': {
-    policy_number: { label: 'Policy Number', type: 'text', required: true },
-    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
-    expected_commission: { label: 'Commission', type: 'number', required: true },
-    docs_saved: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    policy_docs_sent: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Did Not Bind': {
-    reason_not_bound: { label: 'Reason Not Bound', type: 'text', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  }
-}
-
-// ==========================================
-// PERSONAL LINES RENEWAL FIELDS
-// ==========================================
-const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
-  'Quoting in Progress': {
-    ezlynx_updated: { label: 'EZLynx Updated?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Same Declaration Emailed': {
-    quoted_multiple_carriers: { label: 'Quoted Multiple Carriers?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    autopay_setup: { label: 'Autopay Setup?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Completed (Same)': {
-    paid_for_renewal: { label: 'Policy Paid?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Quote Has Been Emailed': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    quote_finalized: { label: 'Quote Finalized?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    carrier_quote_sent: { label: 'Quoted Carrier', type: 'text', required: true },
-    quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
-    savings_amount: { label: 'Savings', type: 'number', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Consent Letter Sent': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    payment_method: { label: 'Payment Method', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
-    payment_frequency: { label: 'Payment Frequency', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Completed (Switch)': {
-    new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
-    new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
-    new_premium: { label: 'New Bound Premium', type: 'number', required: true },
-    expected_commission: { label: 'Commission', type: 'number', required: true },
-    docs_saved_ezlynx: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    docs_sent_to_client: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    cancelled_prev_carrier: { label: 'Prior Term Cancelled?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Cancelled': {
-    cancellation_reason: { label: 'Cancellation Reason', type: 'text', required: true },
-    // x_date: { label: 'X-Date', type: 'date', required: false },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  }
-}
-
-// ==========================================
-// COMMERCIAL LINES FIELDS
-// ==========================================
-const COMMERCIAL_LINES_FIELDS: Record<string, Record<string, FieldConfig>> = {
-  'Quoting in Progress': {
-    target_completion_date: { label: 'Target Date', type: 'date', required: true },
-    documents_saved_filecenter: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    required_documents_received: { label: 'Docs Received?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Quote Has Been Emailed': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    finalized_quote: { label: 'Quote Finalized?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    carrier_name: { label: 'Quoted Carrier', type: 'text', required: true },
-    quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
-    agency_fees: { label: 'Agency Fee', type: 'number', required: true }, // Not explicitly requested in text but needed for consistency
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Consent Letter Sent': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    payment_method: { label: 'Payment Method', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
-    payment_frequency: { label: 'Payment Frequency', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Completed': {
-    policy_number: { label: 'Policy Number', type: 'text', required: true },
-    bound_premium: { label: 'Bound Premium', type: 'number', required: true },
-    expected_commission: { label: 'Commission', type: 'number', required: true },
-    agency_fees: { label: 'Agency Fee', type: 'number', required: true },
-    policy_docs_saved: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    docs_sent_to_client: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Did Not Bind': {
-    // X-date is auto-calculated, so we don't need a field here for it unless we want to override it. 
-    // The requirement says "Automatically added", usually implying backend calc.
-    reason_not_bound: { label: 'Reason Not Bound', type: 'text', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  }
-}
+import {
+  FieldConfig,
+  PERSONAL_NEW_BUSINESS_FIELDS,
+  PERSONAL_RENEWAL_FIELDS,
+  COMMERCIAL_LINES_FIELDS,
+  COMMERCIAL_RENEWAL_FIELDS
+} from '@/utils/stageFieldsConfig'
 
 
-// ==========================================
-// COMMERCIAL RENEWAL FIELDS
-// ==========================================
-const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>> = {
-  'Quoting in Progress': {
-    business_profile_updated_ezlynx: { label: 'EZLynx Updated?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Same Declaration Emailed': {
-    quoted_multiple_carriers: { label: 'Quoted Multiple Carriers?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    autopay_enabled: { label: 'Autopay Enabled?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    agency_fee: { label: 'Agency Fee', type: 'number', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Completed (Same)': {
-    policy_paid: { label: 'Policy Paid?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Quote Has Been Emailed': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    finalized_quote: { label: 'Quote Finalized?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    carrier_name: { label: 'Quoted Carrier', type: 'text', required: true },
-    quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
-    agency_fee: { label: 'Agency Fee', type: 'number', required: true },
-    savings_amount: { label: 'Savings', type: 'number', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Consent Letter Sent': {
-    follow_up_date: { label: 'Follow-up Date', type: 'date', required: true },
-    payment_method: { label: 'Payment Method', type: 'dropdown', options: ['CC', 'ACH', 'ESCROW'], required: true },
-    payment_frequency: { label: 'Payment Frequency', type: 'dropdown', options: ['Full', '2-Pay', '4-Pay', 'Monthly'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Completed (Switch)': {
-    new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
-    new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
-    new_premium: { label: 'New Bound Premium', type: 'number', required: true },
-    expected_commission: { label: 'Commission', type: 'number', required: true },
-    policy_docs_saved: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    docs_sent_to_client: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    cancelled_previous_carrier: { label: 'Prior Term Cancelled?', type: 'dropdown', options: ['Yes', 'No'], required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  },
-  'Cancelled': {
-    cancellation_reason: { label: 'Cancellation Reason', type: 'text', required: true },
-    notes: { label: 'Notes/Details', type: 'textarea' }
-  }
-}
 
 export default function UpdateStageModal({
   leadId,
@@ -312,7 +140,33 @@ export default function UpdateStageModal({
     }
 
     setMandatoryFields(fields)
+
+    // Initialize state, auto-populating date fields with +2 working days
+    const initialData: Record<string, any> = {}
+    for (const [key, config] of Object.entries(fields)) {
+      if (config.type === 'date') {
+        initialData[key] = getFutureWorkingDate(2)
+      }
+      if (config.type === 'commission') {
+        initialData.expected_commission_type = 'AMOUNT'
+      }
+    }
+    setFormData(initialData)
   }
+
+  // Effect for commission calculation
+  useEffect(() => {
+    if (formData.expected_commission_type === 'PERCENTAGE') {
+      const premium = Number(formData.bound_premium || formData.new_premium || 0)
+      const percentage = Number(formData.expected_commission_percentage || 0)
+      
+      const calculatedAmount = Number(((premium * percentage) / 100).toFixed(2))
+      
+      if (formData.expected_commission !== calculatedAmount) {
+        setFormData(prev => ({ ...prev, expected_commission: calculatedAmount }))
+      }
+    }
+  }, [formData.expected_commission_type, formData.expected_commission_percentage, formData.bound_premium, formData.new_premium])
 
   /* ================= CLIENT VALIDATION ================= */
   function validateClientSide() {
@@ -328,6 +182,12 @@ export default function UpdateStageModal({
         return false
       }
     }
+
+    if (formData.expected_commission_type === 'PERCENTAGE' && !Number(formData.bound_premium || formData.new_premium)) {
+      toast('Please enter Bound Premium to calculate Commission Percentage', 'warning')
+      return false
+    }
+
     return true
   }
 
@@ -349,6 +209,77 @@ export default function UpdateStageModal({
               setFormData({ ...formData, [fieldKey]: e.target.value })
             }
           />
+        )
+      }
+
+      case 'commission': {
+        const cType = formData.expected_commission_type || 'AMOUNT'
+        const premium = Number(formData.bound_premium || formData.new_premium || 0)
+        return (
+          <div className="space-y-3">
+            <div className="flex gap-4 items-center">
+              <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Type:</label>
+              <select
+                className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none bg-white text-gray-700 w-40"
+                value={cType}
+                onChange={(e) => setFormData({ ...formData, expected_commission_type: e.target.value })}
+              >
+                <option value="AMOUNT">Dollar ($)</option>
+                <option value="PERCENTAGE">Percentage (%)</option>
+              </select>
+            </div>
+
+            {cType === 'AMOUNT' ? (
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                <input
+                  type="number"
+                  className="w-full border border-gray-300 rounded-lg p-2.5 pl-7 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700"
+                  value={formData.expected_commission ?? ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      expected_commission: e.target.value === '' ? '' : Number(e.target.value),
+                    })
+                  }
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-4">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      className="w-full border border-gray-300 rounded-lg p-2.5 pr-7 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700"
+                      value={formData.expected_commission_percentage ?? ''}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          expected_commission_percentage: e.target.value === '' ? '' : Number(e.target.value),
+                        })
+                      }
+                      placeholder="e.g. 10"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">%</span>
+                  </div>
+                  <div className="flex items-center text-gray-400 font-bold">→</div>
+                  <div className="relative flex-1 opacity-70">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                    <input
+                      type="number"
+                      disabled
+                      className="w-full border border-gray-200 bg-gray-50 rounded-lg p-2.5 pl-7 text-gray-700 cursor-not-allowed font-medium"
+                      value={formData.expected_commission ?? 0}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" title="Auto-calculated">🔒</span>
+                  </div>
+                </div>
+                {!premium && (
+                  <p className="text-xs text-red-500 font-medium animate-pulse">Please enter Bound Premium first to calculate percentage.</p>
+                )}
+              </div>
+            )}
+          </div>
         )
       }
 
@@ -526,7 +457,6 @@ export default function UpdateStageModal({
                   }
 
                   updateMandatoryFields(stage, pipelineType)
-                  setFormData({})
                 }}
               >
                 <option value="">Select new status</option>

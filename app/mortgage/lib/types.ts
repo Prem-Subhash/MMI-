@@ -10,8 +10,19 @@ export type StageCode =
   | 'PREAPPROVAL_LOAN'
   | 'MANUAL_UW';
 
+export interface MortgageBorrower {
+  id?: string;
+  loan_id?: string;
+  client_name: string;
+  phone: string;
+  email: string;
+  is_primary: boolean;
+  display_order: number;
+}
+
 export interface MortgageLoan {
   id: string;
+  borrowers?: MortgageBorrower[];
   pipeline_type: PipelineType;
   stage: StageCode;
 
@@ -37,6 +48,8 @@ export interface MortgageLoan {
   missing_documents_list?: string;
   follow_up_date?: string;
   expected_commission?: number;
+  expected_commission_type?: 'AMOUNT' | 'PERCENTAGE';
+  commission_source?: 'LENDER_PAID' | 'BORROWER_PAID';
   additional_notes?: string;
 
   // Pre-Approval Specific Columns (Stage 2: MANUAL UW)
@@ -51,10 +64,10 @@ export interface MortgageLoan {
   lender_name?: string;
   submission_date?: string;
   loan_amount?: number;
-  moonstar_disclosure_sent: 'Y' | 'N';
-  lender_disclosure_sent: 'Y' | 'N';
-  received_all_uw_documents: 'Y' | 'N';
-  rate_locked: 'Y' | 'N';
+  moonstar_disclosure_sent?: 'Y' | 'N';
+  lender_disclosure_sent?: 'Y' | 'N';
+  received_all_uw_documents?: 'Y' | 'N';
+  rate_locked?: 'Y' | 'N';
   interest_rate?: number;
   lock_expire_date?: string;
 

@@ -71,9 +71,9 @@ export async function GET(
 
     const { id } = await params;
     const isGlobalView = auth.profile?.role === 'superadmin' || auth.profile?.role === 'admin';
-    let query = supabaseServer
+      let query = supabaseServer
       .from('mortgage_loans')
-      .select('*')
+      .select('*, borrowers:mortgage_borrowers(*)')
       .eq('id', id);
 
     if (!isGlobalView) {
@@ -117,6 +117,10 @@ export async function PUT(
 
     const stageRemarks = body._stage_remarks || null;
     const updatedBy = body._updated_by || auth.user.email || 'Mortgage Officer';
+    
+    const borrowers = body.borrowers;
+    delete body.borrowers;
+    
     delete body._stage_remarks;
     delete body._updated_by;
 
@@ -143,10 +147,72 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized or Loan not found' }, { status: 404 });
     }
 
-    const rawPayload = {
+    if (currentLoan.pipeline_type === 'PRE_APPROVAL' || currentLoan.stage === 'PREAPPROVAL_LOAN') {
+      const mergedPayload = { ...currentLoan, ...body };
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+
+      if (isMissing(mergedPayload.client_name)) missing.push('Primary Client Name');
+      if (isMissing(mergedPayload.phone)) missing.push('Primary Phone Number');
+      if (isMissing(mergedPayload.email)) missing.push('Primary Email Address');
+      
+      borrowers.forEach((b: any, idx: number) => {
+        if (isMissing(b.client_name)) missing.push(`Co-Borrower ${idx} Name`);
+      });
+      if (isMissing(mergedPayload.loan_type)) missing.push('Loan Type');
+      if (isMissing(mergedPayload.loan_term)) missing.push('Loan Term');
+      if (isMissing(mergedPayload.estimated_property_value)) missing.push('Estimated Property Value');
+      if (isMissing(mergedPayload.estimated_credit_score)) missing.push('Estimated Credit Score');
+      if (isMissing(mergedPayload.expected_commission)) missing.push('Expected Commission');
+      if (isMissing(mergedPayload.expected_commission_type)) missing.push('Commission Type');
+      if (isMissing(mergedPayload.commission_source)) missing.push('Commission Source');
+      if (isMissing(mergedPayload.loan_officer_name)) missing.push('Assigned Loan Officer');
+      if (isMissing(mergedPayload.processor_name)) missing.push('Assigned Processor');
+      if (isMissing(mergedPayload.state)) missing.push('State');
+      if (mergedPayload.application_received === 'Y' && isMissing(mergedPayload.application_received_date)) {
+        missing.push('Application Received Date');
+      }
+
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Missing required fields: ${missing.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    } else {
+      // NEW_LOAN Validation
+      const mergedPayload = { ...currentLoan, ...body };
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+      
+      if (isMissing(mergedPayload.client_name)) missing.push('Primary Client Name');
+      if (isMissing(mergedPayload.phone)) missing.push('Primary Phone Number');
+      if (isMissing(mergedPayload.email)) missing.push('Primary Email Address');
+      
+      borrowers.forEach((b: any, idx: number) => {
+        if (isMissing(b.client_name)) missing.push(`Co-Borrower ${idx} Name`);
+      });
+
+      if (isMissing(mergedPayload.expected_commission)) missing.push('Expected Commission');
+      if (isMissing(mergedPayload.expected_commission_type)) missing.push('Commission Type');
+      if (isMissing(mergedPayload.commission_source)) missing.push('Commission Source');
+
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Missing required fields: ${missing.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    }
+
+    const rawPayload: any = {
       ...body,
       updated_at: new Date().toISOString(),
     };
+
+    if (currentLoan.pipeline_type === 'PRE_APPROVAL') {
+      rawPayload.transaction_type = 'Pre-approval';
+    }
 
     const sanitizedPayload = sanitizePayloadForPostgres(rawPayload);
 
@@ -163,6 +229,26 @@ export async function PUT(
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // Replace borrowers using delete-and-reinsert strategy
+    if (borrowers && Array.isArray(borrowers)) {
+      try {
+        await supabaseServer.from('mortgage_borrowers').delete().eq('loan_id', id);
+        if (borrowers.length > 0) {
+          const borrowersPayload = borrowers.map((b: any, idx: number) => ({
+            loan_id: id,
+            client_name: b.client_name,
+            phone: b.phone?.trim() || null,
+            email: b.email?.trim() || null,
+            is_primary: b.is_primary || idx === 0,
+            display_order: b.display_order || idx,
+          }));
+          await supabaseServer.from('mortgage_borrowers').insert(borrowersPayload);
+        }
+      } catch (bErr) {
+        console.error('Failed to sync borrowers:', bErr);
+      }
     }
 
     const targetStage = (data.stage || currentLoan?.stage || 'NEW_LOAN') as StageCode;

@@ -1,4 +1,5 @@
 import { normalizeImportDate } from '@/utils/fileParser'
+import { formatPhoneInput } from '@/utils/phoneFormatter'
 
 export interface RenewalValidationResult {
   isValid: boolean
@@ -157,7 +158,7 @@ export function buildRenewalPayload(
     : r.referral?.trim() || null
 
   const notes = isExcelImport ? null : r.notes?.trim() || null
-  const phone = isExcelImport ? null : r.phone?.trim() || null
+  const phone = isExcelImport ? null : (r.phone ? formatPhoneInput(r.phone.trim()) : null)
   const email = isExcelImport ? null : r.email?.trim() || null
 
   let businessName: string | null = null
