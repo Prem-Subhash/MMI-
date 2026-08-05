@@ -4,6 +4,7 @@ import React from 'react';
 import { X, Layers, FileCheck, ArrowRight, Building2 } from 'lucide-react';
 import { PipelineType } from '@/app/mortgage/lib/types';
 import { toast } from '@/lib/toast';
+import { Modal } from '@/components/ui/Modal';
 
 interface CreateApplicationModalProps {
   isOpen: boolean;
@@ -19,38 +20,14 @@ export default function CreateApplicationModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="absolute inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-gray-100 my-auto relative animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh] overflow-hidden text-gray-800">
-            
-            {/* Header */}
-            <div className="shrink-0 p-6 bg-slate-50 border-b border-gray-100 flex justify-between items-center">
-              <div>
-                <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-block mb-1">
-                  Mortgage Pipeline Intake
-                </span>
-                <h2 className="text-xl font-bold text-[#2E5C85]">
-                  Create Mortgage Application
-                </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Select the lending workflow pipeline for this new borrower intake
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200"
-                aria-label="Close modal"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Selection Cards */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Create Mortgage Application"
+      subtitle="Select the lending workflow pipeline for this new borrower intake"
+      maxWidth="max-w-lg"
+    >
+      <div className="space-y-4">
               {/* Card 1: New Loan Pipeline */}
               <div
                 onClick={() => {
@@ -100,23 +77,19 @@ export default function CreateApplicationModal({
                     <span>Start Pre-Approval Form</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </div>
-            </div>
-            </div>
-            </div>
-
-            {/* Footer */}
-            <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
-              <button
-                type="button"
-                onClick={onClose}
-                className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
-              >
-                Cancel
-              </button>
-            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 h-[46px]"
+        >
+          Cancel
+        </button>
+      </div>
+    </Modal>
   );
 }

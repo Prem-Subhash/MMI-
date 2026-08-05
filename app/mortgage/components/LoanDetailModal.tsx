@@ -23,6 +23,7 @@ import {
   getStageConfig,
   MORTGAGE_STAGES,
 } from "@/app/mortgage/lib/stageFields";
+import { Modal } from "@/components/ui/Modal";
 
 /** Colour-coded badge for pipeline stage names */
 function StageBadge({
@@ -208,53 +209,33 @@ export default function LoanDetailModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-      style={{ display: isHidden ? "none" : "flex" }}
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      isHidden={isHidden}
+      title={loan.client_name || "Mortgage Application Details"}
+      subtitle="Review mortgage information and pipeline status"
+      maxWidth="max-w-5xl"
     >
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-5xl w-full max-h-[95vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200">
-        {/* HEADER */}
-        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-6 flex flex-col md:flex-row items-start sm:items-center justify-between gap-4 sticky top-0 z-20">
-          <div>
-            <h1 className="text-2xl font-bold text-white">
-              {loan.client_name || "Mortgage Application Details"}
-            </h1>
-            <p className="text-white/80 text-sm mt-1">
-              Review mortgage information and pipeline status
-            </p>
-          </div>
+      <div className="flex flex-col min-h-[50vh] -mx-6 sm:-mx-8 -my-6 sm:-my-8">
+        <div className="bg-white px-6 sm:px-8 py-4 border-b border-gray-100 flex items-center justify-end gap-2.5 shrink-0 sticky top-0 z-10">
+          <button
+            type="button"
+            onClick={() => onEdit(loan)}
+            className="px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Edit Application</span>
+          </button>
 
-          <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-center">
-            <button
-              type="button"
-              onClick={() => onEdit(loan)}
-              className="px-4 py-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Application</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onDelete(loan)}
-              className="px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 ml-1"
-              aria-label="Close modal"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={() => onDelete(loan)}
+            className="px-4 py-2 rounded-xl bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Delete</span>
+          </button>
         </div>
 
         {/* Stage Progression Bar & Update Stage Action */}
@@ -315,7 +296,7 @@ export default function LoanDetailModal({
         </div>
 
         {/* CONTENT BODY */}
-        <div className="flex-1 overflow-y-auto p-8 bg-slate-50/30">
+        <div className="flex-1 overflow-y-auto p-6 sm:p-8 bg-slate-50/30">
           {/* 1. INFO GRID LAYOUT */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
             <KpiCard
@@ -675,7 +656,7 @@ export default function LoanDetailModal({
               <button
                 type="button"
                 onClick={onViewHistory}
-                className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
+                className="px-5 py-2.5 bg-brand-dark text-white hover:bg-brand-dark/90 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap h-[46px]"
               >
                 View History
               </button>
@@ -683,21 +664,21 @@ export default function LoanDetailModal({
             <button
               type="button"
               onClick={() => onEdit(loan)}
-              className="px-5 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
+              className="px-5 py-2.5 bg-[#2E5C85] hover:bg-[#234b6e] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap h-[46px]"
             >
               Update Stage
             </button>
             <button
               type="button"
               onClick={() => onDelete(loan)}
-              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap h-[46px]"
             >
               <Trash2 size={16} /> Delete
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap group"
+              className="px-5 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap group h-[46px]"
             >
               <ArrowLeft
                 size={16}
@@ -707,18 +688,7 @@ export default function LoanDetailModal({
             </button>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="px-6 py-4 bg-white border-t border-gray-100 flex justify-end">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-6 py-2.5 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-xs sm:text-sm"
-          >
-            Close Window
-          </button>
-        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

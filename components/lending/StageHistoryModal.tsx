@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import { Spinner } from '@/components/ui/Loading'
 import { LENDING_STAGE_FIELDS } from '@/app/lending/lib/constants'
+import { Modal } from '@/components/ui/Modal'
 
 type Props = {
   loanId: string
@@ -39,24 +40,14 @@ export default function StageHistoryModal({ loanId, borrowerName, onClose }: Pro
   }, [loanId])
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/60 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 max-w-2xl w-full max-h-[90vh] overflow-hidden my-auto flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10 shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-white">Stage History</h2>
-            <p className="text-sm text-white/90">{borrowerName}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shadow-sm"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50 space-y-4">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Stage History"
+      subtitle={borrowerName}
+      maxWidth="max-w-2xl"
+    >
+      <div className="space-y-4">
           {loading ? (
             <div className="py-12 text-center text-slate-500 flex flex-col items-center justify-center gap-3">
               <Spinner size={32} />
@@ -114,8 +105,17 @@ export default function StageHistoryModal({ loanId, borrowerName, onClose }: Pro
               </div>
             ))
           )}
-        </div>
       </div>
-    </div>
+
+      <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+        <button
+          type="button"
+          onClick={onClose}
+          className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 h-[46px]"
+        >
+          Close
+        </button>
+      </div>
+    </Modal>
   )
 }

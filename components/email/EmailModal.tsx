@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import EmailGenerator from '@/components/email/EmailGenerator'
 import Loading from '@/components/ui/Loading'
+import { Modal } from '@/components/ui/Modal'
 
 type EmailTemplate = {
   id: string
@@ -395,43 +396,20 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
     onClose()
   }
 
-  if (!isOpen) return null;
-
   return (
-    <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-200" />
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90dvh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200 pb-safe my-auto relative">
-        {/* HEADER */}
-        <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10 shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-white">
-              {lead?.policy_flow === 'renewal' ? 'Send Renewal Email' : 'Send Initial Email'}
-            </h2>
-            <p className="text-sm text-white/80 font-medium">
-              {lead?.policy_flow === 'renewal' ? 'Configure and send renewal quotes to the client.' : 'Configure and send the onboarding email to the client.'}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200 shadow-sm"
-            title="Close"
-          >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={lead?.policy_flow === 'renewal' ? 'Send Renewal Email' : 'Send Initial Email'}
+      subtitle={lead?.policy_flow === 'renewal' ? 'Configure and send renewal quotes to the client.' : 'Configure and send the onboarding email to the client.'}
+      maxWidth="max-w-4xl"
+    >
+      {loading ? (
+        <div className="py-12">
+          <Loading message="Fetching lead details..." />
         </div>
-
-        {/* CONTENT */}
-        <div className="p-6 overflow-y-auto flex-1 bg-slate-50/50">
-          {loading ? (
-            <div className="py-12">
-              <Loading message="Fetching lead details..." />
-            </div>
-          ) : (
-            <div className="space-y-6 md:space-y-8">
+      ) : (
+        <div className="space-y-6 md:space-y-8">
               {/* ERROR ALERT */}
               {error && (
                 <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3">
@@ -606,32 +584,27 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
                         ))}
                       </div>
                     )}
-                  </div>
-                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
+      )}
 
-        {/* FOOTER ACTIONS */}
-        <div className="px-6 py-4 border-t bg-slate-100 flex items-center justify-end gap-3 shrink-0">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 transition-colors border border-rose-600 rounded-xl bg-rose-600 text-white hover:bg-rose-700 hover:border-rose-700 hover:text-white"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSend}
-            disabled={sending || (isFormAttached && !formLink) || loading}
-            className="px-8 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-sm transition-all disabled:opacity-60"
-          >
-            {sending ? 'Sending...' : 'Send Email'}
-          </button>
-        </div>
+      <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+        <button
+          onClick={onClose}
+          className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 h-[46px]"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSend}
+          disabled={sending || (isFormAttached && !formLink) || loading}
+          className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95 disabled:opacity-60 disabled:shadow-none h-[46px] shadow-emerald-200 hover:shadow-emerald-300"
+        >
+          {sending ? 'Sending...' : 'Send Email'}
+        </button>
       </div>
-    </div>
-    </div>
-    </div>
+    </Modal>
   )
 }
