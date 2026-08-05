@@ -22,13 +22,13 @@ const Footer = () => {
                     {/* Hotline Section */}
                     <div className="flex items-center gap-2">
                         <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">PHONE:</p>
-                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (800) 771-2304</p>
+                        <p className="text-xs font-bold font-mono tracking-wide text-white">+1 (xxx) 771-2304</p>
                     </div>
 
                     {/* Email Section */}
                     <div className="flex items-center gap-2">
                         <p className="text-white/70 text-[10px] font-bold uppercase tracking-wider">Email:</p>
-                        <p className="text-xs font-bold tracking-wide text-white"><a href="mailto:info@moonstarmortgage.com">info@moonstarmortgage.com</a></p>
+                        <p className="text-xs font-bold tracking-wide text-white"><a href="mailto:email@gmail.com">email@gmail.com</a></p>
                     </div>
 
                     {/* Social Section */}
