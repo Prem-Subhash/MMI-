@@ -10,6 +10,7 @@ import {
   COMMERCIAL_LINES_FIELDS,
   COMMERCIAL_RENEWAL_FIELDS
 } from '@/utils/stageFieldsConfig'
+import { Modal } from '@/components/ui/Modal'
 
 type Props = {
   historyItem: any
@@ -323,28 +324,14 @@ export default function EditHistoryModal({
   if (!historyItem) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div
-        className="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="bg-gradient-to-r from-emerald-600 to-emerald-800 px-6 py-4 flex items-center justify-between shadow-sm shrink-0">
-          <div>
-            <h2 className="text-xl font-bold text-white">Edit History Entry</h2>
-            <p className="text-emerald-100 text-sm mt-0.5">{historyItem.stage_name}</p>
-          </div>
-          <button
-            onClick={onClose}
-            className="text-white/80 hover:text-white hover:bg-white/10 p-2 rounded-xl transition-colors"
-          >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
-          <div className="space-y-6">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Edit History Entry"
+      subtitle={historyItem.stage_name}
+      maxWidth="max-w-2xl"
+    >
+      <div className="space-y-6">
             {Object.keys(mandatoryFields).length > 0 ? (
               <div className="bg-white p-5 rounded-xl border border-emerald-100 shadow-sm space-y-5">
                 <h3 className="font-semibold text-emerald-800 text-sm uppercase tracking-wide border-b border-emerald-50 pb-2">
@@ -365,33 +352,31 @@ export default function EditHistoryModal({
                 No editable fields found for this stage.
               </div>
             )}
-          </div>
-        </div>
-
-        <div className="bg-gray-50 border-t border-gray-100 p-5 flex items-center justify-end gap-3 shrink-0">
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 text-gray-600 font-medium hover:bg-gray-100 rounded-xl transition-colors"
-            disabled={saving}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || Object.keys(mandatoryFields).length === 0}
-            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-xl transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <Spinner size={18} />
-                <span>Saving...</span>
-              </>
-            ) : (
-              'Save Changes'
-            )}
-          </button>
-        </div>
       </div>
-    </div>
+
+      <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
+        <button
+          onClick={onClose}
+          className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+          disabled={saving}
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving || Object.keys(mandatoryFields).length === 0}
+          className="w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform flex items-center justify-center gap-2 h-[46px] bg-emerald-600 hover:bg-emerald-700 text-white md:hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300 active:scale-95 disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0"
+        >
+          {saving ? (
+            <>
+              <Spinner size={18} />
+              <span>Saving...</span>
+            </>
+          ) : (
+            'Save Changes'
+          )}
+        </button>
+      </div>
+    </Modal>
   )
 }

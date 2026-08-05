@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import { Spinner } from '@/components/ui/Loading'
 import { getFutureWorkingDate } from '@/utils/dateHelper'
+import { Modal } from '@/components/ui/Modal'
 
 type Props = {
   leadId: string
@@ -420,17 +421,12 @@ export default function UpdateStageModal({
   })
 
   return (
-    <div className="fixed inset-0 z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
-      <div className="absolute inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-          <div className="bg-white p-6 rounded-2xl w-full max-w-lg space-y-4 shadow-2xl border border-gray-100 my-auto relative">
-        <div className="flex justify-between items-center mb-4 border-b pb-4">
-          <h2 className="text-xl font-bold text-[#2E5C85]">Update Status</h2>
-          <button type="button" onClick={onClose} className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Update Status"
+      maxWidth="max-w-lg"
+    >
 
         {loading ? (
           <div className="py-12 text-center text-gray-500 flex flex-col items-center gap-3">
@@ -542,7 +538,7 @@ export default function UpdateStageModal({
           })}
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100 mt-4">
+        <div className="mt-8 flex justify-end gap-3 pt-6 border-t border-gray-100">
           <button
             type="button"
             onClick={onClose}
@@ -554,10 +550,10 @@ export default function UpdateStageModal({
             type="button"
             onClick={handleSave}
             disabled={saving || isBlockedByNo}
-            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2
+            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform flex items-center justify-center gap-2 h-[46px]
               ${saving || isBlockedByNo
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
-                : 'bg-emerald-600 hover:bg-emerald-700 text-white md:hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white md:hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300 active:scale-95'
               }
             `}
           >
@@ -571,9 +567,6 @@ export default function UpdateStageModal({
             )}
           </button>
         </div>
-      </div>
-    </div>
-    </div>
-    </div>
+    </Modal>
   )
 }
