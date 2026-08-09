@@ -6,6 +6,7 @@ import { toast } from '@/lib/toast'
 import { User, Phone, Mail, X, Briefcase, Shield } from 'lucide-react'
 import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 import { formatPhoneInput, formatDatabasePhone, PHONE_REGEX } from '@/utils/phoneFormatter'
+import { Modal } from '@/components/ui/Modal'
 
 type UpdatedClientFields = {
   client_name: string
@@ -120,36 +121,15 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
   }
 
   return (
-    <div className="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity animate-in fade-in duration-300" />
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-          <div className="bg-white rounded-[2rem] w-full max-w-lg shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-white/20 overflow-hidden my-auto relative animate-in zoom-in-95 duration-300">
-
-        {/* HEADER SECTION */}
-        <div className="relative overflow-hidden bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-8">
-          <div className="flex justify-between items-center relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-white/20 text-white rounded-2xl shadow-sm backdrop-blur-md">
-                <User size={24} strokeWidth={2.5} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-black text-white tracking-tight leading-none">Edit Client Info</h2>
-                <p className="text-sm font-medium text-white/80 mt-1.5">Update personal details reliably</p>
-              </div>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2.5 text-rose-500 hover:text-white hover:bg-red-500 rounded-full transition-all duration-200"
-            >
-              <X size={22} strokeWidth={2.5} />
-            </button>
-          </div>
-          {/* Decorative Glow */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full -translate-y-1/2 translate-x-1/2"></div>
-        </div>
-
-        <div className="p-8 space-y-6">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title="Edit Client Info"
+      subtitle="Update personal details reliably"
+      icon={<User size={24} strokeWidth={2.5} />}
+      maxWidth="max-w-lg"
+    >
+      <div className="space-y-6">
           {error && (
             <div className="p-4 bg-red-50 border border-red-100 text-red-700 rounded-2xl text-xs font-bold animate-in slide-in-from-top-2 duration-300 flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
@@ -260,37 +240,32 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
             </div>
           </div>
 
-          {/* ACTIONS */}
-          <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-            <button
-              onClick={onClose}
-              className="w-full sm:w-auto px-8 py-4  border border-rose-500 rounded-2xl text-rose-600 font-black hover:bg-rose-600 hover:text-white transition-all active:scale-95 text-sm uppercase tracking-wider"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`w-full sm:w-auto px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-wider shadow-[0_10px_20px_-5px_rgba(16,184,137,0.4)] transition-all transform active:scale-95 flex items-center justify-center gap-3
-                ${saving ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-1 hover:shadow-[0_15px_30px_-5px_rgba(16,184,137,0.5)]'}
-              `}
-            >
-              {saving ? (
-                <>
-                  <Spinner size={18} />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <span>Save Info</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
       </div>
-    </div>
-    </div>
-    </div>
+
+      <div className="mt-8 flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
+        <button
+          onClick={onClose}
+          className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 text-sm uppercase tracking-wider h-[46px]"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className={`w-full sm:w-auto px-10 py-3 rounded-xl font-bold text-sm uppercase tracking-wider shadow-[0_10px_20px_-5px_rgba(16,184,137,0.4)] transition-all transform active:scale-95 flex items-center justify-center gap-3 h-[46px]
+            ${saving ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' : 'bg-emerald-600 hover:bg-emerald-700 text-white hover:-translate-y-1 hover:shadow-[0_15px_30px_-5px_rgba(16,184,137,0.5)]'}
+          `}
+        >
+          {saving ? (
+            <>
+              <Spinner size={18} />
+              Saving...
+            </>
+          ) : (
+            'Save Info'
+          )}
+        </button>
+      </div>
+    </Modal>
   )
 }

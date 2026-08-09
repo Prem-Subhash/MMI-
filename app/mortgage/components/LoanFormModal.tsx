@@ -31,6 +31,7 @@ import {
   EXCEL_LOAN_OFFICERS,
   EXCEL_PROCESSORS,
 } from "@/app/mortgage/lib/excelLookups";
+import { Modal } from "@/components/ui/Modal";
 
 function calculateBusinessDays(startDateStr: string | undefined | null, endDateStr: string | undefined | null): number {
   if (!startDateStr || !endDateStr) return 0;
@@ -716,39 +717,45 @@ export default function LoanFormModal({
     "block text-gray-700 font-semibold mb-1.5 text-xs sm:text-sm tracking-tight";
 
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
-      style={{ display: isHidden ? "none" : "flex" }}
-    >
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden text-gray-800 animate-in fade-in zoom-in-95 duration-200 my-8">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6 flex items-center justify-between sticky top-0 z-20">
-          <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
-              {isEditing ? "Update Stage" : "New Mortgage Application"}
-            </h2>
-            <p className="text-white/80 text-sm mt-1">
-              {isEditing
-                ? "Update the current stage and details"
-                : "Enter application details"}
-            </p>
-          </div>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      isHidden={isHidden}
+      title={isEditing ? "Update Stage" : "New Mortgage Application"}
+      subtitle={isEditing ? "Update the current stage and details" : "Enter application details"}
+      maxWidth="max-w-4xl"
+      footer={
+        <>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-white hover:text-white hover:bg-white/20 rounded-full transition-all duration-200"
-            aria-label="Close modal"
+            disabled={submitting}
+            className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 h-[46px]"
           >
-            <X className="w-6 h-6" />
+            Cancel
           </button>
-        </div>
-
+          <button
+            type="submit"
+            form="loan-form"
+            disabled={submitting}
+            className="w-full sm:w-auto px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 h-[46px] disabled:opacity-50 disabled:shadow-none shadow-emerald-200 hover:shadow-emerald-300"
+          >
+            <Save className="w-4 h-4 shrink-0" />
+            <span>
+              {submitting
+                ? "Saving..."
+                : isEditing
+                  ? `Save ${stageConfig.label}`
+                  : `Create Application`}
+            </span>
+          </button>
+        </>
+      }
+    >
+      <div className="flex flex-col h-full space-y-0 -mx-6 sm:-mx-8 -my-6 sm:-my-8">
         {/* Read-only Borrower Context Header when editing a later stage */}
         {isEditing && (
-          <div className="shrink-0 px-6 py-3.5 bg-gray-50/80 border-b border-gray-100 flex flex-wrap items-center justify-between text-xs gap-4 text-gray-700 font-medium">
+          <div className="shrink-0 px-6 sm:px-8 py-3.5 bg-gray-50 border-b border-gray-100 flex flex-wrap items-center justify-between text-xs gap-4 text-gray-700 font-medium z-10 sticky top-0">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-[#10B889]" />
               <span className="font-bold text-gray-900 text-sm">
@@ -768,8 +775,9 @@ export default function LoanFormModal({
 
         {/* Form Content */}
         <form
+          id="loan-form"
           onSubmit={handleSubmit}
-          className="flex-1 flex flex-col min-h-0 overflow-hidden"
+          className="flex-1 flex flex-col min-h-0"
         >
           <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-6">
             {/* Stage Selector Bar */}
@@ -2608,34 +2616,8 @@ export default function LoanFormModal({
               </div>
             )}
           </div>
-
-          {/* Submit / Action Bar (Fixed Footer outside scrollable div) */}
-          <div className="shrink-0 bg-white border-t border-gray-200 px-6 py-4 sm:px-8 flex items-center justify-end gap-3 shadow-sm">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={submitting}
-              className="h-10 min-w-[120px] px-6 py-2 border-2 border-gray-200 rounded-xl text-gray-700 font-bold hover:bg-gray-50 hover:border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 transition-all active:scale-95 text-xs sm:text-sm flex items-center justify-center shadow-2xs"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="h-10 min-w-[160px] px-6 py-2 bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white shadow-sm hover:shadow transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
-            >
-              <Save className="w-4 h-4 shrink-0" />
-              <span>
-                {submitting
-                  ? "Saving..."
-                  : isEditing
-                    ? `Save ${stageConfig.label}`
-                    : `Create Application`}
-              </span>
-            </button>
-          </div>
         </form>
       </div>
-    </div>
+    </Modal>
   );
 }

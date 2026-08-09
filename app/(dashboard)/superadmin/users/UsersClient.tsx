@@ -130,14 +130,14 @@ export default function UsersClient() {
         </button>
       </div>
 
-      {showCreate && (
-        <CreateUserModal
-          onSuccess={() => {
-            setShowCreate(false);
-            fetchUsers();
-          }}
-        />
-      )}
+      <CreateUserModal
+        isOpen={showCreate}
+        onClose={() => setShowCreate(false)}
+        onSuccess={() => {
+          setShowCreate(false);
+          fetchUsers();
+        }}
+      />
 
       <div className="bg-white sm:rounded-2xl shadow-sm sm:border border-gray-200 overflow-hidden -mx-3 sm:mx-0">
         {/* Mobile Cards View */}

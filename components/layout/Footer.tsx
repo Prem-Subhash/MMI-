@@ -60,7 +60,7 @@ const Footer = () => {
                 {/* Copyright Row */}
                 <div className="max-w-[1600px] mx-auto flex justify-center text-center">
                     <p className="text-white/30 text-[9px] font-medium tracking-wide">
-                        © {currentYear} Moonstar Mortgage. All Rights Reserved.
+                        © {currentYear}   Insurance & Mortgage Solutions. All Rights Reserved.
                     </p>
                 </div>
             </div>

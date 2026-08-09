@@ -5,6 +5,7 @@ import { X, ChevronDown } from 'lucide-react'
 import { LENDING_STAGES, LENDING_STAGE_FIELDS } from '@/app/lending/lib/constants'
 import { toast } from '@/lib/toast'
 import { Spinner } from '@/components/ui/Loading'
+import { Modal } from '@/components/ui/Modal'
 
 type Props = {
   loan: any
@@ -95,35 +96,20 @@ export default function UpdateStageModal({ loan, onClose, onSuccess }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-      <div className="absolute inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-          <div className="bg-white p-6 rounded-2xl w-full max-w-2xl space-y-4 shadow-2xl border border-gray-100 my-auto relative animate-in fade-in zoom-in-95 duration-200">
-            
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4 border-b pb-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#10B889] mb-1">
-              <span>Update Pipeline Stage</span>
-              <span>•</span>
-              <span>{loan.id.split('-').pop()}</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-              {loan.borrower_name}
-            </h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-slate-700 hover:bg-gray-200 rounded-full transition-colors"
-          >
-            <X size={20} />
-          </button>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      title={loan.borrower_name}
+      subtitle={
+        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white/90">
+          <span>Update Pipeline Stage</span>
+          <span>•</span>
+          <span>{loan.id.split('-').pop()}</span>
         </div>
-
-        {/* Body */}
-        <div className="space-y-6">
+      }
+      maxWidth="max-w-2xl"
+    >
+      <div className="space-y-6">
           <div className="bg-blue-50/70 border border-blue-200 rounded-2xl p-6">
             <h3 className="text-base font-extrabold text-slate-900 mb-1">
               Current Stage: {loan.current_stage || LENDING_STAGES[0]}
@@ -196,11 +182,11 @@ export default function UpdateStageModal({ loan, onClose, onSuccess }: Props) {
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100 mt-4">
+        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100 mt-8">
           <button
             type="button"
             onClick={onClose}
-            className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95"
+            className="w-full sm:w-auto px-6 py-3 border-2 border-gray-200 rounded-xl text-gray-600 font-bold hover:bg-gray-50 hover:border-gray-300 transition-all active:scale-95 h-[46px]"
           >
             Cancel
           </button>
@@ -208,7 +194,7 @@ export default function UpdateStageModal({ loan, onClose, onSuccess }: Props) {
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2
+            className={`w-full sm:w-auto px-8 py-3 rounded-xl font-bold shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2 h-[46px]
               ${saving
                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                 : 'bg-emerald-600 hover:bg-emerald-700 text-white md:hover:-translate-y-0.5 shadow-emerald-200 hover:shadow-emerald-300'
@@ -225,9 +211,6 @@ export default function UpdateStageModal({ loan, onClose, onSuccess }: Props) {
             )}
           </button>
         </div>
-        </div>
-      </div>
-    </div>
-  </div>
-)
+    </Modal>
+  )
 }

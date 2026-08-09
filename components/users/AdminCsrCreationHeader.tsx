@@ -26,15 +26,15 @@ export function AdminCsrCreationHeader() {
                 </button>
             </div>
 
-            {showCreate && (
-                <CreateUserModal
-                    fixedRole="csr"
-                    onSuccess={() => {
-                        setShowCreate(false)
-                        router.refresh()
-                    }}
-                />
-            )}
+            <CreateUserModal
+                isOpen={showCreate}
+                onClose={() => setShowCreate(false)}
+                fixedRole="csr"
+                onSuccess={() => {
+                    setShowCreate(false)
+                    router.refresh()
+                }}
+            />
         </div>
     )
 }
