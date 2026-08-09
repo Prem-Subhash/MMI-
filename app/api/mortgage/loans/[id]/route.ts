@@ -18,6 +18,7 @@ function sanitizePayloadForPostgres(payload: Record<string, any>): Record<string
     'anti_predatory_completed_date',
     'moonstar_disclosure_2_signed_date',
     'appraisal_sent_date',
+    'second_appraisal_request_date',
   ];
 
   const NUMERIC_FIELDS = [
@@ -33,6 +34,7 @@ function sanitizePayloadForPostgres(payload: Record<string, any>): Record<string
     'final_loan_amount',
     'check_wire_amount_received',
     'client_refund_amount',
+    'second_appraisal_value',
   ];
 
   const cleaned: Record<string, any> = { ...payload };
@@ -116,12 +118,14 @@ export async function PUT(
     const body = await request.json();
 
     const stageRemarks = body._stage_remarks || null;
+    const categorizedRemarks = body._categorized_remarks || null;
     const updatedBy = body._updated_by || auth.user.email || 'Mortgage Officer';
     
     const borrowers = body.borrowers;
     delete body.borrowers;
     
     delete body._stage_remarks;
+    delete body._categorized_remarks;
     delete body._updated_by;
 
     // Prevent overwriting immutable primary key or ownership
@@ -205,6 +209,48 @@ export async function PUT(
       }
     }
 
+    const targetStageForValidation = body.stage || currentLoan?.stage || 'NEW_LOAN';
+    if (targetStageForValidation === 'FINAL_COMPLIANCE') {
+      const mergedPayload = { ...currentLoan, ...body };
+      const missing: string[] = [];
+      const isMissing = (val: any) => val === undefined || val === null || val === '';
+      
+      const requiredFields = [
+        'moonstar_disclosure_2_signed',
+        'appraisal_sent_to_client',
+        'cd_requested',
+        'ctc_status',
+        'cd_acknowledged',
+        'closing_confirmation_received',
+        'voe_cleared',
+        'second_appraisal_required'
+      ];
+
+      requiredFields.forEach(f => {
+        if (isMissing(mergedPayload[f])) missing.push(f);
+      });
+
+      if (mergedPayload.moonstar_disclosure_2_signed === 'Y' && isMissing(mergedPayload.moonstar_disclosure_2_signed_date)) {
+         missing.push('moonstar_disclosure_2_signed_date');
+      }
+      if (mergedPayload.appraisal_sent_to_client === 'Y' && isMissing(mergedPayload.appraisal_sent_date)) {
+         missing.push('appraisal_sent_date');
+      }
+
+      if (mergedPayload.second_appraisal_required === 'Y') {
+        ['second_appraisal_request_date', 'second_appraisal_value', 'second_appraisal_resolution_desc', 'second_appraisal_sent_to_client'].forEach(f => {
+          if (isMissing(mergedPayload[f])) missing.push(f);
+        });
+      }
+
+      if (missing.length > 0) {
+        return NextResponse.json(
+          { error: `Missing required fields for Final Compliance: ${missing.join(', ')}` },
+          { status: 400 }
+        );
+      }
+    }
+
     const rawPayload: any = {
       ...body,
       updated_at: new Date().toISOString(),
@@ -269,6 +315,9 @@ export async function PUT(
     stageData._stage_name = getStageConfig(targetStage).label;
     stageData._updated_by = updatedBy;
     stageData._updated_at = new Date().toISOString();
+    if (targetStage === 'FINAL_COMPLIANCE' && categorizedRemarks) {
+      stageData.categorized_remarks = categorizedRemarks;
+    }
     if (stageRemarks) {
       stageData.remarks = stageRemarks;
     }

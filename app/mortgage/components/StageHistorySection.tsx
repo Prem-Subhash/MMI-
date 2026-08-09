@@ -61,6 +61,9 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
   };
 
   const formatFieldLabel = (key: string) => {
+    if (key === 'title_check_received' || key === 'commission_check_wire_received_from_title') {
+      return 'Commission Check / Wire Received from Title - Y/N';
+    }
     return key
       .replace(/_/g, ' ')
       .replace(/\b\w/g, (char) => char.toUpperCase());
@@ -176,12 +179,30 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
 
 
                   {/* Remarks if provided */}
-                  {record.remarks && (
+                  {record.stage_data?.categorized_remarks ? (
+                    <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-100 text-xs text-gray-700 font-medium space-y-3">
+                      <div className="flex items-center gap-2 mb-2 pb-2 border-b border-blue-100/50">
+                        <MessageSquare className="w-4 h-4 text-[#2E5C85]" />
+                        <span className="font-bold text-[#2E5C85]">Categorized Stage Remarks</span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                        {Object.entries(record.stage_data.categorized_remarks).map(([cat, text]) => {
+                          if (!text) return null;
+                          return (
+                            <div key={cat}>
+                              <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">{cat === 'OtherIssues' ? 'Other Issues' : cat}</span>
+                              <span className="whitespace-pre-wrap text-gray-800">{text as string}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : record.remarks ? (
                     <div className="p-3 rounded-lg bg-gray-50 border border-gray-200 text-xs text-gray-700 font-medium flex items-start gap-2">
                       <MessageSquare className="w-3.5 h-3.5 text-[#10B889] shrink-0 mt-0.5" />
                       <span className="whitespace-pre-wrap">{record.remarks}</span>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               </div>
             );
@@ -228,10 +249,10 @@ export default function StageHistorySection({ loanId, currentStage, onEditHistor
                 </span>
               </div>
 
-              {selectedSnapshot.stage_data && Object.keys(selectedSnapshot.stage_data).filter(k => !k.startsWith('_')).length > 0 ? (
+              {selectedSnapshot.stage_data && Object.keys(selectedSnapshot.stage_data).filter(k => !k.startsWith('_') && k !== 'categorized_remarks').length > 0 ? (
                 <div className="border border-gray-200 rounded-xl overflow-hidden divide-y divide-gray-100 bg-white shadow-sm">
                   {Object.entries(selectedSnapshot.stage_data)
-                    .filter(([key]) => !key.startsWith('_'))
+                    .filter(([key]) => !key.startsWith('_') && key !== 'categorized_remarks')
                     .map(([key, val]) => (
                       <div key={key} className="px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 text-xs hover:bg-gray-50/80 transition-colors">
                         <span className="font-semibold text-gray-600 shrink-0 sm:w-1/3 uppercase tracking-wider text-[11px]">

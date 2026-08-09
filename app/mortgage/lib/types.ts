@@ -96,9 +96,14 @@ export interface MortgageLoan {
   cd_acknowledged: 'Y' | 'N';
   closing_confirmation_received: 'Y' | 'N';
   voe_cleared: 'Y' | 'N';
+  second_appraisal_required?: 'Y' | 'N';
+  second_appraisal_request_date?: string;
+  second_appraisal_value?: number;
+  second_appraisal_resolution_desc?: string;
+  second_appraisal_sent_to_client?: 'Y' | 'N';
 
   // New Loan Pipeline Stage 5: CLOSING
-  credit_report_invoice_submitted: 'Y' | 'N';
+  credit_report_invoice_submitted: 'Y' | 'N' | 'NA';
   condo_invoice_submitted: 'Y' | 'N' | 'NA';
   final_interest_rate?: number;
   final_loan_amount?: number;
@@ -110,7 +115,7 @@ export interface MortgageLoan {
   appraisal_downloaded: 'Y' | 'N';
   title_report_downloaded: 'Y' | 'N';
   moonstar_audit_completed: 'Y' | 'N';
-  title_check_received: 'Y' | 'N';
+  commission_check_wire_received_from_title: 'Y' | 'N';
   check_wire_amount_received?: number;
   client_refund_amount?: number;
   loan_log_updated: 'Y' | 'N';

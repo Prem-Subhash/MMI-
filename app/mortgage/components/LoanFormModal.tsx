@@ -32,6 +32,33 @@ import {
   EXCEL_PROCESSORS,
 } from "@/app/mortgage/lib/excelLookups";
 
+function calculateBusinessDays(startDateStr: string | undefined | null, endDateStr: string | undefined | null): number {
+  if (!startDateStr || !endDateStr) return 0;
+  
+  const start = new Date(startDateStr);
+  const end = new Date(endDateStr);
+  
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return 0;
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  if (start > end) return 0;
+
+  let count = 0;
+  const current = new Date(start);
+  
+  while (current < end) {
+    current.setDate(current.getDate() + 1);
+    const dayOfWeek = current.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      count++;
+    }
+  }
+  
+  return count;
+}
+
 const FormSelect = ({
   className = "",
   containerClassName = "relative w-full",
@@ -88,6 +115,16 @@ export default function LoanFormModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stageRemarks, setStageRemarks] = useState("");
+  const [categorizedRemarks, setCategorizedRemarks] = useState({
+    Appraisal: "",
+    Assets: "",
+    Liabilities: "",
+    Income: "",
+    Title: "",
+    Condo: "",
+    HOI: "",
+    OtherIssues: ""
+  });
 
   // Track if "Other (Manual Input)" mode is active for each dropdown
   const [manualInputModes, setManualInputModes] = useState<
@@ -168,6 +205,11 @@ export default function LoanFormModal({
     cd_acknowledged: "N",
     closing_confirmation_received: "N",
     voe_cleared: "N",
+    second_appraisal_required: "N",
+    second_appraisal_request_date: "",
+    second_appraisal_value: undefined,
+    second_appraisal_resolution_desc: "",
+    second_appraisal_sent_to_client: "N",
 
     // New Loan Stage 5
     credit_report_invoice_submitted: "N",
@@ -182,7 +224,7 @@ export default function LoanFormModal({
     appraisal_downloaded: "N",
     title_report_downloaded: "N",
     moonstar_audit_completed: "N",
-    title_check_received: "N",
+    commission_check_wire_received_from_title: "N",
     check_wire_amount_received: undefined,
     client_refund_amount: undefined,
     loan_log_updated: "N",
@@ -329,7 +371,7 @@ export default function LoanFormModal({
         appraisal_downloaded: "N",
         title_report_downloaded: "N",
         moonstar_audit_completed: "N",
-        title_check_received: "N",
+        commission_check_wire_received_from_title: "N",
         loan_log_updated: "N",
         borrowers: [
           {
@@ -559,6 +601,48 @@ export default function LoanFormModal({
         );
         return;
       }
+    } else if (stage === "FINAL_COMPLIANCE") {
+      const missing: string[] = [];
+      const isMissing = (val: any) =>
+        val === undefined || val === null || val === "";
+      
+      const requiredFields = [
+        'moonstar_disclosure_2_signed',
+        'appraisal_sent_to_client',
+        'cd_requested',
+        'ctc_status',
+        'cd_acknowledged',
+        'closing_confirmation_received',
+        'voe_cleared',
+        'second_appraisal_required'
+      ];
+
+      requiredFields.forEach(f => {
+        if (isMissing(formData[f as keyof MortgageLoan])) missing.push(f);
+      });
+
+      if (formData.moonstar_disclosure_2_signed === 'Y' && isMissing(formData.moonstar_disclosure_2_signed_date)) {
+         missing.push('moonstar_disclosure_2_signed_date');
+      }
+      if (formData.appraisal_sent_to_client === 'Y' && isMissing(formData.appraisal_sent_date)) {
+         missing.push('appraisal_sent_date');
+      }
+
+      if (formData.second_appraisal_required === 'Y') {
+        ['second_appraisal_request_date', 'second_appraisal_value', 'second_appraisal_resolution_desc', 'second_appraisal_sent_to_client'].forEach(f => {
+          if (isMissing(formData[f as keyof MortgageLoan])) missing.push(f);
+        });
+      }
+
+      if (missing.length > 0) {
+        const msg = `Please complete all required fields for FINAL COMPLIANCE stage. Missing: ${missing.join(", ")}`;
+        setError(msg);
+        toast(
+          `Validation failed. ${missing.length} fields missing.`,
+          "warning",
+        );
+        return;
+      }
     }
 
     try {
@@ -585,6 +669,8 @@ export default function LoanFormModal({
           ...cleanedData,
           pipeline_type: pipelineType,
           stage,
+          _stage_remarks: stageRemarks,
+          _categorized_remarks: categorizedRemarks,
         }),
       });
 
@@ -714,7 +800,7 @@ export default function LoanFormModal({
                 )}
               </div>
 
-              {isEditing && (
+              {isEditing && stage !== "FINAL_COMPLIANCE" && (
                 <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-2 shadow-sm">
                   <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider">
                     Stage Transition Remarks (Optional)
@@ -728,12 +814,43 @@ export default function LoanFormModal({
                   />
                 </div>
               )}
+
+              {isEditing && stage === "FINAL_COMPLIANCE" && (
+                <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-4 shadow-sm">
+                  <label className="block text-xs font-bold text-blue-900 uppercase tracking-wider">
+                    Stage 4 Transition Remarks (Categorized)
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {["Appraisal", "Assets", "Liabilities", "Income", "Title", "Condo", "HOI", "OtherIssues"].map(cat => (
+                      <div key={cat}>
+                        <label className="block text-[11px] font-semibold text-gray-600 mb-1">
+                          {cat === "OtherIssues" ? "Other Issues" : cat}
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={(categorizedRemarks as any)[cat]}
+                          onChange={(e) => setCategorizedRemarks(prev => ({ ...prev, [cat]: e.target.value }))}
+                          placeholder={`Enter ${cat === "OtherIssues" ? "Other Issues" : cat} remarks...`}
+                          className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white resize-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {error && (
               <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-xs font-bold flex items-center gap-2.5 shadow-2xs">
                 <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
                 <span>{error}</span>
+              </div>
+            )}
+
+            {calculateBusinessDays(formData.submission_date, formData.moonstar_disclosure_signed_date) > 3 && (
+              <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-red-600 text-xs font-bold flex items-center gap-2.5 shadow-2xs">
+                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                <span>SLA Alert: More than 3 business days elapsed between Submission Date and Disclosure Signed Date.</span>
               </div>
             )}
 
@@ -2129,6 +2246,80 @@ export default function LoanFormModal({
                     </FormSelect>
                   </div>
                 </div>
+
+                <div className="mt-6 pt-5 border-t border-gray-100">
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-4">
+                    Second Appraisal Module
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+                    <div>
+                      <label className={labelClass}>2nd Appraisal Required?</label>
+                      <FormSelect
+                        value={formData.second_appraisal_required || "N"}
+                        onChange={(e) =>
+                          handleFieldChange("second_appraisal_required", e.target.value)
+                        }
+                        className={inputClass}
+                      >
+                        <option value="N">No</option>
+                        <option value="Y">Yes</option>
+                      </FormSelect>
+                    </div>
+
+                    {formData.second_appraisal_required === "Y" && (
+                      <>
+                        <div>
+                          <label className={labelClass}>Request Date</label>
+                          <input
+                            type="date"
+                            value={formData.second_appraisal_request_date || ""}
+                            onChange={(e) =>
+                              handleFieldChange("second_appraisal_request_date", e.target.value)
+                            }
+                            className={dateInputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>Appraisal Value ($)</label>
+                          <input
+                            type="number"
+                            value={formData.second_appraisal_value || ""}
+                            onChange={(e) =>
+                              handleFieldChange("second_appraisal_value", e.target.value)
+                            }
+                            placeholder="e.g. 500000"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div className="sm:col-span-2">
+                          <label className={labelClass}>Issue / Resolution Description</label>
+                          <textarea
+                            rows={2}
+                            value={formData.second_appraisal_resolution_desc || ""}
+                            onChange={(e) =>
+                              handleFieldChange("second_appraisal_resolution_desc", e.target.value)
+                            }
+                            className="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700 text-sm bg-white resize-none"
+                            placeholder="Describe any issues and how they were resolved..."
+                          />
+                        </div>
+                        <div>
+                          <label className={labelClass}>2nd Appraisal Sent to Client?</label>
+                          <FormSelect
+                            value={formData.second_appraisal_sent_to_client || "N"}
+                            onChange={(e) =>
+                              handleFieldChange("second_appraisal_sent_to_client", e.target.value)
+                            }
+                            className={inputClass}
+                          >
+                            <option value="N">No</option>
+                            <option value="Y">Yes</option>
+                          </FormSelect>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -2157,6 +2348,7 @@ export default function LoanFormModal({
                     >
                       <option value="N">No</option>
                       <option value="Y">Yes</option>
+                      <option value="NA">N/A</option>
                     </FormSelect>
                   </div>
 
@@ -2345,12 +2537,12 @@ export default function LoanFormModal({
                   </div>
 
                   <div>
-                    <label className={labelClass}>Title Check Received?</label>
+                    <label className={labelClass}>Commission Check / Wire Received from Title - Y/N</label>
                     <FormSelect
-                      value={formData.title_check_received || "N"}
+                      value={formData.commission_check_wire_received_from_title || "N"}
                       onChange={(e) =>
                         handleFieldChange(
-                          "title_check_received",
+                          "commission_check_wire_received_from_title",
                           e.target.value,
                         )
                       }
