@@ -38,7 +38,10 @@ export default function RenewalDetailPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const { data, error } = await supabase
+    const { data: prof } = await supabase.from('profiles').select('role, insurance_access').eq('id', user.id).single()
+    const isGlobalView = prof?.role === 'superadmin' || prof?.role === 'admin'
+
+    let query = supabase
       .from('temp_leads_basics')
       .select(`
         id,
@@ -68,8 +71,12 @@ export default function RenewalDetailPage() {
         )
       `)
       .eq('id', id)
-      .eq('assigned_csr', user.id) // STRICT CSR AUTHORIZATION
-      .single()
+
+    if (!isGlobalView) {
+      query = query.eq('assigned_csr', user.id) // STRICT CSR AUTHORIZATION
+    }
+
+    const { data, error } = await query.single()
 
     if (error || !data) {
       console.error(error)
@@ -77,7 +84,6 @@ export default function RenewalDetailPage() {
       return
     }
 
-    const { data: prof } = await supabase.from('profiles').select('role, insurance_access').eq('id', user.id).single()
     if (!canAccessInsuranceCategory(prof, data.insurence_category)) {
       router.replace('/unauthorized')
       return
