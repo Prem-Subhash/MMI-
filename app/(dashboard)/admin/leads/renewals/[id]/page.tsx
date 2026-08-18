@@ -4,10 +4,9 @@ import React, { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import Loading from '@/components/ui/Loading'
-import { canAccessInsuranceCategory } from '@/utils/authClient'
 import RenewalDetailView from '@/components/leads/RenewalDetailView'
 
-export default function RenewalDetailPage() {
+export default function AdminRenewalDetailPage() {
   const { id } = useParams()
   const router = useRouter()
 
@@ -15,28 +14,23 @@ export default function RenewalDetailPage() {
   const [loading, setLoading] = useState(true)
 
   const handleBackToPipeline = () => {
-    const fromInternalPipeline =
-      typeof window !== 'undefined' &&
-      document.referrer &&
-      document.referrer.includes(window.location.host) &&
-      (document.referrer.includes('/csr/pipeline') ||
-       document.referrer.includes('/csr/renewals') ||
-       document.referrer.includes('/csr/leads') ||
-       document.referrer.includes('/csr'));
-
-    if (fromInternalPipeline && window.history.length > 1) {
-      router.back();
-      return;
-    }
-
     const isCommercialPath = lead?.insurence_category?.toLowerCase() === 'commercial';
-    router.push(isCommercialPath ? '/csr/renewals/commercial' : '/csr/renewals/personal');
+    router.push(isCommercialPath ? '/admin/insurance/commercial-renewal' : '/admin/insurance/personal-renewal');
   };
 
   const load = async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    if (!user) {
+      router.replace('/login')
+      return
+    }
+
+    const { data: prof } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    if (!prof || (prof.role !== 'admin' && prof.role !== 'superadmin')) {
+      router.replace('/unauthorized')
+      return
+    }
 
     const { data, error } = await supabase
       .from('temp_leads_basics')
@@ -68,18 +62,11 @@ export default function RenewalDetailPage() {
         )
       `)
       .eq('id', id)
-      .eq('assigned_csr', user.id) // STRICT CSR AUTHORIZATION
       .single()
 
     if (error || !data) {
       console.error(error)
       setLoading(false)
-      return
-    }
-
-    const { data: prof } = await supabase.from('profiles').select('role, insurance_access').eq('id', user.id).single()
-    if (!canAccessInsuranceCategory(prof, data.insurence_category)) {
-      router.replace('/unauthorized')
       return
     }
 
@@ -103,14 +90,14 @@ export default function RenewalDetailPage() {
 
   if (loading) return (
     <div className="flex h-screen items-center justify-center">
-      <Loading message="Syncing renewal data..." />
+      <Loading message="Syncing admin renewal data..." />
     </div>
   )
 
   if (!lead) return (
     <div className="p-8 text-center">
       <h2 className="text-xl font-semibold text-gray-700">Renewal Not Found</h2>
-      <p className="text-gray-500 mt-2">This renewal does not exist or you do not have permission to view it.</p>
+      <p className="text-gray-500 mt-2">This renewal does not exist.</p>
     </div>
   )
 

@@ -253,6 +253,11 @@ export async function PUT(
 
     const rawPayload: any = {
       ...body,
+      street_address: (currentLoan.pipeline_type === 'PRE_APPROVAL' || body.pipeline_type === 'PRE_APPROVAL') ? (body.street_address !== undefined ? body.street_address : currentLoan.street_address) : undefined,
+      unit_number: (currentLoan.pipeline_type === 'PRE_APPROVAL' || body.pipeline_type === 'PRE_APPROVAL') ? (body.unit_number !== undefined ? body.unit_number : currentLoan.unit_number) : undefined,
+      city: (currentLoan.pipeline_type === 'PRE_APPROVAL' || body.pipeline_type === 'PRE_APPROVAL') ? (body.city !== undefined ? body.city : currentLoan.city) : undefined,
+      county: (currentLoan.pipeline_type === 'PRE_APPROVAL' || body.pipeline_type === 'PRE_APPROVAL') ? (body.county !== undefined ? body.county : currentLoan.county) : undefined,
+      zip_code: (currentLoan.pipeline_type === 'PRE_APPROVAL' || body.pipeline_type === 'PRE_APPROVAL') ? (body.zip_code !== undefined ? body.zip_code : currentLoan.zip_code) : undefined,
       updated_at: new Date().toISOString(),
     };
 

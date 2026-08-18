@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { supabaseServer } from '@/lib/supabaseServer'
-import { sendGraphEmail } from '@/lib/microsoftGraph'
+import { sendGraphEmail, GraphAttachment } from '@/lib/microsoftGraph'
 import { authenticateApiRequest, authorizeLeadAccess } from '@/utils/auth'
 
 export async function POST(req: Request) {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     let intakeId: string | null | undefined;
     let customSubject: string | undefined;
     let customBody: string | undefined;
-    let attachments: Array<{ name: string; contentType: string; contentBytes: string }> = [];
+    let attachments: GraphAttachment[] = [];
 
     if (contentType.includes('multipart/form-data')) {
       const formData = await req.formData();
@@ -245,6 +245,54 @@ export async function POST(req: Request) {
             { status: 400 }
           );
         }
+      }
+    }
+
+    /* ================= APPEND SIGNATURE TO INITIAL CLIENT EMAIL ONLY ================= */
+    const isInitialClientEmail = isInfoReq && lead?.policy_flow !== 'renewal';
+
+    if (isInitialClientEmail) {
+      try {
+        const fs = await import('fs');
+        const path = await import('path');
+        const gifPath = path.join(process.cwd(), 'requirements', 'Innovative Insurance.gif');
+
+        let hasGifAttachment = false;
+        if (fs.existsSync(gifPath)) {
+          const gifBuffer = fs.readFileSync(gifPath);
+          attachments.push({
+            name: 'Innovative Insurance.gif',
+            contentType: 'image/gif',
+            contentBytes: gifBuffer.toString('base64'),
+            contentId: 'innovative-insurance-signature',
+            isInline: true
+          });
+          hasGifAttachment = true;
+        }
+
+        const signatureHtml = `
+<br><br>
+<div style="font-family: Arial, sans-serif; font-size: 13px; color: #333333; line-height: 1.5;">
+  <p style="margin: 0 0 16px 0; color: #1e3f5e; font-weight: 500;">
+    We're here to assist with all your insurance needs, whether for your commercial business or home and auto coverage. Please feel free to call or email us.
+  </p>
+  <p style="margin: 0 0 4px 0; font-weight: bold;">Thank You,</p>
+  <p style="margin: 0 0 4px 0; font-weight: bold; font-size: 14px; color: #1e3f5e;">
+    Innovative Insurance Solutions
+  </p>
+  <p style="margin: 0 0 2px 0;">953 N. Plum Grove Rd, Ste B, Schaumburg, IL 60173</p>
+  <p style="margin: 0 0 2px 0;">Ph: (847) 278-7230 | Email: <a href="mailto:info@iinsurebusiness.com" style="color: #10B889; text-decoration: none;">info@iinsurebusiness.com</a></p>
+  <p style="margin: 0 0 16px 0;">Website: <a href="https://www.iInsureBusiness.com" target="_blank" rel="noopener noreferrer" style="color: #10B889; text-decoration: none;">www.iInsureBusiness.com</a></p>
+  ${hasGifAttachment ? `<div style="margin: 16px 0;"><img src="cid:innovative-insurance-signature" alt="Innovative Insurance Solutions" style="max-width: 100%; height: auto; display: block; border: 0;" /></div>` : ''}
+  <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 16px 0 12px 0;" />
+  <p style="margin: 0; font-size: 11px; color: #777777; font-style: italic; line-height: 1.4;">
+    The content of this email is confidential and intended solely for the recipient specified in the message. It is strictly prohibited to share any part of this message with any third party without the sender's written consent. If you have received this message in error, please reply to this email and delete it to help ensure that such a mistake does not occur in the future.
+  </p>
+</div>`;
+
+        finalBody = `${finalBody}${signatureHtml}`;
+      } catch (sigErr) {
+        console.error('Failed to append email signature or GIF attachment:', sigErr);
       }
     }
 

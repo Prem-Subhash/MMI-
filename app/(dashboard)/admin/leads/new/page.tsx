@@ -14,8 +14,11 @@ import {
   Send,
   ChevronDown,
   Briefcase,
+  DollarSign,
+  Building,
 } from "lucide-react";
 import { MultiSelectPolicy } from "@/components/ui/MultiSelectPolicy";
+import { ReferralSelect } from "@/components/ui/ReferralSelect";
 import {
   PERSONAL_POLICY_TYPES,
   COMMERCIAL_POLICY_TYPES,
@@ -51,7 +54,12 @@ function AdminNewLeadContent() {
     insurence_category: initialCategory, // keeping exact original typo
     policy_flow: initialFlow,
     policy_type: "",
+    policy_number: "",
+    renewal_date: "",
+    current_premium: "",
+    carrier: "",
     referral: "",
+    referral_id: null as string | null,
     notes: "",
     send_email_to_client: false,
   });
@@ -306,9 +314,28 @@ function AdminNewLeadContent() {
       }
 
       const leadsToInsert = selectedPolicies.map((policy) => {
-        const { policy_type: _, ...restForm } = form;
+        const { 
+          policy_type: _, 
+          current_premium: __, 
+          renewal_date: ___, 
+          policy_number: ____, 
+          carrier: _____, 
+          ...restForm 
+        } = form;
+        
+        let renewalFields = {};
+        if (form.policy_flow === "renewal") {
+           renewalFields = {
+               policy_number: form.policy_number,
+               renewal_date: form.renewal_date,
+               current_premium: Number(form.current_premium) || null,
+               carrier: form.carrier,
+           };
+        }
+
         return {
           ...restForm,
+          ...renewalFields,
           policy_type: policy,
           send_email_to_client: form.send_email_to_client ?? false,
           is_additional_quote: forceAdditionalQuote,
@@ -360,7 +387,12 @@ function AdminNewLeadContent() {
         insurence_category: initialCategory,
         policy_flow: initialFlow,
         policy_type: "",
+        policy_number: "",
+        renewal_date: "",
+        current_premium: "",
+        carrier: "",
         referral: "",
+        referral_id: null as string | null,
         notes: "",
         send_email_to_client: false,
       });
@@ -503,7 +535,49 @@ function AdminNewLeadContent() {
             )}
           </div>
 
-          <div className="col-span-1 md:col-span-2">
+          {form.policy_flow === "renewal" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 p-6 border rounded-xl bg-slate-50">
+              <div className="col-span-1 md:col-span-2">
+                <h3 className="font-semibold text-slate-800 text-sm tracking-tight mb-2">Renewal Details</h3>
+              </div>
+              <Input
+                icon={<Shield />}
+                name="policy_number"
+                value={form.policy_number}
+                onChange={handleChange}
+                placeholder="Current Policy Number *"
+                disabled={isLocked}
+              />
+              <Input
+                icon={<Mail />}
+                type="date"
+                name="renewal_date"
+                value={form.renewal_date}
+                onChange={handleChange}
+                placeholder="Renewal Date *"
+                disabled={isLocked}
+              />
+              <Input
+                icon={<DollarSign />}
+                type="number"
+                name="current_premium"
+                value={form.current_premium}
+                onChange={handleChange}
+                placeholder="Current Premium *"
+                disabled={isLocked}
+              />
+              <Input
+                icon={<Building />}
+                name="carrier"
+                value={form.carrier}
+                onChange={handleChange}
+                placeholder="Current Carrier (Optional)"
+                disabled={isLocked}
+              />
+            </div>
+          )}
+
+          <div className="col-span-1 md:col-span-2 mt-6">
             <MultiSelectPolicy
               selectedValues={selectedPolicies}
               onChange={setSelectedPolicies}
@@ -520,13 +594,12 @@ function AdminNewLeadContent() {
             />
           </div>
 
-          <Input
-            icon={<User />}
-            name="referral"
-            value={form.referral}
-            onChange={handleChange}
-            placeholder="Referral (Optional)"
-          />
+          <div className="col-span-1 md:col-span-2">
+            <ReferralSelect 
+              value={form.referral_id || ""}
+              onChange={(id, name) => setForm((prev) => ({ ...prev, referral_id: id || null, referral: name }))}
+            />
+          </div>
 
           <textarea
             name="notes"

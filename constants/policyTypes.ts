@@ -34,7 +34,8 @@ export const COMMERCIAL_POLICY_TYPES: PolicyTypeOption[] = [
   { value: 'professional_liability', label: 'Errors & Omissions / Professional Liability' },
   { value: 'liquor_liability', label: 'Liquor Liability' },
   { value: 'crime_fidelity_bond', label: 'Crime Fidelity Bond' },
-  { value: 'commercial_property', label: 'Commercial Property' }
+  { value: 'commercial_property', label: 'Commercial Property' },
+  { value: 'workers_comp', label: 'Workers Comp Policy' }
 ];
 
 // Combined list for global selectors & lookup mapping

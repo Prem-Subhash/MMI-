@@ -11,6 +11,7 @@ import {
   COMMERCIAL_RENEWAL_FIELDS
 } from '@/utils/stageFieldsConfig'
 import { Modal } from '@/components/ui/Modal'
+import { InsuranceCompanySelect } from '@/components/ui/InsuranceCompanySelect'
 
 type Props = {
   historyItem: any
@@ -96,7 +97,11 @@ export default function EditHistoryModal({
         cfg.required &&
         (value === undefined || value === null || value === '')
       ) {
-        toast(`Please fill out ${cfg.label}`, 'error')
+        if (cfg.type === 'insurance_company') {
+          toast('Please select an Insurance Company before completing this stage.', 'error')
+        } else {
+          toast(`Please fill out ${cfg.label}`, 'error')
+        }
         return false
       }
     }
@@ -172,6 +177,26 @@ export default function EditHistoryModal({
             }
           />
         )
+
+      case 'insurance_company': {
+        const derivedCategory = pipelineType.includes('Commercial') ? 'commercial' : 'personal'
+        
+        return (
+          <InsuranceCompanySelect
+            value={value}
+            category={derivedCategory}
+            onChange={(id, name) => {
+              setFormData(prev => {
+                const nextState = { ...prev, [fieldKey]: id }
+                if (prev.new_carrier !== undefined) {
+                  nextState.new_carrier = name
+                }
+                return nextState
+              })
+            }}
+          />
+        )
+      }
 
       case 'commission': {
         const cType = formData.expected_commission_type || 'AMOUNT'

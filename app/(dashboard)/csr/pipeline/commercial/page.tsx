@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search, Briefcase, FileText, CheckCircle2, AlertCircle, Clock } from 'lucide-react'
-import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
+import { extractDigits, normalizePhoneSearch, formatDatabasePhone } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -41,7 +41,7 @@ const STAGE_FILTERS = [
 
 /* ================= PAGE ================= */
 
-export default function CommercialLinesPage() {
+export default function CommercialLinesPage({ createRoute }: { createRoute?: string }) {
     const searchParams = useSearchParams()
     const router = useRouter()
     const stageFilter = searchParams.get('stage')
@@ -164,7 +164,7 @@ export default function CommercialLinesPage() {
 
                 <div className="flex gap-3 w-full sm:w-auto">
                     <Link
-                        href="/csr/leads/new?category=commercial"
+                        href={createRoute || "/csr/leads/new?category=commercial"}
                         className="w-full sm:w-auto bg-brand-dark hover:bg-[#B55D44] text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center whitespace-nowrap"
                     >
                         + New Lead
@@ -261,7 +261,7 @@ export default function CommercialLinesPage() {
                                                     {lead.business_name || 'Not Provided'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{lead.phone}</td>
+                                            <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{formatDatabasePhone(lead.phone)}</td>
                                             <td className="px-4 py-4 text-gray-600 break-all align-top">{lead.email}</td>
                                             <td className="px-4 py-4 capitalize text-gray-700 break-words align-top">
                                                 {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map((p: any) => p.policy_type) : lead.policy_type)}

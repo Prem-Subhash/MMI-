@@ -5,10 +5,7 @@ import { Briefcase, GitBranch, ListTodo, Activity } from 'lucide-react'
 import { AdminLeadsContent } from '@/components/leads/AdminLeadsContent'
 import { AdminAllLeadsContent } from '@/components/leads/AdminAllLeadsContent'
 import { AdminAssignmentsContent } from '@/components/leads/AdminAssignmentsContent'
-import PersonalPipelinePage from '@/app/(dashboard)/csr/pipeline/personal/page'
-import CommercialLinesPage from '@/app/(dashboard)/csr/pipeline/commercial/page'
-import PersonalRenewalPage from '@/app/(dashboard)/csr/renewals/personal/page'
-import CommercialRenewalPage from '@/app/(dashboard)/csr/renewals/commercial/page'
+
 
 type BusinessCategoryConsoleProps = {
     category: 'personal' | 'commercial'
@@ -18,7 +15,7 @@ type BusinessCategoryConsoleProps = {
 }
 
 export function BusinessCategoryConsole({ category, flow, title, description }: BusinessCategoryConsoleProps) {
-    const [activeTab, setActiveTab] = useState<'admin_leads' | 'pipeline' | 'assign_csr' | 'all_leads'>('admin_leads')
+    const [activeTab, setActiveTab] = useState<'admin_leads' | 'assign_csr' | 'all_leads'>('admin_leads')
 
     return (
         <div className="w-full max-w-[1600px] mx-auto">
@@ -46,18 +43,6 @@ export function BusinessCategoryConsole({ category, flow, title, description }: 
                     >
                         <Briefcase size={16} />
                         <span>Admin Leads</span>
-                    </button>
-
-                    <button
-                        onClick={() => setActiveTab('pipeline')}
-                        className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs md:text-sm font-bold transition-all ${
-                            activeTab === 'pipeline'
-                                ? 'bg-emerald-600 text-white shadow-md'
-                                : 'text-gray-300 hover:text-white hover:bg-white/10'
-                        }`}
-                    >
-                        <Activity size={16} />
-                        <span>Pipeline View</span>
                     </button>
 
                     <button
@@ -93,14 +78,7 @@ export function BusinessCategoryConsole({ category, flow, title, description }: 
                         <AdminLeadsContent categoryProp={category} flowProp={flow} />
                     </div>
                 )}
-                {activeTab === 'pipeline' && (
-                    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200">
-                        {category === 'personal' && flow === 'new' && <PersonalPipelinePage />}
-                        {category === 'personal' && flow === 'renewal' && <PersonalRenewalPage />}
-                        {category === 'commercial' && flow === 'new' && <CommercialLinesPage />}
-                        {category === 'commercial' && flow === 'renewal' && <CommercialRenewalPage />}
-                    </div>
-                )}
+
                 {activeTab === 'assign_csr' && (
                     <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-gray-200">
                         <AdminAssignmentsContent categoryProp={category} flowProp={flow} />

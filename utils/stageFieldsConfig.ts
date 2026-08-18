@@ -29,6 +29,7 @@ export const PERSONAL_NEW_BUSINESS_FIELDS: Record<string, Record<string, FieldCo
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed': {
+    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
     policy_number: { label: 'Policy Number', type: 'text', required: true },
     bound_premium: { label: 'Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'commission', required: true },
@@ -56,6 +57,7 @@ export const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Same)': {
+    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
     paid_for_renewal: { label: 'Policy Paid?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
@@ -64,7 +66,6 @@ export const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>
     quote_finalized: { label: 'Quote Finalized?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     carrier_quote_sent: { label: 'Quoted Carrier', type: 'text', required: true },
     quoted_premium: { label: 'Quoted Premium', type: 'number', required: true },
-    savings_amount: { label: 'Savings', type: 'number', required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Consent Letter Sent': {
@@ -74,6 +75,7 @@ export const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Switch)': {
+    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
     new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
     new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
     new_premium: { label: 'New Bound Premium', type: 'number', required: true },
@@ -114,6 +116,7 @@ export const COMMERCIAL_LINES_FIELDS: Record<string, Record<string, FieldConfig>
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed': {
+    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
     policy_number: { label: 'Policy Number', type: 'text', required: true },
     bound_premium: { label: 'Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'commission', required: true },
@@ -143,6 +146,7 @@ export const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfi
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Same)': {
+    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
     policy_paid: { label: 'Policy Paid?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
@@ -162,10 +166,12 @@ export const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfi
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Switch)': {
+    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
     new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
     new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
     new_premium: { label: 'New Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'commission', required: true },
+    agency_fee: { label: 'Agency Fee', type: 'number', required: true },
     policy_docs_saved: { label: 'Docs Saved?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     docs_sent_to_client: { label: 'Docs Sent?', type: 'dropdown', options: ['Yes', 'No'], required: true },
     cancelled_previous_carrier: { label: 'Prior Term Cancelled?', type: 'dropdown', options: ['Yes', 'No'], required: true },

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search, AlertCircle, FileText, CheckCircle2, Clock } from 'lucide-react'
-import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
+import { extractDigits, normalizePhoneSearch, formatDatabasePhone } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -34,7 +34,7 @@ const STAGE_FILTERS = [
   { label: 'Did Not Bind', value: 'Did Not Bind' },
 ]
 
-export default function PersonalLinesPage() {
+export default function PersonalLinesPage({ createRoute }: { createRoute?: string }) {
   const searchParams = useSearchParams()
   const router = useRouter()
   const stageFilter = searchParams.get('stage')
@@ -141,7 +141,7 @@ export default function PersonalLinesPage() {
 
         <div className="flex gap-3 w-full sm:w-auto">
           <Link
-            href="/csr/leads/new?category=personal"
+            href={createRoute || "/csr/leads/new?category=personal"}
             className="w-full sm:w-auto text-center bg-brand hover:bg-brand-dark text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-colors whitespace-nowrap"
           >
             + New Lead
@@ -233,7 +233,7 @@ export default function PersonalLinesPage() {
                       <td className="px-4 py-4 font-medium text-gray-900 break-words align-top">
                         {lead.client_name}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{lead.phone}</td>
+                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{formatDatabasePhone(lead.phone)}</td>
                       <td className="px-4 py-4 text-gray-600 break-all align-top">
                         {lead.email}
                       </td>

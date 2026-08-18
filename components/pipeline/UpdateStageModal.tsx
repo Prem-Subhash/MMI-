@@ -6,6 +6,7 @@ import { toast } from '@/lib/toast'
 import { Spinner } from '@/components/ui/Loading'
 import { getFutureWorkingDate } from '@/utils/dateHelper'
 import { Modal } from '@/components/ui/Modal'
+import { InsuranceCompanySelect } from '@/components/ui/InsuranceCompanySelect'
 
 type Props = {
   leadId: string
@@ -45,6 +46,7 @@ export default function UpdateStageModal({
   // We can just query pipeline details or check if the stage name matches a key in Commercial Fields.
   // Ideally, we load the pipeline info.
   const [pipelineType, setPipelineType] = useState<'PersonalNewBusiness' | 'PersonalRenewal' | 'Commercial' | 'CommercialRenewal' | 'Unknown'>('Unknown')
+  const [leadCategory, setLeadCategory] = useState<'personal' | 'commercial' | ''>('')
 
   /* ================= LOAD STAGES ================= */
   useEffect(() => {
@@ -58,10 +60,11 @@ export default function UpdateStageModal({
   async function loadStages() {
     setLoading(true)
 
-    // Parallel fetch: Pipeline Details + Stages
-    const [pipelineRes, stagesRes] = await Promise.all([
+    // Parallel fetch: Pipeline Details + Stages + Lead Category
+    const [pipelineRes, stagesRes, leadRes] = await Promise.all([
       supabase.from('pipelines').select('name, category').eq('id', pipelineId).single(),
-      supabase.from('pipeline_stages').select('*').eq('pipeline_id', pipelineId).order('stage_order')
+      supabase.from('pipeline_stages').select('*').eq('pipeline_id', pipelineId).order('stage_order'),
+      supabase.from('temp_leads_basics').select('insurence_category').eq('id', leadId).single()
     ])
 
     if (pipelineRes.error) {
@@ -79,6 +82,10 @@ export default function UpdateStageModal({
       } else {
         setPipelineType('PersonalNewBusiness')
       }
+    }
+
+    if (leadRes.data?.insurence_category) {
+      setLeadCategory(leadRes.data.insurence_category.toLowerCase() === 'commercial' ? 'commercial' : 'personal')
     }
 
     if (stagesRes.error) {
@@ -179,7 +186,11 @@ export default function UpdateStageModal({
         cfg.required &&
         (value === undefined || value === null || value === '')
       ) {
-        toast(`Please fill "${cfg.label}"`, 'warning')
+        if (cfg.type === 'insurance_company') {
+          toast('Please select an Insurance Company before completing this stage.', 'warning')
+        } else {
+          toast(`Please fill "${cfg.label}"`, 'warning')
+        }
         return false
       }
     }
@@ -209,6 +220,24 @@ export default function UpdateStageModal({
             onChange={(e) =>
               setFormData({ ...formData, [fieldKey]: e.target.value })
             }
+          />
+        )
+      }
+
+      case 'insurance_company': {
+        return (
+          <InsuranceCompanySelect
+            value={value}
+            category={leadCategory}
+            onChange={(id, name) => {
+              setFormData(prev => {
+                const nextState = { ...prev, [fieldKey]: id }
+                if (prev.new_carrier !== undefined) {
+                  nextState.new_carrier = name
+                }
+                return nextState
+              })
+            }}
           />
         )
       }

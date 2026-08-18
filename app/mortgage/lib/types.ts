@@ -32,6 +32,11 @@ export interface MortgageLoan {
   email: string;
   address?: string;
   state: string;
+  street_address?: string;
+  unit_number?: string;
+  city?: string;
+  county?: string;
+  zip_code?: string;
   application_received: 'Y' | 'N';
   application_received_date?: string;
   inquiry_date: string;

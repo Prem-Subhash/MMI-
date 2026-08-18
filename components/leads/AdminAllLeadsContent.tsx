@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Search } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
-import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
+import { extractDigits, normalizePhoneSearch, formatDatabasePhone } from '@/utils/phoneFormatter'
 import Loading from '@/components/ui/Loading'
 
 type Lead = {
@@ -35,6 +35,17 @@ const STAGE_FILTERS = [
     { label: 'Consent Letter Sent', value: 'Consent Letter Sent' },
     { label: 'Completed', value: 'Completed' },
     { label: 'Did not bind', value: 'Did Not Bind' },
+]
+
+const RENEWAL_STAGE_FILTERS = [
+    { label: 'All', value: null },
+    { label: 'Quoting in Progress', value: 'Quoting in Progress' },
+    { label: 'Same Declaration Emailed', value: 'Same Declaration Emailed' },
+    { label: 'Completed (Same)', value: 'Completed (Same)' },
+    { label: 'Quote Has Been Emailed', value: 'Quote Has Been Emailed' },
+    { label: 'Consent Letter Sent', value: 'Consent Letter Sent' },
+    { label: 'Completed (Switch)', value: 'Completed (Switch)' },
+    { label: 'Cancelled', value: 'Cancelled' },
 ]
 
 export function AdminAllLeadsContent({ categoryProp, flowProp }: { categoryProp?: string, flowProp?: string } = {}) {
@@ -155,7 +166,7 @@ export function AdminAllLeadsContent({ categoryProp, flowProp }: { categoryProp?
 
             {/* FILTER TABS */}
             <div className="flex gap-2 mb-5 flex-wrap">
-                {STAGE_FILTERS.map(filter => {
+                {(flowProp === 'renewal' ? RENEWAL_STAGE_FILTERS : STAGE_FILTERS).map(filter => {
                     const isActive =
                         (!filter.value && !stageFilter) ||
                         filter.value === stageFilter
@@ -241,7 +252,7 @@ export function AdminAllLeadsContent({ categoryProp, flowProp }: { categoryProp?
                                             <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 break-words align-top">
                                                 {lead.client_name}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{lead.phone}</td>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{formatDatabasePhone(lead.phone)}</td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-600 break-all align-top">{lead.email}</td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold break-words align-top">
                                                 {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}
@@ -270,7 +281,7 @@ export function AdminAllLeadsContent({ categoryProp, flowProp }: { categoryProp?
 
                                             <td className="px-4 sm:px-6 py-4 text-center align-top">
                                                 <Link
-                                                    href={`/csr/leads/${lead.id}`}
+                                                    href={lead.policy_flow === 'renewal' ? `/admin/leads/renewals/${lead.id}` : `/csr/leads/${lead.id}`}
                                                     className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
                                                     title="View Lead Details"
                                                 >

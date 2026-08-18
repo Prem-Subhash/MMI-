@@ -30,15 +30,15 @@ type Renewal = {
     } | null
 }
 
-export default function CommercialRenewalPage() {
+export default function CommercialRenewalPage({ createRoute }: { createRoute?: string }) {
     return (
         <Suspense fallback={<Loading message="Loading renewals..." />}>
-            <CommercialRenewalContent />
+            <CommercialRenewalContent createRoute={createRoute} />
         </Suspense>
     )
 }
 
-function CommercialRenewalContent() {
+function CommercialRenewalContent({ createRoute }: { createRoute?: string }) {
     const [renewals, setRenewals] = useState<Renewal[]>([])
     const [loading, setLoading] = useState(true)
     const [monthFilter, setMonthFilter] = useState<string>(new Date().toISOString().slice(0, 7)) // Default to current month YYYY-MM
@@ -197,7 +197,7 @@ function CommercialRenewalContent() {
                     </div>
 
                     <Link
-                        href="/csr/renewals/commercial/new"
+                        href={createRoute || "/csr/renewals/commercial/new"}
                         className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-lg font-medium shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
                     >
                         + Add Client

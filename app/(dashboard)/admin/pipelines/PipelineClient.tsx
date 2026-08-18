@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Eye, Search } from 'lucide-react'
-import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
+import { extractDigits, normalizePhoneSearch, formatDatabasePhone } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 
 /* ================= TYPES ================= */
@@ -211,7 +211,7 @@ export default function PipelineClient({ pipelines, stages, stageCounts, targetP
                                             return (
                                                 <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
                                                     <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 break-words align-top">{lead.client_name}</td>
-                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{lead.phone}</td>
+                                                    <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{formatDatabasePhone(lead.phone)}</td>
                                                     <td className="px-4 sm:px-6 py-4 text-gray-600 break-all align-top">{lead.email}</td>
                                                     <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold break-words align-top">
                                                         {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}

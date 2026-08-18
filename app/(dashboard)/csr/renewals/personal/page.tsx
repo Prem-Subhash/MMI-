@@ -30,15 +30,15 @@ type Renewal = {
     } | null
 }
 
-export default function PersonalRenewalPage() {
+export default function PersonalRenewalPage({ createRoute }: { createRoute?: string }) {
     return (
         <Suspense fallback={<Loading message="Loading renewals..." />}>
-            <PersonalRenewalContent />
+            <PersonalRenewalContent createRoute={createRoute} />
         </Suspense>
     )
 }
 
-function PersonalRenewalContent() {
+function PersonalRenewalContent({ createRoute }: { createRoute?: string }) {
     const [renewals, setRenewals] = useState<Renewal[]>([])
     const [loading, setLoading] = useState(true)
     const [monthFilter, setMonthFilter] = useState<string>(new Date().toISOString().slice(0, 7))
@@ -200,7 +200,7 @@ function PersonalRenewalContent() {
                     </div>
 
                     <Link
-                        href="/csr/renewals/personal/new"
+                        href={createRoute || "/csr/renewals/personal/new"}
                         className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap text-sm"
                     >
                         + Add Client

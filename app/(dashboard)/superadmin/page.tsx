@@ -123,7 +123,7 @@ export default async function SuperAdminDashboard() {
   // Global KPI Cards
   const stats = [
     {
-      label: "Total Users",
+      label: "Total users",
       value: totalUsers,
       icon: <Users size={22} />,
       href: "/superadmin/users",
@@ -215,6 +215,15 @@ export default async function SuperAdminDashboard() {
     .slice(0, 12);
 
   const quickLinks = [
+    {
+      label: "Commissions",
+      href: "/superadmin/commissions",
+      icon: <DollarSign size={18} />,
+      description: "Manage splits & carriers",
+      accent: "from-blue-500 to-indigo-600",
+      iconBg: "bg-blue-50 text-blue-600",
+      hoverIcon: "group-hover:bg-blue-500 group-hover:text-white",
+    },
     {
       label: "System Settings",
       href: "/superadmin/system-settings",

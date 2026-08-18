@@ -17,6 +17,7 @@ import {
   StickyNote,
 } from 'lucide-react'
 import { MultiSelectPolicy } from '@/components/ui/MultiSelectPolicy'
+import { ReferralSelect } from '@/components/ui/ReferralSelect'
 import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 import EmailModal from '@/components/email/EmailModal'
 
@@ -48,6 +49,7 @@ function NewLeadContent() {
     policy_flow: initialFlow,
     policy_type: '',
     referral: '',
+    referral_id: null as string | null,
     notes: '',
     send_email_to_client: false,
   })
@@ -278,6 +280,7 @@ function NewLeadContent() {
         policy_flow: initialFlow,
         policy_type: '',
         referral: '',
+        referral_id: null,
         notes: '',
         send_email_to_client: false,
       })
@@ -373,7 +376,12 @@ function NewLeadContent() {
           </div>
 
 
-          <Input icon={<User />} name="referral" value={form.referral} onChange={handleChange} placeholder="Referral (Optional)" />
+          <div className="col-span-1 md:col-span-2">
+            <ReferralSelect 
+              value={form.referral_id || ""}
+              onChange={(id, name) => setForm((prev) => ({ ...prev, referral_id: id || null, referral: name }))}
+            />
+          </div>
 
           <textarea
             name="notes"

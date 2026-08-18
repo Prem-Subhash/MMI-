@@ -116,6 +116,8 @@ export default function LoanFormModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stageRemarks, setStageRemarks] = useState("");
+  const [zipLookupResults, setZipLookupResults] = useState<{city: string, state: string, county: string}[]>([]);
+  const [isFetchingZip, setIsFetchingZip] = useState(false);
   const [categorizedRemarks, setCategorizedRemarks] = useState({
     Appraisal: "",
     Assets: "",
@@ -388,6 +390,47 @@ export default function LoanFormModal({
       setLocalFinalInterestRate("");
     }
   }, [initialLoan, defaultPipelineType, isOpen]);
+
+  useEffect(() => {
+    if (pipelineType !== "PRE_APPROVAL" || !formData.zip_code || formData.zip_code.length !== 5) {
+      setZipLookupResults([]);
+      return;
+    }
+
+    const fetchZip = async () => {
+      setIsFetchingZip(true);
+      try {
+        const res = await fetch(`/api/mortgage/zip-lookup?zip=${formData.zip_code}`);
+        const data = await res.json();
+        if (data.success && data.results && data.results.length > 0) {
+          setZipLookupResults(data.results);
+          // Auto-fill state unconditionally based on the first result
+          handleFieldChange("state", data.results[0].state);
+          
+          // Auto-fill county (can be overridden manually)
+          handleFieldChange("county", data.results[0].county);
+          
+          // Auto-fill city only if there's exactly 1 result
+          if (data.results.length === 1) {
+            handleFieldChange("city", data.results[0].city);
+          } else {
+            // For multiple cities, clear city to force user selection
+            handleFieldChange("city", "");
+          }
+        } else {
+          setZipLookupResults([]);
+          toast("ZIP code not found in lookup.", "warning");
+        }
+      } catch (err) {
+        setZipLookupResults([]);
+      } finally {
+        setIsFetchingZip(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(fetchZip, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [formData.zip_code, pipelineType]);
 
   if (!isOpen) return null;
 
@@ -971,34 +1014,144 @@ export default function LoanFormModal({
                       </button>
                     </div>
 
-                    <div className="sm:col-span-2">
-                      <label className={labelClass}>
-                        Property / Subject Address
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.address || ""}
-                        onChange={(e) =>
-                          handleFieldChange("address", e.target.value)
-                        }
-                        placeholder="123 Main St, Apt 4B"
-                        className={inputClass}
-                      />
-                    </div>
+                    {pipelineType === "PRE_APPROVAL" ? (
+                      <div className="sm:col-span-3 space-y-4">
+                        {/* Legacy Record Fallback Display */}
+                        {isEditing && !formData.street_address && formData.address && (
+                          <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs shadow-2xs">
+                            <strong className="block mb-1 text-amber-900">Legacy Address On File:</strong>
+                            {formData.address} {formData.state ? `, ${formData.state}` : ""}
+                            <div className="mt-1 opacity-80">Update the fields below to migrate this address to the new format.</div>
+                          </div>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label className={labelClass}>Street Address</label>
+                            <input
+                              type="text"
+                              value={formData.street_address || ""}
+                              onChange={(e) => handleFieldChange("street_address", e.target.value)}
+                              placeholder="123 Main St"
+                              className={inputClass}
+                            />
+                          </div>
+                          <div>
+                            <label className={labelClass}>Unit Number (Optional)</label>
+                            <input
+                              type="text"
+                              value={formData.unit_number || ""}
+                              onChange={(e) => handleFieldChange("unit_number", e.target.value)}
+                              placeholder="Apt 4B"
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <label className={labelClass}>ZIP Code</label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                maxLength={5}
+                                value={formData.zip_code || ""}
+                                onChange={(e) => handleFieldChange("zip_code", e.target.value)}
+                                placeholder="90210"
+                                className={inputClass}
+                              />
+                              {isFetchingZip && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                  <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                              )}
+                            </div>
+                            <a href="https://tools.usps.com/zip-code-lookup.htm?byaddress" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 hover:underline mt-1 block">
+                              USPS ZIP Lookup
+                            </a>
+                          </div>
+                          <div>
+                            <label className={labelClass}>City</label>
+                            {zipLookupResults.length > 1 ? (
+                              <FormSelect
+                                value={formData.city || ""}
+                                onChange={(e) => {
+                                  const selectedCity = e.target.value;
+                                  handleFieldChange("city", selectedCity);
+                                  // Find matching county for this specific city
+                                  const match = zipLookupResults.find(r => r.city === selectedCity);
+                                  if (match) handleFieldChange("county", match.county);
+                                }}
+                                className={`${inputClass} border-amber-400 ring-2 ring-amber-100 bg-amber-50 focus:bg-white`}
+                              >
+                                <option value="" disabled>Select City...</option>
+                                {Array.from(new Set(zipLookupResults.map(r => r.city))).map((cityOpt) => (
+                                  <option key={cityOpt} value={cityOpt}>{cityOpt}</option>
+                                ))}
+                              </FormSelect>
+                            ) : (
+                              <input
+                                type="text"
+                                value={formData.city || ""}
+                                onChange={(e) => handleFieldChange("city", e.target.value)}
+                                placeholder="Beverly Hills"
+                                className={inputClass}
+                              />
+                            )}
+                          </div>
+                          <div>
+                            <label className={labelClass}>State</label>
+                            <input
+                              type="text"
+                              value={formData.state || ""}
+                              onChange={(e) => handleFieldChange("state", e.target.value)}
+                              placeholder="CA"
+                              maxLength={2}
+                              className={`${inputClass} uppercase bg-gray-50`}
+                            />
+                          </div>
+                          <div>
+                            <label className={labelClass}>County</label>
+                            <input
+                              type="text"
+                              value={formData.county || ""}
+                              onChange={(e) => handleFieldChange("county", e.target.value)}
+                              placeholder="Los Angeles"
+                              className={inputClass}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="sm:col-span-2">
+                          <label className={labelClass}>
+                            Property / Subject Address
+                          </label>
+                          <input
+                            type="text"
+                            value={formData.address || ""}
+                            onChange={(e) =>
+                              handleFieldChange("address", e.target.value)
+                            }
+                            placeholder="123 Main St, Apt 4B"
+                            className={inputClass}
+                          />
+                        </div>
 
-                    <div>
-                      <label className={labelClass}>State</label>
-                      <input
-                        type="text"
-                        value={formData.state || ""}
-                        onChange={(e) =>
-                          handleFieldChange("state", e.target.value)
-                        }
-                        placeholder="CA"
-                        maxLength={2}
-                        className={`${inputClass} uppercase`}
-                      />
-                    </div>
+                        <div>
+                          <label className={labelClass}>State</label>
+                          <input
+                            type="text"
+                            value={formData.state || ""}
+                            onChange={(e) =>
+                              handleFieldChange("state", e.target.value)
+                            }
+                            placeholder="CA"
+                            maxLength={2}
+                            className={`${inputClass} uppercase`}
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 

@@ -137,22 +137,7 @@ export async function POST(req: Request) {
 
     /* ================= BUSINESS RULES ================= */
 
-    // 1. Personal Lines - Quote Sent Email Check
-    if (stage.stage_name === 'Quote Has Been Emailed') {
-      const emailAlreadySent =
-        lead.stage_metadata?.email_sent === true ||
-        mergedMetadata.email_sent === true
 
-      if (!emailAlreadySent) {
-        return NextResponse.json(
-          {
-            error:
-              'Initial email must be sent before moving to this stage',
-          },
-          { status: 400 }
-        )
-      }
-    }
 
     // 2. Business Rules - Required Documents Validation
     if (stage.stage_name === 'Quoting in Progress') {
@@ -254,6 +239,13 @@ export async function POST(req: Request) {
     /* ================= ACCOUNTING INTEGRATION ================= */
     const completionStages = ['Completed', 'Policy Bound', 'Completed (Same)']
     if (completionStages.includes(stage.stage_name)) {
+      const insuranceCompanyId = stageMetadata?.insurance_company_id !== undefined ? stageMetadata.insurance_company_id : mergedMetadata.insurance_company_id
+      if (insuranceCompanyId) {
+        updatePayload.insurance_company_id = insuranceCompanyId
+      } else {
+        return NextResponse.json({ error: 'Please select an Insurance Company before completing this stage.' }, { status: 400 })
+      }
+
       let boundPremium = stageMetadata?.bound_premium !== undefined ? stageMetadata.bound_premium : mergedMetadata.bound_premium
 
       // Fallback to renewal_premium for Completed (Same) where bound_premium is not defined in metadata
@@ -319,6 +311,13 @@ export async function POST(req: Request) {
 
       const expectedCommission = stageMetadata?.expected_commission !== undefined ? stageMetadata.expected_commission : mergedMetadata.expected_commission
 
+      const insuranceCompanyId = stageMetadata?.insurance_company_id !== undefined ? stageMetadata.insurance_company_id : mergedMetadata.insurance_company_id
+      if (insuranceCompanyId) {
+        updatePayload.insurance_company_id = insuranceCompanyId
+      } else {
+        return NextResponse.json({ error: 'Please select an Insurance Company before completing this stage.' }, { status: 400 })
+      }
+
       if (newCarrier !== undefined && newCarrier !== null && newCarrier.toString().trim() !== '') {
         updatePayload.new_carrier = String(newCarrier).trim()
       } else {
@@ -354,6 +353,87 @@ export async function POST(req: Request) {
           updatePayload.expected_commission = val
         }
       }
+    }
+
+    /* ================= PHASE 2C COMMISSION ENGINE ================= */
+    const isCommissionEnabledTransition = completionStages.includes(stage.stage_name) || stage.stage_name === 'Completed (Switch)'
+    if (isCommissionEnabledTransition) {
+      const authoritativePremium = stage.stage_name === 'Completed (Switch)' ? updatePayload.new_premium : updatePayload.total_premium
+      
+      if (authoritativePremium === undefined || authoritativePremium === null || Number(authoritativePremium) <= 0) {
+        return NextResponse.json({ error: 'Invalid premium. A valid premium greater than 0 is required before completing this stage.' }, { status: 400 })
+      }
+
+      if (!updatePayload.insurance_company_id) {
+        return NextResponse.json({ error: 'Please select an Insurance Company before completing this stage.' }, { status: 400 })
+      }
+
+      let carrierPercent = lead.locked_carrier_percent
+      let referralPercent = lead.locked_referral_percent
+
+      // Fresh binding event - fetch master percentages
+      if (carrierPercent === null || carrierPercent === undefined) {
+        const { data: icData, error: icError } = await supabaseServer
+          .from('insurance_companies')
+          .select('commission_percent, is_active')
+          .eq('id', updatePayload.insurance_company_id)
+          .single()
+        
+        if (icError || !icData || !icData.is_active || icData.commission_percent < 0 || icData.commission_percent > 100) {
+          return NextResponse.json({ error: 'Invalid or inactive insurance company selected.' }, { status: 400 })
+        }
+        carrierPercent = icData.commission_percent
+
+        if (lead.referral_id) {
+          const { data: refData, error: refError } = await supabaseServer
+            .from('referrals')
+            .select('commission_percent, is_active')
+            .eq('id', lead.referral_id)
+            .single()
+          
+          if (refError || !refData || !refData.is_active || refData.commission_percent < 0 || refData.commission_percent > 100) {
+            return NextResponse.json({ error: 'Invalid or inactive referral selected.' }, { status: 400 })
+          }
+          referralPercent = refData.commission_percent
+        }
+      }
+
+      const { calculateCommissionSplit } = await import('@/utils/commissionEngine')
+      const financialSplit = calculateCommissionSplit({
+        premium: Number(authoritativePremium),
+        carrier_percent: Number(carrierPercent),
+        referral_percent: referralPercent !== null && referralPercent !== undefined ? Number(referralPercent) : null
+      })
+
+      updatePayload.gross_commission = financialSplit.gross_commission
+      updatePayload.admin_charge = financialSplit.admin_charge
+      updatePayload.net_commission = financialSplit.net_commission
+      updatePayload.referral_payout = financialSplit.referral_payout
+      updatePayload.company_commission = financialSplit.company_commission
+      updatePayload.locked_carrier_percent = carrierPercent
+      updatePayload.locked_referral_percent = referralPercent !== undefined ? referralPercent : null
+
+      updatePayload.expected_commission = financialSplit.gross_commission
+      mergedMetadata.expected_commission = financialSplit.gross_commission
+      mergedMetadata.gross_commission = financialSplit.gross_commission
+
+      /* ================= RENEWAL SAVINGS CALCULATION ================= */
+      if (lead.policy_flow?.toLowerCase() === 'renewal') {
+        const renewalSetupPremium = updatePayload.renewal_premium !== undefined ? updatePayload.renewal_premium : lead.renewal_premium
+        
+        if (renewalSetupPremium !== undefined && renewalSetupPremium !== null && renewalSetupPremium !== '') {
+          const setupVal = Number(renewalSetupPremium)
+          const boundVal = Number(authoritativePremium)
+          
+          if (!isNaN(setupVal) && !isNaN(boundVal)) {
+            const savings = setupVal - boundVal
+            updatePayload.savings = savings
+            mergedMetadata.savings = savings
+          }
+        }
+      }
+
+      updatePayload.stage_metadata = mergedMetadata
     }
 
     const { error: updateError } = await supabaseServer

@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
-import { Eye, Search, Briefcase } from 'lucide-react'
+import { Eye, Search, Briefcase, Calendar, Download } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
-import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
+import { extractDigits, normalizePhoneSearch, formatDatabasePhone } from '@/utils/phoneFormatter'
 import Loading from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
 
@@ -45,6 +45,17 @@ const STAGE_FILTERS = [
     { label: 'Did not bind', value: 'Did Not Bind' },
 ]
 
+const RENEWAL_STAGE_FILTERS = [
+    { label: 'All', value: null },
+    { label: 'Quoting in Progress', value: 'Quoting in Progress' },
+    { label: 'Same Declaration Emailed', value: 'Same Declaration Emailed' },
+    { label: 'Completed (Same)', value: 'Completed (Same)' },
+    { label: 'Quote Has Been Emailed', value: 'Quote Has Been Emailed' },
+    { label: 'Consent Letter Sent', value: 'Consent Letter Sent' },
+    { label: 'Completed (Switch)', value: 'Completed (Switch)' },
+    { label: 'Cancelled', value: 'Cancelled' },
+]
+
 export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: string, flowProp?: string } = {}) {
     const searchParams = useSearchParams()
     const router = useRouter()
@@ -58,6 +69,13 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
     const [searchTerm, setSearchTerm] = useState('')
     const [page, setPage] = useState(0)
     const [updatingParams, setUpdatingParams] = useState<Record<string, boolean>>({})
+    const [monthFilter, setMonthFilter] = useState<string>(
+        flowProp === 'renewal' ? new Date().toISOString().slice(0, 7) : ''
+    )
+
+    useEffect(() => {
+        setPage(0)
+    }, [stageFilter, monthFilter])
 
     useEffect(() => {
         const loadInitialData = async () => {
@@ -116,6 +134,16 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                 query = query.eq('current_stage.stage_name', stageFilter)
             }
 
+            if (flowFilter === 'renewal' && monthFilter) {
+                const startOfMonth = `${monthFilter}-01`
+                const [year, month] = monthFilter.split('-')
+                const nextMonth = month === '12' ? 1 : parseInt(month) + 1
+                const nextYear = month === '12' ? parseInt(year) + 1 : parseInt(year)
+                const nextDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`
+
+                query = query.gte('renewal_date', startOfMonth).lt('renewal_date', nextDate)
+            }
+
             const { data, error } = await query
 
             if (error) {
@@ -139,7 +167,7 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
         }
 
         loadInitialData()
-    }, [stageFilter, page, categoryFilter, flowFilter])
+    }, [stageFilter, page, categoryFilter, flowFilter, monthFilter])
 
     const applyFilter = (stage: string | null) => {
         const params = new URLSearchParams()
@@ -206,24 +234,55 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                         <Briefcase size={24} />
                     </div>
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">Admin Leads</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 tracking-tight">
+                            {categoryProp === 'personal' && flowProp === 'renewal' ? 'Admin Renewal Leads' : 'Admin Leads'}
+                        </h1>
                         <p className="text-gray-600 mt-1 text-sm">Incubation console for leads managed directly by Administration before CSR assignment.</p>
                     </div>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto items-stretch sm:items-center">
+                    {flowProp === 'renewal' && (
+                        <div className="relative group flex items-center w-full sm:w-auto">
+                            <Calendar className="absolute left-3 z-10 text-gray-400 group-focus-within:text-emerald-600 transition-colors" size={16} />
+                            <input
+                                type="month"
+                                value={monthFilter}
+                                onChange={(e) => setMonthFilter(e.target.value)}
+                                className="w-full pl-10 pr-8 py-2.5 border border-emerald-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-emerald-500 shadow-sm text-gray-700 text-sm cursor-pointer"
+                            />
+                            {monthFilter && (
+                                <button
+                                    onClick={() => setMonthFilter('')}
+                                    className="absolute right-3 text-gray-400 hover:text-gray-600 p-0.5 text-lg leading-none"
+                                    title="Clear filter"
+                                >
+                                    ×
+                                </button>
+                            )}
+                        </div>
+                    )}
                     <Link
-                        href="/admin/leads/new"
+                        href={flowProp === 'renewal' && categoryProp ? `/admin/leads/renewals/${categoryProp}/new` : (categoryProp && flowProp ? `/admin/leads/new?category=${categoryProp}&flow=${flowProp}` : "/admin/leads/new")}
                         className="bg-[#10B889] hover:bg-[#10B889]/80 text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center whitespace-nowrap"
                     >
-                        + New Lead
+                        {flowProp === 'renewal' ? '+ Add Client' : '+ New Lead'}
                     </Link>
+                    {flowProp === 'renewal' && (
+                        <Link
+                            href={`/admin/leads/import?category=${categoryProp}&flow=renewal`}
+                            className="bg-brand hover:bg-brand-dark text-white px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                        >
+                            <Download size={16} />
+                            Import File
+                        </Link>
+                    )}
                 </div>
             </div>
 
             {/* FILTER TABS */}
             <div className="flex gap-2 mb-5 flex-wrap">
-                {STAGE_FILTERS.map(filter => {
+                {(flowProp === 'renewal' ? RENEWAL_STAGE_FILTERS : STAGE_FILTERS).map(filter => {
                     const isActive =
                         (!filter.value && !stageFilter) ||
                         filter.value === stageFilter
@@ -308,7 +367,7 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                                             <td className="px-4 sm:px-6 py-4 font-medium text-gray-900 break-words align-top">
                                                 {lead.client_name}
                                             </td>
-                                            <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{lead.phone}</td>
+                                            <td className="px-4 sm:px-6 py-4 text-gray-600 align-top">{formatDatabasePhone(lead.phone)}</td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-600 break-all align-top">{lead.email}</td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-700 font-semibold break-words align-top">
                                                 {formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}
@@ -343,7 +402,7 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
 
                                             <td className="px-4 sm:px-6 py-4 text-center align-top">
                                                 <Link
-                                                    href={`/csr/leads/${lead.id}`}
+                                                    href={lead.policy_flow === 'renewal' ? `/admin/leads/renewals/${lead.id}` : `/csr/leads/${lead.id}`}
                                                     className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
                                                     title="View/Edit Lead Details"
                                                 >

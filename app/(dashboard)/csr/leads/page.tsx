@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabaseClient'
 import { Eye, Send, Search } from 'lucide-react'
-import { extractDigits, normalizePhoneSearch } from '@/utils/phoneFormatter'
+import { extractDigits, normalizePhoneSearch, formatDatabasePhone } from '@/utils/phoneFormatter'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
 
@@ -242,7 +242,7 @@ export default function MyLeadsPage() {
                       <td className="px-4 py-4 font-medium text-gray-900 break-words align-top">
                         {lead.client_name}
                       </td>
-                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{lead.phone}</td>
+                      <td className="px-4 py-4 text-gray-600 whitespace-nowrap align-top">{formatDatabasePhone(lead.phone)}</td>
                       <td className="px-4 py-4 text-gray-600 break-all align-top">
                         {lead.email}
                       </td>

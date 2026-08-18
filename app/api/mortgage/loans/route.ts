@@ -239,6 +239,11 @@ export async function POST(request: NextRequest) {
       expected_commission: body.expected_commission,
       additional_notes: body.additional_notes || null,
       ...body,
+      street_address: body.pipeline_type === 'PRE_APPROVAL' ? (body.street_address || null) : undefined,
+      unit_number: body.pipeline_type === 'PRE_APPROVAL' ? (body.unit_number || null) : undefined,
+      city: body.pipeline_type === 'PRE_APPROVAL' ? (body.city || null) : undefined,
+      county: body.pipeline_type === 'PRE_APPROVAL' ? (body.county || null) : undefined,
+      zip_code: body.pipeline_type === 'PRE_APPROVAL' ? (body.zip_code || null) : undefined,
       assigned_mortgage_officer: body.assigned_mortgage_officer || auth.user.id,
       updated_at: new Date().toISOString(),
     };

@@ -34,6 +34,8 @@ export interface GraphAttachment {
     name: string;
     contentType: string;
     contentBytes: string;
+    contentId?: string;
+    isInline?: boolean;
 }
 
 export async function sendGraphEmail(
@@ -63,12 +65,17 @@ export async function sendGraphEmail(
         };
 
         if (attachments && attachments.length > 0) {
-            messagePayload.attachments = attachments.map(att => ({
-                "@odata.type": "#microsoft.graph.fileAttachment",
-                name: att.name,
-                contentType: att.contentType,
-                contentBytes: att.contentBytes,
-            }));
+            messagePayload.attachments = attachments.map(att => {
+                const item: any = {
+                    "@odata.type": "#microsoft.graph.fileAttachment",
+                    name: att.name,
+                    contentType: att.contentType,
+                    contentBytes: att.contentBytes,
+                };
+                if (att.contentId) item.contentId = att.contentId;
+                if (att.isInline !== undefined) item.isInline = att.isInline;
+                return item;
+            });
         }
 
         const response = await fetch(

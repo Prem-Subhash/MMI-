@@ -98,7 +98,7 @@ export function CreateUserModal({ isOpen, onClose, fixedRole, onSuccess }: Creat
             icon={<Plus size={18} />}
             maxWidth="max-w-4xl"
         >
-            <form id="create-user-form" onSubmit={handleCreateUser} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-end">
+            <form id="create-user-form" onSubmit={handleCreateUser} autoComplete="off" className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 items-end">
                 <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-bold text-black uppercase tracking-widest ml-1">Step 1: Company</label>
                     <select
@@ -131,6 +131,7 @@ export function CreateUserModal({ isOpen, onClose, fixedRole, onSuccess }: Creat
                     <input
                         required
                         type="text"
+                        autoComplete="off"
                         value={formData.full_name}
                         onChange={e => setFormData({ ...formData, full_name: e.target.value })}
                         className="bg-gray-50 border border-gray-200 p-3 h-[46px] rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all"
@@ -142,6 +143,7 @@ export function CreateUserModal({ isOpen, onClose, fixedRole, onSuccess }: Creat
                     <input
                         required
                         type="email"
+                        autoComplete="off"
                         value={formData.email}
                         onChange={e => setFormData({ ...formData, email: e.target.value })}
                         className="bg-gray-50 border border-gray-200 p-3 h-[46px] rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all"
@@ -153,6 +155,7 @@ export function CreateUserModal({ isOpen, onClose, fixedRole, onSuccess }: Creat
                     <input
                         required
                         type="password"
+                        autoComplete="new-password"
                         value={formData.password}
                         onChange={e => setFormData({ ...formData, password: e.target.value })}
                         className="bg-gray-50 border border-gray-200 p-3 h-[46px] rounded-xl focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 outline-none text-sm transition-all"

@@ -237,8 +237,9 @@ export default function TopBar({ onMenuClick }: { onMenuClick: () => void }) {
                                                     if (n.link) {
                                                         router.push(n.link)
                                                     } else if (n.lead_id) {
+                                                        const isAdmin = userProfile?.role === 'admin' || userProfile?.role === 'superadmin';
                                                         if (n.policy_flow === 'renewal') {
-                                                            router.push(`/csr/renewals/${n.lead_id}?view=focused`)
+                                                            router.push(isAdmin ? `/admin/leads/renewals/${n.lead_id}?view=focused` : `/csr/renewals/${n.lead_id}?view=focused`)
                                                         } else {
                                                             router.push(`/csr/leads/${n.lead_id}?view=focused`)
                                                         }

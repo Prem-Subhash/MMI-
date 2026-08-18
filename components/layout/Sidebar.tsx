@@ -96,28 +96,42 @@ export default function Sidebar({
     ...(insuranceAccess.includes("personal")
       ? [
           {
-            label: "Personal Pipeline",
-            href: "/csr/pipeline/personal",
+            label: "Personal",
+            href: "#personal",
             icon: <GitBranch size={24} />,
-          },
-          {
-            label: "Personal Renewal",
-            href: "/csr/renewals/personal",
-            icon: <RefreshCw size={24} />,
+            children: [
+              {
+                label: "Personal Pipeline",
+                href: "/csr/pipeline/personal",
+                icon: <GitBranch size={18} />,
+              },
+              {
+                label: "Personal Renewal",
+                href: "/csr/renewals/personal",
+                icon: <RefreshCw size={18} />,
+              },
+            ],
           },
         ]
       : []),
     ...(insuranceAccess.includes("commercial")
       ? [
           {
-            label: "Commercial Pipeline",
-            href: "/csr/pipeline/commercial",
+            label: "Commercial",
+            href: "#commercial",
             icon: <Briefcase size={24} />,
-          },
-          {
-            label: "Commercial Renewal",
-            href: "/csr/renewals/commercial",
-            icon: <RefreshCw size={24} />,
+            children: [
+              {
+                label: "Commercial Pipeline",
+                href: "/csr/pipeline/commercial",
+                icon: <Briefcase size={18} />,
+              },
+              {
+                label: "Commercial Renewal",
+                href: "/csr/renewals/commercial",
+                icon: <RefreshCw size={18} />,
+              },
+            ],
           },
         ]
       : []),
@@ -315,6 +329,24 @@ export default function Sidebar({
   };
 
   const currentMenu = getMenuForRole();
+
+  useEffect(() => {
+    setOpenSections((prev) => {
+      const next = { ...prev };
+      let changed = false;
+      currentMenu.forEach(item => {
+        if (item.children) {
+          const isChildActive = item.children.some(c => isActive(c.href));
+          if (isChildActive && !next[item.label]) {
+            next[item.label] = true;
+            changed = true;
+          }
+        }
+      });
+      return changed ? next : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, role]);
 
   return (
     <aside

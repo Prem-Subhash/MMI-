@@ -126,7 +126,7 @@ export function buildRenewalPayload(
   category: 'personal' | 'commercial',
   pipelineId: string,
   stageId: string,
-  userId: string,
+  userId: string | null,
   isExcelImport = false
 ) {
   const accountName = isExcelImport
