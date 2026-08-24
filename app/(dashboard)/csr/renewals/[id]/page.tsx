@@ -63,7 +63,7 @@ export default function RenewalDetailPage() {
         business_name,
         insurence_category,
         savings,
-        pipeline_stages (
+        pipeline_stage:pipeline_stages (
           id,
           stage_name,
           stage_order,
@@ -79,7 +79,7 @@ export default function RenewalDetailPage() {
     const { data, error } = await query.single()
 
     if (error || !data) {
-      console.error(error)
+      console.error("Renewal fetch error:", error)
       setLoading(false)
       return
     }
@@ -89,9 +89,9 @@ export default function RenewalDetailPage() {
       return
     }
 
-    const stage = Array.isArray(data.pipeline_stages)
-      ? data.pipeline_stages[0]
-      : data.pipeline_stages
+    const stage = Array.isArray(data.pipeline_stage)
+      ? data.pipeline_stage[0]
+      : (data.pipeline_stage || null)
 
     setLead({
       ...data,

@@ -25,7 +25,7 @@ type Lead = {
     policy_flow?: string
 }
 
-type CSR = { id: string, full_name: string }
+type Assignee = { id: string, full_name: string, role: string }
 type Pipeline = { id: string, name: string }
 type Stage = { id: string, stage_name: string, pipeline_id: string }
 
@@ -35,7 +35,7 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
     const flowFilter = flowProp ?? searchParams.get('flow')
 
     const [leads, setLeads] = useState<Lead[]>([])
-    const [csrs, setCsrs] = useState<CSR[]>([])
+    const [assignees, setAssignees] = useState<Assignee[]>([])
     const [pipelines, setPipelines] = useState<Pipeline[]>([])
     const [stages, setStages] = useState<Stage[]>([])
 
@@ -56,10 +56,10 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
     const fetchInitialData = async () => {
         setLoading(true)
 
-        const { data: csrData } = await supabase
+        const { data: assigneeData } = await supabase
             .from('profiles')
-            .select('id, full_name')
-            .eq('role', 'csr')
+            .select('id, full_name, role')
+            .in('role', ['csr', 'admin'])
 
         const { data: pipeData } = await supabase.from('pipelines').select('id, name')
         const { data: stageData } = await supabase.from('pipeline_stages').select('id, stage_name, pipeline_id')
@@ -85,45 +85,88 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
         if (flowFilter) query = query.eq('policy_flow', flowFilter)
 
         const { data: leadData } = await query
-
-        if (csrData) setCsrs(csrData)
+ 
+        if (assigneeData) setAssignees(assigneeData)
         if (pipeData) setPipelines(pipeData)
         if (stageData) setStages(stageData)
         if (leadData) setLeads(leadData)
-
+ 
         setLoading(false)
     }
 
-    const handleAssignCSR = async (leadId: string, newCsrId: string) => {
-        console.log("Assigning CSR", newCsrId, "to lead", leadId)
+    const handleAssign = async (leadId: string, newAssigneeId: string) => {
+        console.log("Assigning user", newAssigneeId, "to lead", leadId)
         setUpdatingParams(prev => ({ ...prev, [leadId]: true }))
 
         const leadToAssign = leads.find(l => l.id === leadId)
-        const targetValue = newCsrId === 'unassigned' ? null : newCsrId
+        const targetValue = newAssigneeId === 'unassigned' ? null : newAssigneeId
 
-        let query = supabase
-            .from('temp_leads_basics')
-            .update({ assigned_csr: targetValue })
+        try {
+            const res = await fetch('/api/assign-lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    leadId: leadId,
+                    targetUserId: targetValue
+                })
+            })
 
-        if (leadToAssign?.lead_group_id) {
-            query = query.eq('lead_group_id', leadToAssign.lead_group_id)
-        } else {
-            query = query.eq('id', leadId)
-        }
+            const result = await res.json()
 
-        const { data, error } = await query.select()
+            if (!res.ok || result.error) {
+                console.error("Assign Lead API Error:", result.error)
+                toast('Failed to update assignment: ' + (result.error || 'Unknown error'), 'error')
+            } else {
+                const assigneeName = assignees.find(a => a.id === targetValue)?.full_name
+                if (targetValue && assigneeName) {
+                    toast(`Lead assigned to ${assigneeName} successfully!`, 'success')
+                } else if (!targetValue) {
+                    toast('Lead unassigned successfully.', 'info')
+                } else {
+                    toast('Lead assignment updated successfully!', 'success')
+                }
 
-        if (error) {
-            console.error("Update SQL Error:", error)
-            toast('Failed to update assignment: ' + error.message, 'error')
-        } else {
-            toast('Lead assignment updated successfully!', 'success')
-            setLeads(prev => prev.map(lead => {
-                const isMatch = leadToAssign?.lead_group_id
-                    ? lead.lead_group_id === leadToAssign.lead_group_id
-                    : lead.id === leadId
-                return isMatch ? { ...lead, assigned_csr: targetValue } : lead
-            }))
+                setLeads(prev => prev.map(lead => {
+                    const isMatch = leadToAssign?.lead_group_id
+                        ? lead.lead_group_id === leadToAssign.lead_group_id
+                        : lead.id === leadId
+                    return isMatch ? { ...lead, assigned_csr: targetValue } : lead
+                }))
+
+                // Fail-safe notification insertion for new assignee via secure server API
+                if (targetValue) {
+                    try {
+                        const clientName = leadToAssign?.client_name || 'Client'
+                        const assignedUser = assignees.find(a => a.id === targetValue)
+                        const policyTypeFormatted = formatPolicies(
+                            leadToAssign?.lead_policies && leadToAssign.lead_policies.length > 0
+                                ? leadToAssign.lead_policies.map(p => p.policy_type)
+                                : leadToAssign?.policy_type
+                        )
+
+                        fetch('/api/notify-assignment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                targetUserId: targetValue,
+                                leadId: leadId,
+                                clientName: clientName,
+                                policyFlow: leadToAssign?.policy_flow || 'new',
+                                insuranceCategory: leadToAssign?.insurence_category || 'personal',
+                                policyType: policyTypeFormatted,
+                                targetUserRole: assignedUser?.role || 'csr'
+                            })
+                        }).catch(err => {
+                            console.error('Failed to dispatch assignment notification:', err)
+                        })
+                    } catch (notifErr) {
+                        console.error('Error creating assignment notification:', notifErr)
+                    }
+                }
+            }
+        } catch (err: any) {
+            console.error("Assign Lead Network Error:", err)
+            toast('Failed to update assignment: ' + (err.message || 'Network error'), 'error')
         }
 
         setUpdatingParams(prev => ({ ...prev, [leadId]: false }))
@@ -201,14 +244,23 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                     </div>
 
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">CSR</label>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Assigned To</label>
                         <select
                             value={filters.csr}
                             onChange={(e) => setFilters({ ...filters, csr: e.target.value })}
                             className="bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 block w-full p-2.5 outline-none transition-all"
                         >
-                            <option value="">All Assigned CSRs</option>
-                            {csrs.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+                            <option value="">All Assigned Users</option>
+                            <optgroup label="CSRs">
+                                {assignees.filter(a => a.role === 'csr').map(c => (
+                                    <option key={c.id} value={c.id}>{c.full_name}</option>
+                                ))}
+                            </optgroup>
+                            <optgroup label="Admins">
+                                {assignees.filter(a => a.role === 'admin').map(c => (
+                                    <option key={c.id} value={c.id}>{c.full_name}</option>
+                                ))}
+                            </optgroup>
                         </select>
                     </div>
 
@@ -248,22 +300,22 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                                 <div className="p-2 bg-amber-100 text-amber-700 rounded-lg shadow-sm">
                                     <Activity size={18} />
                                 </div>
-                                <h2 className="text-lg sm:text-xl font-bold text-amber-900">Action Required: Unassigned Leads</h2>
+                                <h2 className="text-lg sm:text-xl font-bold text-amber-900">Unassigned Lead Queue</h2>
                             </div>
-                            <span className="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-amber-200 whitespace-nowrap">
-                                {unassignedLeads.length} Lead{unassignedLeads.length !== 1 && 's'} Found
+                            <span className="bg-amber-100/80 text-amber-800 border border-amber-200 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">
+                                {unassignedLeads.length} Lead{unassignedLeads.length !== 1 && 's'} Waiting
                             </span>
                         </div>
 
                         {unassignedLeads.length === 0 ? (
                             <div className="p-10 text-center text-gray-500 text-sm">
-                                <p>All matched leads are currently assigned.</p>
+                                <p>All clear! There are currently no unassigned leads matching your filters.</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
-                                <table className="w-full text-left border-collapse table-fixed min-w-[1100px]">
+                                <table className="w-full text-left border-collapse table-fixed min-w-[1000px]">
                                     <colgroup>
-                                        <col className="w-[260px]" />
+                                        <col className="w-[240px]" />
                                         <col className="w-[160px]" />
                                         <col className="w-[180px]" />
                                         <col className="w-[180px]" />
@@ -277,7 +329,7 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                                             <th className="p-3 sm:p-4 font-bold">Pipeline Region</th>
                                             <th className="p-3 sm:p-4 font-bold">Current Stage</th>
                                             <th className="p-3 sm:p-4 font-bold">Date Received</th>
-                                            <th className="p-3 sm:p-4 font-bold text-right">Assign CSR</th>
+                                            <th className="p-3 sm:p-4 font-bold text-right">Assign Lead</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
@@ -294,15 +346,24 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                                                 <td className="p-3 sm:p-4 text-gray-500 text-xs font-mono whitespace-nowrap align-top">{new Date(lead.created_at).toLocaleDateString()}</td>
                                                 <td className="p-3 sm:p-4 text-right align-top">
                                                     <select
-                                                        className={`border rounded-lg text-xs p-2 outline-none cursor-pointer transition-all shadow-sm min-w-[130px]
+                                                        className={`border rounded-lg text-xs p-2 outline-none cursor-pointer transition-all shadow-sm min-w-[150px]
                                                             ${updatingParams[lead.id] ? 'bg-gray-100 text-gray-400' : 'bg-white border-amber-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-amber-900 font-bold'}
                                                         `}
                                                         defaultValue=""
                                                         disabled={updatingParams[lead.id]}
-                                                        onChange={(e) => handleAssignCSR(lead.id, e.target.value)}
+                                                        onChange={(e) => handleAssign(lead.id, e.target.value)}
                                                     >
-                                                        <option value="" disabled>Select CSR...</option>
-                                                        {csrs.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
+                                                        <option value="" disabled>Select User...</option>
+                                                        <optgroup label="CSRs">
+                                                            {assignees.filter(a => a.role === 'csr').map(c => (
+                                                                <option key={c.id} value={c.id}>{c.full_name}</option>
+                                                            ))}
+                                                        </optgroup>
+                                                        <optgroup label="Admins">
+                                                            {assignees.filter(a => a.role === 'admin').map(c => (
+                                                                <option key={c.id} value={c.id}>{c.full_name}</option>
+                                                            ))}
+                                                        </optgroup>
                                                     </select>
                                                 </td>
                                             </tr>
@@ -348,46 +409,68 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                                             <th className="p-3 sm:p-4 font-bold">Policy Type</th>
                                             <th className="p-3 sm:p-4 font-bold">Pipeline Region</th>
                                             <th className="p-3 sm:p-4 font-bold">Current Stage</th>
-                                            <th className="p-3 sm:p-4 font-bold">Assigned CSR</th>
+                                            <th className="p-3 sm:p-4 font-bold">Assigned To</th>
                                             <th className="p-3 sm:p-4 font-bold text-right">Reassign</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-100">
-                                        {assignedLeads.map((lead) => (
-                                            <tr key={lead.id} className="hover:bg-blue-50/20 transition-colors group">
-                                                <td className="p-3 sm:p-4 text-gray-900 font-bold text-sm break-words align-top">{lead.client_name}</td>
-                                                <td className="p-3 sm:p-4 text-gray-600 text-xs capitalize break-words align-top">{formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}</td>
-                                                <td className="p-3 sm:p-4 text-gray-600 text-xs break-words align-top">{getPipelineName(lead.pipeline_id)}</td>
-                                                <td className="p-3 sm:p-4 align-top">
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200 whitespace-nowrap">
-                                                        {getStageName(lead.current_stage_id)}
-                                                    </span>
-                                                </td>
-                                                <td className="p-3 sm:p-4 align-top">
-                                                    <div className="flex items-start gap-2">
-                                                        <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-[10px] font-bold ring-2 ring-emerald-50 flex-shrink-0 mt-0.5">
-                                                            {csrs.find(c => c.id === lead.assigned_csr)?.full_name?.[0] || 'U'}
-                                                        </div>
-                                                        <span className="font-bold text-gray-700 text-xs break-words">
-                                                            {csrs.find(c => c.id === lead.assigned_csr)?.full_name || 'Unknown CSR'}
+                                        {assignedLeads.map((lead) => {
+                                            const assignedUser = assignees.find(c => c.id === lead.assigned_csr)
+                                            const isAdmin = assignedUser?.role === 'admin'
+                                            return (
+                                                <tr key={lead.id} className="hover:bg-blue-50/20 transition-colors group">
+                                                    <td className="p-3 sm:p-4 text-gray-900 font-bold text-sm break-words align-top">{lead.client_name}</td>
+                                                    <td className="p-3 sm:p-4 text-gray-600 text-xs capitalize break-words align-top">{formatPolicies(lead.lead_policies && lead.lead_policies.length > 0 ? lead.lead_policies.map(p => p.policy_type) : lead.policy_type)}</td>
+                                                    <td className="p-3 sm:p-4 text-gray-600 text-xs break-words align-top">{getPipelineName(lead.pipeline_id)}</td>
+                                                    <td className="p-3 sm:p-4 align-top">
+                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-gray-100 text-gray-800 border border-gray-200 whitespace-nowrap">
+                                                            {getStageName(lead.current_stage_id)}
                                                         </span>
-                                                    </div>
-                                                </td>
-                                                <td className="p-3 sm:p-4 text-right align-top">
-                                                    <select
-                                                        className={`border rounded-lg text-[10px] p-2 outline-none cursor-pointer transition-all min-w-[130px]
-                                                            ${updatingParams[lead.id] ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-blue-400 focus:ring-2 focus:ring-blue-500 group-hover:bg-white'}
-                                                        `}
-                                                        value={lead.assigned_csr || ""}
-                                                        disabled={updatingParams[lead.id]}
-                                                        onChange={(e) => handleAssignCSR(lead.id, e.target.value)}
-                                                    >
-                                                        <option value="unassigned">-- Unassign Lead --</option>
-                                                        {csrs.map(c => <option key={c.id} value={c.id}>{c.full_name}</option>)}
-                                                    </select>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                    </td>
+                                                    <td className="p-3 sm:p-4 align-top">
+                                                        <div className="flex items-start gap-2">
+                                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ring-2 flex-shrink-0 mt-0.5 ${
+                                                                isAdmin 
+                                                                    ? 'bg-blue-100 text-blue-700 ring-blue-50' 
+                                                                    : 'bg-emerald-100 text-emerald-700 ring-emerald-50'
+                                                            }`}>
+                                                                {assignedUser?.full_name?.[0] || 'U'}
+                                                            </div>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-gray-700 text-xs break-words">
+                                                                    {assignedUser?.full_name || 'Unknown'}
+                                                                </span>
+                                                                {isAdmin && (
+                                                                    <span className="text-[10px] text-blue-600 font-semibold">Admin</span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-3 sm:p-4 text-right align-top">
+                                                        <select
+                                                            className={`border rounded-lg text-[10px] p-2 outline-none cursor-pointer transition-all min-w-[150px]
+                                                                ${updatingParams[lead.id] ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-blue-400 focus:ring-2 focus:ring-blue-500 group-hover:bg-white'}
+                                                            `}
+                                                            value={lead.assigned_csr || ""}
+                                                            disabled={updatingParams[lead.id]}
+                                                            onChange={(e) => handleAssign(lead.id, e.target.value)}
+                                                        >
+                                                            <option value="unassigned">-- Unassign Lead --</option>
+                                                            <optgroup label="CSRs">
+                                                                {assignees.filter(a => a.role === 'csr').map(c => (
+                                                                    <option key={c.id} value={c.id}>{c.full_name}</option>
+                                                                ))}
+                                                            </optgroup>
+                                                            <optgroup label="Admins">
+                                                                {assignees.filter(a => a.role === 'admin').map(c => (
+                                                                    <option key={c.id} value={c.id}>{c.full_name}</option>
+                                                                ))}
+                                                            </optgroup>
+                                                        </select>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        })}
                                     </tbody>
                                 </table>
                             </div>

@@ -30,9 +30,10 @@ type Lead = {
     } | null
 }
 
-type CSR = {
+type Assignee = {
     id: string
     full_name: string
+    role: string
 }
 
 const STAGE_FILTERS = [
@@ -64,7 +65,7 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
     const flowFilter = flowProp ?? searchParams.get('flow')
 
     const [leads, setLeads] = useState<Lead[]>([])
-    const [csrs, setCsrs] = useState<CSR[]>([])
+    const [assignees, setAssignees] = useState<Assignee[]>([])
     const [loading, setLoading] = useState(true)
     const [searchTerm, setSearchTerm] = useState('')
     const [page, setPage] = useState(0)
@@ -81,13 +82,13 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
         const loadInitialData = async () => {
             setLoading(true)
 
-            // 1. Fetch CSR directory for inline assignment dropdown (reusing assignments pattern)
-            const { data: csrData } = await supabase
+            // 1. Fetch user directory for inline assignment dropdown
+            const { data: assigneeData } = await supabase
                 .from('profiles')
-                .select('id, full_name')
-                .eq('role', 'csr')
+                .select('id, full_name, role')
+                .in('role', ['csr', 'admin'])
 
-            if (csrData) setCsrs(csrData)
+            if (assigneeData) setAssignees(assigneeData)
 
             // 2. Fetch active user session to support unassigned OR Admin-self-managed leads
             const { data: { session } } = await supabase.auth.getSession()
@@ -185,29 +186,72 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
         const leadToAssign = leads.find(l => l.id === leadId)
         const targetValue = newCsrId === 'unassigned' ? null : newCsrId
 
-        let query = supabase
-            .from('temp_leads_basics')
-            .update({ assigned_csr: targetValue })
+        try {
+            const res = await fetch('/api/assign-lead', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    leadId: leadId,
+                    targetUserId: targetValue
+                })
+            })
 
-        if (leadToAssign?.lead_group_id) {
-            query = query.eq('lead_group_id', leadToAssign.lead_group_id)
-        } else {
-            query = query.eq('id', leadId)
-        }
+            const result = await res.json()
 
-        const { data, error } = await query.select()
+            if (!res.ok || result.error) {
+                console.error("Assign User API Error:", result.error)
+                toast('Failed to assign user: ' + (result.error || 'Unknown error'), 'error')
+            } else {
+                const assigneeName = assignees.find(a => a.id === targetValue)?.full_name
+                if (targetValue && assigneeName) {
+                    toast(`Lead assigned to ${assigneeName} successfully!`, 'success')
+                } else if (!targetValue) {
+                    toast('Lead unassigned successfully.', 'info')
+                } else {
+                    toast('Lead assigned successfully!', 'success')
+                }
 
-        if (error) {
-            console.error("Assign CSR Error:", error)
-            toast('Failed to assign CSR: ' + error.message, 'error')
-        } else {
-            toast('Lead assigned successfully! Moved to All Leads & CSR Workspace.', 'success')
-            setLeads(prev => prev.filter(lead => {
-                const isMatch = leadToAssign?.lead_group_id
-                    ? lead.lead_group_id === leadToAssign.lead_group_id
-                    : lead.id === leadId
-                return !isMatch
-            }))
+                setLeads(prev => prev.filter(lead => {
+                    const isMatch = leadToAssign?.lead_group_id
+                        ? lead.lead_group_id === leadToAssign.lead_group_id
+                        : lead.id === leadId
+                    return !isMatch
+                }))
+
+                // Fail-safe notification insertion for new assignee via secure server API
+                if (targetValue) {
+                    try {
+                        const clientName = leadToAssign?.client_name || 'Client'
+                        const assignedUser = assignees.find(a => a.id === targetValue)
+                        const policyTypeFormatted = formatPolicies(
+                            leadToAssign?.lead_policies && leadToAssign.lead_policies.length > 0
+                                ? leadToAssign.lead_policies.map(p => p.policy_type)
+                                : leadToAssign?.policy_type
+                        )
+
+                        fetch('/api/notify-assignment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                targetUserId: targetValue,
+                                leadId: leadId,
+                                clientName: clientName,
+                                policyFlow: leadToAssign?.policy_flow || 'new',
+                                insuranceCategory: leadToAssign?.insurence_category || 'personal',
+                                policyType: policyTypeFormatted,
+                                targetUserRole: assignedUser?.role || 'csr'
+                            })
+                        }).catch(err => {
+                            console.error('Failed to dispatch assignment notification:', err)
+                        })
+                    } catch (notifErr) {
+                        console.error('Error creating assignment notification:', notifErr)
+                    }
+                }
+            }
+        } catch (err: any) {
+            console.error("Assign User Network Error:", err)
+            toast('Failed to assign user: ' + (err.message || 'Network error'), 'error')
         }
 
         setUpdatingParams(prev => ({ ...prev, [leadId]: false }))
@@ -352,7 +396,7 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Assign CSR</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Assign Lead</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
                                 </tr>
@@ -390,10 +434,17 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                                                     disabled={updatingParams[lead.id]}
                                                     onChange={(e) => handleAssignCSR(lead.id, e.target.value)}
                                                 >
-                                                    <option value="" disabled>-- Assign to CSR --</option>
-                                                    {csrs.map(c => (
-                                                        <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                    ))}
+                                                    <option value="" disabled>-- Assign Lead --</option>
+                                                    <optgroup label="CSRs">
+                                                        {assignees.filter(a => a.role === 'csr').map(c => (
+                                                            <option key={c.id} value={c.id}>{c.full_name}</option>
+                                                        ))}
+                                                    </optgroup>
+                                                    <optgroup label="Admins">
+                                                        {assignees.filter(a => a.role === 'admin').map(c => (
+                                                            <option key={c.id} value={c.id}>{c.full_name}</option>
+                                                        ))}
+                                                    </optgroup>
                                                 </select>
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap align-top">

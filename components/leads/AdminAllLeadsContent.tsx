@@ -237,7 +237,7 @@ export function AdminAllLeadsContent({ categoryProp, flowProp }: { categoryProp?
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Category</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Flow</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Stage</th>
-                                    <th className="px-4 sm:px-6 py-4 font-semibold">Assigned CSR</th>
+                                    <th className="px-4 sm:px-6 py-4 font-semibold">Assigned To</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold">Created</th>
                                     <th className="px-4 sm:px-6 py-4 font-semibold text-center">View</th>
                                 </tr>
