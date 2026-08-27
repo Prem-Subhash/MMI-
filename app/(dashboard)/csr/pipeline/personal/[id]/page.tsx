@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import { ArrowLeft } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
+import PageBackButton from '@/components/ui/PageBackButton'
 
 
 /* ── helpers ──────────────────────────────────────────────── */
@@ -235,7 +236,8 @@ export default function LeadReviewPage() {
   /* ================= NO FORM SUBMITTED ================= */
   if (!form) {
     return (
-      <div className="max-w-4xl mx-auto p-10">
+      <div className="max-w-4xl mx-auto p-10 space-y-4">
+        <PageBackButton onBack={handleBackToPipeline} className="mb-0" />
         <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
 
           {/* HEADER */}
@@ -314,7 +316,8 @@ export default function LeadReviewPage() {
 
   /* ================= FORM SUBMITTED ================= */
   return (
-    <div className="max-w-4xl mx-auto p-10 space-y-8">
+    <div className="max-w-4xl mx-auto p-10 space-y-4">
+      <PageBackButton onBack={handleBackToPipeline} className="mb-0" />
 
       <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
         <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-8 py-6">

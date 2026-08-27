@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
 import EmailGenerator from '@/components/email/EmailGenerator'
+import PageBackButton from '@/components/ui/PageBackButton'
 
 type EmailTemplate = {
   id: string
@@ -236,6 +237,7 @@ export default function SendFormPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-10 min-h-screen">
       <div className="max-w-4xl mx-auto">
+        <PageBackButton fallbackUrl="/csr/pipeline/personal" className="mb-4" />
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           <div className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-6 py-5 md:px-8 md:py-6">
             <h1 className="text-xl md:text-2xl font-bold text-white">Send Initial Email (Pipeline)</h1>

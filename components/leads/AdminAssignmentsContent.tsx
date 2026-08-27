@@ -345,26 +345,14 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                                                 </td>
                                                 <td className="p-3 sm:p-4 text-gray-500 text-xs font-mono whitespace-nowrap align-top">{new Date(lead.created_at).toLocaleDateString()}</td>
                                                 <td className="p-3 sm:p-4 text-right align-top">
-                                                    <select
-                                                        className={`border rounded-lg text-xs p-2 outline-none cursor-pointer transition-all shadow-sm min-w-[150px]
-                                                            ${updatingParams[lead.id] ? 'bg-gray-100 text-gray-400' : 'bg-white border-amber-300 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-amber-900 font-bold'}
-                                                        `}
-                                                        defaultValue=""
+                                                    <TwoStepAssignSelector
+                                                        leadId={lead.id}
+                                                        currentAssigneeId={lead.assigned_csr}
+                                                        assignees={assignees}
                                                         disabled={updatingParams[lead.id]}
-                                                        onChange={(e) => handleAssign(lead.id, e.target.value)}
-                                                    >
-                                                        <option value="" disabled>Select User...</option>
-                                                        <optgroup label="CSRs">
-                                                            {assignees.filter(a => a.role === 'csr').map(c => (
-                                                                <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                            ))}
-                                                        </optgroup>
-                                                        <optgroup label="Admins">
-                                                            {assignees.filter(a => a.role === 'admin').map(c => (
-                                                                <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                            ))}
-                                                        </optgroup>
-                                                    </select>
+                                                        onAssign={(targetValue) => handleAssign(lead.id, targetValue)}
+                                                        isUnassignedSection={true}
+                                                    />
                                                 </td>
                                             </tr>
                                         ))}
@@ -396,12 +384,12 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left border-collapse table-fixed min-w-[1100px]">
                                     <colgroup>
-                                        <col className="w-[260px]" />
+                                        <col className="w-[240px]" />
+                                        <col className="w-[150px]" />
+                                        <col className="w-[160px]" />
                                         <col className="w-[160px]" />
                                         <col className="w-[180px]" />
-                                        <col className="w-[180px]" />
-                                        <col className="w-[200px]" />
-                                        <col className="w-[180px]" />
+                                        <col className="w-[210px]" />
                                     </colgroup>
                                     <thead>
                                         <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85] text-white uppercase text-xs border-b border-gray-100 tracking-wider">
@@ -447,26 +435,14 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                                                         </div>
                                                     </td>
                                                     <td className="p-3 sm:p-4 text-right align-top">
-                                                        <select
-                                                            className={`border rounded-lg text-[10px] p-2 outline-none cursor-pointer transition-all min-w-[150px]
-                                                                ${updatingParams[lead.id] ? 'bg-gray-100 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-600 hover:border-blue-400 focus:ring-2 focus:ring-blue-500 group-hover:bg-white'}
-                                                            `}
-                                                            value={lead.assigned_csr || ""}
+                                                        <TwoStepAssignSelector
+                                                            leadId={lead.id}
+                                                            currentAssigneeId={lead.assigned_csr}
+                                                            assignees={assignees}
                                                             disabled={updatingParams[lead.id]}
-                                                            onChange={(e) => handleAssign(lead.id, e.target.value)}
-                                                        >
-                                                            <option value="unassigned">-- Unassign Lead --</option>
-                                                            <optgroup label="CSRs">
-                                                                {assignees.filter(a => a.role === 'csr').map(c => (
-                                                                    <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                            <optgroup label="Admins">
-                                                                {assignees.filter(a => a.role === 'admin').map(c => (
-                                                                    <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                                ))}
-                                                            </optgroup>
-                                                        </select>
+                                                            onAssign={(targetValue) => handleAssign(lead.id, targetValue)}
+                                                            isUnassignedSection={false}
+                                                        />
                                                     </td>
                                                 </tr>
                                             )
@@ -478,6 +454,84 @@ export function AdminAssignmentsContent({ categoryProp, flowProp }: { categoryPr
                     </div>
                 </div>
             )}
+        </div>
+    )
+}
+
+function TwoStepAssignSelector({
+    leadId,
+    currentAssigneeId,
+    assignees,
+    disabled,
+    onAssign,
+    isUnassignedSection
+}: {
+    leadId: string
+    currentAssigneeId: string | null
+    assignees: Assignee[]
+    disabled?: boolean
+    onAssign: (targetValue: string) => void
+    isUnassignedSection: boolean
+}) {
+    const assignedUser = assignees.find(a => a.id === currentAssigneeId)
+    const initialType = assignedUser?.role === 'admin' ? 'admin' : (assignedUser?.role === 'csr' ? 'csr' : 'csr')
+    const [assignType, setAssignType] = useState<'csr' | 'admin'>(initialType)
+
+    useEffect(() => {
+        if (assignedUser?.role === 'admin') {
+            setAssignType('admin')
+        } else if (assignedUser?.role === 'csr') {
+            setAssignType('csr')
+        }
+    }, [currentAssigneeId, assignedUser?.role])
+
+    const filteredUsers = assignees.filter(a => a.role === assignType)
+    const isCurrentMatch = assignedUser?.role === assignType
+
+    return (
+        <div className="flex flex-col gap-1.5 items-end">
+            <div className="flex items-center gap-1.5 w-full justify-end">
+                <span className="text-[10px] font-semibold text-gray-500 whitespace-nowrap">Type:</span>
+                <select
+                    className="border border-gray-300 rounded-md text-[11px] py-1 px-2 outline-none cursor-pointer bg-white text-gray-700 font-medium focus:ring-1 focus:ring-emerald-500 shadow-sm"
+                    value={assignType}
+                    disabled={disabled}
+                    onChange={(e) => setAssignType(e.target.value as 'csr' | 'admin')}
+                >
+                    <option value="csr">CSR</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <div className="flex items-center gap-1.5 w-full justify-end">
+                <span className="text-[10px] font-semibold text-gray-500 whitespace-nowrap">Assign:</span>
+                <select
+                    className={`border rounded-md text-[11px] py-1 px-2 outline-none cursor-pointer transition-all shadow-sm min-w-[130px] font-medium
+                        ${disabled ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white border-gray-300 hover:border-emerald-500 focus:ring-1 focus:ring-emerald-500 text-gray-800'}
+                    `}
+                    value={isCurrentMatch && currentAssigneeId ? currentAssigneeId : ""}
+                    disabled={disabled}
+                    onChange={(e) => onAssign(e.target.value)}
+                >
+                    {isUnassignedSection ? (
+                        <option value="" disabled>
+                            {assignType === 'csr' ? 'Select CSR...' : 'Select Admin...'}
+                        </option>
+                    ) : (
+                        <>
+                            <option value="unassigned">-- Unassign --</option>
+                            {!isCurrentMatch && (
+                                <option value="" disabled>
+                                    {assignType === 'csr' ? 'Select CSR...' : 'Select Admin...'}
+                                </option>
+                            )}
+                        </>
+                    )}
+                    {filteredUsers.map(u => (
+                        <option key={u.id} value={u.id}>{u.full_name}</option>
+                    ))}
+                </select>
+            </div>
         </div>
     )
 }

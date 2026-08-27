@@ -426,26 +426,12 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                                                 <StageBadge stage={stage} />
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 align-top">
-                                                <select
-                                                    className={`border rounded-lg text-xs p-2 outline-none cursor-pointer transition-all shadow-sm w-full font-semibold
-                                                        ${updatingParams[lead.id] ? 'bg-gray-100 text-gray-400' : 'bg-amber-50/80 border-amber-300 hover:border-amber-400 focus:ring-2 focus:ring-amber-500 text-amber-900'}
-                                                    `}
-                                                    defaultValue=""
+                                                <TwoStepAssignSelector
+                                                    leadId={lead.id}
+                                                    assignees={assignees}
                                                     disabled={updatingParams[lead.id]}
-                                                    onChange={(e) => handleAssignCSR(lead.id, e.target.value)}
-                                                >
-                                                    <option value="" disabled>-- Assign Lead --</option>
-                                                    <optgroup label="CSRs">
-                                                        {assignees.filter(a => a.role === 'csr').map(c => (
-                                                            <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                        ))}
-                                                    </optgroup>
-                                                    <optgroup label="Admins">
-                                                        {assignees.filter(a => a.role === 'admin').map(c => (
-                                                            <option key={c.id} value={c.id}>{c.full_name}</option>
-                                                        ))}
-                                                    </optgroup>
-                                                </select>
+                                                    onAssign={(targetValue) => handleAssignCSR(lead.id, targetValue)}
+                                                />
                                             </td>
                                             <td className="px-4 sm:px-6 py-4 text-gray-500 whitespace-nowrap align-top">
                                                 {new Date(lead.created_at).toLocaleDateString()}
@@ -455,7 +441,7 @@ export function AdminLeadsContent({ categoryProp, flowProp }: { categoryProp?: s
                                                 <Link
                                                     href={lead.policy_flow === 'renewal' ? `/admin/leads/renewals/${lead.id}` : `/csr/leads/${lead.id}`}
                                                     className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
-                                                    title="View/Edit Lead Details"
+                                                    title="View Details"
                                                 >
                                                     <Eye size={18} />
                                                 </Link>
@@ -510,5 +496,56 @@ function StageBadge({ stage }: { stage: string }) {
         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${color}`}>
             {stage}
         </span>
+    )
+}
+
+function TwoStepAssignSelector({
+    leadId,
+    assignees,
+    disabled,
+    onAssign
+}: {
+    leadId: string
+    assignees: Assignee[]
+    disabled?: boolean
+    onAssign: (targetValue: string) => void
+}) {
+    const [assignType, setAssignType] = useState<'csr' | 'admin'>('csr')
+    const filteredUsers = assignees.filter(a => a.role === assignType)
+
+    return (
+        <div className="flex flex-col gap-1.5 min-w-[160px]">
+            <div className="flex items-center gap-1.5 w-full">
+                <span className="text-[10px] font-semibold text-gray-500 whitespace-nowrap">Type:</span>
+                <select
+                    className="border border-gray-300 rounded-md text-[11px] py-1 px-2 outline-none cursor-pointer bg-white text-gray-700 font-medium focus:ring-1 focus:ring-amber-500 shadow-sm flex-1"
+                    value={assignType}
+                    disabled={disabled}
+                    onChange={(e) => setAssignType(e.target.value as 'csr' | 'admin')}
+                >
+                    <option value="csr">CSR</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+
+            <div className="flex items-center gap-1.5 w-full">
+                <span className="text-[10px] font-semibold text-gray-500 whitespace-nowrap">Assign:</span>
+                <select
+                    className={`border rounded-md text-[11px] py-1 px-2 outline-none cursor-pointer transition-all shadow-sm flex-1 font-medium
+                        ${disabled ? 'bg-gray-100 text-gray-400 border-gray-200' : 'bg-white border-amber-300 hover:border-amber-400 focus:ring-1 focus:ring-amber-500 text-amber-900'}
+                    `}
+                    defaultValue=""
+                    disabled={disabled}
+                    onChange={(e) => onAssign(e.target.value)}
+                >
+                    <option value="" disabled>
+                        {assignType === 'csr' ? 'Select CSR...' : 'Select Admin...'}
+                    </option>
+                    {filteredUsers.map(u => (
+                        <option key={u.id} value={u.id}>{u.full_name}</option>
+                    ))}
+                </select>
+            </div>
+        </div>
     )
 }

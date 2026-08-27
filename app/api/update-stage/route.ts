@@ -98,6 +98,11 @@ export async function POST(req: Request) {
         continue
       }
 
+      // If checking insurance_company_id, and a valid carrier/new_carrier text exists in metadata, allow it to pass
+      if (fieldName === 'insurance_company_id' && (mergedMetadata.carrier || mergedMetadata.new_carrier || mergedMetadata.insurance_company_id)) {
+        continue
+      }
+
       const fieldConfig = !Array.isArray(mandatoryFields) ? mandatoryFields[key] : { required: true }
 
       const value = mergedMetadata[fieldName]
@@ -237,13 +242,23 @@ export async function POST(req: Request) {
     }
 
     /* ================= ACCOUNTING INTEGRATION ================= */
+    const isUuid = (str: any) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
+
     const completionStages = ['Completed', 'Policy Bound', 'Completed (Same)']
     if (completionStages.includes(stage.stage_name)) {
       const insuranceCompanyId = stageMetadata?.insurance_company_id !== undefined ? stageMetadata.insurance_company_id : mergedMetadata.insurance_company_id
-      if (insuranceCompanyId) {
+      const carrierVal = stageMetadata?.carrier !== undefined ? stageMetadata.carrier : (mergedMetadata.carrier || (!isUuid(insuranceCompanyId) ? insuranceCompanyId : null))
+
+      if (isUuid(insuranceCompanyId)) {
         updatePayload.insurance_company_id = insuranceCompanyId
       } else {
-        return NextResponse.json({ error: 'Please select an Insurance Company before completing this stage.' }, { status: 400 })
+        updatePayload.insurance_company_id = null
+      }
+
+      if (carrierVal !== undefined && carrierVal !== null && String(carrierVal).trim() !== '') {
+        updatePayload.carrier = String(carrierVal).trim()
+      } else if (!updatePayload.insurance_company_id) {
+        return NextResponse.json({ error: 'Please select or enter an Insurance Company before completing this stage.' }, { status: 400 })
       }
 
       let boundPremium = stageMetadata?.bound_premium !== undefined ? stageMetadata.bound_premium : mergedMetadata.bound_premium
@@ -288,11 +303,6 @@ export async function POST(req: Request) {
       if (policyNumber !== undefined && policyNumber !== null) {
         updatePayload.policy_number = String(policyNumber)
       }
-
-      const carrierVal = stageMetadata?.carrier !== undefined ? stageMetadata.carrier : mergedMetadata.carrier
-      if (carrierVal !== undefined && carrierVal !== null) {
-        updatePayload.carrier = String(carrierVal)
-      }
     } else if (stage.stage_name === 'Completed (Switch)') {
       // Dedicated handling for Completed (Switch) to populate new active policy columns
       // while NEVER overwriting original base columns (carrier, policy_number, total_premium/current_premium).
@@ -312,10 +322,10 @@ export async function POST(req: Request) {
       const expectedCommission = stageMetadata?.expected_commission !== undefined ? stageMetadata.expected_commission : mergedMetadata.expected_commission
 
       const insuranceCompanyId = stageMetadata?.insurance_company_id !== undefined ? stageMetadata.insurance_company_id : mergedMetadata.insurance_company_id
-      if (insuranceCompanyId) {
+      if (isUuid(insuranceCompanyId)) {
         updatePayload.insurance_company_id = insuranceCompanyId
       } else {
-        return NextResponse.json({ error: 'Please select an Insurance Company before completing this stage.' }, { status: 400 })
+        updatePayload.insurance_company_id = null
       }
 
       if (newCarrier !== undefined && newCarrier !== null && newCarrier.toString().trim() !== '') {
@@ -364,25 +374,27 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Invalid premium. A valid premium greater than 0 is required before completing this stage.' }, { status: 400 })
       }
 
-      if (!updatePayload.insurance_company_id) {
-        return NextResponse.json({ error: 'Please select an Insurance Company before completing this stage.' }, { status: 400 })
+      if (!updatePayload.insurance_company_id && !updatePayload.carrier && !updatePayload.new_carrier) {
+        return NextResponse.json({ error: 'Please select or enter an Insurance Company before completing this stage.' }, { status: 400 })
       }
 
       let carrierPercent = lead.locked_carrier_percent
       let referralPercent = lead.locked_referral_percent
 
-      // Fresh binding event - fetch master percentages
+      // Fresh binding event - fetch master percentages if insurance_company_id is present
       if (carrierPercent === null || carrierPercent === undefined) {
-        const { data: icData, error: icError } = await supabaseServer
-          .from('insurance_companies')
-          .select('commission_percent, is_active')
-          .eq('id', updatePayload.insurance_company_id)
-          .single()
-        
-        if (icError || !icData || !icData.is_active || icData.commission_percent < 0 || icData.commission_percent > 100) {
-          return NextResponse.json({ error: 'Invalid or inactive insurance company selected.' }, { status: 400 })
+        if (updatePayload.insurance_company_id) {
+          const { data: icData, error: icError } = await supabaseServer
+            .from('insurance_companies')
+            .select('commission_percent, is_active')
+            .eq('id', updatePayload.insurance_company_id)
+            .single()
+          
+          if (icError || !icData || !icData.is_active || icData.commission_percent < 0 || icData.commission_percent > 100) {
+            return NextResponse.json({ error: 'Invalid or inactive insurance company selected.' }, { status: 400 })
+          }
+          carrierPercent = icData.commission_percent
         }
-        carrierPercent = icData.commission_percent
 
         if (lead.referral_id) {
           const { data: refData, error: refError } = await supabaseServer

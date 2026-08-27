@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { formatPolicies } from '@/utils/formatPolicies'
 import Loading, { Spinner } from '@/components/ui/Loading'
+import PageBackButton from '@/components/ui/PageBackButton'
 
 // ─────────────────────────────────────────────
 // Types
@@ -325,7 +326,7 @@ export default function CSRWorkloadPage() {
 
   return (
     <div className="w-full max-w-[1400px] mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 min-h-screen">
-
+      <PageBackButton fallbackUrl="/admin/csrs" className="mb-3" />
 
       {/* ── Header ── */}
       <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 mb-6 sm:mb-8">

@@ -1,5 +1,6 @@
 import StagesClient from './StagesClient'
 import { createServer } from '@/lib/supabaseServer'
+import PageBackButton from '@/components/ui/PageBackButton'
 
 export default async function PipelineStagesPage({ params }: { params: { id: string } }) {
     const supabase = await createServer()
@@ -13,6 +14,7 @@ export default async function PipelineStagesPage({ params }: { params: { id: str
 
     return (
         <div className="p-8 max-w-5xl mx-auto">
+            <PageBackButton fallbackUrl="/superadmin/pipelines" className="mb-2" />
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Stage Editor: {pipeline?.name || 'Loading...'}</h1>
             <p className="text-gray-600 mb-8">Manage the sequence and configuration of stages for this workflow.</p>
 

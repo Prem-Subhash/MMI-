@@ -14,6 +14,7 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Info, ArrowLeft } from 'lucide-react'
 import { Spinner } from '@/components/ui/Loading'
+import PageBackButton from '@/components/ui/PageBackButton'
 
 export default function AdminRenewalImportPage() {
     const searchParams = useSearchParams()
@@ -244,6 +245,7 @@ export default function AdminRenewalImportPage() {
 
     return (
         <div className="p-8 max-w-2xl mx-auto">
+            <PageBackButton fallbackUrl="/admin/leads" className="mb-4" />
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-4">

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from '@/lib/toast'
+import { ArrowLeft } from 'lucide-react'
 import EmailGenerator from '@/components/email/EmailGenerator'
 import Loading from '@/components/ui/Loading'
 import { Modal } from '@/components/ui/Modal'
@@ -400,7 +401,20 @@ export default function EmailModal({ leadId, isOpen, onClose, onSuccess }: Email
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={lead?.policy_flow === 'renewal' ? 'Send Renewal Email' : 'Send Initial Email'}
+      title={
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-white/90 hover:text-white bg-white/10 hover:bg-white/20 px-3 py-1.5 rounded-lg transition-all border border-white/20"
+            title="Back to lead details"
+          >
+            <ArrowLeft size={14} />
+            <span>Back</span>
+          </button>
+          <span>{lead?.policy_flow === 'renewal' ? 'Send Renewal Email' : 'Send Initial Email'}</span>
+        </div>
+      }
       subtitle={lead?.policy_flow === 'renewal' ? 'Configure and send renewal quotes to the client.' : 'Configure and send the onboarding email to the client.'}
       maxWidth="max-w-4xl"
     >

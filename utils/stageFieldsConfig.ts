@@ -75,8 +75,7 @@ export const PERSONAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfig>
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Switch)': {
-    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
-    new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
+    insurance_company_id: { label: 'New Insurance Company', type: 'insurance_company', required: true },
     new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
     new_premium: { label: 'New Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'commission', required: true },
@@ -166,8 +165,7 @@ export const COMMERCIAL_RENEWAL_FIELDS: Record<string, Record<string, FieldConfi
     notes: { label: 'Notes/Details', type: 'textarea' }
   },
   'Completed (Switch)': {
-    insurance_company_id: { label: 'Insurance Company', type: 'insurance_company', required: true },
-    new_carrier: { label: 'New Carrier Name', type: 'text', required: true },
+    insurance_company_id: { label: 'New Insurance Company', type: 'insurance_company', required: true },
     new_policy_number: { label: 'New Policy Number', type: 'text', required: true },
     new_premium: { label: 'New Bound Premium', type: 'number', required: true },
     expected_commission: { label: 'Commission', type: 'commission', required: true },

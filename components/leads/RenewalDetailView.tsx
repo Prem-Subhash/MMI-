@@ -8,6 +8,7 @@ import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
 import EditHistoryModal from '@/components/pipeline/EditHistoryModal'
 import EmailGenerator from '@/components/email/EmailGenerator'
+import PageBackButton from '@/components/ui/PageBackButton'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import { formatCurrency } from '@/lib/currency'
@@ -247,7 +248,8 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
   return (
     <div className="p-4 sm:p-6 lg:p-8 min-h-screen">
       <div className="max-w-5xl mx-auto">
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4">
+        <PageBackButton onBack={onBack} className="mb-0" />
         {/* TOP CARD: Client Info (Styled like Lead Details) */}
         <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
           {/* HEADER */}

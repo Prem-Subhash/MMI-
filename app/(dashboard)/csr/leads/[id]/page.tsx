@@ -10,6 +10,7 @@ import EditClientModal from '@/components/leads/EditClientModal'
 import EditHistoryModal from '@/components/pipeline/EditHistoryModal'
 import DocumentViewer from '@/components/leads/DocumentViewer'
 import EmailModal from '@/components/email/EmailModal'
+import PageBackButton from '@/components/ui/PageBackButton'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
@@ -331,7 +332,8 @@ export default function LeadReviewPage() {
   /* ================= UNIFIED UI ================= */
   return (
     <div className="p-4 sm:p-6 lg:p-10">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto space-y-4">
+        <PageBackButton onBack={handleBackToPipeline} className="mb-0" />
         <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
 
           {/* HEADER */}
@@ -453,7 +455,7 @@ export default function LeadReviewPage() {
               </button>
               {lead.insurence_category && lead.insurence_category.toLowerCase() === 'personal' && (
                 <Link
-                  href={`/csr/leads?stage=${encodeURIComponent(lead.current_stage || lead.pipeline_stages?.stage_name || 'New Lead')}`}
+                  href={`/csr/pipeline/personal?stage=${encodeURIComponent(lead.current_stage || lead.pipeline_stages?.stage_name || 'New Lead')}`}
                   className="px-5 py-2.5 bg-rose-500 text-white hover:bg-rose-600 hover:text-white rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-bold whitespace-nowrap"
                 >
                   <ExternalLink size={16} />
