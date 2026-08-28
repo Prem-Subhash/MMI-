@@ -10,7 +10,7 @@ import {
   DollarSign, Percent, Calendar, Download, Printer, Search,
   BarChart2, User, Clock, ShieldCheck, AlertCircle, Info,
   TrendingUp, Layers, CheckCircle2, SlidersHorizontal,
-  Activity
+  Activity, ChevronDown
 } from 'lucide-react'
 import Loading from '@/components/ui/Loading'
 
@@ -295,7 +295,7 @@ export default function ReportsClient({ csrs }: ReportsClientProps) {
                   {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                  <ChevronDown size={16} />
                 </div>
               </div>
             </div>

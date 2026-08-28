@@ -26,6 +26,7 @@ import {
   Save,
   CheckCircle2,
   AlertCircle,
+  ChevronDown,
 } from 'lucide-react'
 import { ReferralSelect } from '@/components/ui/ReferralSelect'
 
@@ -281,18 +282,21 @@ export function PersonalRenewalForm({ assignedCsrId, onSuccess, onCancel }: Pers
                 <label className="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-1.5">
                   Line of Business / Policy Type
                 </label>
-                <select
-                  name="policy_type"
-                  value={form.policy_type}
-                  onChange={handleChange}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm shadow-sm outline-none transition-all bg-white"
-                >
-                  {PERSONAL_POLICY_TYPES.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <select
+                    name="policy_type"
+                    value={form.policy_type}
+                    onChange={handleChange}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm shadow-sm outline-none transition-all bg-white appearance-none"
+                  >
+                    {PERSONAL_POLICY_TYPES.map((opt) => (
+                      <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                </div>
               </div>
 
               <div>

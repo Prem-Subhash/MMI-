@@ -83,7 +83,7 @@ function KpiCard({
         `}>
           {icon}
         </div>
-        <p className="text-[11px] font-black uppercase tracking-wider leading-none text-gray-400 group-hover/card:text-gray-600 transition-colors">
+        <p className="text-xs font-semibold text-gray-500 uppercase transition-colors">
           {label}
         </p>
       </div>
@@ -574,13 +574,7 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
                 >
                   Update Status
                 </button>
-                <button
-                  onClick={onBack}
-                  className="w-full sm:w-auto px-6 py-3 bg-[#475569] hover:bg-[#334155] text-white rounded-xl shadow-lg transition-all font-bold active:scale-95 whitespace-nowrap flex items-center justify-center gap-2 group"
-                >
-                  <ArrowLeft size={18} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
-                  <span>Back</span>
-                </button>
+
               </div>
 
               <div className="flex items-center justify-between lg:justify-end w-full lg:w-auto bg-blue-50/50 lg:bg-transparent p-3 lg:p-0 rounded-xl border border-blue-100 lg:border-none">
