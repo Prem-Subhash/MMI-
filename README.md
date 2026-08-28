@@ -302,7 +302,7 @@ Before opening a pull request, verify:
 |---|---|
 | `master` | Production-stable baseline |
 | `ui-dashboard` | Active UI/UX improvements & feature work |
-| `Client-demo` | particular cleint changes |
+| `Client-demo` | particular client changes |
 
 
 ---
