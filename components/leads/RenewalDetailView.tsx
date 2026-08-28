@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState, useRef } from 'react'
 import { supabase } from '@/lib/supabaseClient'
-import { Send, Briefcase, Shield, Calendar, DollarSign, Edit2, ArrowLeft, PiggyBank } from 'lucide-react'
+import { Send, Briefcase, Shield, Calendar, DollarSign, Edit2, ArrowLeft, PiggyBank, Paperclip, Trash2 } from 'lucide-react'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import UpdateStageModal from '@/components/pipeline/UpdateStageModal'
 import EditClientModal from '@/components/leads/EditClientModal'
 import EditHistoryModal from '@/components/pipeline/EditHistoryModal'
-import EmailGenerator from '@/components/email/EmailGenerator'
 import PageBackButton from '@/components/ui/PageBackButton'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
+import { resolveStageHistoryFields } from '@/utils/stageFieldsConfig'
 import { toast } from '@/lib/toast'
 import { formatCurrency } from '@/lib/currency'
 import { useSearchParams } from 'next/navigation'
@@ -119,6 +119,7 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
   const [history, setHistory] = useState<any[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [insuranceCompaniesMap, setInsuranceCompaniesMap] = useState<Record<string, string>>({})
   const [editingHistoryItem, setEditingHistoryItem] = useState<any>(null)
   
   const isCommercial = lead?.insurence_category?.toLowerCase() === 'commercial'
@@ -135,15 +136,6 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
       return () => clearTimeout(timer)
     }
   }, [viewFocus])
-
-  /* ================= EMAIL MODAL STATE ================= */
-  const [showEmailModal, setShowEmailModal] = useState(false)
-  const [templates, setTemplates] = useState<any[]>([])
-  const [templateId, setTemplateId] = useState('')
-  const [customSubject, setCustomSubject] = useState('')
-  const [generatedBody, setGeneratedBody] = useState('')
-  const [notes, setNotes] = useState('')
-  const [sendingEmail, setSendingEmail] = useState(false)
 
   const savePremium = async () => {
     if (!lead) return
@@ -168,74 +160,142 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
   const openHistoryModal = async () => {
     setHistoryLoading(true)
     setShowHistory(true)
-    const { data, error } = await supabase
-      .from('lead_stage_history')
-      .select('*')
-      .eq('lead_id', lead.id)
-      .order('created_at', { ascending: false }) // Newest first
+    const [historyRes, icRes] = await Promise.all([
+      supabase
+        .from('lead_stage_history')
+        .select('*')
+        .eq('lead_id', lead.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('insurance_companies')
+        .select('id, name')
+    ])
 
-    if (!error && data) {
-      setHistory(data)
+    if (!historyRes.error && historyRes.data) {
+      setHistory(historyRes.data)
+    }
+    if (!icRes.error && icRes.data) {
+      const map: Record<string, string> = {}
+      icRes.data.forEach((ic: any) => {
+        map[ic.id] = ic.name
+      })
+      setInsuranceCompaniesMap(map)
     }
     setHistoryLoading(false)
   }
 
   const refreshHistory = async () => {
     if (!lead.id) return
-    const { data, error } = await supabase
-      .from('lead_stage_history')
-      .select('*')
-      .eq('lead_id', lead.id)
-      .order('created_at', { ascending: false })
+    const [historyRes, icRes] = await Promise.all([
+      supabase
+        .from('lead_stage_history')
+        .select('*')
+        .eq('lead_id', lead.id)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('insurance_companies')
+        .select('id, name')
+    ])
 
-    if (!error && data) {
-      setHistory(data)
+    if (!historyRes.error && historyRes.data) {
+      setHistory(historyRes.data)
+    }
+    if (!icRes.error && icRes.data) {
+      const map: Record<string, string> = {}
+      icRes.data.forEach((ic: any) => {
+        map[ic.id] = ic.name
+      })
+      setInsuranceCompaniesMap(map)
     }
   }
 
-  /* ================= EMAIL OPERATIONS ================= */
-  useEffect(() => {
-    if (!showEmailModal) return;
-    const fetchTemplates = async () => {
-      const { data } = await supabase.from('email_templates').select('*').eq('is_active', true)
-      setTemplates(data || [])
+  /* ================= EMAIL MODAL STATE ================= */
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [customSubject, setCustomSubject] = useState('')
+  const [customBody, setCustomBody] = useState('')
+  const [attachments, setAttachments] = useState<File[]>([])
+  const [sendingEmail, setSendingEmail] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    const ALLOWED_MIME_TYPES = [
+      'application/pdf',
+      'image/jpeg',
+      'image/png',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ]
+    const newAttachments = [...attachments]
+    let hasError = false
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        toast(`File "${file.name}" exceeds 10MB limit.`, 'error')
+        hasError = true
+        return
+      }
+      if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+        toast(`Invalid file type for "${file.name}". Allowed: PDF, JPG, PNG, DOC, DOCX`, 'error')
+        hasError = true
+        return
+      }
+      newAttachments.push(file)
+    })
+
+    if (!hasError && files.length > 0) {
+      toast(`Added ${files.length} attachment(s)`, 'success')
     }
-    fetchTemplates()
-  }, [showEmailModal, lead])
+    setAttachments(newAttachments)
+    if (e.target) e.target.value = ''
+  }
+
+  const handleRemoveAttachment = (indexToRemove: number) => {
+    setAttachments((prev) => prev.filter((_, idx) => idx !== indexToRemove))
+  }
 
   const handleSendEmail = async () => {
-    if (!templateId) return toast('Select an email template', 'warning')
     if (!lead?.email) return toast('Client email is missing', 'error')
+    if (!customSubject.trim()) return toast('Please enter an email subject', 'warning')
+    if (!customBody.trim()) return toast('Please enter an email body', 'warning')
 
     setSendingEmail(true)
-    
-    const finalBody = notes.trim()
-      ? `${generatedBody}<br><br><hr><br><br>${notes.replace(/\n/g, '<br>')}`
-      : generatedBody;
 
-    const res = await fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        leadId: lead.id,
-        templateId,
-        formType: 'renewal',
-        customSubject,
-        customBody: finalBody,
-      }),
-    });
+    const formData = new FormData()
+    formData.append('leadId', lead.id)
+    formData.append('customSubject', customSubject.trim())
+    formData.append('customBody', customBody.trim().replace(/\n/g, '<br>'))
+    formData.append('formType', 'renewal')
+    attachments.forEach((file) => {
+      formData.append('attachments', file)
+    })
 
-    const result = await res.json()
-    setSendingEmail(false)
+    try {
+      const res = await fetch('/api/send-email', {
+        method: 'POST',
+        body: formData,
+      })
 
-    if (!res.ok || !result.success) {
-      toast(result?.error || result?.message || 'Email failed to send.', 'error')
-      return
+      const result = await res.json()
+      setSendingEmail(false)
+
+      if (!res.ok || !result.success) {
+        toast(result?.error || result?.message || 'Email failed to send.', 'error')
+        return
+      }
+
+      toast('Email sent successfully', 'success')
+      setShowEmailModal(false)
+      setCustomSubject('')
+      setCustomBody('')
+      setAttachments([])
+      refreshLead()
+    } catch (err: any) {
+      setSendingEmail(false)
+      toast(err.message || 'An error occurred while sending email', 'error')
     }
-
-    toast('Email sent successfully', 'success')
-    setShowEmailModal(false)
-    refreshLead() // reload to get updated stage_metadata if needed
   }
 
   if (!lead) return (
@@ -666,33 +726,17 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
                     {item.stage_metadata && Object.keys(item.stage_metadata).length > 0 ? (
                       <div className="p-5">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                          {Object.entries(item.stage_metadata).map(([k, v]) => {
-                            const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                            
-                            let displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
-                            
-                            if (k === 'expected_commission_type' || k === 'expected_commission_percentage') return null;
-
-                            const lowerK = k.toLowerCase();
-                            if (k === 'expected_commission') {
-                              const cType = item.stage_metadata?.expected_commission_type;
-                              const cPercentage = item.stage_metadata?.expected_commission_percentage;
-                              if (cType === 'PERCENTAGE' && cPercentage !== undefined) {
-                                displayValue = `${cPercentage}% (${formatCurrency(v as number | string)})`;
-                              } else {
-                                displayValue = formatCurrency(v as number | string);
-                              }
-                            } else if (lowerK.includes('premium') || lowerK.includes('fee') || lowerK.includes('amount') || lowerK.includes('commission') || lowerK.includes('savings')) {
-                              displayValue = formatCurrency(v as number | string);
-                            }
-
-                            return (
-                              <div key={k}>
-                                <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{formatLabel(k)}</span>
-                                <span className="font-medium text-slate-800">{displayValue}</span>
-                              </div>
-                            );
-                          })}
+                          {resolveStageHistoryFields(
+                            item.stage_name,
+                            item.stage_metadata,
+                            lead?.insurence_category?.toLowerCase().includes('commercial') ? 'CommercialRenewal' : 'PersonalRenewal',
+                            insuranceCompaniesMap
+                          ).map((field) => (
+                            <div key={field.key}>
+                              <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{field.label}</span>
+                              <span className="font-medium text-slate-800">{field.displayValue}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ) : (
@@ -752,55 +796,149 @@ export default function RenewalDetailView({ initialLead, onBack, refreshLead }: 
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" />
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-start justify-center p-4 sm:p-6">
-              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl opacity-100 max-h-[90dvh] overflow-hidden flex flex-col pointer-events-auto my-auto relative">
-            <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
-              <div>
-                <h2 className="text-xl font-bold text-white">Send Renewal Email</h2>
-                <p className="text-sm text-white/80 mt-1">Configure and send an email to {lead.client_name}</p>
-              </div>
-              <button
-                onClick={() => setShowEmailModal(false)}
-                className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-all"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div className="p-6 md:p-8 overflow-y-auto flex-1">
-              <EmailGenerator
-                templates={templates}
-                templateId={templateId}
-                setTemplateId={setTemplateId}
-                initialClientName={lead.client_name}
-                customSubject={customSubject}
-                generatedBody={generatedBody}
-                setGeneratedBody={setGeneratedBody}
-                notes={notes}
-                setNotes={setNotes}
-                setCustomSubject={setCustomSubject}
-                formType={lead.policy_type === 'auto' ? 'auto' : 'home'}
-                leadData={lead}
-              />
-              
-              <div className="flex flex-col sm:flex-row gap-4 pt-6 mt-6 border-t border-gray-100">
-                <button
-                  onClick={() => setShowEmailModal(false)}
-                  className="w-full sm:w-1/3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-4 rounded-xl shadow-sm transition-all flex items-center justify-center"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSendEmail}
-                  disabled={sendingEmail}
-                  className="w-full sm:w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-90 text-white font-bold py-4 rounded-xl shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {sendingEmail ? <Spinner size={20} /> : 'Send Email'}
-                </button>
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl opacity-100 max-h-[90dvh] overflow-hidden flex flex-col pointer-events-auto my-auto relative border border-gray-100">
+                {/* MODAL HEADER */}
+                <div className="px-6 py-4 border-b flex items-center justify-between bg-gradient-to-r from-[#10B889] to-[#2E5C85] sticky top-0 z-10">
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Send Renewal Email</h2>
+                    <p className="text-sm text-white/80 mt-0.5">Send a direct email to {lead.client_name}</p>
+                  </div>
+                  <button
+                    onClick={() => setShowEmailModal(false)}
+                    className="p-2 text-white/80 hover:text-white hover:bg-white/20 rounded-full transition-all text-lg font-bold leading-none"
+                    aria-label="Close modal"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {/* MODAL BODY */}
+                <div className="p-6 md:p-8 overflow-y-auto flex-1 space-y-5">
+                  {/* RECIPIENT */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-1.5">
+                      To
+                    </label>
+                    <div className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-gray-700 select-all flex items-center justify-between">
+                      <span>{lead.email || 'No email address on file'}</span>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        Client Recipient
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* SUBJECT */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-1.5">
+                      Subject <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={customSubject}
+                      onChange={(e) => setCustomSubject(e.target.value)}
+                      placeholder="Enter email subject..."
+                      className="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-sm font-semibold text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-gray-400 placeholder:font-normal"
+                    />
+                  </div>
+
+                  {/* BODY */}
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-widest mb-1.5">
+                      Body <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={customBody}
+                      onChange={(e) => setCustomBody(e.target.value)}
+                      placeholder="Write your email message here..."
+                      rows={8}
+                      className="w-full bg-white border border-gray-300 rounded-xl p-4 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all placeholder:text-gray-400 leading-relaxed resize-y min-h-[180px]"
+                    />
+                  </div>
+
+                  {/* ATTACHMENTS */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-700 uppercase tracking-widest flex items-center gap-2">
+                          <Paperclip size={14} className="text-emerald-600" />
+                          Attachments
+                        </h4>
+                        <p className="text-xs text-gray-500 mt-0.5">Attach documents or quotes (PDF, DOC, DOCX, JPG, PNG - Max 10MB total)</p>
+                      </div>
+                      <div>
+                        <input
+                          type="file"
+                          multiple
+                          ref={fileInputRef}
+                          onChange={handleFileSelect}
+                          className="hidden"
+                          accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,application/pdf,image/jpeg,image/png,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all border border-slate-300 shadow-sm shrink-0"
+                        >
+                          <Paperclip size={14} />
+                          Attach Files
+                        </button>
+                      </div>
+                    </div>
+
+                    {attachments.length > 0 && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                        {attachments.map((file, idx) => (
+                          <div key={`${file.name}-${idx}`} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-xl">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="p-1.5 bg-emerald-100 text-emerald-700 rounded-lg shrink-0">
+                                <Paperclip size={14} />
+                              </div>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-gray-800 truncate" title={file.name}>{file.name}</p>
+                                <p className="text-[10px] text-gray-500">{(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveAttachment(idx)}
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors ml-2 shrink-0"
+                              title="Remove attachment"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* MODAL FOOTER */}
+                  <div className="flex flex-col sm:flex-row gap-3 pt-6 mt-6 border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmailModal(false)}
+                      className="w-full sm:w-1/3 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-3.5 rounded-xl shadow-sm transition-all flex items-center justify-center text-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSendEmail}
+                      disabled={sendingEmail}
+                      className="w-full sm:w-2/3 bg-gradient-to-r from-[#2E5C85] to-[#10B889] hover:opacity-95 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all disabled:opacity-60 flex items-center justify-center gap-2 text-sm shadow-emerald-900/10"
+                    >
+                      {sendingEmail ? <Spinner size={18} /> : (
+                        <>
+                          <Send size={16} />
+                          <span>Send Email</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        </div>
         </div>
       )}
       </div>

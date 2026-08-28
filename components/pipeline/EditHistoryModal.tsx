@@ -181,17 +181,35 @@ export default function EditHistoryModal({
 
       case 'insurance_company': {
         const derivedCategory = pipelineType.includes('Commercial') ? 'commercial' : 'personal'
+        const resolvedCarrierValue = formData.carrier || formData.new_carrier || formData.insurance_company_id || value || ''
         
         return (
           <InsuranceCompanySelect
-            value={value}
+            value={resolvedCarrierValue}
             category={derivedCategory}
-            onChange={(id, name) => {
+            onChange={(id, name, commissionPercent) => {
               setFormData(prev => {
-                const nextState = { ...prev, [fieldKey]: id }
-                if (prev.new_carrier !== undefined) {
+                const nextState = { ...prev, [fieldKey]: id || name }
+                if (id) {
+                  nextState.insurance_company_id = id
+                } else {
+                  nextState.insurance_company_id = null
+                }
+                if (prev.new_carrier !== undefined || pipelineType === 'CommercialRenewal' || pipelineType === 'PersonalRenewal') {
                   nextState.new_carrier = name
                 }
+                nextState.carrier = name
+
+                // Auto-calculate commission if an existing carrier has a configured commission percentage
+                if (commissionPercent !== undefined && commissionPercent !== null && !isNaN(Number(commissionPercent))) {
+                  const numPercent = Number(commissionPercent)
+                  nextState.expected_commission_percentage = numPercent
+                  const premium = Number(nextState.bound_premium || nextState.new_premium || 0)
+                  if (premium > 0) {
+                    nextState.expected_commission = Number(((premium * numPercent) / 100).toFixed(2))
+                  }
+                }
+
                 return nextState
               })
             }}
@@ -280,15 +298,29 @@ export default function EditHistoryModal({
               type="number"
               className="w-full border border-gray-300 rounded-lg p-2.5 pl-7 focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none text-gray-700"
               value={value}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  [fieldKey]:
-                    e.target.value === ''
-                      ? ''
-                      : Number(e.target.value),
+              onChange={(e) => {
+                const val = e.target.value === '' ? '' : Number(e.target.value)
+                setFormData(prev => {
+                  const next = {
+                    ...prev,
+                    [fieldKey]: val,
+                  }
+
+                  // When premium changes, auto-calculate commission if a master percentage exists
+                  const isPremiumField = fieldKey === 'bound_premium' || fieldKey === 'new_premium'
+                  if (isPremiumField && next.expected_commission_percentage !== undefined && next.expected_commission_percentage !== null && next.expected_commission_percentage !== '') {
+                    const numPct = Number(next.expected_commission_percentage)
+                    const premium = Number(val || 0)
+                    if (premium > 0 && numPct > 0) {
+                      next.expected_commission = Number(((premium * numPct) / 100).toFixed(2))
+                    } else if (premium === 0) {
+                      next.expected_commission = 0
+                    }
+                  }
+
+                  return next
                 })
-              }
+              }}
             />
           </div>
         )

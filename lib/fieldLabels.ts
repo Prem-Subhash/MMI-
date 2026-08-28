@@ -49,6 +49,9 @@ export const FIELD_LABELS: Record<string, string> = {
   cancellation_reason: "Cancellation Reason",
   reason_not_bound: "Reason Not Bound",
   notes: "Notes/Details",
+  insurance_company_id: "Insurance Company",
+  carrier: "Insurance Company",
+  new_carrier: "New Insurance Company",
 
   // Intake Form overrides
   claims_last_5_years: "Claims (Last 5 Years)",
