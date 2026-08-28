@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Spinner } from '@/components/ui/Loading'
 import { toast } from '@/lib/toast'
-import { User, Phone, Mail, X, Briefcase, Shield } from 'lucide-react'
+import { User, Phone, Mail, X, Briefcase, Shield, ChevronDown } from 'lucide-react'
 import { PERSONAL_POLICY_TYPES, COMMERCIAL_POLICY_TYPES } from '@/constants/policyTypes'
 import { formatPhoneInput, formatDatabasePhone, PHONE_REGEX } from '@/utils/phoneFormatter'
 import { Modal } from '@/components/ui/Modal'
@@ -141,8 +141,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
           <div className="space-y-5">
             {/* NAME */}
             <div className="space-y-2 group">
-              <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
-                <span className="w-1 h-1 bg-emerald-500 rounded-full"></span>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Client Name
               </label>
               <div className="relative group/input">
@@ -160,10 +159,9 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
             {/* BUSINESS NAME (Commercial Lines only) */}
             {lead.insurence_category === 'commercial' && (
               <div className="space-y-2 group">
-                <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
-                  <span className="w-1 h-1 bg-emerald-500 rounded-full"></span>
-                  Business Name
-                </label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                    Business Name
+                  </label>
                 <div className="relative group/input">
                   <Briefcase size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/input:text-emerald-600 transition-colors" />
                   <input
@@ -179,8 +177,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
 
             {/* EMAIL */}
             <div className="space-y-2 group">
-              <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
-                <span className="w-1 h-1 bg-blue-500 rounded-full"></span>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Email Address
               </label>
               <div className="relative group/input">
@@ -197,8 +194,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
 
             {/* PHONE */}
             <div className="space-y-2 group">
-              <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
-                <span className="w-1 h-1 bg-indigo-500 rounded-full"></span>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Phone Number
               </label>
               <div className="relative group/input">
@@ -216,8 +212,7 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
 
             {/* POLICIES (SINGLE SELECT) */}
             <div className="space-y-2 group">
-              <label className="text-[11px] font-black text-black uppercase tracking-[0.1em] ml-1 flex items-center gap-2">
-                <span className="w-1 h-1 bg-amber-500 rounded-full"></span>
+              <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                 Policy Type
               </label>
               <div className="relative group/input">
@@ -233,8 +228,8 @@ export default function EditClientModal({ lead, onClose, onSuccess }: Props) {
                     </option>
                   ))}
                 </select>
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 font-bold">
-                  ▼
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <ChevronDown size={16} />
                 </div>
               </div>
             </div>

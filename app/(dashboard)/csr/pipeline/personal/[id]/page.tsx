@@ -289,13 +289,7 @@ export default function LeadReviewPage() {
                 >
                   Update Status
                 </button>
-                <button
-                  onClick={handleBackToPipeline}
-                  className="px-6 py-2.5 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow transition font-medium flex items-center justify-center gap-2 group whitespace-nowrap"
-                >
-                  <ArrowLeft size={16} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
-                  <span>Back</span>
-                </button>
+
               </div>
             </div>
 
@@ -364,13 +358,7 @@ export default function LeadReviewPage() {
             >
               Update Status
             </button>
-            <button
-              onClick={handleBackToPipeline}
-              className="px-5 py-2 bg-[#475569] hover:bg-[#334155] text-white rounded-lg shadow font-medium flex items-center justify-center gap-2 group whitespace-nowrap"
-            >
-              <ArrowLeft size={16} className="shrink-0 text-slate-200 group-hover:text-white transition-colors" />
-              <span>Back</span>
-            </button>
+
           </div>
 
           <div>

@@ -22,7 +22,8 @@ import {
   Mail,
   ShieldCheck,
   RefreshCw,
-  Hash
+  Hash,
+  ChevronDown
 } from 'lucide-react'
 import PageBackButton from '@/components/ui/PageBackButton'
 
@@ -565,15 +566,18 @@ export default function LeadAccountingClient({
                 <label className="text-[10px] font-bold text-gray-500 uppercase tracking-wide block">
                   Accounting Status
                 </label>
-                <select
-                  value={accountingStatusInput}
-                  onChange={(e) => setAccountingStatusInput(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-gray-700 bg-white"
-                >
-                  <option value="unreconciled">Unreconciled</option>
-                  <option value="reconciled">Reconciled</option>
-                  <option value="discrepancy">Discrepancy</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={accountingStatusInput}
+                    onChange={(e) => setAccountingStatusInput(e.target.value)}
+                    className="block w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-bold text-gray-700 bg-white appearance-none"
+                  >
+                    <option value="unreconciled">Unreconciled</option>
+                    <option value="reconciled">Reconciled</option>
+                    <option value="discrepancy">Discrepancy</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                </div>
               </div>
 
               {/* Checkbox */}

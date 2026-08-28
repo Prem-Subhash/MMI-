@@ -249,13 +249,7 @@ export default function AdminRenewalImportPage() {
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-4">
-                    <button 
-                        onClick={() => router.back()}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 hover:text-gray-900"
-                        title="Go back"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
+
                     <div className="p-3 bg-brand/10 rounded-2xl text-brand">
                         <FileSpreadsheet size={32} />
                     </div>
