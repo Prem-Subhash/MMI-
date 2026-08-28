@@ -1,4 +1,4 @@
-#  Moonstar Insurance CRM
+#  Innovative Insurance 
 
 > A full-stack, enterprise-grade CRM platform built for modern insurance agencies. Centralizes lead management, automated multi-step intake workflows, pipeline-driven case tracking, and business intelligence reporting — all in a single unified Next.js application.
 
@@ -244,9 +244,9 @@ Auth is handled by **Supabase Auth** with SSR cookie-based sessions via `@supaba
 Role         | Accessible Routes
 ─────────────|─────────────────────────────────────
 csr          | /csr
-admin        | /admin, /csr
-accounting   | /accounting
-superadmin   | /superadmin, /admin, /csr, /accounting
+admin        | /admin, /csr ( He manages the usesrs among entire applications)
+accounting   | /accounting  ( Only for innovative Insurance Dashboard )
+superadmin   | /superadmin, /admin, /csr, /accounting ( He has every dashboard access ) 
 ```
 
 Unauthenticated users are redirected to `/login`. Users with valid sessions but insufficient role access are redirected to `/unauthorized`.
@@ -275,9 +275,9 @@ We follow a **trunk-based development** approach with short-lived feature branch
 
 ```bash
 # Branch naming convention
-feature/<short-description>     # New features
-fix/<short-description>         # Bug fixes
-chore/<short-description>       # Housekeeping (deps, configs)
+Ui-dashboard/<For UI/UX changes>     # UI
+Pipelinechanges/<for piplienlogics & bussiness logic changes>  # Bug fixes # Newchanges
+
 ```
 
 ### Commit Message Format
@@ -302,6 +302,8 @@ Before opening a pull request, verify:
 |---|---|
 | `master` | Production-stable baseline |
 | `ui-dashboard` | Active UI/UX improvements & feature work |
+| `Client-demo` | particular cleint changes |
+
 
 ---
 
