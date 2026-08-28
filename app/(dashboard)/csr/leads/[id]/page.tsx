@@ -12,6 +12,7 @@ import DocumentViewer from '@/components/leads/DocumentViewer'
 import EmailModal from '@/components/email/EmailModal'
 import PageBackButton from '@/components/ui/PageBackButton'
 import { FIELD_LABELS } from '@/lib/fieldLabels'
+import { resolveStageHistoryFields } from '@/utils/stageFieldsConfig'
 import { toast } from '@/lib/toast'
 import Loading, { Spinner } from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
@@ -129,6 +130,17 @@ const IconZap = () => (
     <path d="M13 10V3L4 14h7v7l9-11h-7z" />
   </svg>
 )
+const IconShield = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+  </svg>
+)
+const IconDollar = () => (
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="1" x2="12" y2="23" />
+    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+  </svg>
+)
 
 export default function LeadReviewPage() {
   /* ================= ROUTER PARAMS ================= */
@@ -175,9 +187,11 @@ export default function LeadReviewPage() {
   const [history, setHistory] = useState<any[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [historyLoading, setHistoryLoading] = useState(false)
+  const [insuranceCompaniesMap, setInsuranceCompaniesMap] = useState<Record<string, string>>({})
   const [editingHistoryItem, setEditingHistoryItem] = useState<any>(null)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showEmailModal, setShowEmailModal] = useState(false)
+  const [completedMetadata, setCompletedMetadata] = useState<any>(null)
 
   const [isFocused, setIsFocused] = useState(false)
 
@@ -204,20 +218,41 @@ export default function LeadReviewPage() {
       setLoading(true)
       setError(null)
 
-      const { data: leadData, error: leadError } = await supabase
-        .from('temp_leads_basics')
-        .select(`
-          *,
-          lead_policies(policy_type),
-          pipeline_stages (
-            id,
-            stage_name
-          )
-        `)
-        .eq('id', leadId)
-        .single()
+      const [leadRes, formRes, historyRes, icRes] = await Promise.all([
+        supabase
+          .from('temp_leads_basics')
+          .select(`
+            *,
+            lead_policies(policy_type),
+            pipeline_stages (
+              id,
+              stage_name
+            )
+          `)
+          .eq('id', leadId)
+          .single(),
+        supabase
+          .from('temp_intake_forms')
+          .select('*')
+          .eq('lead_id', leadId)
+          .eq('status', 'submitted')
+          .order('submitted_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('lead_stage_history')
+          .select('stage_metadata')
+          .eq('lead_id', leadId)
+          .eq('stage_name', 'Completed')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('insurance_companies')
+          .select('id, name')
+      ])
 
-      if (leadError || !leadData) {
+      if (leadRes.error || !leadRes.data) {
         setError('Lead not found')
         setLoading(false)
         return
@@ -226,29 +261,29 @@ export default function LeadReviewPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: prof } = await supabase.from('profiles').select('role, insurance_access').eq('id', user.id).single()
-        if (!canAccessInsuranceCategory(prof, leadData.insurence_category)) {
+        if (!canAccessInsuranceCategory(prof, leadRes.data.insurence_category)) {
           router.replace('/unauthorized')
           return
         }
       }
 
-      const { data: formData } = await supabase
-        .from('temp_intake_forms')
-        .select('*')
-        .eq('lead_id', leadId)
-        .eq('status', 'submitted')
-        .order('submitted_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      if (formData) {
-        const res = await fetch(`/api/documents?intakeFormId=${formData.id}`)
+      if (formRes.data) {
+        const res = await fetch(`/api/documents?intakeFormId=${formRes.data.id}`)
         const docs = await res.json()
         setDocuments(Array.isArray(docs) ? docs : [])
       }
 
-      setLead(leadData)
-      setForm(formData || null)
+      if (icRes.data) {
+        const map: Record<string, string> = {}
+        icRes.data.forEach((ic: any) => {
+          map[ic.id] = ic.name
+        })
+        setInsuranceCompaniesMap(map)
+      }
+
+      setLead(leadRes.data)
+      setForm(formRes.data || null)
+      setCompletedMetadata(historyRes.data?.stage_metadata || null)
       setLoading(false)
     }
 
@@ -258,47 +293,90 @@ export default function LeadReviewPage() {
   /* ================= REFRESH LEAD (background sync) ================= */
   const refreshLead = async () => {
     if (!leadId) return
-    const { data } = await supabase
-      .from('temp_leads_basics')
-      .select(`
-          *,
-          lead_policies(policy_type),
-          pipeline_stages (
-          id,
-          stage_name
-        )
-      `)
-      .eq('id', leadId)
-      .single()
-    if (data) setLead(data)
+    const [leadRes, historyRes] = await Promise.all([
+      supabase
+        .from('temp_leads_basics')
+        .select(`
+            *,
+            lead_policies(policy_type),
+            pipeline_stages (
+            id,
+            stage_name
+          )
+        `)
+        .eq('id', leadId)
+        .single(),
+      supabase
+        .from('lead_stage_history')
+        .select('stage_metadata')
+        .eq('lead_id', leadId)
+        .eq('stage_name', 'Completed')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ])
+    if (leadRes.data) setLead(leadRes.data)
+    if (historyRes.data) setCompletedMetadata(historyRes.data.stage_metadata || null)
   }
 
   /* ================= FETCH HISTORY ================= */
   const openHistoryModal = async () => {
     setHistoryLoading(true)
     setShowHistory(true)
-    const { data, error } = await supabase
-      .from('lead_stage_history')
-      .select('*')
-      .eq('lead_id', leadId)
-      .order('created_at', { ascending: false }) // Newest first
+    const [historyRes, icRes] = await Promise.all([
+      supabase
+        .from('lead_stage_history')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('insurance_companies')
+        .select('id, name')
+    ])
 
-    if (!error && data) {
-      setHistory(data)
+    if (!historyRes.error && historyRes.data) {
+      setHistory(historyRes.data)
+      const latestCompleted = historyRes.data.find((h: any) => h.stage_name === 'Completed')
+      if (latestCompleted) {
+        setCompletedMetadata(latestCompleted.stage_metadata || null)
+      }
+    }
+    if (!icRes.error && icRes.data) {
+      const map: Record<string, string> = {}
+      icRes.data.forEach((ic: any) => {
+        map[ic.id] = ic.name
+      })
+      setInsuranceCompaniesMap(map)
     }
     setHistoryLoading(false)
   }
 
   const refreshHistory = async () => {
     if (!leadId) return
-    const { data, error } = await supabase
-      .from('lead_stage_history')
-      .select('*')
-      .eq('lead_id', leadId)
-      .order('created_at', { ascending: false })
+    const [historyRes, icRes] = await Promise.all([
+      supabase
+        .from('lead_stage_history')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('insurance_companies')
+        .select('id, name')
+    ])
 
-    if (!error && data) {
-      setHistory(data)
+    if (!historyRes.error && historyRes.data) {
+      setHistory(historyRes.data)
+      const latestCompleted = historyRes.data.find((h: any) => h.stage_name === 'Completed')
+      if (latestCompleted) {
+        setCompletedMetadata(latestCompleted.stage_metadata || null)
+      }
+    }
+    if (!icRes.error && icRes.data) {
+      const map: Record<string, string> = {}
+      icRes.data.forEach((ic: any) => {
+        map[ic.id] = ic.name
+      })
+      setInsuranceCompaniesMap(map)
     }
   }
 
@@ -329,10 +407,16 @@ export default function LeadReviewPage() {
             ? 'WAITING_FOR_SUBMISSION'
             : 'NOT_SENT';
 
+  const isUuid = (str: any) => typeof str === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str)
+  const completedCarrier = completedMetadata?.carrier || (completedMetadata?.insurance_company_id && (insuranceCompaniesMap[completedMetadata.insurance_company_id] || (!isUuid(completedMetadata.insurance_company_id) ? completedMetadata.insurance_company_id : '—'))) || '—'
+  const completedBoundPremium = completedMetadata?.bound_premium !== undefined && completedMetadata?.bound_premium !== null && completedMetadata?.bound_premium !== ''
+    ? formatCurrency(completedMetadata.bound_premium)
+    : '—'
+
   /* ================= UNIFIED UI ================= */
   return (
     <div className="p-4 sm:p-6 lg:p-10">
-      <div className="max-w-4xl mx-auto space-y-4">
+      <div className="max-w-5xl mx-auto space-y-4">
         <PageBackButton onBack={handleBackToPipeline} className="mb-0" />
         <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
 
@@ -358,7 +442,7 @@ export default function LeadReviewPage() {
           {/* CONTENT */}
           <div className="p-8">
             {/* 1. INFO GRID LAYOUT */}
-            <div className={`grid grid-cols-1 sm:grid-cols-2 ${lead?.insurence_category === 'commercial' ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-4 mb-10`}>
+            <div className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 ${lead?.insurence_category === 'commercial' ? 'lg:grid-cols-4 xl:grid-cols-7' : 'lg:grid-cols-3 xl:grid-cols-6'} gap-4 mb-10`}>
               <KpiCard 
                 icon={<IconUser />} 
                 label="Client Name"
@@ -412,6 +496,26 @@ export default function LeadReviewPage() {
                 hoverIconBg="group-hover/card:bg-purple-600 group-hover/card:text-white"
               >
                 <StageBadge stage={lead?.pipeline_stages?.stage_name} variant={status as any} />
+              </KpiCard>
+              <KpiCard 
+                icon={<IconShield />} 
+                label="Insurance Company"
+                accent="from-[#2E5C85] to-[#10B889]"
+                glow="shadow-emerald-200/60"
+                iconBg="bg-teal-50 text-teal-600"
+                hoverIconBg="group-hover/card:bg-teal-600 group-hover/card:text-white"
+              >
+                <p className="text-base font-bold text-gray-800 break-words">{completedCarrier}</p>
+              </KpiCard>
+              <KpiCard 
+                icon={<IconDollar />} 
+                label="Bound Premium"
+                accent="from-emerald-500 to-teal-600"
+                glow="shadow-emerald-200/60"
+                iconBg="bg-emerald-50 text-emerald-600"
+                hoverIconBg="group-hover/card:bg-emerald-600 group-hover/card:text-white"
+              >
+                <p className="text-base font-bold text-gray-800">{completedBoundPremium}</p>
               </KpiCard>
             </div>
 
@@ -696,35 +800,21 @@ export default function LeadReviewPage() {
                       {item.stage_metadata && Object.keys(item.stage_metadata).length > 0 ? (
                         <div className="p-5">
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
-                            {Object.entries(item.stage_metadata).map(([k, v]) => {
-                              const formatLabel = (key: string) => FIELD_LABELS[key] || key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                              
-                              let displayValue = v === true ? 'Yes' : v === false ? 'No' : String(v);
-                              
-                              // Hide raw metadata for commission type/percentage, we'll format it inside expected_commission
-                              if (k === 'expected_commission_type' || k === 'expected_commission_percentage') return null;
-
-                              // Check if the key implies a monetary value
-                              const lowerK = k.toLowerCase();
-                              if (k === 'expected_commission') {
-                                const cType = item.stage_metadata?.expected_commission_type;
-                                const cPercentage = item.stage_metadata?.expected_commission_percentage;
-                                if (cType === 'PERCENTAGE' && cPercentage !== undefined) {
-                                  displayValue = `${cPercentage}% (${formatCurrency(v as number | string)})`;
-                                } else {
-                                  displayValue = formatCurrency(v as number | string);
-                                }
-                              } else if (lowerK.includes('premium') || lowerK.includes('fee') || lowerK.includes('amount') || lowerK.includes('commission') || lowerK.includes('savings')) {
-                                displayValue = formatCurrency(v as number | string);
-                              }
-
-                              return (
-                                <div key={k}>
-                                  <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{formatLabel(k)}</span>
-                                  <span className="font-medium text-slate-800">{displayValue}</span>
-                                </div>
-                              );
-                            })}
+                            {resolveStageHistoryFields(
+                              item.stage_name,
+                              item.stage_metadata,
+                              lead?.pipeline_stages?.pipeline_id ? (
+                                lead.insurence_category?.toLowerCase().includes('commercial') 
+                                  ? (lead.policy_flow?.toLowerCase() === 'renewal' ? 'CommercialRenewal' : 'Commercial')
+                                  : (lead.policy_flow?.toLowerCase() === 'renewal' ? 'PersonalRenewal' : 'PersonalNewBusiness')
+                              ) : 'PersonalNewBusiness',
+                              insuranceCompaniesMap
+                            ).map((field) => (
+                              <div key={field.key}>
+                                <span className="text-slate-500 block text-xs font-medium mb-1 uppercase tracking-wider">{field.label}</span>
+                                <span className="font-medium text-slate-800">{field.displayValue}</span>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       ) : (
@@ -760,7 +850,10 @@ export default function LeadReviewPage() {
             }}
             onSuccess={() => {
               setEditingHistoryItem(null)
-              refreshHistory().then(() => setShowHistory(true))
+              refreshHistory().then(() => {
+                refreshLead()
+                setShowHistory(true)
+              })
             }}
           />
         )}

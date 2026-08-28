@@ -95,7 +95,7 @@ export async function POST(req: Request) {
 
     console.log('SEND EMAIL API HIT:', { leadId, templateId, formType, intakeId, hasCustom: !!customBody, attachmentsCount: attachments.length })
 
-    if (!leadId || !templateId) {
+    if (!leadId || (!templateId && !customBody)) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -215,7 +215,7 @@ export async function POST(req: Request) {
     }
 
     /* ================= EXTRACT EMAIL TYPE FOR LOGS ================= */
-    let emailTypeName = 'manual';
+    let emailTypeName = lead?.policy_flow === 'renewal' ? 'renewal' : 'manual';
     let isInfoReq = false;
 
     if (templateId) {
