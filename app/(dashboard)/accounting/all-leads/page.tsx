@@ -11,6 +11,7 @@ import {
 import Loading from '@/components/ui/Loading'
 import { formatCurrency } from '@/lib/currency'
 import { getActivePolicy } from '@/utils/activePolicyHelper'
+import { resolvePolicyState } from '@/utils/policyStateHelper'
 
 type Lead = {
   id: string
@@ -26,9 +27,12 @@ type Lead = {
   accounting_status: string
   accounting_verified: boolean
   carrier: string
+  policy_number?: string
   new_carrier?: string
   new_policy_number?: string
   new_premium?: number
+  stage_metadata?: any
+  intake_forms?: any[]
   current_stage: { stage_name: string } | null
   assigned_csr_profile: { full_name: string } | null
 }
@@ -46,37 +50,77 @@ const STAGE_FILTERS = [
 export default function AccountingAllLeadsPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  
+  // URL Params initialization
   const stageFilter = searchParams.get('stage')
+  const urlCategory = searchParams.get('category')
+  const urlFlow = searchParams.get('flow')
+  const urlStatus = searchParams.get('status')
 
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [page, setPage] = useState(0)
-  const [showFilters, setShowFilters] = useState(false)
+  const [showFilters, setShowFilters] = useState(Boolean(urlCategory || urlFlow || urlStatus))
 
-  const [accountingStatusFilter, setAccountingStatusFilter] = useState<string>('all')
+  const [accountingStatusFilter, setAccountingStatusFilter] = useState<string>(urlStatus || 'all')
   const [accountingVerifiedFilter, setAccountingVerifiedFilter] = useState<string>('all')
-  const [policyFlowFilter, setPolicyFlowFilter] = useState<string>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string>(urlCategory || 'all')
+  const [policyFlowFilter, setPolicyFlowFilter] = useState<string>(urlFlow || 'all')
   const [carrierFilter, setCarrierFilter] = useState<string>('all')
+  const [stateFilter, setStateFilter] = useState<string>('all')
+  const [assignedCsrFilter, setAssignedCsrFilter] = useState<string>('all')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  const [sortBy, setSortBy] = useState<string>('created_desc')
 
   const [availableCarriers, setAvailableCarriers] = useState<string[]>([])
   const [availableFlows, setAvailableFlows] = useState<string[]>([])
+  const [availableStates, setAvailableStates] = useState<string[]>([])
+  const [availableCsrs, setAvailableCsrs] = useState<{ id: string; name: string }[]>([])
 
   useEffect(() => {
-    const fetchFilters = async () => {
+    if (urlCategory) setCategoryFilter(urlCategory)
+    if (urlFlow) setPolicyFlowFilter(urlFlow)
+    if (urlStatus) setAccountingStatusFilter(urlStatus)
+  }, [urlCategory, urlFlow, urlStatus])
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
       try {
-        const { data } = await supabase.from('temp_leads_basics').select('carrier, policy_flow')
-        if (data) {
-          const carriers = Array.from(new Set(data.map(d => d.carrier).filter(Boolean))) as string[]
-          const flows = Array.from(new Set(data.map(d => d.policy_flow).filter(Boolean))) as string[]
+        const { data: leadsData } = await supabase
+          .from('temp_leads_basics')
+          .select(`
+            carrier, new_carrier, policy_flow, stage_metadata,
+            intake_forms:temp_intake_forms (
+              form_data,
+              submitted_at
+            )
+          `)
+        
+        if (leadsData) {
+          const carriers = Array.from(new Set(leadsData.flatMap(d => [d.carrier, d.new_carrier]).filter(Boolean))) as string[]
+          const flows = Array.from(new Set(leadsData.map(d => d.policy_flow).filter(Boolean))) as string[]
+          const states = Array.from(new Set(leadsData.map(d => resolvePolicyState(d)).filter(s => s && s !== '—'))) as string[]
+          
           setAvailableCarriers(carriers.sort())
           setAvailableFlows(flows.sort())
+          setAvailableStates(states.sort())
+        }
+
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('id, full_name')
+          .order('full_name')
+
+        if (profilesData) {
+          setAvailableCsrs(profilesData.map(p => ({ id: p.id, name: p.full_name })))
         }
       } catch (err) {
         console.error('Failed to load filter options:', err)
       }
     }
-    fetchFilters()
+    fetchDropdowns()
   }, [])
 
   useEffect(() => {
@@ -88,13 +132,23 @@ export default function AccountingAllLeadsPage() {
         .select(`
           id, client_name, phone, email, insurence_category, policy_flow, created_at,
           total_premium, expected_commission, actual_commission,
-          accounting_status, accounting_verified, carrier,
-          new_carrier, new_policy_number, new_premium,
+          accounting_status, accounting_verified, carrier, policy_number,
+          new_carrier, new_policy_number, new_premium, stage_metadata,
           current_stage:pipeline_stages${stageFilter ? '!inner' : ''} (stage_name),
-          assigned_csr_profile:profiles!fk_profile (full_name)
+          assigned_csr_profile:profiles!fk_profile (full_name),
+          intake_forms:temp_intake_forms (
+            form_data,
+            submitted_at
+          )
         `)
-        .order('created_at', { ascending: false })
         .range(page * 10, (page + 1) * 10 - 1)
+
+      // Sorting
+      if (sortBy === 'created_desc') query = query.order('created_at', { ascending: false })
+      else if (sortBy === 'created_asc') query = query.order('created_at', { ascending: true })
+      else if (sortBy === 'name_asc') query = query.order('client_name', { ascending: true })
+      else if (sortBy === 'premium_desc') query = query.order('total_premium', { ascending: false })
+      else if (sortBy === 'comm_desc') query = query.order('expected_commission', { ascending: false })
 
       if (stageFilter) {
         if (stageFilter === 'Completed') {
@@ -116,8 +170,30 @@ export default function AccountingAllLeadsPage() {
         query = query.eq('accounting_verified', accountingVerifiedFilter === 'verified')
       }
 
-      if (policyFlowFilter !== 'all') query = query.eq('policy_flow', policyFlowFilter)
-      if (carrierFilter !== 'all') query = query.or(`carrier.eq.${carrierFilter},new_carrier.eq.${carrierFilter}`)
+      if (categoryFilter !== 'all') {
+        query = query.ilike('insurence_category', `%${categoryFilter}%`)
+      }
+
+      if (policyFlowFilter !== 'all') {
+        query = query.ilike('policy_flow', `%${policyFlowFilter}%`)
+      }
+
+      if (carrierFilter !== 'all') {
+        query = query.or(`carrier.eq.${carrierFilter},new_carrier.eq.${carrierFilter}`)
+      }
+
+      if (assignedCsrFilter !== 'all') {
+        query = query.eq('assigned_csr', assignedCsrFilter)
+      }
+
+      if (startDate) {
+        query = query.gte('created_at', new Date(startDate).toISOString())
+      }
+      if (endDate) {
+        const end = new Date(endDate)
+        end.setHours(23, 59, 59, 999)
+        query = query.lte('created_at', end.toISOString())
+      }
 
       const { data, error } = await query
 
@@ -137,7 +213,19 @@ export default function AccountingAllLeadsPage() {
     }
 
     loadLeads()
-  }, [stageFilter, page, accountingStatusFilter, accountingVerifiedFilter, policyFlowFilter, carrierFilter])
+  }, [
+    stageFilter, 
+    page, 
+    accountingStatusFilter, 
+    accountingVerifiedFilter, 
+    categoryFilter,
+    policyFlowFilter, 
+    carrierFilter, 
+    assignedCsrFilter,
+    startDate,
+    endDate,
+    sortBy
+  ])
 
   const applyFilter = (stage: string | null) => {
     setPage(0)
@@ -145,21 +233,53 @@ export default function AccountingAllLeadsPage() {
     else router.push(`/accounting/all-leads?stage=${encodeURIComponent(stage)}`)
   }
 
+  const resetAllFilters = () => {
+    setAccountingStatusFilter('all')
+    setAccountingVerifiedFilter('all')
+    setCategoryFilter('all')
+    setPolicyFlowFilter('all')
+    setCarrierFilter('all')
+    setStateFilter('all')
+    setAssignedCsrFilter('all')
+    setStartDate('')
+    setEndDate('')
+    setSortBy('created_desc')
+    setSearchTerm('')
+    setPage(0)
+    router.push('/accounting/all-leads')
+  }
+
   const filteredLeads = leads.filter(lead => {
     const term = searchTerm.toLowerCase()
-    return (
+    const matchesSearch = (
       (lead.client_name && lead.client_name.toLowerCase().includes(term)) ||
       (lead.email && lead.email.toLowerCase().includes(term)) ||
       (lead.phone && lead.phone.includes(term)) ||
+      (lead.policy_number && lead.policy_number.toLowerCase().includes(term)) ||
+      (lead.new_policy_number && lead.new_policy_number.toLowerCase().includes(term)) ||
       (lead.assigned_csr_profile?.full_name && lead.assigned_csr_profile.full_name.toLowerCase().includes(term))
     )
+
+    if (!matchesSearch) return false
+
+    if (stateFilter !== 'all') {
+      const resolved = resolvePolicyState(lead)
+      if (resolved !== stateFilter) return false
+    }
+
+    return true
   })
 
   const activeFilterCount = [
     accountingStatusFilter !== 'all',
     accountingVerifiedFilter !== 'all',
+    categoryFilter !== 'all',
     policyFlowFilter !== 'all',
     carrierFilter !== 'all',
+    stateFilter !== 'all',
+    assignedCsrFilter !== 'all',
+    startDate !== '',
+    endDate !== '',
   ].filter(Boolean).length
 
   return (
@@ -238,56 +358,127 @@ export default function AccountingAllLeadsPage() {
 
         {/* Expanded Filters */}
         {showFilters && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-gray-100 bg-gray-50">
-            {[
-              {
-                label: 'Recon Status', value: accountingStatusFilter,
-                onChange: (v: string) => { setAccountingStatusFilter(v); setPage(0) },
-                options: [
-                  { label: 'All Statuses', value: 'all' },
-                  { label: 'Reconciled', value: 'reconciled' },
-                  { label: 'Discrepancy', value: 'discrepancy' },
-                  { label: 'Unreconciled', value: 'unreconciled' },
-                ]
-              },
-              {
-                label: 'Verification', value: accountingVerifiedFilter,
-                onChange: (v: string) => { setAccountingVerifiedFilter(v); setPage(0) },
-                options: [
-                  { label: 'All', value: 'all' },
-                  { label: 'Verified', value: 'verified' },
-                  { label: 'Unverified', value: 'unverified' },
-                ]
-              },
-              {
-                label: 'Policy Flow', value: policyFlowFilter,
-                onChange: (v: string) => { setPolicyFlowFilter(v); setPage(0) },
-                options: [{ label: 'All Flows', value: 'all' }, ...availableFlows.map(f => ({ label: f, value: f }))]
-              },
-              {
-                label: 'Carrier', value: carrierFilter,
-                onChange: (v: string) => { setCarrierFilter(v); setPage(0) },
-                options: [{ label: 'All Carriers', value: 'all' }, ...availableCarriers.map(c => ({ label: c, value: c }))]
-              },
-            ].map(({ label, value, onChange, options }) => (
-              <div key={label} className="space-y-1.5 flex flex-col">
-                <label className="text-[10px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-3 py-0.5 rounded-full w-fit whitespace-nowrap">
-                  {label}
-                </label>
-                <div className="relative">
-                  <select
-                    value={value}
-                    onChange={e => onChange(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 appearance-none border border-gray-200 rounded-lg text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
-                  >
-                    {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+          <div className="p-4 border-b border-gray-100 bg-gray-50 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">Multi-Criteria Filter Engine</span>
+              <button
+                onClick={resetAllFilters}
+                className="text-xs font-bold text-rose-600 hover:text-rose-700 underline"
+              >
+                Reset All Filters
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {[
+                {
+                  label: 'Recon Status', value: accountingStatusFilter,
+                  onChange: (v: string) => { setAccountingStatusFilter(v); setPage(0) },
+                  options: [
+                    { label: 'All Statuses', value: 'all' },
+                    { label: 'Reconciled', value: 'reconciled' },
+                    { label: 'Discrepancy', value: 'discrepancy' },
+                    { label: 'Unreconciled', value: 'unreconciled' },
+                  ]
+                },
+                {
+                  label: 'Verification', value: accountingVerifiedFilter,
+                  onChange: (v: string) => { setAccountingVerifiedFilter(v); setPage(0) },
+                  options: [
+                    { label: 'All', value: 'all' },
+                    { label: 'Verified', value: 'verified' },
+                    { label: 'Unverified', value: 'unverified' },
+                  ]
+                },
+                {
+                  label: 'Category', value: categoryFilter,
+                  onChange: (v: string) => { setCategoryFilter(v); setPage(0) },
+                  options: [
+                    { label: 'All Categories', value: 'all' },
+                    { label: 'Personal', value: 'personal' },
+                    { label: 'Commercial', value: 'commercial' },
+                  ]
+                },
+                {
+                  label: 'Policy Flow', value: policyFlowFilter,
+                  onChange: (v: string) => { setPolicyFlowFilter(v); setPage(0) },
+                  options: [
+                    { label: 'All Flows', value: 'all' },
+                    { label: 'New Business', value: 'new' },
+                    { label: 'Renewal', value: 'renewal' },
+                    ...availableFlows.filter(f => f.toLowerCase() !== 'new' && f.toLowerCase() !== 'renewal').map(f => ({ label: f, value: f }))
+                  ]
+                },
+                {
+                  label: 'Carrier', value: carrierFilter,
+                  onChange: (v: string) => { setCarrierFilter(v); setPage(0) },
+                  options: [{ label: 'All Carriers', value: 'all' }, ...availableCarriers.map(c => ({ label: c, value: c }))]
+                },
+                {
+                  label: 'State', value: stateFilter,
+                  onChange: (v: string) => { setStateFilter(v); setPage(0) },
+                  options: [{ label: 'All States', value: 'all' }, ...availableStates.map(s => ({ label: s, value: s }))]
+                },
+                {
+                  label: 'Assigned CSR', value: assignedCsrFilter,
+                  onChange: (v: string) => { setAssignedCsrFilter(v); setPage(0) },
+                  options: [{ label: 'All CSRs', value: 'all' }, ...availableCsrs.map(c => ({ label: c.name, value: c.id }))]
+                },
+                {
+                  label: 'Sort By', value: sortBy,
+                  onChange: (v: string) => { setSortBy(v); setPage(0) },
+                  options: [
+                    { label: 'Newest First', value: 'created_desc' },
+                    { label: 'Oldest First', value: 'created_asc' },
+                    { label: 'Client Name (A-Z)', value: 'name_asc' },
+                    { label: 'Premium (High-Low)', value: 'premium_desc' },
+                    { label: 'Expected Comm (High-Low)', value: 'comm_desc' },
+                  ]
+                },
+              ].map(({ label, value, onChange, options }) => (
+                <div key={label} className="space-y-1 flex flex-col">
+                  <label className="text-[9px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-2 py-0.5 rounded-full w-fit whitespace-nowrap">
+                    {label}
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={value}
+                      onChange={e => onChange(e.target.value)}
+                      className="w-full pl-2.5 pr-7 py-1.5 appearance-none border border-gray-200 rounded-lg text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
+                    >
+                      {options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    </select>
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                    </div>
                   </div>
                 </div>
+              ))}
+
+              <div className="space-y-1 flex flex-col">
+                <label className="text-[9px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-2 py-0.5 rounded-full w-fit whitespace-nowrap">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={e => { setStartDate(e.target.value); setPage(0) }}
+                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
+                />
               </div>
-            ))}
+
+              <div className="space-y-1 flex flex-col">
+                <label className="text-[9px] font-bold text-white uppercase tracking-wider bg-gradient-to-r from-[#10B889] to-[#2E5C85] px-2 py-0.5 rounded-full w-fit whitespace-nowrap">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={e => { setEndDate(e.target.value); setPage(0) }}
+                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-shadow"
+                />
+              </div>
+            </div>
           </div>
         )}
 
@@ -300,31 +491,35 @@ export default function AccountingAllLeadsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1400px' }}>
+            <table className="w-full text-sm text-left table-fixed" style={{ minWidth: '1500px' }}>
               <colgroup>
-                <col className="w-[260px]" />
+                <col className="w-[240px]" />
                 <col className="w-[180px]" />
-                <col className="w-[160px]" />
-                <col className="w-[130px]" />
                 <col className="w-[150px]" />
-                <col className="w-[140px]" />
-                <col className="w-[140px]" />
-                <col className="w-[110px]" />
-                <col className="w-[120px]" />
+                <col className="w-[130px]" />
                 <col className="w-[80px]" />
+                <col className="w-[130px]" />
+                <col className="w-[130px]" />
+                <col className="w-[130px]" />
+                <col className="w-[120px]" />
+                <col className="w-[100px]" />
+                <col className="w-[110px]" />
+                <col className="w-[70px]" />
               </colgroup>
               <thead className="text-white uppercase text-xs border-b border-gray-100 tracking-wider">
                 <tr className="bg-gradient-to-r from-[#10B889] to-[#2E5C85]">
-                  <th className="px-4 py-4 font-semibold">Client</th>
-                  <th className="px-4 py-4 font-semibold">Category / Flow</th>
-                  <th className="px-4 py-4 font-semibold">Stage</th>
-                  <th className="px-4 py-4 font-semibold text-right">Premium</th>
-                  <th className="px-4 py-4 font-semibold text-right">Expected Comm</th>
-                  <th className="px-4 py-4 font-semibold text-right">Actual Comm</th>
-                  <th className="px-4 py-4 font-semibold text-center">Recon Status</th>
-                  <th className="px-4 py-4 font-semibold text-center">Verified</th>
-                  <th className="px-4 py-4 font-semibold text-center">Created</th>
-                  <th className="px-4 py-4 font-semibold text-center">View</th>
+                  <th className="px-3 py-3.5 font-semibold">Client</th>
+                  <th className="px-3 py-3.5 font-semibold">Policy / Carrier</th>
+                  <th className="px-3 py-3.5 font-semibold">Category / Flow</th>
+                  <th className="px-3 py-3.5 font-semibold">Stage</th>
+                  <th className="px-3 py-3.5 font-semibold text-center">State</th>
+                  <th className="px-3 py-3.5 font-semibold text-right">Premium</th>
+                  <th className="px-3 py-3.5 font-semibold text-right">Expected Comm</th>
+                  <th className="px-3 py-3.5 font-semibold text-right">Actual Comm</th>
+                  <th className="px-3 py-3.5 font-semibold text-center">Recon Status</th>
+                  <th className="px-3 py-3.5 font-semibold text-center">Verified</th>
+                  <th className="px-3 py-3.5 font-semibold text-center">Created</th>
+                  <th className="px-3 py-3.5 font-semibold text-center">View</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 bg-white">
@@ -332,39 +527,52 @@ export default function AccountingAllLeadsPage() {
                   const stage = lead.current_stage?.stage_name ?? '—'
                   const createdDate = lead.created_at ? new Date(lead.created_at).toLocaleDateString() : '—'
                   const active = getActivePolicy(lead)
+                  const resolvedState = resolvePolicyState(lead)
 
                   return (
                     <tr key={lead.id} className="hover:bg-gray-50/80 transition-colors group">
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-3 py-3.5 align-top">
                         <p className="font-medium text-gray-900 break-words">{lead.client_name}</p>
                         <p className="text-xs text-gray-500 mt-0.5 break-all">{lead.email}</p>
                       </td>
-                      <td className="px-4 py-4 capitalize text-gray-700 align-top">
-                        <p className="font-medium break-words">{lead.insurence_category}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 break-words">{lead.policy_flow}</p>
+                      <td className="px-3 py-3.5 align-top">
+                        <p className="font-mono text-xs text-gray-800 break-all font-semibold">
+                          {active.activePolicyNumber || '—'}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-0.5 break-words">
+                          {active.activeCarrier || '—'}
+                          {active.isSwitched && <span className="ml-1 text-[9px] bg-emerald-100 text-emerald-800 px-1 py-0.2 rounded font-bold">Switched</span>}
+                        </p>
                       </td>
-                      <td className="px-4 py-4 align-top">
+                      <td className="px-3 py-3.5 capitalize text-gray-700 align-top">
+                        <p className="font-medium break-words text-xs">{lead.insurence_category}</p>
+                        <p className="text-[11px] text-gray-500 mt-0.5 break-words">{lead.policy_flow}</p>
+                      </td>
+                      <td className="px-3 py-3.5 align-top">
                         <StageBadge stage={stage} />
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-900 align-top">
+                      <td className="px-3 py-3.5 text-center text-xs font-semibold text-gray-600 align-top uppercase">
+                        {resolvedState}
+                      </td>
+                      <td className="px-3 py-3.5 text-right text-gray-900 font-semibold text-xs align-top">
                         {formatCurrency(active.activePremium)}
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-900 align-top">
+                      <td className="px-3 py-3.5 text-right text-gray-900 text-xs align-top">
                         {formatCurrency(lead.expected_commission)}
                       </td>
-                      <td className="px-4 py-4 text-right text-gray-900 font-medium align-top">
+                      <td className="px-3 py-3.5 text-right text-gray-900 font-medium text-xs align-top">
                         {formatCurrency(lead.actual_commission)}
                       </td>
-                      <td className="px-4 py-4 text-center align-top">
+                      <td className="px-3 py-3.5 text-center align-top">
                         <StatusBadge status={lead.accounting_status} />
                       </td>
-                      <td className="px-4 py-4 text-center align-top">
+                      <td className="px-3 py-3.5 text-center align-top">
                         <VerificationBadge verified={lead.accounting_verified} />
                       </td>
-                      <td className="px-4 py-4 text-center text-gray-500 whitespace-nowrap align-top">
+                      <td className="px-3 py-3.5 text-center text-gray-500 whitespace-nowrap text-xs align-top">
                         {createdDate}
                       </td>
-                      <td className="px-4 py-4 text-center align-top">
+                      <td className="px-3 py-3.5 text-center align-top">
                         <Link
                           href={`/accounting/leads/${lead.id}`}
                           className="text-brand-dark hover:text-[#B55D44] transition-colors p-1 rounded-md hover:bg-gray-100 inline-flex items-center justify-center"
